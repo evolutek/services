@@ -16,12 +16,13 @@ class Type(Enum):
 
 class Io():
 
-    def __init__(self, id, name, dir=True):
+    def __init__(self, id, name, dir=True, event=None):
         self.id = id
         self.name = name
         self.value = None
         self.dir = dir
         self.port = None
+        self.event = event
         self.lock = Lock()
 
     def read(self):
@@ -40,8 +41,8 @@ class Io():
 
 class Aio(Io):
 
-    def __init(self, id, name):
-        super().__init__(id, name, False)
+    def __init(self, id, name, event=None):
+        super().__init__(id, name, False, event=event)
         self.port = mraa.Aio(id)
 
     def read(self):
@@ -50,10 +51,10 @@ class Aio(Io):
 
 class Gpio(Io):
 
-    def __init__(self, id, name, dir):
-        super().__init__(id, name, dir)
+    def __init__(self, id, name, dir, event=None):
+        super().__init__(id, name, dir, event=event)
         self.port = mraa.Gpio(id)
-        with lock:
+        with self.lock:
             if dir:
                 self.port.dir(mraa.DIR_OUT)
             else:
@@ -61,8 +62,8 @@ class Gpio(Io):
 
 class Pwm(Io):
 
-    def __init__(self, id, name, dir, period, enable):
-        super().__init__(id, name, dir)
+    def __init__(self, id, name, dir, period, enable, event=None):
+        super().__init__(id, name, dir, event=event)
         self.port = mraa.Pwm(id)
         self.period = period
         self.port.period_us(period)
@@ -75,8 +76,8 @@ class Pwm(Io):
 
 def Spi(Io):
 
-    def __init__(self, id, name):
-        super().__init__(id, name)
+    def __init__(self, id, name, event=None):
+        super().__init__(id, name, event=event)
         self.port = mraa.Spi(id)
 
 class Uart(Io):
@@ -93,15 +94,15 @@ class Gpios(Service):
         self.gpios = []
 
     @Service.action
-    def add_gpio(self, type, id, name, dir=False, period=None, enable=None, baud_rate=None):
+    def add_gpio(self, type, id, name, dir=False, event=None, period=None, enable=None, baud_rate=None):
         if type == Type.AIO:
-            self.gpios.append(Aio(id, name))
+            self.gpios.append(Aio(id, name, event=event))
         elif type == Type.GPIO:
-            self.gpios.append(Gpio(id, name, dir))
+            self.gpios.append(Gpio(id, name, dir=dir, event=event))
         elif type == Type.PWM:
-            self.gpios.append(Pwm(id, name, dir, period, enable))
+            self.gpios.append(Pwm(id, name, dir, period, enable), event=event)
         elif type == Type.SPI:
-            self.gpios.append(Spi(id, name))
+            self.gpios.append(Spi(id, name, event=event))
         elif type == Type.UART:
             self.gpios.append(Uart(id, name, baud_rate))
 
@@ -133,20 +134,20 @@ class Gpios(Service):
                 if not gpio.dir:
                     tmp = gpio.value
                     new = gpio.read()
-                    if tmp != new:
-                        self.publish("gpios", gpio.name, gpio.id, gpio.value)
+                    if tmp != new and gpio.event is not None:
+                        self.publish(gpio.event, gpio.name, gpio.id, gpio.value)
             sleep(float(refresh))
 
 def main():
     gpios = Gpios()
 
     # example
-    # gpios.add_gpio(type.GPIO, 9, "led", True)
+    gpios.add_gpio(Type.GPIO, 9, "led", True)
 
     cs = CellaservProxy()
     auto = cs.config.get(section="gpios", option="auto")
-
-    if bool(auto.decode()):
+    
+    if auto == 'True':
         refresh = cs.config.get(section="gpios", option="refresh")
         thread = Thread(target=gpios.update, args=[refresh])
         thread.start()
