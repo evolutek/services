@@ -2,13 +2,12 @@
 
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.proxy import CellaservProxy
-import mraa
 from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
 
-#from evolutek.services.task_maker import get_strat_orange
-from task_maker import get_strat_orange
+#from evolutek.services.task_maker import get_strat
+from task_maker import get_strat
 
 src_file_strat = "strat_test"
 
@@ -31,7 +30,9 @@ class Ai(Service):
         self.stopped = Event()
 
         # All objectives
-        self.tasks = get_strat_orange()
+        self.tasks = get_strat()
+        self.curr = None
+
        #get_startegy(src_file_strat, self.color = 'green')
 
         self.setup()
@@ -56,7 +57,7 @@ class Ai(Service):
     # Avoid the obstacle
     @Service.event
     def avoid(self):
-        if not self.tasks[0].not_avoid:
+        if not self.curr.not_avoid:
             print("avoid")
             self.trajman['pal'].free()
             self.stopped.set()
@@ -76,24 +77,30 @@ class Ai(Service):
     def start(self):
         print("Starting the match")
 
-        while not self.tasks.is_empty():
+        while not self.tasks.empty():
+            if self.stopped.isSet(): # there's an obstacle
+                continue
+            
+            if not self.curr:
+                self.curr = self.tasks.get()
+                if self.curr.speed:
+                    self.set_speed(self.curr.speed)
+
+            print("x: " + str(self.curr.x) + " y: " + str(self.curr.y))
+            self.goto_xy(self.curr.x, self.curr.y)
+            
             if self.stopped.isSet(): # there's an obstacle
                 continue
 
-            if self.tasks[0].speed:
-                self.set_speed(self.tasks[o].speed)
+            print('yolo')
 
-            self.goto_xy(self.tasks[0].x, self.tasks[0].y)
-            if self.stopped.isSet(): # there's an obstacle
-                continue
+            if self.curr.theta: # robot arrived at destination
+                self.goto_theta(self.curr.theta)
 
-            if self.tasks[0].theta: # robot arrived at destination
-                self.goto_theta(self.tasks[0].theta)
+            if self.curr.action:
+                self.curr.action()
 
-                if self.tasks[0].action:
-                    self.tasks[0].action()
-
-                self.tasks.get()
+            self.curr = self.tasks.get()
         print("Match is finished")
 
     # Go to x y position

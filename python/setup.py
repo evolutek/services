@@ -18,6 +18,8 @@ setup(
             'trajman = evolutek.services.trajman:main',
             'actuators = evolutek.services.actuators:main',
             'tirette = evolutek.services.tirette:main',
+            'gbts = evolutek.services.gbts:main',
+            'gpios = evolutek.services.gpios:main',
         ],
     },
 )
