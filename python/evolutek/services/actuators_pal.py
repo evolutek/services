@@ -12,39 +12,49 @@ class actuators(Service):
     def __init__(self):
         super().__init__(identification=str('pal'))
         self.robot = cellaserv.proxy.CellaservProxy()
+        self.color = self.robot.config.get(section='match', option='color')
         for n in [10, 11, 12, 13]:
             self.robot.ax[str(n)].mode_joint()
-        self.enb = mraa.Pwm(5)
-        in3 = mraa.Gpio(8)
-        in4 = mraa.Gpio(9)
-        in3.dir(mraa.DIR_OUT)
-        in4.dir(mraa.DIR_OUT)
-        in3.write(True)
-        in4.write(False)
+        #self.enb = mraa.Pwm(5)
+        #in3 = mraa.Gpio(8)
+        #in4 = mraa.Gpio(9)
+        #in3.dir(mraa.DIR_OUT)
+        #in4.dir(mraa.DIR_OUT)
+        #in3.write(True)
+        #in4.write(False)
         self.init_all()
         print("Actuators : Init Done")
 
     @Service.action
     def init_all(self):
-        self.move_arm()
-        self.close_bee_arm()
         self.robot.ax["11"].move(goal=900)
         self.robot.ax["10"].move(goal=130)
-        self.enb.period_ms(4)
-        self.enb.enable(True)
+        self.close_arm()
+        #self.enb.period_ms(4)
+        #self.enb.enable(True)
+
+
 
     @Service.action
-    def move_arm(self, percent=0):
-        self.robot.ax["12"].move(goal=(460 + int((int(percent)/100) * 305)))
+    def open_arm(self):
+        if self.color == 'green':
+            self.robot.ax["14"].move(goal=350)
+        else:
+            self.robot.ax["14"].move(goal=750)
+    
+    @Service.action
+    def launch_bee(self):
+        if self.color == 'green':
+            self.robot.ax["14"].move(goal=750)
+        else:
+            self.robot.ax["14"].move(goal=350)
+
 
     @Service.action
-    def open_bee_arm(self):
-        self.robot.ax["13"].move(goal=512)
+    def close_arm(self):
+        self.robot.ax["14"].move(goal=875)
 
-    @Service.action
-    def close_bee_arm(self):
-        self.robot.ax["13"].move(goal=200)
-
+    """
     @Service.action
     def dump_balls(self, nb=1, color="green"):
         if nb == 1:
@@ -77,7 +87,7 @@ class actuators(Service):
             self.enb.write(0.48)
         else:
             self.enb.write(0)
-
+    """
 
 
 def main():
