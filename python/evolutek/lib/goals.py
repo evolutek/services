@@ -38,8 +38,8 @@ class Goals:
     def __init__(self, file, color):
         # parse file
 
-        self.start_x = 1000
-        self.start_y = 1500 #if color == 'yellow' else 2725
+        self.start_x = 600
+        self.start_y = 225 #if color == 'yellow' else 2725
         self.theta = 0 #if color == 'yellow' else -pi/2
 
         self.graph = {}

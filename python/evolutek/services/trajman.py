@@ -170,10 +170,10 @@ class TrajMan(Service):
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
-        self.set_robot_size_x(self.robot_size_x())
-        self.set_robot_size_y(self.robot_size_y())
+        #self.set_robot_size_x(self.robot_size_x())
+        #self.set_robot_size_y(self.robot_size_y())
 
-        self.set_telemetry(50)
+        #self.set_telemetry(50)
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -430,13 +430,13 @@ class TrajMan(Service):
     def set_robot_size_x(self, size):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_X)
-        tab += pack('f', float(robot_size_x))
+        tab += pack('f', float(size))
 
     @Service.action
     def set_robot_size_y(self, size):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_Y)
-        tab += pack('f', float(robot_size_y))
+        tab += pack('f', float(size))
 
     @Service.action
     def stop_asap(self, trsldec, rotdec):

@@ -20,7 +20,7 @@ class State(Enum):
 @Service.require('actuators', ROBOT)
 #@Service.require('avoid', ROBOT)
 #@Service.require('gpios', ROBOT)
-@Service.require('match')
+#@Service.require('match')
 class Ai(Service):
 
     def __init__(self):
@@ -29,7 +29,6 @@ class Ai(Service):
         print('Init')
 
         # Cellaserv
-        super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
         self.actuators = self.cs.actuators[ROBOT]
@@ -38,7 +37,7 @@ class Ai(Service):
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
-        self.color = self.cs.match.get_match()['color']
+        #self.color = self.cs.match.get_match()['color']
         self.color = self.color1  #remove
         self.refresh = float(self.cs.config.get(section='ai', option='refresh'))
 
@@ -55,12 +54,14 @@ class Ai(Service):
         self.goals = Goals(color = self.color, file = "keke.json")
 
         print('[AI] Initial Setup')
+        super().__init__(ROBOT)
         self.setup(recalibration=False)
 
     @Service.thread
     def status(self):
         while True:
-            self.publish(seld.state)
+            self.publish(str(self.state))
+            print('lol')
             sleep(self.refresh)
 
     @Service.action

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
 from cellaserv.proxy import CellaservProxy
-from cellaserv.service import Service
+from cellaserv.service import Service, ConfigVariable
 from evolutek.lib.settings import ROBOT
 from math import pi
 from threading import Thread
 from time import sleep
 
-
+@Service.require("ax", "1")
+@Service.require("ax", "2")
+@Service.require("ax", "3")
+@Service.require("ax", "4")
 @Service.require("trajman", ROBOT)
 class Actuators(Service):
 
@@ -19,17 +22,46 @@ class Actuators(Service):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
         self.enabled = True
-        self.dist = ((robot_size_x ** 2 + robot_size_y ** 2) ** (1 / 2.0)) / 2 + 20
+        self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) / 2 + 50
+
+        for n in [1, 2, 3, 4]:
+            self.cs.ax[str(n)].mode_joint()
         self.reset()
 
     @Service.action
     def reset(self):
-        # Init all ACTUATORS
         self.enabled = True
+        self.close_arms()
+        self.close_clapet()
+
+    @Service.action
+    def close_arms(self):
+        self.cs.ax['1'].move(goal=136)
+        self.cs.ax['2'].move(goal=150)
+        self.cs.ax['3'].move(goal=136)
+
+    @Service.action
+    def open_arms(self):
+        self.cs.ax['1'].move(goal=498)
+        self.cs.ax['2'].move(goal=512)
+        self.cs.ax['3'].move(goal=498)
+
+    @Service.action
+    def open_arm_goldenium(self):
+        self.cs.ax['2'].move(goal=220)
+
+    @Service.action
+    def close_clapet(self):
+        self.cs.ax['4'].move(goal=720)
+
+    @Service.action
+    def open_clapet(self):
+        self.cs.ax['4'].move(goal=955)
 
     @Service.action
     def free(self):
-        pass
+        for n in [1, 2, 3, 4]:
+            self.cs.ax[str(n)].free()
 
     @Service.action
     def recalibrate(self, x=True, y=True, side=False, sens_x=False, sens_y=False, decal_x=0, decal_y=0, init=False):
@@ -48,17 +80,16 @@ class Actuators(Service):
             x = x == "true"
         if isinstance(y, str):
             y = y == "true"
+        if isinstance(side, str):
+            side = side == "true"
         if isinstance(sens_x, str):
             sens_x = sens_x == "true"
         if isinstance(sens_y, str):
             sens_y = sens_y == "true"
-        if isinstance(side, str):
-            side = side == "true"
-        dist_x = int(dist_x)
-        dist_y = int(dist_y)
-        pos_x = float(pos_x)
-        pos_y = float(pos_y)
-        theta = float(theta)
+        decal_x = float(decal_x)
+        decal_y = float(decal_y)
+        if isinstance(init, str):
+            init = init == "true"
 
         # Set theta, max speed, x and y
         self.trajman.free()
@@ -85,7 +116,7 @@ class Actuators(Service):
             position = self.trajman.get_position()
             pos_x = position['x'] + decal_x if not sens_x else position['x'] - decal_x
             self.trajman.set_x(pos_x)
-            new_x = pos_x + self.dist if not sens_x else pos_x - self.dist
+            new_x = pos_x + self.dist - self.robot_size_x()/2 if not sens_x else pos_x - self.dist + self.robot_size_x()/2
             self.trajman.goto_xy(x=new_x, y=position['y'])
             while self.trajman.is_moving():
                 sleep(0.1)
@@ -104,7 +135,7 @@ class Actuators(Service):
             position = self.trajman.get_position()
             pos_y = position['y'] + decal_y if not sens_y else position['y'] - decal_y
             self.trajman.set_y(pos_y)
-            new_y = pos_y + self.dist if not sens_y else pos_y - self.dist
+            new_y = pos_y + self.dist - self.robot_size_y()/2 if not sens_y else pos_y - self.dist + self.robot_size_y()/2
             print(new_y)
             self.trajman.goto_xy(x=position['x'], y=new_y)
             while self.trajman.is_moving():
