@@ -7,12 +7,12 @@ from time import sleep
 @Service.require("ax", "11")
 @Service.require("ax", "12")
 @Service.require("ax", "13")
+@Service.require("tirette")
 class actuators(Service):
 
     def __init__(self):
         super().__init__(identification=str('pal'))
         self.robot = cellaserv.proxy.CellaservProxy()
-        self.color = self.robot.config.get(section='match', option='color')
         for n in [10, 11, 12, 13]:
             self.robot.ax[str(n)].mode_joint()
         #self.enb = mraa.Pwm(5)
@@ -28,8 +28,9 @@ class actuators(Service):
     @Service.action
     def init_all(self):
         self.robot.ax["11"].move(goal=900)
-        self.robot.ax["10"].move(goal=130)
+        self.robot.ax["10"].move(goal=300)
         self.close_arm()
+        self.close_arm2()
         #self.enb.period_ms(4)
         #self.enb.enable(True)
 
@@ -37,14 +38,16 @@ class actuators(Service):
 
     @Service.action
     def open_arm(self):
-        if self.color == 'green':
+        color = self.robot.config.get(section='match', option='color')
+        if color == 'green':
             self.robot.ax["14"].move(goal=350)
         else:
             self.robot.ax["14"].move(goal=750)
     
     @Service.action
     def launch_bee(self):
-        if self.color == 'green':
+        color = self.robot.config.get(section='match', option='color')
+        if color == 'green':
             self.robot.ax["14"].move(goal=750)
         else:
             self.robot.ax["14"].move(goal=350)
@@ -89,6 +92,29 @@ class actuators(Service):
             self.enb.write(0)
     """
 
+    @Service.action
+    def open_first_distrib(self):
+        color = self.robot.config.get(section='match', option='color')
+        if color == 'green':
+            self.robot.ax['10'].move(goal=900)
+        else:
+            self.robot.ax['11'].move(goal=300)
+    
+    @Service.action
+    def open_second_distrib(self):
+        color = self.robot.config.get(section='match', option='color')
+        if color == 'green':
+            self.robot.ax['11'].move(goal=512)
+        else:
+            self.robot.ax['10'].move(goal=512)
+    
+    @Service.action
+    def open_arm2(self):
+        self.robot.ax["4"].move(goal=800)
+    
+    @Service.action
+    def close_arm2(self):
+        self.robot.ax["4"].move(goal=550)
 
 def main():
     actuators_pal = actuators()
