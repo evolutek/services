@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-from cellaserv.service import Service
+from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 from enum import Enum
 #from evolutek.lib.map import Map
-#from evolutek.lib.goals import Goals
+from evolutek.lib.goals import Goals
 from evolutek.lib.settings import ROBOT
 from threading import Event, Thread
 from time import sleep
@@ -18,9 +18,9 @@ class State(Enum):
     Ending = 5
 
 @Service.require('trajman', ROBOT)
-#@Service.require('actuators', ROBOT)
+@Service.require('actuators', ROBOT)
 #@Service.require('avoid', ROBOT)
-@Service.require('gpios', ROBOT)
+#@Service.require('gpios', ROBOT)
 class Ai(Service):
 
     def __init__(self):
@@ -32,12 +32,13 @@ class Ai(Service):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
-        self.actuators = self.cs.trajman[ROBOT]
+        self.actuators = self.cs.actuators[ROBOT]
+        # self.recalibration_event = Event(set='recalibrated')
 
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
-        self.color = self.color1 if int(self.cs.gpios[ROBOT].read_gpio("color")) else self.color2
+        self.color = self.color1  #@Andre : set color
         self.cs.config.set(section = "match", option = "color", value = self.color)
 
         self.max_trsl_speed = self.cs.config.get(section=ROBOT, option='trsl_max')
@@ -53,18 +54,10 @@ class Ai(Service):
 
         # Match config
         #self.map = Map(3000, 2000, 25)
-        #self.goals = Goals(color)
+        self.goals = Goals(color = self.color, file = "keke.json")
 
-        print('Initial Setup')
+        print('[AI] Initial Setup')
         self.setup(recalibration=False)
-
-    @Service.event
-    def position(self, value):
-        self.position = value
-
-    @Service.event
-    def robots(self, robots):
-        self.robots = robots
 
     @Service.action
     def setup(self, color=None, recalibration=True):
@@ -72,41 +65,54 @@ class Ai(Service):
         if self.state != State.Init and self.state != State.Waiting and self.state != State.Ending:
             return
         self.state = State.Setup
+        if isinstance(recalibration, str):
+            recalibration = recalibration == "true"
 
-        print('Setuping')
+        print('[AI] Setuping')
         self.trajman.enable()
-        #self.actuators.enable()
+        self.actuators.enable()
         #self.actuators.init_all()
         if color is not None:
             self.color = color
 
         if recalibration:
-            #self.recalibration()
-            #self.trajman.goto_xy(x=goals.start.x, y=goals.start.y)
-            #self.trajman.goto_theta(goals.start.theta)
-            pass
+            self.recalibrate()
+            self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
+            while self.trajman.is_moving():
+                sleep(0.1)
+            self.trajman.goto_theta(self.goals.theta)
+            while self.trajman.is_moving():
+                sleep(0.1)
         else:
-            #self.trajman.set_x(goals.start.x)
-            #self.trajman.set_y(goals.start.y)
-            #self.trajman.set_theta(goals.start.theta)
-            pass
+            self.trajman.free()
+            self.trajman.set_x(self.goals.start_x)
+            self.trajman.set_y(self.goals.start_y)
+            self.trajman.set_theta(self.goals.theta)
+            self.trajman.unfree()
 
-        #self.goals.reset
+        #self.goals.reset()
 
         self.state = State.Waiting
-        print('Waiting')
+        print('[AI] Waiting')
+
+    def recalibrate(self):
+        sens = self.color == self.color2
+        self.actuators.recalibrate(sens_y = sens, pos_y = 220 if not sens else 2780)
+        sleep(10)
+        #self.recalibration_event.wait()
+        #self.recalibration_event.clear()
 
     @Service.action
     def start(self):
         if self.state != State.Waiting:
             return
 
-        print('Starting')
+        print('[AI] Starting')
         self.selecting()
 
     @Service.action
     def end(self):
-        print('Ending')
+        print('[AI] Ending')
         self.state = State.Ending
         self.trajman.free()
         self.trajman.disable()
@@ -118,7 +124,7 @@ class Ai(Service):
         if self.state != State.Making:
             return
 
-        print('Aborting')
+        print('[AI] Aborting')
         self.aborting.set()
 
         if robot is not None:
@@ -135,7 +141,7 @@ class Ai(Service):
         if self.state != State.Wating or self.state != State.Making:
             return
 
-        print('Selecting')
+        print('[AI] Selecting')
         self.state = State.Selecting
 
         current_action = None
@@ -152,7 +158,7 @@ class Ai(Service):
         if self.state != State.Selecting:
             return
 
-        print('Making')
+        print('[AI] Making')
         self.state = Setup.making
         if self.current_action.trsl_speed is not None:
             self.trajman.set_trsl_max_speed(current_action.trsl_speed)

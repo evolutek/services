@@ -1,5 +1,5 @@
 from math import pi, sqrt
-import pygraphviz as pgv
+#import pygraphviz as pgv
 
 class Node:
 
@@ -39,9 +39,9 @@ class Goals:
     def __init__(self, file, color):
         # parse file
 
-        self.start_x = 600
-        self.start_y = 225 if color == 'yellow' else 2725
-        self.theta = pi/2 if color == 'yellow' else -pi/2
+        self.start_x = 1000
+        self.start_y = 1500 #if color == 'yellow' else 2725
+        self.theta = 0 #if color == 'yellow' else -pi/2
 
         self.graph = {}
 
@@ -59,14 +59,14 @@ class Goals:
         for child in children:
             self.graph[child].parents.append(name)
 
-    def export_dot_file(self):
-        g = pgv.AGraph()
-        for name, node in self.graph.items():
-            g.add_node(name, fillcolor='green' if node.done else 'white', style='filled')
-            for child in node.children:
-                g.add_edge(name, child)
-        with open('graph.dot', 'w') as file:
-            file.write(str(g))
+    #def export_dot_file(self):
+        #g = pgv.AGraph()
+        #for name, node in self.graph.items():
+        #    g.add_node(name, fillcolor='green' if node.done else 'white', style='filled')
+        #    for child in node.children:
+        #        g.add_edge(name, child)
+        #with open('graph.dot', 'w') as file:
+        #    file.write(str(g))
 
     def get_available_goals(self):
         l = []
@@ -84,5 +84,5 @@ class Goals:
 goals = Goals('test.json', 'green')
 goals.add_node('Start', done=True)
 goals.add_node('First', ['Start'])
-goals.export_dot_file()
+#goals.export_dot_file()
 print(goals.get_available_goals())
