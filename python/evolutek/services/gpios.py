@@ -151,7 +151,6 @@ class Gpios(Service):
 def main():
     gpios = Gpios()
 
-    # example
     gpios.add_gpio(Type.GPIO, 10, "back", False)
     gpios.add_gpio(Type.GPIO, 11, "front", False)
     gpios.add_gpio(Type.AIO, 1, "color", update=False)

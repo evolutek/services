@@ -1,11 +1,11 @@
 [Unit]
-Description=Ai service
+Description=gpios service
 PartOf=evolutek.target
 Requires=cellaserv2.service
 After=cellaserv2.service
 
 [Service]
-ExecStart=/usr/bin/ai
+ExecStart=/usr/bin/gpios
 
 [Install]
 WantedBy=multi-user.target
