@@ -112,7 +112,7 @@ class Gpios(Service):
             return None
 
         for gpio in self.gpios:
-            if (id != None and gpio.id == id) or (name != None and gpio.name == name):
+            if (id != None and gpio.id == int(id)) or (name != None and gpio.name == name):
                 return gpio.read()
 
         return None
@@ -123,19 +123,23 @@ class Gpios(Service):
             return False
 
         for gpio in self.gpios:
-            if (id != None and gpio.id == id) or (name != None and gpio.name == name):
+            if (id != None and gpio.id == int(id)) or (name != None and gpio.name == name):
                 return gpio.write(value)
 
         return False
 
     def update(self, refresh):
         while True:
+            print("lol")
             for gpio in self.gpios:
                 if not gpio.dir:
                     tmp = gpio.value
                     new = gpio.read()
-                    if tmp != new and gpio.event is not None:
-                        self.publish(gpio.event, gpio.name, gpio.id, gpio.value)
+                    if tmp != new:
+                        if gpio.event is None:
+                            self.publish(gpio.name, gpio.name, gpio.id, gpio.value)
+                        else:
+                            self.publish(gpio.event, gpio.name, gpio.id, gpio.value)
             sleep(float(refresh))
 
 def main():
@@ -143,6 +147,7 @@ def main():
 
     # example
     gpios.add_gpio(Type.GPIO, 9, "led", True)
+    gpios.add_gpio(Type.GPIO, 8, "test", False)
 
     cs = CellaservProxy()
     auto = cs.config.get(section="gpios", option="auto")
