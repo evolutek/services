@@ -1,13 +1,13 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.settings import ROBOT
-from threading import Timer, Lock, Thread
+from threading import Timer
 from time import sleep
 
 #@Service.require('ai', ROBOT)
 @Service.require('config')
 #@Service.require('gpios', ROBOT)
-#@Service.require('trajman', ROBOT)
+@Service.require('trajman', ROBOT)
 class Match(Service):
 
     def __init__(self):
@@ -17,10 +17,7 @@ class Match(Service):
         #self.ai = self.cs.ai[ROBOT]
         self.config = self.cs.config
         #self.gpios = self.cs.gpios[ROBOT]
-        #self.trajman = self.cs.trajman[ROBOT]
-
-        self.lock = Lock()
-        #self.update_thread = Thread(target=self.update_data)
+        self.trajman = self.cs.trajman[ROBOT]
 
         # Color params
         self.color1 = self.config.get(section='match', option='color1')
@@ -48,37 +45,33 @@ class Match(Service):
         self.score = 0
         self.tirette = False
 
-        #self.update_thread.start()
-
         super().__init__(identification=ROBOT)
 
         print('Match ready')
 
 
     # Pull robots positions
-    @Service.thead
+    @Service.thread
     def update_data(self):
-        print('lol')
         while True:
-            with self.lock:
-                # Get robots
-                self.publish('robots', self.robots)
+            # Get robots
+            #self.publish('robots', self.robots)
 
-                # Update position
-                #self.position = self.trajman.get_position()
-                self.publish('position', self.position)
+            # Update position
+            self.position = self.trajman.get_position()
+            self.publish('position', value=self.position)
 
-                # Update moving direction
-                #vector = self.trajman.get_vector_trsl()
-                #if vector['trsl_vector'] > 0.0:
-                #    self.direction = True
-                #elif vector['trsl_vector'] < 0.0:
-                #    self.direction = False
-                #else:
-                #    self.direction = None
-                self.publish('direction', self.direction)
+            # Update moving direction
+            vector = self.trajman.get_vector_trsl()
+            if vector['trsl_vector'] > 0.0:
+                self.direction = True
+            elif vector['trsl_vector'] < 0.0:
+                self.direction = False
+            else:
+                self.direction = None
+            self.publish('direction', value=self.direction)
 
-            sleep(self.refresh)
+        sleep(1)
 
     # Start match
     def match_start(self):
