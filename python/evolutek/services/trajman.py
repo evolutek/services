@@ -170,10 +170,10 @@ class TrajMan(Service):
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
-        #self.set_robot_size_x(self.robot_size_x())
-        #self.set_robot_size_y(self.robot_size_y())
+        self.set_robot_size_x(self.robot_size_x())
+        self.set_robot_size_y(self.robot_size_y())
 
-        #self.set_telemetry(50)
+        self.set_telemetry(50)
 
     def write(self, data):
         """Write data to serial and flush."""
