@@ -27,12 +27,22 @@ class Task:
         self.speed = speed
         self.not_avoid = not_avoid
 
+<<<<<<< HEAD
 def get_strat(color, actuators):
     """
     Returns a queue of Tasks according to the color of the team, orange or green
     """
     if color == 'green':
         return get_strat_green(actuators)
+=======
+def get_strat(color, actuators, robot):
+    print('color')
+    if color == 'green':
+        if robot == 'pal':
+            return get_strat_green_pal(actuators)
+        else:
+            return get_strat_green_pmi(actuators)
+>>>>>>> PMI: Homologation AI
     else:
         return get_strat_orange(actuators)
 
@@ -78,9 +88,28 @@ def get_strat_green(actuators):
     res.put(Task(245,  1170, not_avoid=True, func_ptr=actuators.move_arm, func_param=0, speed=500))
     return res
 
+<<<<<<< HEAD
 def get_test():
     res = queue.Queue()
     res.put(Task(0, 1500, False, not_avoid=True))
     res.put(Task(0, 0, False, not_avoid=False))
     res.put(Task(0, 1500, False, not_avoid=True))
     return res
+=======
+def get_strat_orange_pmi(actuators):
+    res = queue.Queue()
+    res.put(Task(250, 2720))
+    res.put(Task(250, 1875, theta=pi))
+    res.put(Task(50, 1875, not_avoid=True))
+    res.put(Task(100, 1875, not_avoid=True))
+    return res
+
+def get_strat_green_pmi(actuators):
+    res = queue.Queue()
+    res.put(Task(250, 280))
+    res.put(Task(250, 1125, theta=pi))
+    res.put(Task(50, 1125, not_avoid=True))
+    res.put(Task(100, 1125, not_avoid=True))
+    return res
+
+>>>>>>> PMI: Homologation AI

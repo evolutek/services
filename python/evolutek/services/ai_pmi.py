@@ -19,7 +19,7 @@ class Ai(Service):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pmi']
         self.gbts = self.cs.gbts['pmi']
-        self.actuators = self.cs.actuators['pmi']
+        #self.actuators = self.cs.actuators['pmi']
         self.gbts.set_avoiding(False)
         self.color = self.cs.config.get(section='match', option='color')
 
@@ -34,7 +34,7 @@ class Ai(Service):
         self.back_stopped = Event()
 
         # All objectives
-        self.tasks = get_strat(self.color, self.actuators, 'pmi')
+        self.tasks = get_strat(self.color, None, 'pmi')
         self.curr = None
 
         # Setup Trajman
@@ -47,9 +47,9 @@ class Ai(Service):
         self.trajman.free()
         self.trajman.set_x(105 if self.color == 'green' else 105)
         self.trajman.set_y(280 if self.color == 'green' else 2720)
-        self.trajman.set_theta(0)
+        self.trajman.set_theta(pi)
         self.trajman.unfree()
-        self.actuators.init_all()
+        #self.actuators.init_all()
         print("Setup complete, waiting to receive match_start")
 
     # Starting of the match
@@ -108,7 +108,7 @@ class Ai(Service):
 
         while not self.tasks.empty() or self.curr:
 
-            sleep(1)
+            sleep(2)
 
             # We are avoiding
             if self.front_stopped.isSet() or self.back_stopped.isSet():
