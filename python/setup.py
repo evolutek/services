@@ -9,7 +9,7 @@ class PostDevelopCommand(develop):
 
 setup(
     name = "services",
-    version = "2018",
+    version = "2019",
     packages = find_packages(),
     namespace_packages = ['evolutek'],
 
