@@ -59,7 +59,7 @@ class Gpio(Io):
                 self.port.dir(mraa.DIR_OUT)
             else:
                 self.port.dir(mraa.DIR_IN)
-        if not dir and interrupt is not None and func is not None:
+        if not dir and interrupt is not None:
             self.port.isr(mraa.EDGE_BOTH, interrupt, self)
 
 class Pwm(Io):
@@ -139,7 +139,6 @@ class Gpios(Service):
 
     def update(self, refresh):
         while True:
-            print("lol")
             for gpio in self.gpios:
                 if not gpio.dir:
                     tmp = gpio.value
@@ -153,7 +152,7 @@ def main():
 
     # example
     gpios.add_gpio(Type.GPIO, 9, "led", True)
-    gpios.add_gpio(Type.GPIO, 8, "test", False, interrupt=gpios.publish_gpios)
+    #gpios.add_gpio(Type.GPIO, 8, "test", False, interrupt=gpios.publish_gpio)
 
     cs = CellaservProxy()
     auto = cs.config.get(section="gpios", option="auto")
