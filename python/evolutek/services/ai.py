@@ -60,8 +60,7 @@ class Ai(Service):
     @Service.thread
     def status(self):
         while True:
-            self.publish(str(self.state))
-            print('lol')
+            self.publish(ROBOT + '_ai_status', status=str(self.state))
             sleep(self.refresh)
 
     @Service.action
