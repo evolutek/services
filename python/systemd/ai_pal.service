@@ -1,12 +1,11 @@
 [Unit]
-Description=Front Sharp service
+Description=ai_pal service
 PartOf=evolutek.target
 Requires=cellaserv2.service
 After=cellaserv2.service
 
 [Service]
-ExecStart=/usr/bin/sharp_front
-CPUSchedulingPolicy=rr
+ExecStart=/usr/bin/ai_pal
 
 [Install]
 WantedBy=multi-user.target

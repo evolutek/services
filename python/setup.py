@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "services",
-    version = "2016",
+    version = "2018",
     packages = find_packages(),
     namespace_packages = ['evolutek'],
 
@@ -14,20 +14,9 @@ setup(
     entry_points = {
         'console_scripts': [
             'ax = evolutek.services.ax:main',
-            'buzzer = evolutek.services.buzzer:main',
             'config = evolutek.services.config:main',
-            'cs_date = evolutek.services.cs_date:main',
-            'cs_echo = evolutek.services.echo:main',
-            'homologation_pal = evolutek.services.homologation_pal:main',
-            'ia_pal = evolutek.services.ia_pal:main',
-            'ia_pmi = evolutek.services.pmi_extreme_cellaserv:main',
-            'leds = evolutek.services.leds:main',
-            'robots_monitor = evolutek.services.robots_monitor:main',
-            'tracking = evolutek.services.tracking:main',
+            'ai_pal = evolutek.services.ai_pal:main',
             'trajman = evolutek.services.trajman:main',
-            'sharp_front = evolutek.services.sharp_front:main',
-            'sharp_back = evolutek.services.sharp_back:main',
-            'sharp_pmi = evolutek.services.sharp_pmi:main',
             'actuators = evolutek.services.actuators:main',
             'tirette = evolutek.services.tirette:main',
         ],
