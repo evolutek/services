@@ -99,17 +99,17 @@ def get_test():
 def get_strat_orange_pmi(actuators):
     res = queue.Queue()
     res.put(Task(250, 2720))
-    res.put(Task(250, 1875, theta=pi))
+    res.put(Task(250, 1875, theta=pi, func_ptr=actuators.open_arm))
     res.put(Task(50, 1875, not_avoid=True))
-    res.put(Task(100, 1875, not_avoid=True))
+    res.put(Task(100, 1875, not_avoid=True, func_ptr=actuators.close_arm))
     return res
 
 def get_strat_green_pmi(actuators):
     res = queue.Queue()
     res.put(Task(250, 280))
-    res.put(Task(250, 1125, theta=pi))
+    res.put(Task(250, 1125, theta=pi, func_ptr=actuators.open_arm))
     res.put(Task(50, 1125, not_avoid=True))
-    res.put(Task(100, 1125, not_avoid=True))
+    res.put(Task(100, 1125, not_avoid=True, func_ptr=actuators.close_arm))
     return res
 
 >>>>>>> PMI: Homologation AI

@@ -9,6 +9,8 @@ from threading import Thread, Timer, Event
 from evolutek.lib.task_maker import *
 
 @Service.require("trajman", "pmi")
+@Service.require("actuators", "pmi")
+@Service.require("gbts", "pmi")
 @Service.require("tirette")
 class Ai(Service):
 
@@ -19,8 +21,7 @@ class Ai(Service):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pmi']
         self.gbts = self.cs.gbts['pmi']
-        #self.actuators = self.cs.actuators['pmi']
-        self.gbts.set_avoiding(False)
+        self.actuators = self.cs.actuators['pmi']
         self.color = self.cs.config.get(section='match', option='color')
 
         # Set Timer
@@ -34,7 +35,7 @@ class Ai(Service):
         self.back_stopped = Event()
 
         # All objectives
-        self.tasks = get_strat(self.color, None, 'pmi')
+        self.tasks = get_strat(self.color, self.actuators, 'pmi')
         self.curr = None
 
         # Setup Trajman

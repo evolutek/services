@@ -23,11 +23,11 @@ class actuators(Service):
 
     @Service.action
     def open_arm(self):
-        self.robot.ax["4"].move(goal=512)
+        self.robot.ax["4"].move(goal=850)
 
     @Service.action
     def close_arm(self):
-        self.robot.ax["4"].move(goal=300)
+        self.robot.ax["4"].move(goal=550)
 
 def main():
     actuators_pmi = actuators()
