@@ -38,7 +38,7 @@ class Match(Service):
         self.color = None
         self.match_status = 'unstarted'
         self.position = None
-        self.direction = None
+        self.direction = 0.0
         self.robots = []
         self.front_detected = 0
         self.back_detected = 0
@@ -63,12 +63,7 @@ class Match(Service):
 
             # Update moving direction
             vector = self.trajman.get_vector_trsl()
-            if vector['trsl_vector'] > 0.0:
-                self.direction = True
-            elif vector['trsl_vector'] < 0.0:
-                self.direction = False
-            else:
-                self.direction = None
+            self.direction = vector['trsl_vector']
             self.publish('direction', value=self.direction)
 
         sleep(1)
@@ -98,13 +93,13 @@ class Match(Service):
         print('Front detection from: (%s, %s) with: %s' % (name, id, value))
         if int(value):
             if self.front_detected == 0:
-                self.publish('front_detection')
+                self.publish('front_detection', value=True)
             self.front_detected += 1
         else:
             if self.front_detected == 0:
                 return
             if self.front_detected == 1:
-                self.publish('front_end_detection')
+                self.publish('front_detection', value=False)
             self.front_detected -= 1
 
     # Update back detection
@@ -112,13 +107,13 @@ class Match(Service):
     def back(self, name, id, value):
         if int(value):
             if self.back_detected == 0:
-                self.publish('back_detection')
+                self.publish('back_detection', value=True)
             self.back_detected += 1
         else:
             if self.back_detected == 0:
                 return
             if self.back_detected == 1:
-                self.publish('back_end_detection')
+                self.publish('back_detection', value=False)
             self.back_detected -= 1
 
     # update Tirette
