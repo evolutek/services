@@ -6,7 +6,7 @@ from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
 
-from task_maker import get_strat, get_test
+from task_maker import *
 
 @Service.require("trajman", "pal")
 @Service.require("tirette")
