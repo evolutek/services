@@ -8,7 +8,7 @@ from threading import Thread, Timer, Event
 
 #from evolutek.services.task_maker import get_strat
 from task_maker import get_strat
-from wathcdog import Watchdog
+from watchdog import Watchdog
 
 src_file_strat = "strat_test"
 
@@ -28,10 +28,11 @@ class Ai(Service):
         # Thread for the match
         self.match_thread = Thread(target=self.start)
 
+        self.started = False
         # Stopped event
         self.stopped = Event()
         # Watch dog for avoiding
-        self.watchdog = Watchdog(0.5, self.end_avoid)
+        self.watchdog = Watchdog(1, self.end_avoid)
 
         # All objectives
         self.tasks = get_strat()
@@ -55,6 +56,7 @@ class Ai(Service):
     def match_start(self):
         print("Go")
         self.stop_timer.start()
+        self.started = True
         self.match_thread.start()
 
     # Ending of the match
@@ -62,22 +64,24 @@ class Ai(Service):
         print("Stop")
         self.trajman['pal'].free()
         self.trajman['pal'].disable()
-        self.watchdog.stop()
+        quit()
 
     # Avoid front obstacle
     @Service.event
     def front_avoid(self):
-        if self.trajman.get_vector_trsl()['trsl_vector'] > 0.0:
-            avoid()
+        print('front')
+        if self.started and self.trajman.get_vector_trsl()['trsl_vector'] < 0.0:
+            self.avoid()
 
     # Avoid back obstacle
     @Service.event
     def back_avoid(self):
-        if self.trajman.get_vector_trsl()['trsl_vector'] < 0.0:
-            avoid()
+        print('back')
+        if self.started and self.trajman.get_vector_trsl()['trsl_vector'] > 0.0:
+            self.avoid()
 
     def avoid(self):
-        if not self.curr.not_avoid:
+        if not self.curr and not self.curr.not_avoid:
             print("avoid")
             self.trajman['pal'].free()
             self.stopped.set()
@@ -107,13 +111,12 @@ class Ai(Service):
             self.goto_xy(self.curr.x, self.curr.y)
 
             # We were stopped
-            if self.stopped.isSet(): # there's an obstacle
+            if self.stopped.isSet():
                 continue
-
-            print('yolo')
 
             # We can rotate
             if self.curr.theta:
+                print("theta: "+ str(self.curr.theta))
                 self.goto_theta(self.curr.theta)
 
             # We can do an action
