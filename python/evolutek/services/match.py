@@ -6,7 +6,7 @@ from time import sleep
 
 #@Service.require('ai', ROBOT)
 @Service.require('config')
-#@Service.require('gpios', ROBOT)
+@Service.require('gpios', ROBOT)
 @Service.require('trajman', ROBOT)
 class Match(Service):
 
@@ -16,7 +16,7 @@ class Match(Service):
         # Cellaserv services
         #self.ai = self.cs.ai[ROBOT]
         self.config = self.cs.config
-        #self.gpios = self.cs.gpios[ROBOT]
+        self.gpios = self.cs.gpios[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
         # Color params
@@ -35,7 +35,7 @@ class Match(Service):
         self.tirette_inserted = False
 
         # Match params
-        self.color = self.color1 if self.gpios.read_gpio('color') else self.color2
+        self.color = self.color1 if int(self.gpios.read_gpio('color')) else self.color2
         self.config.set(section='match', option='color', value=self.color)
         self.match_status = 'unstarted'
         self.position = None
@@ -133,7 +133,7 @@ class Match(Service):
     @Service.event
     def reset(self):
         print('reset')
-        #self.color = self.color1 if int(self.gpios.read('color')) else self.color2
+        self.color = self.color1 if int(self.gpios.read('color')) else self.color2
         self.match_status = 'unstarted'
         self.score = 0
         self.tirette_inserted = False
