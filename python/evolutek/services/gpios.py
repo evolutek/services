@@ -1,4 +1,4 @@
-from cellaserv.proxy import Proxy
+from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from enum import Enum
 from evolutek.lib.settings import ROBOT
@@ -29,9 +29,9 @@ class Gpio(Service):
         if type == Type.GPIO:
             self.port = mraa.Gpio(id)
             if dir:
-                self.port.dir(mraa.DIR_IN)
-            else:
                 self.port.dir(mraa.DIR_OUT)
+            else:
+                self.port.dir(mraa.DIR_IN)
 
         if type == Type.PWM:
             self.port = mraa.Pwm(id)
@@ -40,7 +40,7 @@ class Gpio(Service):
         if self.dir:
             return None
 
-        with lock:
+        with self.lock:
             if self.type == Type.AIO:
                 self.value = self.port.ReadFloat()
             if self.type == Type.GPIO or Type.PWM:
@@ -52,9 +52,9 @@ class Gpio(Service):
         if not self.dir or self.type == Type.AIO:
             return False
 
-        with lock:
+        with self.lock:
             self.value = value
-            self.port.write(value)
+            self.port.write(int(value))
 
         return True
 
@@ -97,7 +97,7 @@ class Gpios(Service):
         else:
             for gpio in self.gpios:
                 if gpio.name == name:
-                    return gpio.read_value(value)
+                    return gpio.write_value(value)
 
         return False
 
@@ -113,13 +113,17 @@ class Gpios(Service):
 
 def main():
     gpios = Gpios()
+    gpios.add_gpio(9, "led", Type.GPIO, True)
 
     cs = CellaservProxy()
     auto = cs.config.get(section="gpios", option="auto")
 
-    if auto:
+    if str(auto):
         refresh = cs.config.get(section="gpios", option="refresh")
         thread = Thread(target=gpios.update, args=[refresh])
         thread.start()
 
-    gpios.run()
+    gpios.loop()
+
+if __name__ == "__main__":
+    main()
