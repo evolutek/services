@@ -6,9 +6,11 @@ from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
 
-from evolutek.lib.task_maker import *
+from evolutek.lib.objectives import get_strat
 
 @Service.require("trajman", "pal")
+@Service.require("actuators", "pal")
+@Service.require("map", "pal")
 @Service.require("tirette")
 class Ai(Service):
 
@@ -20,12 +22,13 @@ class Ai(Service):
         self.trajman = self.cs.trajman['pal']
         self.gbts = self.cs.gbts['pal']
         self.actuators = self.cs.actuators['pal']
+        self.map = self.cs.map['pal']
+
         self.gbts.set_avoiding(False)
         self.color = self.cs.config.get(section='match', option='color')
 
         # Set Timer
-        #TODO
-        self.stop_timer = Timer(100, self.match_stop)
+        self.stop_timer = Timer(98, self.match_stop)
         # Thread for the match
         self.match_thread = Thread(target=self.start)
 
@@ -35,19 +38,18 @@ class Ai(Service):
         self.moving_side = 0.0
 
         # All objectives
-        self.tasks = get_strat(self.color, self.actuators)
-        self.curr = None
+        self.objectives = get_strat(self.color, self.actuators)
+        self.position = 'start'
 
         # Setup Trajman
         self.setup()
 
     # Setup PAL position
     def setup(self):
-        #TODO: do green
         print("Setup")
         self.trajman.free()
-        self.trajman.set_x(493 if self.color == 'green' else 483)
-        self.trajman.set_y(250 if self.color == 'green' else 2750)
+        self.trajman.set_x(500)
+        self.trajman.set_y(240 if self.color == 'green' else 2760)
         self.trajman.set_theta(pi/2 if self.color == 'green' else -pi/2)
         self.trajman.unfree()
         self.actuators.init_all()
@@ -85,7 +87,7 @@ class Ai(Service):
         print('Back detection')
         print('moving_side: ' + str(self.moving_side))
         if self.moving_side < 0.0:
-        print("Avoid")
+            print("Avoid")
             self.trajman['pal'].stop_asap(1000, 30)
             self.back_stopped.set()
 
@@ -93,66 +95,84 @@ class Ai(Service):
     def front_end_avoid(self):
         print("Front end avoid")
         self.front_stopped.clear()
-    
+
     @Service.event
     def back_end_avoid(self):
         print("Back end avoid")
         self.back_stopped.clear()
 
-    # Start of the match
-    def start(self):
-        print("Starting the match")
+    def manage_tasks(self, tasks):
 
-        while not self.tasks.empty() or self.curr:
-            
+        while not tasks.empty():
             sleep(1)
 
-            # We are avoiding
-            if self.front_stopped.isSet() or self.back_stopped.isSet():
-                continue
-
-            print('Get a new task')
             # New task
-            if not self.curr and not self.tasks.empty():
-                self.curr = self.tasks.get()
-                if self.curr.speed:
-                    self.set_speed(self.curr.speed)
-
-            if not self.curr:
-                print('No new task')
+            curr_task = tasks.get()
+            if not curr_task:
                 break
-            
-            print(self.curr.not_avoid)
-            if self.curr.not_avoid:
-                print('Not avoiding')
+
+            if curr.speed:
+                self.set_speed(curr.speed)
+
+            if curr_task.not_avoid:
                 self.front_stopped.clear()
                 self.back_stopped.clear()
                 self.gbts.set_avoiding(False)
             else:
-                print('Avoiding')
                 self.gbts.set_avoiding(True)
-            print("x: " + str(self.curr.x) + " y: " + str(self.curr.y))
-            self.goto_xy(self.curr.x, self.curr.y)
 
-            # We were stopped
-            if self.front_stopped.isSet() or self.back_stopped.isSet():
-                print('Avoiding')
-                continue
+            while True:
+                sleep(1)
+                self.goto_xy(curr_task.x, curr_task.y)
+                if not (self.front_stopped.isSet() or self.back_stopped.isSet()):
+                    break
 
             # We can rotate
-            if self.curr.theta:
-                print("theta: "+ str(self.curr.theta))
-                self.goto_theta(self.curr.theta)
+            if curr_task.theta:
+                self.goto_theta(curr_task.theta)
 
             # We can do an action
-            print('Do an action')
-            if self.curr.action:
-                if self.curr.action_param:
-                    self.curr.action(self.curr.action_param)
+            if curr_task.action:
+                if curr_task.action_param:
+                    curr_task.action(curr_task.action_param)
                 else:
-                    self.curr.action()
-            # Current task is finish
-            self.curr = None
+                    curr_task.action()
+
+        # Finish to manage all tasks of the objective
+        print('End of the tasks for this objective')
+        self.gbts.set_avoiding(True)
+
+    # Start of the match
+    def start(self):
+        print("Starting the match")
+
+
+        while not self.objectives.empty():
+            sleep(1)
+
+            print('Get a new objective')
+            # New objective
+            curr_objective = self.objectives.get()
+            # No new objective
+            if not curr_objective:
+                break
+
+            # goto pathfinding
+            self.goto_xy_with_pathfinding(curr_objective.destination)
+            self.positon = curr_objective.destination[0]
+
+            # Manage tasks of the objective
+            self.manage_tasks(curr_objectives.tasks)
+
+            # go to the ending point
+            ending = self.curr_objectives.ending
+            ending_point = self.map.get_coords(ending)
+            while True:
+                sleep(1)
+                self.goto_xy(ending_point['x'], ending_point['y'])
+                if not (self.front_stopped.isSet() or self.back_stopped.isSet()):
+                    break
+            self.positon = ending[0]
 
         # We have done all our tasks
         print("Match is finished")
@@ -165,6 +185,23 @@ class Ai(Service):
             print('Moving')
             sleep(0.5)
         self.moving_side = 0.0
+
+    def goto_xy_with_pathfinding(self, destination):
+        path = []
+        print('Trying to search for a path')
+        while path == []:
+            path = self.map.get_path(self.position, destination)
+            sleep(1)
+        print("Path: " + str(path))
+        for i in range(1, len(path)):
+            next = path[i][1]
+            print('Going to move to the point: ' + path[i])
+            while True:
+                sleep(1)
+                self.goto_xy(next['x'], next['y'])
+                if not (self.front_stopped.isSet() or self.back_stopped.isSet()):
+                    break
+        print('Finish the path')
 
     # Do a movement in tranlation
     def move_trsl(self, len):

@@ -59,12 +59,12 @@ def get_strat_orange(actuators):
     res.put(Task(600,  2550))
     res.put(Task(350,  2550, not_avoid=True))
     res.put(Task(815,  2600))
-    res.put(Task(950,  2170, theta=pi/2))
+    res.put(Task(950,  2170))
     res.put(Task(600,  2150))
     res.put(Task(350,  2160, not_avoid=True))
-    res.put(Task(350,  1930, theta=pi, not_avoid=True, func_ptr=actuators.move_arm, func_param=68))
-    res.put(Task(240,  1930, not_avoid=True, speed=500))
-    res.put(Task(245,  1930, not_avoid=True, func_ptr=actuators.move_arm, func_param=0, speed=500))
+    #res.put(Task(350,  1930, theta=pi, not_avoid=True, func_ptr=actuators.move_arm, func_param=68))
+    #res.put(Task(240,  1930, not_avoid=True, speed=500))
+    #res.put(Task(245,  1930, not_avoid=True, func_ptr=actuators.move_arm, func_param=0, speed=500))
     return res
 
 def get_strat_green(actuators):
@@ -83,9 +83,9 @@ def get_strat_green(actuators):
     res.put(Task(950,  830))
     res.put(Task(600,  850))
     res.put(Task(350,  840, not_avoid=True))
-    res.put(Task(350,  1170, theta=pi, not_avoid=True, func_ptr=actuators.move_arm, func_param=68))
-    res.put(Task(240,  1170, not_avoid=True, speed=500))
-    res.put(Task(245,  1170, not_avoid=True, func_ptr=actuators.move_arm, func_param=0, speed=500))
+    #res.put(Task(350,  1170, theta=pi, not_avoid=True, func_ptr=actuators.move_arm, func_param=68))
+    #res.put(Task(240,  1170, not_avoid=True, speed=500))
+    #res.put(Task(245,  1170, not_avoid=True, func_ptr=actuators.move_arm, func_param=0, speed=500))
     return res
 
 <<<<<<< HEAD
