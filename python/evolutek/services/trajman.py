@@ -113,8 +113,7 @@ class TrajMan(Service):
 
     w1 = ConfigVariable(section=ROBOT, option="wheel_diam1", coerc=float)
     w2 = ConfigVariable(section=ROBOT, option="wheel_diam2", coerc=float)
-    spacing = ConfigVariable(section=ROBOT, option="wheels_spacing",
-                             coerc=float)
+    spacing = ConfigVariable(section=ROBOT, option="wheels_spacing", coerc=float)
     pidtp = ConfigVariable(section=ROBOT, option="pidtrsl_p", coerc=float)
     pidti = ConfigVariable(section=ROBOT, option="pidtrsl_i", coerc=float)
     pidtd = ConfigVariable(section=ROBOT, option="pidtrsl_d", coerc=float)
@@ -131,6 +130,7 @@ class TrajMan(Service):
     deltarot = ConfigVariable(section=ROBOT, option="delta_rot", coerc=float)
     robot_size_x = ConfigVariable(section=ROBOT, option="robot_size_x", coerc=float)
     robot_size_y = ConfigVariable(section=ROBOT, option="robot_size_y", coerc=float)
+    telemetry_refresh = ConfigVariable(section=ROBOT, option="telemetry_refresh", coerc=float)
 
     def __init__(self):
         super().__init__()
@@ -173,7 +173,7 @@ class TrajMan(Service):
         self.set_robot_size_x(self.robot_size_x())
         self.set_robot_size_y(self.robot_size_y())
 
-        self.set_telemetry(50)
+        self.set_telemetry(self.telemetry_refresh())
 
     def write(self, data):
         """Write data to serial and flush."""
