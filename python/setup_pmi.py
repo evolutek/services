@@ -27,10 +27,10 @@ setup(
             'ax = evolutek.services.ax:main',
             'config = evolutek.services.config:main',
             'trajman = evolutek.services.trajman:main',
-            'actuators = evolutek.services.actuators_pal:main',
+            'actuators = evolutek.services.actuators_pmi:main',
             'tirette = evolutek.services.tirette:main',
             'gbts = evolutek.services.gbts:main',
-            'ai = evolutek.services.ai_pal:main',
+            'ai = evolutek.services.ai_pmi:main',
         ],
     },
 )

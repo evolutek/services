@@ -5,11 +5,13 @@ from time import sleep
 from threading import Thread
 import mraa
 
-@Service.require("trajman", "pal")
+from evolutek.lib.settings import ROBOT
+
+@Service.require("trajman", ROBOT)
 class Gbts(Service):
     
     def __init__(self):
-        super().__init__('pal')
+        super().__init__(ROBOT)
         self.front = mraa.Gpio(12)
         self.back = mraa.Gpio(13)
         self.front.dir(mraa.DIR_IN)

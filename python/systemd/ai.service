@@ -1,0 +1,12 @@
+[Unit]
+Description=Ai service
+PartOf=evolutek.target
+Requires=cellaserv2.service
+After=cellaserv2.service
+
+[Service]
+ExecStart=/usr/bin/ai
+
+[Install]
+WantedBy=multi-user.target
+
