@@ -1,5 +1,5 @@
 import cellaserv.proxy
-
+import mraa
 from cellaserv.service import Service
 from time import sleep
 
@@ -13,17 +13,27 @@ class actuators(Service):
         self.robot = cellaserv.proxy.CellaservProxy()
         for n in [10, 11, 12]:
             self.robot.ax[str(n)].mode_joint()
+        self.enb = mraa.Pwm(5)
+        in3 = mraa.Gpio(8)
+        in4 = mraa.Gpio(9)
+        in3.dir(mraa.DIR_OUT)
+        in4.dir(mraa.DIR_OUT)
+        in3.write(True)
+        in4.write(False)
         self.init__all()
         print("Actuators : Init Done")
 
+    @Service.action
     def init__all(self):
         self.move_arm()
         self.robot.ax["11"].move(goal=900)
         self.robot.ax["10"].move(goal=130)
+        self.enb.period_ms(4)
+        self.enb.enable(True)
 
     @Service.action
-    def move_arm(self, pourcentage=0):
-        self.robot.ax["12"].move(goal=(460 + int((int(pourcentage)/100) * 305)))
+    def move_arm(self, percent=0):
+        self.robot.ax["12"].move(goal=(460 + int((int(percent)/100) * 305)))
 
     @Service.action
     def dump_balls(self, nb=1, color="green"):
@@ -51,6 +61,14 @@ class actuators(Service):
                 self.robot.ax[str(ax)].move(goal=512)
                 if i != 8:
                     sleep(1)
+    @Service.action
+    def enable_canon(self, status):
+        if status:
+            self.enb.write(0.48)
+        else:
+            self.enb.write(0)
+
+
 
 def main():
     actuators_pal = actuators()

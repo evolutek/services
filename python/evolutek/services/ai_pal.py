@@ -7,7 +7,7 @@ from time import sleep
 from threading import Thread, Timer, Event
 
 #from evolutek.services.task_maker import get_strat
-from task_maker import get_strat
+from task_maker import get_strat, get_test
 from watchdog import Watchdog
 
 src_file_strat = "strat_test"
@@ -21,21 +21,22 @@ class Ai(Service):
         super().__init__('pal')
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pal']
+        self.gbts = self.cs.gbts['pal']
         self.color = self.cs.config.get(section='match', option='color')
 
         # Set Timer
+        #TODO
         self.stop_timer = Timer(100, self.match_stop)
         # Thread for the match
         self.match_thread = Thread(target=self.start)
 
-        self.started = False
         # Stopped event
-        self.stopped = Event()
-        # Watch dog for avoiding
-        self.watchdog = Watchdog(2, self.end_avoid)
-
+        self.front_stopped = Event()
+        self.back_stopped = Event()
+        
         # All objectives
-        self.tasks = get_strat()
+        #self.tasks = get_strat()
+        self.tasks = get_test()
         self.curr = None
 
         # Setup Trajman
@@ -43,11 +44,15 @@ class Ai(Service):
 
     # Setup PAL position
     def setup(self):
+        #TODO: do green
         print("Setup")
         self.trajman.free()
-        self.trajman.set_theta(-pi/2)
-        self.trajman.set_x(483)
-        self.trajman.set_y(2750)
+        #self.trajman.set_theta(-pi/2)
+        #self.trajman.set_x(483)
+        #self.trajman.set_y(2750)
+        self.trajman.set_theta(pi/2)
+        self.trajman.set_x(0)
+        self.trajman.set_y(0)
         self.trajman['pal'].unfree()
         print("Setup complete, waiting to receive match_start")
 
@@ -56,7 +61,8 @@ class Ai(Service):
     def match_start(self):
         print("Go")
         self.stop_timer.start()
-        self.started = True
+        self.gbts.set_avoiding(True)
+        print("Gas Gas Gas")
         self.match_thread.start()
 
     # Ending of the match
@@ -69,46 +75,36 @@ class Ai(Service):
     # Avoid front obstacle
     @Service.event
     def front_avoid(self):
-        if not self.started:
-            return
-        print('front')
-        if self.stopped.isSet():
-            print('Already stopped')
-            avoid()
-        print('Check moving_side')
-        moving_side = self.trajman.get_vector_trsl()['trsl_vector']
-        print('moving_side: ' + str(moving_side))
-        if moving_side > 0.0:
-            self.avoid()
+        print('Front detection')
+        #print('Check moving_side')
+        #moving_side = self.trajman.get_vector_trsl()
+        #print('moving_side: ' + str(moving_side))
+        #if moving_side['trsl_vector'] > 0.0:
+        print("Avoid")
+        self.trajman['pal'].stop_asap(1000, 30)
+        self.front_stopped.set()
 
     # Avoid back obstacle
     @Service.event
     def back_avoid(self):
-        if not self.started:
-            return
-        print('back')
-        if self.stopped.isSet():
-            print('Already stopped')
-            avoid()
-        print('Check moving_side')
-        moving_side = self.trajman.get_vector_trsl()['trsl_vector']
-        print('moving_side: ' + str(moving_side))
-        if moving_side < 0.0:
-            self.avoid()
+        print('Back detection')
+        #print('Check moving_side')
+        #moving_side = self.trajman.get_vector_trsl()
+        #print('moving_side: ' + str(moving_side))
+        #if moving_side['trsl_vector'] < 0.0:
+        print("Avoid")
+        self.trajman['pal'].stop_asap(1000, 30)
+        self.back_stopped.set()
 
-    def avoid(self):
-        if self.stopped.isSet():
-            print('Already stopped')
-            self.watchdog.reset()
-        elif self.curr and not self.curr.not_avoid:
-            print("avoid")
-            self.trajman['pal'].stop_asap(50, 50)
-            self.stopped.set()
-            self.watchdog.reset()
-
-    def end_avoid(self):
-        print("end avoid")
-        self.stopped.clear()
+    @Service.event
+    def front_end_avoid(self):
+        print("Front end avoid")
+        self.front_stopped.clear()
+    
+    @Service.event
+    def back_end_avoid(self):
+        print("Back end avoid")
+        self.back_stopped.clear()
 
     # Start of the match
     def start(self):
@@ -116,12 +112,13 @@ class Ai(Service):
 
         while not self.tasks.empty() or self.curr:
             
-            sleep(2)
+            sleep(1)
 
             # We are avoiding
-            if self.stopped.isSet():
+            if self.front_stopped.isSet() or self.back_stopped.isSet():
                 continue
 
+            print('Get a new task')
             # New task
             if not self.curr and not self.tasks.empty():
                 self.curr = self.tasks.get()
@@ -129,20 +126,22 @@ class Ai(Service):
                     self.set_speed(self.curr.speed)
 
             if not self.curr:
-                continue
-
+                print('No new task')
+                break
+            
+            if self.curr.not_avoid:
+                self.gbts.set_avoiding(False)
+            
             print("x: " + str(self.curr.x) + " y: " + str(self.curr.y))
             self.goto_xy(self.curr.x, self.curr.y)
 
             # We were stopped
-            if self.stopped.isSet():
+            print('Avoiding')
+            if self.front_stopped.isSet() or self.back_stopped.isSet():
                 continue
 
             position = self.trajman.get_position()
-
-            if abs(position['x'] - self.curr.x) > 2.0 or abs(position['y'] - self.curr.y) > 2.0:
-                print('not here')
-                continue
+            print('Current position: '+ str(position['x']) + ' ' + str(position['y']))
 
             # We can rotate
             if self.curr.theta:
@@ -150,12 +149,14 @@ class Ai(Service):
                 self.goto_theta(self.curr.theta)
 
             # We can do an action
+            print('Do an action')
             if self.curr.action:
                 self.curr.action()
 
+            self.gbts.set_avoiding(True)
+
             # Current task is finish
             self.curr = None
-
 
         # We have done all our tasks
         print("Match is finished")
@@ -164,6 +165,7 @@ class Ai(Service):
     def goto_xy(self, x, y):
         self.trajman.goto_xy(x=x, y=y)
         while self.trajman.is_moving():
+            print('Moving')
             sleep(0.5)
 
     # Do a movement in tranlation
