@@ -13,13 +13,13 @@ class Map(Service):
 
     def __init__(self):
         super().__init__(ROBOT)
-        self.create_graph()
         self.cs = CellaservProxy()
+        self.create_graph()
         self.lock = Lock()
         self.thread = Thread(target=self.main_loop)
         self.thread.start()
 
-    def create_garph(self):
+    def create_graph(self):
         self.graph = Graph()
         color = self.cs.config.get(section='match', option='color')
 
@@ -53,13 +53,14 @@ class Map(Service):
         self.graph.insert_edges('distrib4', ['center'])
 
     def main_loop(self):
+        print("loop")
         # get position
         # give it to the beacon
 
     # Set avoiding status
     @Service.action
     def get_path(self, start, end):
-        with lock:
+        with self.lock:
             return self.graph.get_path(start, end)
 
 def main():

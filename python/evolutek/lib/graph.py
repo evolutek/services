@@ -1,7 +1,5 @@
 from math import pow, sqrt, pi, cos, sin, atan, atan2
 
-from point import *
-
 cost_stop = 100
 cost_turn = 200
 infinite = 100000
@@ -71,14 +69,14 @@ class Graph:
           dest_edges.append((src_name, weight))
 
   def is_colliding(self, circle, p1, p2):
-  """
-    Returns true if the circle collides with the rectange determined by two
-    points which are the intersection between the rectangle and a meadian.
-    This function unrotate the rectangle and then detect a potential collision.
-    circle : center of the robot
-    p1 : starting point of the path
-    p2 : ending point of the path
-  """
+    """
+        Returns true if the circle collides with the rectange determined by two
+        points which are the intersection between the rectangle and a meadian.
+        This function unrotate the rectangle and then detect a potential collision.
+        circle : center of the robot
+        p1 : starting point of the path
+        p2 : ending point of the path
+    """
     width = pal_radius * 2
     height = p1.distance(p2)
     center = Point((p2.x + p1.x) / 2, (p2.y + p1.y) / 2)
@@ -169,5 +167,5 @@ class Graph:
     while curr != src_name:
       res.append(curr)
       curr = precs[curr]
-    res.append(curr)
+    res.append((curr, self.nodes[curr][0]))
     return list(reversed(res))

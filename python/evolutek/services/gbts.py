@@ -32,7 +32,7 @@ class Gbts(Service):
             front_value = self.front.read()
             back_value = self.back.read()
 
-            with lock:
+            with self.lock:
                 if self.front_avoid and front_value == 0:
                     self.front_avoid = False
                     print("Front end_avoid")
@@ -56,11 +56,11 @@ class Gbts(Service):
     # Set avoiding status
     @Service.action
     def set_avoiding(self, status=True):
-        with lock:
+        with self.lock:
             self.enabled_avoiding = status
             self.front_avoid = False
             self.back_avoid = False
-            print('Avoing status: ' + str(status))
+            print('Avoing status: ' + str(self.enabled_avoiding))
 
 def main():
     gbts = Gbts()
