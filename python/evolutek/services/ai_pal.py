@@ -6,11 +6,11 @@ from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
 
-from evolutek.lib.graph import get_map
 from evolutek.lib.objectives import get_strat
 
 @Service.require("trajman", "pal")
 @Service.require("actuators", "pal")
+@Service.require("map", "pal")
 @Service.require("tirette")
 class Ai(Service):
 
@@ -161,8 +161,8 @@ class Ai(Service):
                 break
 
             # goto pathfinding
-            self.goto_xy_pathfinding(curr_objective.destination)
-            self.positon = curr_objective.destination
+            self.goto_xy_with_pathfinding(curr_objective.destination)
+            self.positon = curr_objective.destination[0]
 
             # Manage tasks of the objective
             self.manage_tasks(curr_objectives.tasks)
@@ -174,7 +174,7 @@ class Ai(Service):
                 self.goto_xy(ending.x, ending.y)
                 if not (self.front_stopped.isSet() or self.back_stopped.isSet()):
                     break
-            self.positon = ending
+            self.positon = ending[0]
 
         # We have done all our tasks
         print("Match is finished")
@@ -194,8 +194,8 @@ class Ai(Service):
             sleep(1)
         print("Path: " + str(path))
         for i in range(1, len(path)):
-            next = self.map.nodes[path[i]][0]
-            print('Going to move to the next point')
+            next = path[i][1]
+            print('Going to move to the point: ' + path[i])
             while True:
                 sleep(1)
                 self.goto_xy(next.x, next.y)
