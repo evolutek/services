@@ -55,6 +55,7 @@ class Gbts(Service):
         self.enabled_avoiding = status
         self.front_avoid = False
         self.back_avoid = False
+        print('Avoing status: ' + str(status))
 
 def main():
     gbts = Gbts()

@@ -6,13 +6,10 @@ from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
 
-#from evolutek.services.task_maker import get_strat
 from task_maker import get_strat, get_test
-from watchdog import Watchdog
-
-src_file_strat = "strat_test"
 
 @Service.require("trajman", "pal")
+@Service.require("tirette")
 class Ai(Service):
 
     # Init of the PAL
@@ -22,6 +19,8 @@ class Ai(Service):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pal']
         self.gbts = self.cs.gbts['pal']
+        self.actuators = self.cs.actuators['pal']
+        self.gbts.set_avoiding(False)
         self.color = self.cs.config.get(section='match', option='color')
 
         # Set Timer
@@ -35,8 +34,7 @@ class Ai(Service):
         self.back_stopped = Event()
         
         # All objectives
-        #self.tasks = get_strat()
-        self.tasks = get_test()
+        self.tasks = get_strat(self.color, self.actuators)
         self.curr = None
 
         # Setup Trajman
@@ -47,13 +45,11 @@ class Ai(Service):
         #TODO: do green
         print("Setup")
         self.trajman.free()
-        #self.trajman.set_theta(-pi/2)
-        #self.trajman.set_x(483)
-        #self.trajman.set_y(2750)
-        self.trajman.set_theta(pi/2)
-        self.trajman.set_x(0)
-        self.trajman.set_y(0)
-        self.trajman['pal'].unfree()
+        self.trajman.set_x(493 if self.color == 'green' else 483)
+        self.trajman.set_y(250 if self.color == 'green' else 2750)
+        self.trajman.set_theta(pi/2 if self.color == 'green' else -pi/2)
+        self.trajman.unfree()
+        self.actuators.init_all()
         print("Setup complete, waiting to receive match_start")
 
     # Starting of the match
@@ -129,19 +125,22 @@ class Ai(Service):
                 print('No new task')
                 break
             
+            print(self.curr.not_avoid)
             if self.curr.not_avoid:
+                print('Not avoiding')
+                self.front_stopped.clear()
+                self.back_stopped.clear()
                 self.gbts.set_avoiding(False)
-            
+            else:
+                print('Avoiding')
+                self.gbts.set_avoiding(True)
             print("x: " + str(self.curr.x) + " y: " + str(self.curr.y))
             self.goto_xy(self.curr.x, self.curr.y)
 
             # We were stopped
-            print('Avoiding')
             if self.front_stopped.isSet() or self.back_stopped.isSet():
+                print('Avoiding')
                 continue
-
-            position = self.trajman.get_position()
-            print('Current position: '+ str(position['x']) + ' ' + str(position['y']))
 
             # We can rotate
             if self.curr.theta:
@@ -151,10 +150,11 @@ class Ai(Service):
             # We can do an action
             print('Do an action')
             if self.curr.action:
-                self.curr.action()
-
-            self.gbts.set_avoiding(True)
-
+                if self.curr.action_param:
+                    self.curr.action(self.curr.action_param)
+                else:
+                    self.curr.action()
+                
             # Current task is finish
             self.curr = None
 
