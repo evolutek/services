@@ -8,8 +8,8 @@ import mraa
 class Gbts(Service):
     def __init__(self):
         super().__init__()
-        self.front = mraa.Gpio(2)
-        self.back = mraa.Gpio(5)
+        self.front = mraa.Gpio(12)
+        self.back = mraa.Gpio(13)
         self.front.dir(mraa.DIR_IN)
         self.back.dir(mraa.DIR_IN)
 

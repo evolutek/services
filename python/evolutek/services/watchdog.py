@@ -9,13 +9,13 @@ class Watchdog:
 		self.timer = Timer(self.timeout, self.handler)
 
 	def reset(self):
-		print("reset")
+		print("reset watchdog timer")
 		self.timer.cancel()
 		self.timer = Timer(self.timeout, self.handler)
 		self.timer.start()
 
 	def stop(self):
-		print("stop")
+		print("stop watchdog timer")
 		self.timer.cancel()
 
 	def defaultHandler(self):
