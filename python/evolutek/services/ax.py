@@ -112,7 +112,7 @@ class Ax(Service):
 
 
 def main():
-    axs = [Ax(ax=i) for i in range(255)]  # MAIN
+    axs = [Ax(ax=i) for i in [10, 11]]  # MAIN
     Service.loop()
 
 if __name__ == "__main__":

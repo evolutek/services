@@ -15,7 +15,6 @@ setup(
         'console_scripts': [
             'ax = evolutek.services.ax:main',
             'config = evolutek.services.config:main',
-            'ai_pal = evolutek.services.ai_pal:main',
             'trajman = evolutek.services.trajman:main',
             'actuators = evolutek.services.actuators:main',
             'tirette = evolutek.services.tirette:main',

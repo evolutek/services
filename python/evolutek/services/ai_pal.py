@@ -7,7 +7,8 @@ from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
 
-from evolutek.services.task_maker import get_strat_orange
+#from evolutek.services.task_maker import get_strat_orange
+from task_maker import get_strat_orange
 
 src_file_strat = "strat_test"
 
@@ -30,21 +31,18 @@ class Ai(Service):
         self.stopped = Event()
 
         # All objectives
-        self.tasks = get_strat_orange()#get_startegy(src_file_strat, self.color = 'green')
-
-        # Current objective, see if we can get rid of it :
-#        self.current_move = None
-#        self.curr = None
+        self.tasks = get_strat_orange()
+       #get_startegy(src_file_strat, self.color = 'green')
 
         self.setup()
 
     # Setup PAL position
     def setup(self):
         print("Setup")
-        self.trajman['pal'].free()
-        self.trajman.set_theta(0)
-        self.trajman.set_x(0)
-        self.trajman.set_y(0)
+        self.trajman.free()
+        self.trajman.set_theta(-pi/2)
+        self.trajman.set_x(483)
+        self.trajman.set_y(2750)
         self.trajman['pal'].unfree()
         print("Setup complete, waiting to receive match_start")
 

@@ -1,6 +1,7 @@
 # Maintainer: Vincent Gatine <nurelin@nurelin.eu>
 pkgname=evolutek-services
-pkgver=
+pkgver=1
+pkgdir=.
 pkgrel=1
 pkgdesc="services - Evolutek services"
 arch=('any')
