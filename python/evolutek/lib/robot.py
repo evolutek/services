@@ -137,4 +137,4 @@ class Robot:
         return self.goto_xy_block(x, 1500 + (1500 - y) * self.side)
 
     def goth(self, th):
-        return self.goto_theta_block(th * self.side)
+        return self.goto_theta_block(th * -self.side)
