@@ -19,7 +19,7 @@ class RobotsMonitor(Service):
         log_name = 'log.monitor.robot_position'
         pos = self.tm.get_position()
         if pos is not None:
-            self(log_name, robot=self.robot_name, **pos)
+            self.publish(log_name, robot=self.robot_name, **pos)
 
     @Service.thread
     def loop(self):
@@ -45,7 +45,7 @@ class MonitorPmi(RobotsMonitor):
 
 def main():
     pal = MonitorPal()
-    pmi = MonitorPmi()
+    # pmi = MonitorPmi()
     Service.loop()
 
 if __name__ == '__main__':
