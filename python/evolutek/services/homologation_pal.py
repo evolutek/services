@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 from threading import Timer
+from math import pi
 
-from cellaserv.service import Service, Variable
+from cellaserv.service import Service, Event
 
-from evolutek.lib.robot import robot
+from evolutek.lib.robot import Robot
 
 
 class Homologation(Service):
 
-    start = Variable('start')
+    start = Event('start')
 
     def __init__(self):
         super().__init__()
-        self.robot = robot
+        self.robot = Robot()
         self.match_stop_timer = Timer(89, self.stop)
 
     @Service.thread
@@ -20,14 +21,19 @@ class Homologation(Service):
         self.log(msg='Waiting for start...')
         self.start.wait()
         self.match_stop_timer.start()
-        self('beep_ready')
+        self.publish('beep_ready')
         self.log(msg='Start!')
 
-        self.robot.goto_xy_block(x=650, y=2500)
+        self.robot.goto(1000, 700)
+        self.robot.goto(1750, 280)
+        self.robot.goth(pi / 2)
+        self.robot.goth(pi)
+        self.robot.goth(-pi / 2)
+        self.robot.goto(1800, 1000)
 
     @Service.event
     def stop(self):
-        self('beep_ok')
+        self.publish('beep_ok')
         self.log(msg='Stopping robot.')
         self.robot.tm.free()
 
