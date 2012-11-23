@@ -2,7 +2,7 @@
 # Service: Timer
 # Author: Rémi Audenbert, <mail@halfr.net>
 
-__version__ = "0.1"
+__version__ = "1"
 
 import threading
 import time
@@ -10,6 +10,8 @@ import time
 from cellaserv.service import Service
 
 class Timer(Service):
+
+    version = __version__
 
     def __init___(self):
         super().__init__()

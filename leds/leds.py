@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "0.1"
+__version__ = "1"
 
 import fcntl
 
@@ -9,6 +9,8 @@ from cellaserv.service import Service
 LEDS_COUNT = 4
 
 class Leds(Service):
+
+    version = __version__
 
     def __init__(self):
         super().__init__()
