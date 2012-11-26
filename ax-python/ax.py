@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # TODO: rewrite using cellaserv.service.Service
+# TODO: use identification instead of the ax parameter
+# TODO: implement move_many(((ax0, goal0), (ax1, goal1)))
 import time
 import os
 import ctypes
 
-import cellaserv.client
+from cellaserv.service import Service
 
 AX_LOCATION = "./ax"
 
@@ -13,39 +15,18 @@ DEVICE_ID = 0
 BAUD_RATE = 34
 COMMAND_GOAL_POSITION_L = 30
 
-class AbstractAxService(cellaserv.client.AsynClient):
+class SystemAxService(Service):
 
-    def __init__(self, sock):
-        super().__init__(sock)
+    service_name = "ax"
 
-    def connect(self):
-        self.register_service('ax')
+    @Service.action
+    def move(self, ax, goal):
+        os.system("{} {} {}".format(AX_LOCATION, ax, goal))
 
-    def message_recieved(self, message):
-        if message['command'] == 'query' \
-        and message['action'] == 'move' \
-        and 'data' in message \
-        and 'ax' in message['data'] \
-        and 'goal' in message['data']:
-            self.move(int(message['data']["ax"]), int(message['data']["goal"]))
+class CtypesService(Service):
 
-            response = {}
-            response['command'] = 'ack'
-            response['id'] = message['id']
+    service_name = "ax"
 
-            self.send_message(response)
-
-    def move(self, ax_id, goal):
-        raise NotImplementedException
-
-class SystemAxService(AbstractAxService):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def move(self, ax_id, goal):
-        os.system("{} {} {}".format(AX_LOCATION, ax_id, goal))
-
-class CtypesService(AbstractAxService):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -55,23 +36,13 @@ class CtypesService(AbstractAxService):
     def __del__(self):
         self.dxl.dxl_terminate()
 
-    def move(self, ax_id, goal):
-        self.dxl.dxl_write_word(int(ax_id), COMMAND_GOAL_POSITION_L, int(goal))
+    @Service.action
+    def move(self, ax, goal):
+        self.dxl.dxl_write_word(int(ax), COMMAND_GOAL_POSITION_L, int(goal))
 
 def main():
-    import asyncore
-    import socket
-
-    import local_settings
-
-    HOST, PORT = local_settings.HOST, local_settings.PORT
-
-    with socket.create_connection((HOST, PORT)) as sock:
-        #service = SystemAxService(sock)
-        service = CtypesService(sock)
-        service.connect()
-
-        asyncore.loop()
+    ax = CtypesService()
+    ax.run()
 
 if __name__ == "__main__":
     main()
