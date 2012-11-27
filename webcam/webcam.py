@@ -23,6 +23,16 @@ class Webcam(Service):
         self.cs.ax.move(ax=3, goal=680)
         self.cs.ax.move(ax=5, goal=570)
 
+    @Service.action
+    def charly(self):
+        self.cs.ax.move(ax=3, goal=530)
+        self.cs.ax.move(ax=5, goal=660)
+
+    @Service.action
+    def plafond(self):
+        self.cs.ax.move(ax=3, goal=400)
+        self.cs.ax.move(ax=5, goal=500)
+
 def main():
     webcam = Webcam()
     webcam.run()
