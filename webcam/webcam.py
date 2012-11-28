@@ -31,7 +31,12 @@ class Webcam(Service):
     @Service.action
     def plafond(self):
         self.cs.ax.move(ax=3, goal=400)
-        self.cs.ax.move(ax=5, goal=500)
+        self.cs.ax.move(ax=5, goal=650)
+
+    @Service.action
+    def yoopo(self):
+        self.cs.ax.move(ax=3, goal=570)
+        self.cs.ax.move(ax=5, goal=830)
 
 def main():
     webcam = Webcam()
