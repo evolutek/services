@@ -14,6 +14,8 @@ COMMAND_GOAL_POSITION_L = 30
 
 class AbstractAxService(Service):
 
+    service_name = "ax"
+
     def __init__(self, ax):
         super().__init__(identification=str(ax))
         self.ax = ax
@@ -26,8 +28,6 @@ class AbstractAxService(Service):
 
 class SystemAxService(AbstractAxService):
 
-    service_name = "ax"
-
     @Service.action
     def move(self, goal, ax=None):
         if not ax:
@@ -36,16 +36,15 @@ class SystemAxService(AbstractAxService):
 
 class CtypesService(AbstractAxService):
 
-    service_name = "ax"
-
-    def __init__(self):
-        super().__init__()
+    def __init__(self, ax=None):
+        super().__init__(ax)
 
         self.dxl = ctypes.CDLL(DXL_LOCATION)
         self.dxl.dxl_initialize(DEVICE_ID, BAUD_RATE)
 
     def __del__(self):
         self.dxl.dxl_terminate()
+
 
     @Service.action
     def move(self, goal, ax=None):
@@ -54,8 +53,8 @@ class CtypesService(AbstractAxService):
         self.dxl.dxl_write_word(int(ax), COMMAND_GOAL_POSITION_L, int(goal))
 
 def main():
-    ax3 = SystemAxService(ax=3)
-    ax5 = SystemAxService(ax=5)
+    ax3 = CtypesService(ax=3)
+    ax5 = CtypesService(ax=5)
     ax3.setup()
     ax5.setup()
 
