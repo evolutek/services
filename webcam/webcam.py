@@ -7,36 +7,38 @@ class Webcam(Service):
         super().__init__(*args, **kwargs)
 
         self.cs = CellaservProxy(self)
+        self.ax3 = self.cs.ax[3]
+        self.ax5 = self.cs.ax[5]
 
     @Service.action
     def porte(self):
-        self.cs.ax.move(ax=3, goal=530)
-        self.cs.ax.move(ax=5, goal=810)
+        self.ax3.move(goal=530)
+        self.ax5.move(goal=810)
 
     @Service.action
     def table(self):
-        self.cs.ax.move(ax=3, goal=590)
-        self.cs.ax.move(ax=5, goal=550)
+        self.ax3.move(goal=590)
+        self.ax5.move(goal=550)
 
     @Service.action
     def schischi(self):
-        self.cs.ax.move(ax=3, goal=680)
-        self.cs.ax.move(ax=5, goal=570)
+        self.ax3.move(goal=680)
+        self.ax5.move(goal=570)
 
     @Service.action
     def charly(self):
-        self.cs.ax.move(ax=3, goal=530)
-        self.cs.ax.move(ax=5, goal=660)
+        self.ax3.move(goal=530)
+        self.ax5.move(goal=660)
 
     @Service.action
     def plafond(self):
-        self.cs.ax.move(ax=3, goal=400)
-        self.cs.ax.move(ax=5, goal=650)
+        self.ax3.move(goal=400)
+        self.ax5.move(goal=650)
 
     @Service.action
     def yoopo(self):
-        self.cs.ax.move(ax=3, goal=570)
-        self.cs.ax.move(ax=5, goal=830)
+        self.ax3.move(goal=570)
+        self.ax5.move(goal=830)
 
 def main():
     webcam = Webcam()
