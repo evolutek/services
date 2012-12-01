@@ -10,15 +10,21 @@ AX_LOCATION = "./ax"
 DXL_LOCATION = "./libdxl.so"
 DEVICE_ID = 0
 BAUD_RATE = 34
-COMMAND_GOAL_POSITION_L = 30
+
+AX_GOAL_POSITION_L     = 30
+AX_PRESENT_POSTION_L   = 36
+AX_PRESENT_SPEED_L     = 38
+AX_PRESENT_LOAD_L      = 40
+AX_PRESENT_VOLTAGE     = 42
+AX_PRESENT_TEMPERATURE = 43
 
 class AbstractAxService(Service):
 
     service_name = "ax"
 
     def __init__(self, ax):
-        super().__init__(identification=str(ax))
-        self.ax = ax
+        super().__init__(identification=int(ax))
+        self.ax = int(ax)
 
     @Service.action("reset")
     @Service.event("reset")
@@ -29,14 +35,12 @@ class AbstractAxService(Service):
 class SystemAxService(AbstractAxService):
 
     @Service.action
-    def move(self, goal, ax=None):
-        if not ax:
-            ax = int(self.ax)
-        os.system("{} {} {}".format(AX_LOCATION, ax, goal))
+    def move(self, goal):
+        os.system("{} {} {}".format(AX_LOCATION, self.ax, goal))
 
 class CtypesService(AbstractAxService):
 
-    def __init__(self, ax=None):
+    def __init__(self, ax):
         super().__init__(ax)
 
         self.dxl = ctypes.CDLL(DXL_LOCATION)
@@ -45,12 +49,29 @@ class CtypesService(AbstractAxService):
     def __del__(self):
         self.dxl.dxl_terminate()
 
+    @Service.action
+    def move(self, goal):
+        self.dxl.dxl_write_word(self.ax, AX_GOAL_POSITION_L, int(goal))
 
     @Service.action
-    def move(self, goal, ax=None):
-        if not ax:
-            ax = int(self.ax)
-        self.dxl.dxl_write_word(int(ax), COMMAND_GOAL_POSITION_L, int(goal))
+    def get_present_position(self):
+        return self.dxl.dxl_read_word(self.ax, AX_PRESENT_POSTION_L)
+
+    @Service.action
+    def get_present_speed(self):
+        return self.dxl.dxl_read_word(self.ax, AX_PRESENT_SPEED_L)
+
+    @Service.action
+    def get_present_load(self):
+        return self.dxl.dxl_read_word(self.ax, AX_PRESENT_LOAD_L)
+
+    @Service.action
+    def get_present_voltage(self):
+        return self.dxl.dxl_read_byte(self.ax, AX_PRESENT_VOLTAGE)
+
+    @Service.action
+    def get_present_temperature(self):
+        return self.dxl.dxl_read_byte(self.ax, AX_PRESENT_TEMPERATURE)
 
 def main():
     ax3 = CtypesService(ax=3)
