@@ -40,6 +40,11 @@ class Webcam(Service):
         self.ax3.move(goal=570)
         self.ax5.move(goal=830)
 
+    @Service.action
+    def cafe(self):
+        self.ax3.move(goal=520)
+        self.ax5.move(goal=780)
+
 def main():
     webcam = Webcam()
     webcam.run()
