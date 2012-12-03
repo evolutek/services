@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import os
 
 from cellaserv.proxy import CellaservProxy
 
