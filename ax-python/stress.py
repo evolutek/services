@@ -16,7 +16,6 @@ def main():
     while True:
         for ax in axs:
             ax.move(goal=randint(200, 800))
-            sleep(0.5)
 
 if __name__ == '__main__':
     main()
