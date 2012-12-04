@@ -7,8 +7,8 @@ class Webcam(Service):
         super().__init__(*args, **kwargs)
 
         self.cs = CellaservProxy(self)
-        self.ax3 = self.cs.ax[3]
-        self.ax5 = self.cs.ax[5]
+        self.ax3 = self.cs.ax["3"]
+        self.ax5 = self.cs.ax["5"]
 
     @Service.action
     def porte(self):

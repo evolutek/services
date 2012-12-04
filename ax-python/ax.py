@@ -23,8 +23,8 @@ class AbstractAxService(Service):
     service_name = "ax"
 
     def __init__(self, ax):
-        super().__init__(identification=int(ax))
-        self.ax = int(ax)
+        super().__init__(identification=str(ax))
+        self.ax = ax
 
     @Service.action("reset")
     @Service.event("reset")
