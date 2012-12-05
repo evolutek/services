@@ -57,7 +57,7 @@ def app(stdscr):
     stdscr.timeout(20) # 20 ms max delay
 
     cs = CellaservProxy()
-    axs = [cs.ax[int(ax_id)] for ax_id in sys.argv[1:]]
+    axs = [cs.ax[ax_id] for ax_id in sys.argv[1:]]
 
     ax_windows = [AX(ax, stdscr.derwin(7, 20, i*7, 0)) for i, ax in enumerate(axs)]
 
