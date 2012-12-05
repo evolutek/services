@@ -12,7 +12,7 @@ def main():
         sys.exit(1)
 
     cs = CellaservProxy()
-    axs = [cs.ax[int(ax_id)] for ax_id in sys.argv[1:]]
+    axs = [cs.ax[ax_id] for ax_id in sys.argv[1:]]
     while True:
         for ax in axs:
             ax.move(goal=randint(200, 800))
