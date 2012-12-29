@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-import time
-import os
 import ctypes
+import os
+import os.path
+import sys
+import time
 
 from cellaserv.service import Service
 
 AX_LOCATION = "./ax"
 
-DXL_LOCATION = "./libdxl.so"
+LIBDXL_PATH = [".", "/usr/lib"]
+
+LIBDXL_PATH_ENV = os.environ.get("LIBDXL_PATH", None)
+if LIBDXL_PATH_ENV:
+    LIBDXL_PATH.insert(0, LIBDXL_PATH_ENV)
+
 DEVICE_ID = 0
 BAUD_RATE = 34
 
@@ -43,7 +50,17 @@ class CtypesService(AbstractAxService):
     def __init__(self, ax):
         super().__init__(ax)
 
-        self.dxl = ctypes.CDLL(DXL_LOCATION)
+        libdxl = None
+        for path in LIBDXL_PATH:
+            try:
+                libdxl = ctypes.CDLL(path + "/libdxl.so")
+            except:
+                pass
+        if not libdxl:
+            raise RuntimeError("Cannot load libdxl.so, check LIBDXL_PATH")
+        self.dxl = libdxl
+        # TODO: rename self.dxl to self.libdxl
+
         self.dxl.dxl_initialize(DEVICE_ID, BAUD_RATE)
 
     def __del__(self):
