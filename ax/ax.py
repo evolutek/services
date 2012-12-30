@@ -61,10 +61,9 @@ class CtypesService(AbstractAxService):
         self.dxl = libdxl
         # TODO: rename self.dxl to self.libdxl
 
-        self.dxl.dxl_initialize(DEVICE_ID, BAUD_RATE)
-
-    def __del__(self):
-        self.dxl.dxl_terminate()
+        ret = self.dxl.dxl_initialize(DEVICE_ID, BAUD_RATE)
+        if ret != 1:
+            raise RuntimeError("Cannot initialize device")
 
     @Service.action
     def move(self, goal):
