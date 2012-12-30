@@ -1,5 +1,6 @@
 [Unit]
 Description=AX12 Service
+Requires=cellaserv
 
 [Service]
 ExecStart=/usr/bin/python3 $PREFIX/usr/lib/cs_services/ax/ax.py
