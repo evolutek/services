@@ -1,5 +1,6 @@
 SERVICES = ax \
-           timer
+           timer \
+           date
 
 help::
 	@echo To install all services:
