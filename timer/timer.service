@@ -1,6 +1,7 @@
 [Unit]
 Description=Timer
-Requires=cellaserv
+Requires=cellaserv.service
+Before=cellaserv.service
 
 [Service]
 ExecStart=/usr/bin/python3 $PREFIX/usr/lib/cs_services/timer/timer.py
