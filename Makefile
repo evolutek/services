@@ -12,7 +12,7 @@ all::
 	    $(MAKE) -C $$service; \
 	done
 
-install:: all
+install::
 	for service in $(SERVICES); do \
 	    $(MAKE) -C $$service install; \
 	done
