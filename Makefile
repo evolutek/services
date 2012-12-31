@@ -1,6 +1,7 @@
 SERVICES = ax \
-           timer \
-           date
+	   date \
+	   timer \
+	   webcam
 
 help::
 	@echo To install all services:
