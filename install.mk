@@ -1,12 +1,12 @@
 PREFIX         ?= /opt/evolutek
 SYSTEMD_PREFIX ?= /usr/lib/systemd/user
-INSTALL_FILE   = install -m 644 -p
+INSTALL_FILE   = install -m 644 -p -D
+INSTALL_LIB    = install -m 755 -p -D
 
 install:: install_service_files install_systemd_files install_custom
 
 install_service_files:: $(FILES)
-	mkdir -p $(PREFIX)/usr/lib/cs_services/$(SERVICE)
-	$(INSTALL_FILE) $(FILES) -t $(PREFIX)/usr/lib/cs_services/$(SERVICE)
+	$(INSTALL_FILE) $(FILES) $(PREFIX)/usr/lib/cs_services/$(SERVICE)
 
 install_systemd_files:: $(SYSTEMD_FILES)
 	$(INSTALL_FILE) $(SYSTEMD_FILES) -t $(SYSTEMD_PREFIX)

@@ -18,8 +18,7 @@ run:: build
 include ../install.mk
 
 install_custom:: build
-	mkdir -p $(PREFIX)/usr/lib
-	$(INSTALL_FILE) libdxl/libdxl.so -t $(PREFIX)/usr/lib/
+	$(INSTALL_LIB) libdxl/libdxl.so $(PREFIX)/usr/lib/
 
 uninstall_custom::
 	rm -f $(PREFIX)/usr/lib/libdxl.so
