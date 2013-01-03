@@ -1,0 +1,10 @@
+[Unit]
+Description=Twitter
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/tweet
+
+[Install]
+WantedBy=evolutek.target

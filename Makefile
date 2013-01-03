@@ -2,6 +2,7 @@ SERVICES = ax \
 	   buzzer \
 	   date \
 	   timer \
+	   tweet \
 	   webcam
 
 help::
