@@ -1,0 +1,11 @@
+[Unit]
+Description=Buzzer service for the mini210s
+ConditionPathExists=/dev/pwm
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/buzzer
+
+[Install]
+WantedBy=evolutek.target

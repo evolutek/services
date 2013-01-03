@@ -1,4 +1,5 @@
 SERVICES = ax \
+	   buzzer \
 	   date \
 	   timer \
 	   webcam
