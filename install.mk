@@ -20,7 +20,7 @@ install_custom::
 uninstall: uninstall_service_files uninstall_systemd_files uninstall_custom
 
 uninstall_service_files:
-	rm -f $(PREFIX)/usr/lib/cs_services/$(SERVICE)/$(FILES)
+	rm -f $(PREFIX)/usr/lib/cs_services/$(SERVICE)
 
 uninstall_systemd_files:
 	for file in $(SYSTEMD_FILES); do \
