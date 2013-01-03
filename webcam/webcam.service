@@ -4,8 +4,7 @@ BindsTo=ax.service
 After=ax.service
 
 [Service]
-ExecStart=/usr/bin/python3 $PREFIX/usr/lib/cs_services/webcam/webcam.py
-SyslogIdentifier=webcam
+ExecStart=$PREFIX/usr/lib/cs_services/webcam
 
 [Install]
 WantedBy=evolutek.target

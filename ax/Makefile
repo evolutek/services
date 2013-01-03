@@ -1,5 +1,5 @@
 SERVICE       = ax
-FILES         = ax.py
+EXE           = ax.py
 SYSTEMD_FILES = systemd/ax.service
 
 PYTHON3       ?= python3

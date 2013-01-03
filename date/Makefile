@@ -1,8 +1,8 @@
-SERVICE = date
-FILES = date.py
+SERVICE       = date
+EXE           = date.py
 SYSTEMD_FILES = date.service
 
-PYTHON3 = python3
+PYTHON3       ?= python3
 
 build::
 

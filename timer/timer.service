@@ -4,7 +4,7 @@ Requires=cellaserv.service
 After=cellaserv.service
 
 [Service]
-ExecStart=/usr/bin/python3 $PREFIX/usr/lib/cs_services/timer/timer.py
+ExecStart=$PREFIX/usr/lib/cs_services/timer timer
 
 [Install]
 WantedBy=evolutek.target

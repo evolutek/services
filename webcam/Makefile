@@ -1,5 +1,5 @@
 SERVICE       = webcam
-FILES         = webcam.py
+EXE           = webcam.py
 SYSTEMD_FILES = webcam.service
 PYTHON3       ?= python3
 

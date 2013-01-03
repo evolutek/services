@@ -1,5 +1,5 @@
 SERVICE       = timer
-FILES         = timer.py
+EXE           = timer.py
 SYSTEMD_FILES = timer.service
 
 PYTHON3       ?= python3

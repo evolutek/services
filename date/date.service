@@ -1,10 +1,10 @@
 [Unit]
-Description=Date service
+Description=Date
 Requires=cellaserv.service
 After=cellaserv.service
 
 [Service]
-ExecStart=/usr/bin/python3 $PREFIX/usr/lib/cs_services/date/date.py
+ExecStart=$PREFIX/usr/lib/cs_services/date
 
 [Install]
 WantedBy=evolutek.target
