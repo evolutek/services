@@ -2,6 +2,7 @@
 Description=AX12 Service
 Requires=cellaserv.service
 After=cellaserv.service
+BindTo=sys-subsystem-usb-devices-usb2dynamixel.device
 
 [Service]
 ExecStart=$PREFIX/usr/lib/cs_services/ax
