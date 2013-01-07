@@ -9,4 +9,4 @@ User=evolutek
 
 [Install]
 WantedBy=evolutek.target
-WantedBy=ax.target
+WantedBy=ax.service
