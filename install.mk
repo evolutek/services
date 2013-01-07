@@ -1,5 +1,5 @@
 PREFIX         ?= /opt/evolutek
-SYSTEMD_PREFIX ?= /usr/lib/systemd/user
+SYSTEMD_PREFIX ?= /usr/lib/systemd
 INSTALL_FILE   = install -m 644 -p -D
 INSTALL_EXEC   = install -m 755 -p -D
 INSTALL_LIB    = $(INSTALL_EXEC)
