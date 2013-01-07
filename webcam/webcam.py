@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
