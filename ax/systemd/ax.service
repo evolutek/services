@@ -5,6 +5,8 @@ After=cellaserv.service
 
 [Service]
 ExecStart=$PREFIX/usr/lib/cs_services/ax
+User=evolutek
+Environment=LIBDXL_PATH=$PREFIX/usr/lib
 
 [Install]
 WantedBy=evolutek.target

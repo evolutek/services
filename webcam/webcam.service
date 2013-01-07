@@ -5,6 +5,8 @@ After=ax.service
 
 [Service]
 ExecStart=$PREFIX/usr/lib/cs_services/webcam
+User=evolutek
 
 [Install]
 WantedBy=evolutek.target
+WantedBy=ax.target

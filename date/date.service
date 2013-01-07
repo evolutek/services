@@ -5,6 +5,7 @@ After=cellaserv.service
 
 [Service]
 ExecStart=$PREFIX/usr/lib/cs_services/date
+User=evolutek
 
 [Install]
 WantedBy=evolutek.target
