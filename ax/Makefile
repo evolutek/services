@@ -17,10 +17,10 @@ run:: build
 
 include ../install.mk
 
-install_custom:: build
+install:: build
 	$(INSTALL_LIB) libdxl/libdxl.so $(PREFIX)/usr/lib/
 	$(INSTALL_FILE) udev/100-ax.rules /usr/lib/udev/rules.d
 
-uninstall_custom::
+uninstall::
 	rm -f $(PREFIX)/usr/lib/libdxl.so
 	rm -f /usr/lib/udev/rules.d/100-ax.rules
