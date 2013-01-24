@@ -19,11 +19,15 @@ DEVICE_ID = 0
 BAUD_RATE = 34
 
 AX_GOAL_POSITION_L     = 30
+AX_MOVING_SPEED_L      = 32
 AX_PRESENT_POSTION_L   = 36
 AX_PRESENT_SPEED_L     = 38
 AX_PRESENT_LOAD_L      = 40
 AX_PRESENT_VOLTAGE     = 42
 AX_PRESENT_TEMPERATURE = 43
+
+AX_CW_ANGLE_LIMIT_L    = 6
+AX_CCW_ANGLE_LIMIT_L   = 8
 
 class AbstractAxService(Service):
 
@@ -88,6 +92,28 @@ class CtypesService(AbstractAxService):
     @Service.action
     def get_present_temperature(self):
         return self.dxl.dxl_read_byte(self.ax, AX_PRESENT_TEMPERATURE)
+
+    @Service.action
+    def get_cw_angle_limit(self):
+        return self.dxl.dxl_read_word(self.ax, AX_CW_ANGLE_LIMIT_L)
+
+    @Service.action
+    def get_ccw_angle_limit(self):
+        return self.dxl.dxl_read_word(self.ax, AX_CCW_ANGLE_LIMIT_L)
+
+    @Service.action
+    def mode_wheel(self):
+        self.dxl.dxl_write_word(self.ax, AX_CW_ANGLE_LIMIT_L, 0)
+        return self.dxl.dxl_write_word(self.ax, AX_CCW_ANGLE_LIMIT_L, 0)
+
+    @Service.action
+    def mode_joint(self):
+        self.dxl.dxl_write_word(self.ax, AX_CW_ANGLE_LIMIT_L, 0)
+        return self.dxl.dxl_write_word(self.ax, AX_CCW_ANGLE_LIMIT_L, 1023)
+
+    @Service.action
+    def moving_speed(self, speed):
+        return self.dxl.dxl_write_word(self.ax, AX_MOVING_SPEED_L, int(speed))
 
 def main():
     ax3 = CtypesService(ax=3)
