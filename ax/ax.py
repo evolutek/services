@@ -70,8 +70,12 @@ class CtypesService(AbstractAxService):
             raise RuntimeError("Cannot initialize device")
 
     @Service.action
+    def dxl_get_result(self):
+        return int(self.dxl.dxl_get_result())
+
+    @Service.action
     def move(self, goal):
-        self.dxl.dxl_write_word(self.ax, AX_GOAL_POSITION_L, int(goal))
+        return self.dxl.dxl_write_word(self.ax, AX_GOAL_POSITION_L, int(goal))
 
     @Service.action
     def get_present_position(self):
