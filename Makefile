@@ -3,7 +3,8 @@ SERVICES = ax \
 	   date \
 	   timer \
 	   tweet \
-	   webcam
+	   webcam \
+	   pmi
 
 help::
 	@echo To install all services:
