@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 import ctypes
 import os
-import os.path
-import sys
-import time
 
 from cellaserv.service import Service
-
-AX_LOCATION = "./ax"
 
 LIBDXL_PATH = [".", "/usr/lib"]
 
@@ -29,30 +24,13 @@ AX_PRESENT_TEMPERATURE = 43
 AX_CW_ANGLE_LIMIT_L    = 6
 AX_CCW_ANGLE_LIMIT_L   = 8
 
-class AbstractAxService(Service):
+class AXService(Service):
 
     service_name = "ax"
 
     def __init__(self, ax):
         super().__init__(identification=str(ax))
         self.ax = ax
-
-    @Service.action("reset")
-    @Service.event("reset")
-    @Service.event
-    def ax_reset(self):
-        self.move(500)
-
-class SystemAxService(AbstractAxService):
-
-    @Service.action
-    def move(self, goal):
-        os.system("{} {} {}".format(AX_LOCATION, self.ax, goal))
-
-class CtypesService(AbstractAxService):
-
-    def __init__(self, ax):
-        super().__init__(ax)
 
         libdxl = None
         for path in LIBDXL_PATH:
@@ -68,6 +46,11 @@ class CtypesService(AbstractAxService):
         ret = self.dxl.dxl_initialize(DEVICE_ID, BAUD_RATE)
         if ret != 1:
             raise RuntimeError("Cannot initialize device")
+
+    @Service.action("reset")
+    def ax_reset(self):
+        self.move(500)
+
 
     @Service.action
     def dxl_get_result(self):
@@ -119,11 +102,15 @@ class CtypesService(AbstractAxService):
     def moving_speed(self, speed):
         return self.dxl.dxl_write_word(self.ax, AX_MOVING_SPEED_L, int(speed))
 
+    @Service.action
+    def turn(self, side, speed):
+        self.dxl.dxl_write_word(self.ax, AX_MOVING_SPEED_L,
+                (2**10 if side else 0) | int(speed))
+
 def main():
-    ax3 = CtypesService(ax=3)
-    ax5 = CtypesService(ax=5)
-    ax3.setup()
-    ax5.setup()
+    axs = [AXService(ax=i) for i in [1, 2, 3, 5, 6]]
+    for ax in axs:
+        ax.setup()
 
     Service.loop()
 
