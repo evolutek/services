@@ -24,7 +24,7 @@ class PMI(Service):
         self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
         self.cs.ax[AX_ID_ROUE_GAUCHE].mode_wheel()
         self.ouvrir_pinces()
-        self.ascensseur_bas()
+        self.ascenseur_bas()
 
     @Service.action
     def ouvrir_pinces(self):
@@ -66,13 +66,13 @@ class PMI(Service):
         self.cs.ax[AX_ID_PINCE_DROITE].turn(side=True, speed=500)
 
     @Service.action
-    def ascensseur_bas(self):
+    def ascenseur_bas(self):
         self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
         sleep(DELAY)
         self.cs.ax[AX_ID_ASCENSSEUR].move(goal=100)
 
     @Service.action
-    def ascensseur_haut(self):
+    def ascenseur_haut(self):
         self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
         sleep(DELAY)
         self.cs.ax[AX_ID_ASCENSSEUR].move(goal=1023)
@@ -80,7 +80,6 @@ class PMI(Service):
     @Service.action
     def avancer(self):
         self.cs.ax[AX_ID_ROUE_GAUCHE].turn(side=False, speed=1023)
-        sleep(DELAY)
         self.cs.ax[AX_ID_ROUE_DROITE].turn(side=True, speed=1023)
 
     @Service.action
