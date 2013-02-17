@@ -19,7 +19,7 @@ class PMI(Service):
 
         self.cs = CellaservProxy(self)
 
-    @Serivce.action
+    @Service.action
     def reset(self):
         self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
         self.cs.ax[AX_ID_ROUE_GAUCHE].mode_wheel()
@@ -33,9 +33,25 @@ class PMI(Service):
         self.cs.ax[AX_ID_PINCE_DROITE].mode_joint()
         sleep(0.3)
 
-        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=450)
+        #self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=450)
+        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=480)
         sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=550)
+        #self.cs.ax[AX_ID_PINCE_DROITE].move(goal=550)
+        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=520)
+        sleep(DELAY)
+
+    @Service.action
+    def lacher_pinces(self):
+        self.cs.ax[AX_ID_PINCE_GAUCHE].mode_joint()
+        sleep(DELAY)
+        self.cs.ax[AX_ID_PINCE_DROITE].mode_joint()
+        sleep(0.3)
+
+        #self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=450)
+        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=500)
+        sleep(DELAY)
+        #self.cs.ax[AX_ID_PINCE_DROITE].move(goal=550)
+        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=520)
         sleep(DELAY)
 
     @Service.action
@@ -45,15 +61,15 @@ class PMI(Service):
         self.cs.ax[AX_ID_PINCE_DROITE].mode_wheel()
         sleep(DELAY)
 
-        self.cs.ax[AX_ID_PINCE_GAUCHE].turn(side=False, speed=300)
+        self.cs.ax[AX_ID_PINCE_GAUCHE].turn(side=False, speed=500)
         sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].turn(side=True, speed=300)
+        self.cs.ax[AX_ID_PINCE_DROITE].turn(side=True, speed=500)
 
     @Service.action
     def ascensseur_bas(self):
         self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
         sleep(DELAY)
-        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=0)
+        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=100)
 
     @Service.action
     def ascensseur_haut(self):
@@ -66,6 +82,11 @@ class PMI(Service):
         self.cs.ax[AX_ID_ROUE_GAUCHE].turn(side=False, speed=1023)
         sleep(DELAY)
         self.cs.ax[AX_ID_ROUE_DROITE].turn(side=True, speed=1023)
+
+    @Service.action
+    def vitesse(self, speed):
+        self.cs.ax[AX_ID_ROUE_GAUCHE].turn(side=False, speed=int(speed))
+        self.cs.ax[AX_ID_ROUE_DROITE].turn(side=True, speed=int(speed))
 
 def main():
     pmi = PMI()
