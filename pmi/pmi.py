@@ -4,8 +4,8 @@ from time import sleep
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
-AX_ID_PINCE_GAUCHE = "1"
-AX_ID_PINCE_DROITE = "6"
+AX_ID_PINCE_GAUCHE = "6"
+AX_ID_PINCE_DROITE = "1"
 AX_ID_ASCENSSEUR = "2"
 AX_ID_ROUE_GAUCHE = "5"
 AX_ID_ROUE_DROITE = "3"
@@ -33,11 +33,9 @@ class PMI(Service):
         self.cs.ax[AX_ID_PINCE_DROITE].mode_joint()
         sleep(0.3)
 
-        #self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=450)
-        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=480)
+        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=470)
         sleep(DELAY)
-        #self.cs.ax[AX_ID_PINCE_DROITE].move(goal=550)
-        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=520)
+        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=550)
         sleep(DELAY)
 
     @Service.action
@@ -47,11 +45,9 @@ class PMI(Service):
         self.cs.ax[AX_ID_PINCE_DROITE].mode_joint()
         sleep(0.3)
 
-        #self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=450)
-        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=500)
+        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=520)
         sleep(DELAY)
-        #self.cs.ax[AX_ID_PINCE_DROITE].move(goal=550)
-        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=520)
+        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=500)
         sleep(DELAY)
 
     @Service.action
@@ -69,13 +65,13 @@ class PMI(Service):
     def ascenseur_bas(self):
         self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
         sleep(DELAY)
-        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=100)
+        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=000)
 
     @Service.action
     def ascenseur_haut(self):
         self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
         sleep(DELAY)
-        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=1023)
+        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=970)
 
     @Service.action
     def avancer(self):
