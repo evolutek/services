@@ -1,10 +1,9 @@
 SERVICES = ax \
 	   buzzer \
 	   date \
+	   pmi \
 	   timer \
-	   tweet \
-	   webcam \
-	   pmi
+	   tweet
 
 help::
 	@echo To install all services:
