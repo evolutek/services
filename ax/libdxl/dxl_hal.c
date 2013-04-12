@@ -1,3 +1,9 @@
+/**
+ * Modification of the HAL of the Dynamixel SDK to be used with USB2AX.
+ *
+ * Nicolas Saugnier
+ **/
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,46 +15,53 @@
 
 #include "dxl_hal.h"
 
-int gSocket_fd = -1;
-long glStartTime = 0;
-float gfRcvWaitTime = 0.0f;
-float gfByteTransTime = 0.0f;
+int     gSocket_fd      = -1;
+long    glStartTime     = 0;
+float   gfRcvWaitTime   = 0.0f;
+float   gfByteTransTime = 0.0f;
 
-char gDeviceName[20];
+char    gDeviceName[20];
 
 int dxl_hal_open(int deviceIndex, float baudrate)
 {
     struct termios newtio;
+#ifndef USE_USB2AX
     struct serial_struct serinfo;
-    char dev_name[100] = { 0, };
+#endif
+    char dev_name[100] = {0, };
 
+#ifdef USE_USB2AX
+    sprintf(dev_name, "/dev/ttyACM%d", deviceIndex); // USB2AX is ttyACM
+#else
     sprintf(dev_name, "/dev/ttyUSB%d", deviceIndex);
+#endif
 
     strcpy(gDeviceName, dev_name);
     memset(&newtio, 0, sizeof(newtio));
     dxl_hal_close();
 
-    if ((gSocket_fd = open(gDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK)) < 0)
-    {
+    if((gSocket_fd = open(gDeviceName, O_RDWR|O_NOCTTY|O_NONBLOCK)) < 0) {
         fprintf(stderr, "device open error: %s\n", dev_name);
         goto DXL_HAL_OPEN_ERROR;
     }
-    newtio.c_cflag = B38400 | CS8 | CLOCAL | CREAD;
-    newtio.c_iflag = IGNPAR;
-    newtio.c_oflag = 0;
-    newtio.c_lflag = 0;
-    newtio.c_cc[VTIME] = 0;     // time-out 값 (TIME * 0.1초) 0 : disable
-    newtio.c_cc[VMIN] = 0;      // MIN 은 read 가 return 되기 위한
-                                // 최소 문자 개수
+
+    newtio.c_cflag      = B1000000|CS8|CLOCAL|CREAD;
+    newtio.c_iflag      = IGNPAR;
+    newtio.c_oflag      = 0;
+    newtio.c_lflag      = 0;
+    newtio.c_cc[VTIME]  = 0;    // time-out 값 (TIME * 0.1초) 0 : disable
+    newtio.c_cc[VMIN]   = 0;    // MIN 은 read 가 return 되기 위한 최소 문자 개수
 
     tcflush(gSocket_fd, TCIFLUSH);
     tcsetattr(gSocket_fd, TCSANOW, &newtio);
 
-    if (gSocket_fd == -1)
+    if(gSocket_fd == -1)
         return 0;
 
-    if (ioctl(gSocket_fd, TIOCGSERIAL, &serinfo) < 0)
-    {
+    // USB2AX uses the CDC ACM driver for which these settings do not exist.
+    // USB2AX uses only 1mbps baudrate
+#ifndef USE_USB2AX
+    if(ioctl(gSocket_fd, TIOCGSERIAL, &serinfo) < 0) {
         fprintf(stderr, "Cannot get serial info\n");
         return 0;
     }
@@ -57,11 +70,11 @@ int dxl_hal_open(int deviceIndex, float baudrate)
     serinfo.flags |= ASYNC_SPD_CUST;
     serinfo.custom_divisor = serinfo.baud_base / baudrate;
 
-    if (ioctl(gSocket_fd, TIOCSSERIAL, &serinfo) < 0)
-    {
+    if(ioctl(gSocket_fd, TIOCSSERIAL, &serinfo) < 0) {
         fprintf(stderr, "Cannot set serial info\n");
         return 0;
     }
+#endif
 
     dxl_hal_close();
 
@@ -71,18 +84,17 @@ int dxl_hal_open(int deviceIndex, float baudrate)
     memset(&newtio, 0, sizeof(newtio));
     dxl_hal_close();
 
-    if ((gSocket_fd = open(gDeviceName, O_RDWR | O_NOCTTY | O_NONBLOCK)) < 0)
-    {
+    if((gSocket_fd = open(gDeviceName, O_RDWR|O_NOCTTY|O_NONBLOCK)) < 0) {
         fprintf(stderr, "device open error: %s\n", dev_name);
         goto DXL_HAL_OPEN_ERROR;
     }
-    newtio.c_cflag = B38400 | CS8 | CLOCAL | CREAD;
-    newtio.c_iflag = IGNPAR;
-    newtio.c_oflag = 0;
-    newtio.c_lflag = 0;
-    newtio.c_cc[VTIME] = 0;     // time-out 값 (TIME * 0.1초) 0 : disable
-    newtio.c_cc[VMIN] = 0;      // MIN 은 read 가 return 되기 위한
-                                // 최소 문자 개수
+
+    newtio.c_cflag      = B1000000|CS8|CLOCAL|CREAD;
+    newtio.c_iflag      = IGNPAR;
+    newtio.c_oflag      = 0;
+    newtio.c_lflag      = 0;
+    newtio.c_cc[VTIME]  = 0;  // time-out 값 (TIME * 0.1초) 0 : disable
+    newtio.c_cc[VMIN]   = 0;  // MIN 은 read 가 return 되기 위한 최소 문자 개
 
     tcflush(gSocket_fd, TCIFLUSH);
     tcsetattr(gSocket_fd, TCSANOW, &newtio);
@@ -96,20 +108,23 @@ DXL_HAL_OPEN_ERROR:
 
 void dxl_hal_close()
 {
-    if (gSocket_fd != -1)
+    if(gSocket_fd != -1)
         close(gSocket_fd);
     gSocket_fd = -1;
 }
 
 int dxl_hal_set_baud(float baudrate)
 {
+#ifndef USE_USB2AX
     struct serial_struct serinfo;
+#endif
 
-    if (gSocket_fd == -1)
+    if(gSocket_fd == -1)
         return 0;
 
-    if (ioctl(gSocket_fd, TIOCGSERIAL, &serinfo) < 0)
-    {
+    // USB2AX uses the CDC ACM driver for which these settings do not exist.
+#ifndef USE_USB2AX
+    if(ioctl(gSocket_fd, TIOCGSERIAL, &serinfo) < 0) {
         fprintf(stderr, "Cannot get serial info\n");
         return 0;
     }
@@ -118,14 +133,14 @@ int dxl_hal_set_baud(float baudrate)
     serinfo.flags |= ASYNC_SPD_CUST;
     serinfo.custom_divisor = serinfo.baud_base / baudrate;
 
-    if (ioctl(gSocket_fd, TIOCSSERIAL, &serinfo) < 0)
-    {
+    if(ioctl(gSocket_fd, TIOCSSERIAL, &serinfo) < 0) {
         fprintf(stderr, "Cannot set serial info\n");
         return 0;
     }
-
-    // dxl_hal_close();
-    // dxl_hal_open(gDeviceName, baudrate);
+#endif
+    // XXX: Does this work?
+    //dxl_hal_close();
+    //dxl_hal_open(gDeviceName, baudrate);
 
     gfByteTransTime = (float)((1000.0f / baudrate) * 12.0f);
     return 1;
@@ -150,14 +165,14 @@ int dxl_hal_rx(unsigned char *pPacket, int numPacket)
 static inline long myclock()
 {
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday (&tv, NULL);
     return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
 void dxl_hal_set_timeout(int NumRcvByte)
 {
     glStartTime = myclock();
-    gfRcvWaitTime = (float)(gfByteTransTime * (float)NumRcvByte + 5.0f);
+    gfRcvWaitTime = (float)(gfByteTransTime*(float)NumRcvByte + 5.0f);
 }
 
 int dxl_hal_timeout(void)
@@ -166,9 +181,9 @@ int dxl_hal_timeout(void)
 
     time = myclock() - glStartTime;
 
-    if (time > gfRcvWaitTime)
+    if(time > gfRcvWaitTime)
         return 1;
-    else if (time < 0)
+    else if(time < 0)
         glStartTime = myclock();
 
     return 0;
