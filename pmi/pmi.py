@@ -1,87 +1,97 @@
 #!/usr/bin/env python3
-from time import sleep
 
+from time import sleep
+import time
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
-AX_ID_PINCE_GAUCHE = "6"
-AX_ID_PINCE_DROITE = "1"
-AX_ID_ASCENSSEUR = "2"
-AX_ID_ROUE_GAUCHE = "5"
-AX_ID_ROUE_DROITE = "3"
+DELAY = 0.5
 
-DELAY = 0.1
 
 class PMI(Service):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.ok = True
         self.cs = CellaservProxy(self)
+        self.count = 0
+        self.gotoWall()
 
-    @Service.action
-    def reset(self):
-        self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
-        self.cs.ax[AX_ID_ROUE_GAUCHE].mode_wheel()
-        self.ouvrir_pinces()
-        self.ascenseur_bas()
+    def gotoWall(self):
+        self.cs.apmi.lift(p=0)
+        sleep(DELAY)
+        self.cs.apmi.pliers(a="open")
+        sleep(DELAY)
+        #self.cs.apmi.move(d=0, s=500)
+        #sleep(8)
+        #self.cs.apmi.move(d=0, s=0)
+        #sleep(DELAY)
+        self.cs.apmi.move(d=1, s=1023)
 
-    @Service.action
-    def ouvrir_pinces(self):
-        self.cs.ax[AX_ID_PINCE_GAUCHE].mode_joint()
-        sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].mode_joint()
-        sleep(0.3)
+    @Service.event
+    def switch(self, state):
+        t = time.time()
+        if state == 1 and self.ok:
+            self.ok = False
+            print("verre")
+            self.last = t
+            sleep(1.5)
+            if self.count == 0:
+                self.cs.apmi.pliers(a="close")
+                sleep(DELAY)
+                self.cs.apmi.lift(p=950)
+                self.count += 1
+                sleep(2)
+                self.cs.apmi.move(d=1, s=1023, w="right")
+            elif self.count >= 1 and self.count <= 4:
+                self.cs.apmi.pliers(a="drop")
+                sleep(1)
+                self.cs.apmi.pliers(a="open")
+                sleep(DELAY)
+                self.cs.apmi.lift(p=0)
+                sleep(2)
+                self.cs.apmi.pliers(a="close")
+                sleep(DELAY)
+                self.count += 1
+                if self.count < 4:
+                    self.cs.apmi.lift(p=950)
+                    sleep(2)
+                    self.cs.apmi.move(d=1, s=1023, w="right")
+                    sleep(DELAY)
+                else:
+                    self.cs.apmi.move(d=0, s=1023, w="right")
+                    sleep(5)
+                    self.cs.apmi.move(d=1, s=0)
+                    sleep(DELAY)
+                    self.cs.apmi.pliers(a="drop")
+                    sleep(DELAY)
+                    self.cs.apmi.pliers(a="open")
+                    sleep(DELAY)
+                    self.cs.apmi.move(d=0, s=500)
+                    sleep(3)
+                    self.cs.apmi.move(d=0, s=0)
+                    sleep(DELAY)
+                    self.cs.apmi.rotate(d=0, a=45, s="right")
+                    sleep(DELAY)
+                    self.cs.apmi.move(d=1, s=500)
+                    sleep(4)
+                    self.cs.apmi.move(d=0, s=0)
+                    sleep(DELAY)
+                    self.cs.apmi.rotate(d=1, a=25, s="right")
+                    sleep(DELAY)
+                    self.cs.apmi.move(d=1, s=1023, w="right")
+                    self.count = 1
+            self.ok = True
 
-        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=470)
-        sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=550)
-        sleep(DELAY)
+#    @Service.action
+#    def rotation(self, angle):
+#        s = angle > 0
+#        angle = abs(angle)
+#        ax = AX_ID_ROUE_GAUCHE if angle else AX_ID_ROUE_DROITE
+#        self.cs.ax[ax].turn(side=s, speed=1023)
+#        sleep(1 / (angle / 90))
+#        self.cs.ax[ax].turn(side=s, speed=0)
 
-    @Service.action
-    def lacher_pinces(self):
-        self.cs.ax[AX_ID_PINCE_GAUCHE].mode_joint()
-        sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].mode_joint()
-        sleep(0.3)
-
-        self.cs.ax[AX_ID_PINCE_GAUCHE].move(goal=520)
-        sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].move(goal=500)
-        sleep(DELAY)
-
-    @Service.action
-    def fermer_pinces(self):
-        self.cs.ax[AX_ID_PINCE_GAUCHE].mode_wheel()
-        sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].mode_wheel()
-        sleep(DELAY)
-
-        self.cs.ax[AX_ID_PINCE_GAUCHE].turn(side=False, speed=500)
-        sleep(DELAY)
-        self.cs.ax[AX_ID_PINCE_DROITE].turn(side=True, speed=500)
-
-    @Service.action
-    def ascenseur_bas(self):
-        self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
-        sleep(DELAY)
-        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=000)
-
-    @Service.action
-    def ascenseur_haut(self):
-        self.cs.ax[AX_ID_ASCENSSEUR].mode_joint()
-        sleep(DELAY)
-        self.cs.ax[AX_ID_ASCENSSEUR].move(goal=970)
-
-    @Service.action
-    def avancer(self):
-        self.cs.ax[AX_ID_ROUE_GAUCHE].turn(side=False, speed=1023)
-        self.cs.ax[AX_ID_ROUE_DROITE].turn(side=True, speed=1023)
-
-    @Service.action
-    def vitesse(self, speed):
-        self.cs.ax[AX_ID_ROUE_GAUCHE].turn(side=False, speed=int(speed))
-        self.cs.ax[AX_ID_ROUE_DROITE].turn(side=True, speed=int(speed))
 
 def main():
     pmi = PMI()

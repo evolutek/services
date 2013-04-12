@@ -48,7 +48,7 @@ class Actuators(Service):
     @Service.action
     def arm_2_push(self):
         self.cs.ax[AX_ID_ARM_2_BASE].move(goal=300)
-        self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=0)
+        self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=300)
 
     @Service.action
     def arm_2_raise(self):
