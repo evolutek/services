@@ -11,7 +11,8 @@ if LIBDXL_PATH_ENV:
     LIBDXL_PATH.insert(0, LIBDXL_PATH_ENV)
 
 DEVICE_ID = 0
-BAUD_RATE = 34
+BAUD_RATE = 31 # 62500 // PMI w/ USB2Dynamixel
+BAUD_RATE = 1 # Main robot USB2AX
 
 AX_GOAL_POSITION_L     = 30
 AX_MOVING_SPEED_L      = 32
@@ -108,7 +109,8 @@ class AXService(Service):
                 (2**10 if side else 0) | int(speed))
 
 def main():
-    axs = [AXService(ax=i) for i in [1, 2, 3, 5, 6]]
+    #axs = [AXService(ax=i) for i in [1, 2, 3, 5, 6]] # PMI
+    axs = [AXService(ax=i) for i in [10, 11, 12, 13, 14]] # MAIN
     for ax in axs:
         ax.setup()
 
