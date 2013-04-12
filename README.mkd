@@ -1,2 +1,8 @@
 Evolutek 2013 - Services
 ========================
+
+    $ sudo make install
+    $ sudo systemctl enable cellaserv
+    $ sudo systemctl start cellaserv
+    $ sudo systemctl enable <your-service>
+    $ sudo systemctl start <your-service>
