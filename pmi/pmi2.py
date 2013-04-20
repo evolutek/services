@@ -29,11 +29,10 @@ class PMI(Service):
         if state == 1 and (not self.isWorking):
             self.isWorking = True
             sleep(2)
-            if (self.count % 10) >= 1:
-                print(str(self.count) + ": Last glass of the line")
+            if (self.count % 10 >= 3) or (self.count >= 11):
                 self.takeLastGlass()
-                #if (self.count) < 10:
-                #    self.nextLine()
+                if (self.count) < 10:
+                    self.nextLine()
             else:
                 self.takeGlass()
                 self.cs.apmi.move(d=1, s=1023)
@@ -71,20 +70,24 @@ class PMI(Service):
         sleep(1)
         self.cs.apmi.pliers(a="open")
         sleep(DELAY)
-        self.cs.apmi.move(s=512, d=False)
-        sleep(2)
+        self.cs.apmi.move(s=512, d=True)
+        sleep(8)
         self.cs.apmi.move(s=0)
+        sleep(DELAY)
 
     def nextLine(self):
+        self.cs.move(s=1023, d=False)
+        sleep(15)
         self.cs.apmi.rotate(a=45, d=1, s="left")
         sleep(DELAY)
         self.cs.apmi.move(d=True, s=512)
-        sleep(1.5)
+        sleep(2)
         self.cs.apmi.move(s=0)
         sleep(DELAY)
-        self.cs.apmi.rotate(a=45, d=1, s="right")
+        self.cs.apmi.rotate(a=40, d=1, s="right")
         sleep(DELAY)
         self.count = 10
+        self.cs.apmi.move(d=True, s=1023)
 
 def main():
     pmi = PMI()
