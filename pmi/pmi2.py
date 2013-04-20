@@ -22,52 +22,69 @@ class PMI(Service):
         sleep(DELAY)
         self.cs.apmi.pliers(a="open")
         sleep(DELAY)
-        self.cs.apmi.move(d=1, s=1023, w="right")
+        self.cs.apmi.move(d=1, s=1023)
 
     @Service.event
     def switch(self, state):
-      if state == 1 and (not self.isWorking):
-        self.isWorking = True
-        print("Je suis le verre " + str(self.count))
-        if self.count >= 3:
-          self.takeLastGlass()
-          self.cs.apmi.pliers(a="drop")
-          sleep(1)
-          self.cs.apmi.pliers(a="open")
-          sleep(DELAY)
-        else:
-          self.takeGlass()
-          self.cs.apmi.move(d=1, s=1023, w="right")
-        self.isWorking = False
+        if state == 1 and (not self.isWorking):
+            self.isWorking = True
+            sleep(2)
+            if (self.count % 10) >= 1:
+                print(str(self.count) + ": Last glass of the line")
+                self.takeLastGlass()
+                #if (self.count) < 10:
+                #    self.nextLine()
+            else:
+                self.takeGlass()
+                self.cs.apmi.move(d=1, s=1023)
+            self.isWorking = False
 
 
     def takeGlass(self):
-      self.cs.apmi.pliers(a="drop")
-      sleep(1)
-      self.cs.apmi.pliers(a="open")
-      sleep(DELAY)
-      self.cs.apmi.lift(p=0)
-      sleep(2)
-      self.cs.apmi.pliers(a="close")
-      sleep(DELAY)
-      self.count += 1
-      self.cs.apmi.lift(p=950)
-      sleep(2)
+        self.cs.apmi.pliers(a="drop")
+        sleep(1)
+        self.cs.apmi.pliers(a="open")
+        sleep(DELAY)
+        self.cs.apmi.lift(p=0)
+        sleep(2)
+        self.cs.apmi.pliers(a="close")
+        sleep(DELAY)
+        self.cs.apmi.lift(p=950)
+        self.count += 1
+        sleep(2)
 
     def takeLastGlass(self):
-      self.cs.apmi.pliers(a="drop")
-      sleep(1)
-      self.cs.apmi.pliers(a="open")
-      sleep(DELAY)
-      self.cs.apmi.lift(p=250)
-      sleep(2)
-      self.cs.apmi.pliers(a="close")
-      sleep(DELAY)
-      self.count += 1
-      self.cs.apmi.move(s=512, d=False)
-      sleep(3)
-      self.cs.apmi.move(s=0,d=False)
-      sleep(DELAY)
+        self.cs.apmi.pliers(a="drop")
+        sleep(1)
+        self.cs.apmi.pliers(a="open")
+        sleep(DELAY)
+        self.cs.apmi.lift(p=300)
+        sleep(2)
+        self.cs.apmi.pliers(a="close")
+        sleep(DELAY)
+        self.count += 1
+        self.cs.apmi.move(s=512)
+        sleep(3)
+        self.cs.apmi.move(s=0)
+        sleep(DELAY)
+        self.cs.apmi.pliers(a="drop")
+        sleep(1)
+        self.cs.apmi.pliers(a="open")
+        sleep(DELAY)
+        self.cs.apmi.move(s=512, d=False)
+        sleep(2)
+        self.cs.apmi.move(s=0)
+
+    def nextLine(self):
+        self.cs.apmi.rotate(a=45, d=1, s="left")
+        sleep(DELAY)
+        self.cs.apmi.move(d=True, s=512)
+        sleep(1.5)
+        self.cs.apmi.move(s=0)
+        sleep(DELAY)
+        self.cs.apmi.rotate(a=45, d=1, s="right")
+        sleep(DELAY)
+        self.count = 10
 
 def main():
     pmi = PMI()
