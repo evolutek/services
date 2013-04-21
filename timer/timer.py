@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Service: Timer
-# Author: Rémi Audenbert, <mail@halfr.net>
+# Author: Rémi Audebert, <mail@halfr.net>
 
 __version__ = "1"
 
@@ -13,7 +13,7 @@ class Timer(Service):
 
     version = __version__
 
-    def __init___(self):
+    def __init__(self):
         super().__init__()
 
         self.t = None

@@ -11,4 +11,4 @@ clean::
 run::
 	$(PYTHON3) timer.py
 
-include ../install.mk
+include ../common.mk
