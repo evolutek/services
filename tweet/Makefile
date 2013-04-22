@@ -8,4 +8,4 @@ build::
 run::
 	$(PYTHON3) tweet.py
 
-include ../install.mk
+include ../common.mk

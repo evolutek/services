@@ -9,4 +9,4 @@ build::
 run::
 	$(PYTHON3) date.py
 
-include ../install.mk
+include ../common.mk

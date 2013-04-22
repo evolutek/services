@@ -6,10 +6,13 @@ SERVICES = ax \
 	   tweet
 
 help::
-	@echo To install all services:
+	@echo == How to use this Makefile ==
+	@echo Install all services to the local system:
 	@echo "    $ make install"
-	@echo To run them individualy
+	@echo Run one service individualy:
 	@echo "    $ make service-name"
+	@echo Upload all services to the mini:
+	@echo "    $ make upload"
 
 every_services::
 	for service in $(SERVICES); do \
@@ -26,6 +29,9 @@ uninstall:: every_services
 
 clean:: COMMAND=clean
 clean:: every_services
+
+upload:: COMMAND=upload
+upload:: every_services
 
 $(SERVICES)::
 	$(MAKE) -C $@ run

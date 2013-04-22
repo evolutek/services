@@ -1,5 +1,6 @@
 PREFIX         ?= /opt/evolutek
 SYSTEMD_PREFIX ?= /usr/lib/systemd/system
+IP_MINI        ?= 192.168.1.168
 INSTALL_FILE   = install -m 644 -p -D
 INSTALL_EXEC   = install -m 755 -p -D
 INSTALL_LIB    = $(INSTALL_EXEC)
@@ -24,3 +25,6 @@ uninstall_systemd_files::
 	for file in $(SYSTEMD_FILES); do \
 	    rm -f $(SYSTEMD_PREFIX)/$$file; \
 	done
+
+upload::
+	scp $(EXE) root@$(IP_MINI):$(PREFIX)

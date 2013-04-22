@@ -8,4 +8,4 @@ build::
 run::
 	$(PYTHON3) pmi.py
 
-include ../install.mk
+include ../common.mk

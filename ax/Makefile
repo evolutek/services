@@ -15,7 +15,7 @@ libdxl.so:
 run:: build
 	$(PYTHON3) ax.py
 
-include ../install.mk
+include ../common.mk
 
 install:: build
 	$(INSTALL_LIB) libdxl/libdxl.so $(PREFIX)/usr/lib/
