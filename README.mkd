@@ -6,3 +6,8 @@ Evolutek 2013 - Services
     $ sudo systemctl start cellaserv
     $ sudo systemctl enable <your-service>
     $ sudo systemctl start <your-service>
+
+Upload to the mini
+------------------
+
+    $ PREFIX=/root/services make upload
