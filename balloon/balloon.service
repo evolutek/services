@@ -1,0 +1,11 @@
+[Unit]
+Description=Balloon
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/balloon
+User=evolutek
+
+[Install]
+WantedBy=evolutek.target
