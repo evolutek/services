@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/timer timer
+User=evolutek
+
+[Install]
+WantedBy=evolutek.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Battery monitor
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/battery_monitor
+User=evolutek
+
+[Install]
+WantedBy=evolutek.target

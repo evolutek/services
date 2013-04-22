@@ -1,0 +1,11 @@
+[Unit]
+Description=Battery
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/battery
+User=evolutek
+
+[Install]
+WantedBy=evolutek.target
