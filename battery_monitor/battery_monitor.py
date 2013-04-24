@@ -44,6 +44,8 @@ class BatteryMonitor(Service):
             for i in range(4):
                 self.cs.leds.set(i=i, state=0)
             self.cs.buzzer.freq(freq=420)
+            sleep(1)
+            self.cs.buzzer.stop()
 
         self.t = Timer(INTERVAL_BETWEEN_CHECKS, self.check)
         self.t.start()
