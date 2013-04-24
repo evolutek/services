@@ -59,13 +59,17 @@ class Actuators(Service):
 
     @Service.action
     def test(self):
-        self.arm_1_lower()
         self.arm_2_lower()
+        self.arm_1_lower()
         self.collector_open()
-        sleep(1)
+        sleep(.3)
+        self.arm_2_push()
+        sleep(.3)
+        self.arm_2_lower()
+        sleep(.3)
+        self.arm_1_raise()
         self.collector_close()
         self.arm_2_raise()
-        self.arm_1_raise()
 
 def main():
     actuators = Actuators()
