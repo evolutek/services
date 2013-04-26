@@ -50,6 +50,15 @@ class BatteryMonitor(Service):
         self.t = Timer(INTERVAL_BETWEEN_CHECKS, self.check)
         self.t.start()
 
+    @Service.action
+    def stop(self):
+        self.t.cancel()
+
+    @Service.action
+    def start(self):
+        self.t = Timer(INTERVAL_BETWEEN_CHECKS, self.check)
+        self.t.start()
+
 def main():
     battery_monitor = BatteryMonitor()
     battery_monitor.run()
