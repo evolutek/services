@@ -24,6 +24,13 @@ class Tracked:
         self.ay = 0
         self.ours = False
 
+    def __str__(self):
+        ret = ("X: {self.x:<6} Vx: {self.vx}\n"
+               "Y: {self.y:<6} Vy: {self.vy}\n"
+               "Ax: {self.ax:<5} Ay: {self.ay}").format(self=self)
+
+        return ret
+
     def update(self, x, y, dt):
         self.idle_time = 0
         self.ax = (x - self.x) - self.vx / dt
@@ -44,11 +51,6 @@ class Tracked:
         futurvx = self.vx + self.ax * dt
         futurvy = self.vy + self.ay * dt
         return [futurx, futury, futurvx, futurvy]
-
-    def print(self):
-        print("X :", self.x, "Vx :", self.vx)
-        print("Y :", self.y, "Vy :", self.vy)
-        print("Ax :", self.ax, "Ay :", self.ay)
 
     def idle(self):
         self.idle_time = self.idle_time + 1
