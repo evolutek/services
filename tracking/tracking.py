@@ -135,7 +135,7 @@ class Tracker(Service):
         tmp_robots = copy.copy(self.robots)
         for measure in measurements:
             currobot = -1
-            mindist = 10
+            mindist = 100
             for m in range(len(tmp_robots)):
                 fx, fy = tmp_robots[m].predict_position(self.dt)
                 dist = (sqrt((measure['x'] - fx) ** 2

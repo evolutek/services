@@ -26,7 +26,7 @@ class Actuators(Service):
     @Service.action
     def collector_close(self):
         self.cs.ax[AX_ID_COLLECT_LEFT].move(goal=855)
-        sleep(.2)
+        sleep(.3)
         self.cs.ax[AX_ID_COLLECT_RIGHT].move(goal=520)
 
     @Service.action
@@ -58,6 +58,24 @@ class Actuators(Service):
         self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=510)
 
     @Service.action
+    def arm_2_gift_setup(self):
+        #self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=300)
+        #self.cs.ax[AX_ID_ARM_2_BASE].move(goal=250)
+        self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=400)
+        self.cs.ax[AX_ID_ARM_2_BASE].move(goal=400)
+
+    @Service.action
+    def arm_2_gift_push(self):
+        self.cs.ax[AX_ID_ARM_2_BASE].move(goal=250)
+        sleep(.2)
+        self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=0)
+        self.cs.ax[AX_ID_ARM_2_BASE].move(goal=300)
+        sleep(.3)
+        self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=400)
+        self.cs.ax[AX_ID_ARM_2_BASE].move(goal=400)
+
+
+    @Service.action
     def test(self):
         self.arm_2_lower()
         self.arm_1_lower()
@@ -66,10 +84,10 @@ class Actuators(Service):
         self.arm_2_push()
         sleep(.3)
         self.arm_2_lower()
-        sleep(.3)
+        sleep(.5)
+        self.arm_2_raise()
         self.arm_1_raise()
         self.collector_close()
-        self.arm_2_raise()
 
 def main():
     actuators = Actuators()
