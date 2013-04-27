@@ -1,0 +1,11 @@
+[Unit]
+Description=Tracking service.
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/tracking
+User=evolutek
+
+[Install]
+WantedBy=evolutek.target
