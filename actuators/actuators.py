@@ -38,6 +38,16 @@ class Actuators(Service):
         self.cs.ax[AX_ID_ARM_1].move(goal=400)
 
     @Service.action
+    def arm_1_setup(self):
+        self.cs.ax[AX_ID_ARM_1].move(goal=600)
+
+    @Service.action
+    def arm_1_candle_push():
+        self.arm_1_lower()
+        sleep(1)
+        self.arm_1_candle_setup()
+
+    @Service.action
     def arm_2_lower(self):
         self.cs.ax[AX_ID_ARM_2_BASE].move(goal=450)
         self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=450)
@@ -49,6 +59,20 @@ class Actuators(Service):
     def arm_2_push(self):
         self.cs.ax[AX_ID_ARM_2_BASE].move(goal=300)
         self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=300)
+
+    @Service.action
+    def arm_2_candle_setup(self):
+        self.cs.ax[AX_ID_ARM_2_BASE].move(goal=400)
+        self.cs.ax[AX_ID_ARM_2_JOINT].move(goal=80)
+
+    @Service.action
+    def arm_2_candle_push(self):
+        self.cs.ax[AX_ID_ARM_2_BASE].mode_wheel()
+        self.cs.ax[AX_ID_ARM_2_BASE].turn(side=1, speed=1023)
+        sleep(.3)
+        self.cs.ax[AX_ID_ARM_2_BASE].mode_joint()
+        self.cs.ax[AX_ID_ARM_2_BASE].move(goal=400)
+
 
     @Service.action
     def arm_2_raise(self):
