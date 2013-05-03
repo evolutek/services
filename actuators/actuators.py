@@ -42,7 +42,7 @@ class Actuators(Service):
         self.cs.ax[AX_ID_ARM_1].move(goal=600)
 
     @Service.action
-    def arm_1_candle_push():
+    def arm_1_candle_push(self):
         self.arm_1_lower()
         sleep(1)
         self.arm_1_setup()
