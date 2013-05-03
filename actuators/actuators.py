@@ -45,7 +45,7 @@ class Actuators(Service):
     def arm_1_candle_push():
         self.arm_1_lower()
         sleep(1)
-        self.arm_1_candle_setup()
+        self.arm_1_setup()
 
     @Service.action
     def arm_2_lower(self):
