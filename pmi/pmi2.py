@@ -39,8 +39,8 @@ class PMI(Service):
             if (self.count == 4): # and not self.first_stack_done
                 self.push_to_border()
                 self.back_to_start()
-           else:
-               self.cs.apmi.move(d=True, s=1023, w="right")
+            else:
+                self.cs.apmi.move(d=True, s=1023, w="right")
 
             self.is_working = False
 
