@@ -2,6 +2,8 @@
 
 from math import sqrt
 import copy
+import time
+import threading
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
@@ -9,6 +11,7 @@ from cellaserv.service import Service
 # TODO: Periodic scan
 # TODO: Perimeter checking & configurating
 # TODO: Zone marking & detecting
+
 
 class Tracked:
     """Classe d'un objet tracké par l'algorithme."""
@@ -68,6 +71,7 @@ class Tracked:
     def rename(self, name):
         self.name = name
 
+
 class Tracker(Service):
     """Tracker service."""
 
@@ -75,7 +79,6 @@ class Tracker(Service):
         super().__init__()
         self.robots = []
         self.dt = 0.1
-
         self.cs = CellaservProxy()
 
     def scan(self):
@@ -101,9 +104,18 @@ class Tracker(Service):
         #scan.extend(scan2)
         #print("SCAN")
         #print(scan)
-        scan = self.cs.hokuyo["beacon1"].robots()
+        scan = self.cs.hokuyo.robots()
         self.track(scan['robots'])
 
+    def loop(self):
+        while True:
+            timer = .1
+            while timer > 0:
+                time.sleep(.01)
+                timer = timer - .01
+            self.scan()
+
+    # Returns the robots on the map
     @Service.action
     def update(self):
         ret = []
@@ -113,6 +125,27 @@ class Tracker(Service):
             print(r.get_infos())
             ret.append(r.get_infos())
         return ret
+
+    @Service.action
+    def get_robot_pos(self, name):
+        for r in self.robots:
+            if r.name == name:
+                return r.get_coords()
+        return None
+
+    # Tries to rename our robots on the map.
+    # According to the rule : 1 stands for red, -1 stands for blue
+    @Service.action
+    def init_color(self, color):
+        ret = ""
+        if not self.rename_robot_bool("androo", 1500 + 1400 * color, 1000):
+            ret = ret + "Robot androo not found"
+        if not self.rename_robot("pmi", 1500 + 1400 * color, 600):
+            ret = ret + " Robot pmi not found"
+        return ret
+
+    def rename_robot_bool(self, name, x, y):
+        return self.rename_robot(name, x, y) != "Robot not found"
 
     @Service.action
     def rename_robot(self, name, x, y):
@@ -154,8 +187,11 @@ class Tracker(Service):
             if r.is_down():
                 self.robots.remove(r)
 
+
 def main():
     tracker = Tracker()
+    #loop = threading.Thread(target=tracker.loop)
+    #loop.start()
     tracker.run()
 
 if __name__ == '__main__':
