@@ -3,7 +3,7 @@
 from math import sqrt
 import copy
 import time
-import Thread
+import threading
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
@@ -59,7 +59,7 @@ class Tracked:
         self.idle_time = self.idle_time + 1
 
     def is_down(self):
-        return self.idle_time > 100
+        return self.idle_time > 10
 
     def get_coords(self):
         return self.x, self.y
@@ -104,7 +104,7 @@ class Tracker(Service):
         #scan.extend(scan2)
         #print("SCAN")
         #print(scan)
-        scan = self.cs.hokuyo["beacon1"].robots()
+        scan = self.cs.hokuyo.robots()
         self.track(scan['robots'])
 
     def loop(self):
@@ -138,9 +138,9 @@ class Tracker(Service):
     @Service.action
     def init_color(self, color):
         ret = ""
-        if self.rename_robot_bool("androo", 1500 + 1400 * color, 1000):
+        if not self.rename_robot_bool("androo", 1500 + 1400 * color, 1000):
             ret = ret + "Robot androo not found"
-        if self.rename_robot("pmi", 1500 + 1400 * color, 600):
+        if not self.rename_robot("pmi", 1500 + 1400 * color, 600):
             ret = ret + " Robot pmi not found"
         return ret
 
@@ -190,8 +190,8 @@ class Tracker(Service):
 
 def main():
     tracker = Tracker()
-    loop = Thread(target=tracker.loop)
-    loop.start()
+    #loop = threading.Thread(target=tracker.loop)
+    #loop.start()
     tracker.run()
 
 if __name__ == '__main__':
