@@ -42,7 +42,31 @@ class PMI(Service):
             return self.cs.apmi
 
     @Service.action
-    def start(self):
+    def test(self):
+        self.cs.apmi.move(d=1, s=100)
+        sleep(1)
+        self.cs.apmi.move(s=0)
+        sleep(DELAY)
+        self.cs.apmi.move(d=0, s=100)
+        sleep(1)
+        self.cs.apmi.move(s=0)
+        sleep(DELAY)
+        self.cs.apmi.lift(p=0)
+        sleep(DELAY)
+        self.cs.apmi.lift(p=950)
+        sleep(1)
+        self.cs.apmi.lift(p=0)
+        sleep(1)
+        self.cs.apmi.pliers(a="open")
+        sleep(1)
+        self.cs.apmi.pliers(a="close")
+        sleep(1)
+        self.cs.apmi.pliers(a="open")
+        sleep(1)
+
+    @Service.action
+    def start(self, color):
+        self.opposit_side = "right" if color == "blue" else "left"
         print("timer")
         self.is_stopped.clear()
         self.timer_stop.start()
@@ -60,7 +84,7 @@ class PMI(Service):
         sleep(DELAY)
         self.apmi_check().pliers(a="open")
         sleep(DELAY)
-        self.apmi_check().move(d=1, s=1023, w="right")
+        self.apmi_check().move(d=1, s=1023, w=self.opposit_side)
 
     # gere les interruptions
     @Service.event
@@ -71,11 +95,11 @@ class PMI(Service):
 
             if (self.count == 4):  # and not self.first_stack_done
                 if(self.first_stack_done == False):
-                    self.drop_first_glass()
+                    self.drop_first_stack()
                 else:
-                    self.drop_second_glass()
+                    self.drop_second_stack()
             else:  # continuer d'avancer
-                self.apmi_check().move(d=1, s=1023, w="right")
+                self.apmi_check().move(d=1, s=1023, w=self.opposit_side)
 
             self.is_working = False
 
@@ -99,15 +123,15 @@ class PMI(Service):
             sleep(1)
         self.count += 1
 
-    def drop_first_glass(self):
+    def drop_first_stack(self):
         self.apmi_check().lift(p=360)
         sleep(DELAY)
-        self.apmi_check().move(d=0, s=1023, w="right")
+        self.apmi_check().move(d=0, s=1023)
         # FIXME hokuyo
         sleep(3)
         self.apmi_check().move(s=0)
         sleep(1)
-        self.apmi_check().rotate(s="right", d=0, a=90)
+        self.apmi_check().rotate(s=self.opposit_side, d=0, a=90)
         sleep(3)
         self.apmi_check().move(d=1, s=500)
         sleep(3)
@@ -119,13 +143,13 @@ class PMI(Service):
         sleep(3)
         self.apmi_check().move(s=0)
         sleep(1)
-        self.apmi_check().rotate(s="right", d=1, a=60)
-        sleep(3)
+        self.apmi_check().rotate(s=self.opposit_side, d=1, a=60)
+        sleep(2)
         self.count = 0
         self.first_stack_done = True
         self.go_to_wall()
 
-    def drop_second_glass(self):
+    def drop_second_stack(self):
         self.apmi_check().move(s=0)
         sleep(1)
         self.apmi_check().pliers(a="open")
