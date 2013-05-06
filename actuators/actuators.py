@@ -23,7 +23,7 @@ class Actuators(Service):
         self.cs.ax[AX_ID_COLLECT_LEFT].mode_joint()
         self.cs.ax[AX_ID_COLLECT_RIGHT].move(goal=830)
         sleep(.15)
-        self.cs.ax[AX_ID_COLLECT_LEFT].move(goal=490)
+        self.cs.ax[AX_ID_COLLECT_LEFT].move(goal=520)
 
     @Service.action
     def collector_close(self):
