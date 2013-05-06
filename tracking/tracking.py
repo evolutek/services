@@ -83,20 +83,24 @@ class Tracker(Service):
 
     def scan(self):
         # merge les scans des 2 hokuyos
-        #scan1 = celletracking.hokuyo["beacon1"].robots()
-        #scan2 = celletracking.hokuyo["beacon2"].robots()
+        #scan1 = None
+        #scan2 = None
+
+        #scan1 = self.cs.hokuyo["beacon1"].robots()
+        #scan2 = self.cs.hokuyo["beacon2"].robots()
         #print("SCAN 1")
         #print(scan1)
         #print("SCAN 2")
         #print(scan2)
         #scan = []
-        #for r1 in scan1:
+        #for r1 in scan1["robots"]:
         #    tmp = 0
-        #    for r2 in scan2:
-        #        if r1 - 5 < r2 and r1 + 5 > r2:
+        #    for r2 in scan2["robots"]:
+        #        print(r1, r2)
+        #        if (r1['x'] - r2['x']) ** 2 + (r1['y'] - r2['y']) ** 2 < 10000:
         #            print("merge " + str(r1) + " and " + str(r2))
-        #            scan.append((r1 + r2) / 2)
-        #            scan2.remove(r2)
+        #            #scan.append((r1 + r2) / 2)
+        #            #del scan2.remove(r2)
         #            tmp = 1
         #            break
         #    if tmp == 0:
@@ -109,7 +113,7 @@ class Tracker(Service):
 
     def loop(self):
         while True:
-            timer = .1
+            timer = .2
             while timer > 0:
                 time.sleep(.01)
                 timer = timer - .01
@@ -140,7 +144,7 @@ class Tracker(Service):
         ret = ""
         if not self.rename_robot_bool("androo", 1500 + 1400 * color, 1000):
             ret = ret + "Robot androo not found"
-        if not self.rename_robot("pmi", 1500 + 1400 * color, 600):
+        if not self.rename_robot_bool("pmi", 1500 + 1400 * color, 600):
             ret = ret + " Robot pmi not found"
         return ret
 
@@ -149,7 +153,7 @@ class Tracker(Service):
 
     @Service.action
     def rename_robot(self, name, x, y):
-        mindist = 100
+        mindist = 400
         currobot = None
         for r in self.robots:
             dist = (sqrt((r.get_coords()[0] - x) ** 2
@@ -190,8 +194,8 @@ class Tracker(Service):
 
 def main():
     tracker = Tracker()
-    #loop = threading.Thread(target=tracker.loop)
-    #loop.start()
+    loop = threading.Thread(target=tracker.loop)
+    loop.start()
     tracker.run()
 
 if __name__ == '__main__':

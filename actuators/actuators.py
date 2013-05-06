@@ -19,15 +19,26 @@ class Actuators(Service):
 
     @Service.action
     def collector_open(self):
+        self.cs.ax[AX_ID_COLLECT_RIGHT].mode_joint()
+        self.cs.ax[AX_ID_COLLECT_LEFT].mode_joint()
         self.cs.ax[AX_ID_COLLECT_RIGHT].move(goal=830)
         sleep(.15)
         self.cs.ax[AX_ID_COLLECT_LEFT].move(goal=490)
 
     @Service.action
     def collector_close(self):
+        self.cs.ax[AX_ID_COLLECT_LEFT].mode_joint()
+        self.cs.ax[AX_ID_COLLECT_RIGHT].mode_joint()
         self.cs.ax[AX_ID_COLLECT_LEFT].move(goal=855)
         sleep(.3)
         self.cs.ax[AX_ID_COLLECT_RIGHT].move(goal=520)
+
+    @Service.action
+    def collector_hold(self):
+        self.cs.ax[AX_ID_COLLECT_LEFT].mode_wheel()
+        self.cs.ax[AX_ID_COLLECT_RIGHT].mode_wheel()
+        self.cs.ax[AX_ID_COLLECT_LEFT].turn(side=0, speed=512)
+        self.cs.ax[AX_ID_COLLECT_RIGHT].turn(side=1, speed=512)
 
     @Service.action
     def arm_1_raise(self):
@@ -44,7 +55,7 @@ class Actuators(Service):
     @Service.action
     def arm_1_candle_push(self):
         self.arm_1_lower()
-        sleep(1)
+        sleep(.5)
         self.arm_1_setup()
 
     @Service.action
@@ -72,7 +83,6 @@ class Actuators(Service):
         sleep(.3)
         self.cs.ax[AX_ID_ARM_2_BASE].mode_joint()
         self.cs.ax[AX_ID_ARM_2_BASE].move(goal=400)
-
 
     @Service.action
     def arm_2_raise(self):
