@@ -1,8 +1,15 @@
-SERVICES = ax \
+SERVICES = actuators \
+	   ax \
+	   balloon \
+	   battery \
+	   battery_monitor \
 	   buzzer \
 	   date \
+	   leds \
 	   pmi \
 	   timer \
+	   tracking \
+	   trajman \
 	   tweet
 
 help::
