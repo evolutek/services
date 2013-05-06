@@ -1,101 +1,159 @@
 #!/usr/bin/env python3
 
 from time import sleep
-import time
+from threading import Event, Timer, Thread
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
-DELAY = 0.5
+DELAY = 0.2
 
+### ALGO ###
+# avancer et ramasser verre tant que < 4 ou bord de table
+###
+
+class Null:
+    def __call__(self, **data):
+        pass
+
+    def __getattr__(self, name):
+        return self
 
 class PMI(Service):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ok = True
         self.cs = CellaservProxy(self)
+
         self.count = 0
-        self.gotoWall()
+        self.first_stack_done = False
+        self.isWorking = False
 
-    def gotoWall(self):
-        self.cs.apmi.lift(p=0)
-        sleep(DELAY)
-        self.cs.apmi.pliers(a="open")
-        sleep(DELAY)
-        #self.cs.apmi.move(d=0, s=500)
-        #sleep(8)
-        #self.cs.apmi.move(d=0, s=0)
-        #sleep(DELAY)
-        self.cs.apmi.move(d=1, s=1023)
+        self.timer_stop = Timer(88, self.stop)
+        self.worker = Thread(target=self.work)
 
+        self.is_stopped = Event()
+        self.null = Null()
+
+    def apmi_check(self):
+        if self.is_stopped.is_set():
+            print("stopped")
+            return self.null
+        else:
+            return self.cs.apmi
+
+    @Service.action
+    def start(self):
+        print("timer")
+        self.is_stopped.clear()
+        self.timer_stop.start()
+        print("worker")
+        self.worker.start()
+
+    def work(self):
+        self.push_cherries()
+        self.go_to_wall()
+
+    # longe le mur droit
+    def go_to_wall(self):
+        sleep(DELAY)
+        self.apmi_check().lift(p=0)
+        sleep(DELAY)
+        self.apmi_check().pliers(a="open")
+        sleep(DELAY)
+        self.apmi_check().move(d=1, s=1023, w="right")
+
+    # gere les interruptions
     @Service.event
     def switch(self, state):
-        t = time.time()
-        if state == 1 and self.ok:
-            self.ok = False
-            print("verre")
-            self.last = t
-            sleep(1.5)
-            if self.count == 0:
-                self.cs.apmi.pliers(a="close")
-                sleep(DELAY)
-                self.cs.apmi.lift(p=950)
-                self.count += 1
-                sleep(2)
-                self.cs.apmi.move(d=1, s=1023, w="right")
-            elif self.count >= 1 and self.count <= 4:
-                self.cs.apmi.pliers(a="drop")
-                sleep(1)
-                self.cs.apmi.pliers(a="open")
-                sleep(DELAY)
-                self.cs.apmi.lift(p=0)
-                sleep(2)
-                self.cs.apmi.pliers(a="close")
-                sleep(DELAY)
-                self.count += 1
-                if self.count < 4:
-                    self.cs.apmi.lift(p=950)
-                    sleep(2)
-                    self.cs.apmi.move(d=1, s=1023, w="right")
-                    sleep(DELAY)
+        if state == 1 and (not self.isWorking):
+            self.is_working = True
+            self.take_glass()
+
+            if (self.count == 4):  # and not self.first_stack_done
+                if(self.first_stack_done == False):
+                    self.drop_first_glass()
                 else:
-                    self.cs.apmi.move(d=0, s=1023, w="right")
-                    sleep(5)
-                    self.cs.apmi.move(d=1, s=0)
-                    sleep(DELAY)
-                    self.cs.apmi.pliers(a="drop")
-                    sleep(DELAY)
-                    self.cs.apmi.pliers(a="open")
-                    sleep(DELAY)
-                    self.cs.apmi.move(d=0, s=500)
-                    sleep(3)
-                    self.cs.apmi.move(d=0, s=0)
-                    sleep(DELAY)
-                    self.cs.apmi.rotate(d=0, a=45, s="right")
-                    sleep(DELAY)
-                    self.cs.apmi.move(d=1, s=500)
-                    sleep(4)
-                    self.cs.apmi.move(d=0, s=0)
-                    sleep(DELAY)
-                    self.cs.apmi.rotate(d=1, a=25, s="right")
-                    sleep(DELAY)
-                    self.cs.apmi.move(d=1, s=1023, w="right")
-                    self.count = 1
-            self.ok = True
+                    self.drop_second_glass()
+            else:  # continuer d'avancer
+                self.apmi_check().move(d=1, s=1023, w="right")
 
-#    @Service.action
-#    def rotation(self, angle):
-#        s = angle > 0
-#        angle = abs(angle)
-#        ax = AX_ID_ROUE_GAUCHE if angle else AX_ID_ROUE_DROITE
-#        self.cs.ax[ax].turn(side=s, speed=1023)
-#        sleep(1 / (angle / 90))
-#        self.cs.ax[ax].turn(side=s, speed=0)
+            self.is_working = False
 
+    def take_glass(self):
+        if self.count > 0:
+            sleep(2)
+        self.apmi_check().pliers(a="open")
+        sleep(0.5)
+
+        if self.count < 3:
+            self.apmi_check().lift(p=0)
+            sleep(1.5)
+            self.apmi_check().pliers(a="close")
+            sleep(DELAY)
+            self.apmi_check().lift(p=950)
+            sleep(1.5)
+        else:
+            self.apmi_check().lift(p=300)
+            sleep(0.5)
+            self.apmi_check().pliers(a="close")
+            sleep(1)
+        self.count += 1
+
+    def drop_first_glass(self):
+        self.apmi_check().lift(p=360)
+        sleep(DELAY)
+        self.apmi_check().move(d=0, s=1023, w="right")
+        # FIXME hokuyo
+        sleep(3)
+        self.apmi_check().move(s=0)
+        sleep(1)
+        self.apmi_check().rotate(s="right", d=0, a=90)
+        sleep(3)
+        self.apmi_check().move(d=1, s=500)
+        sleep(3)
+        self.apmi_check().move(s=0)
+        sleep(1)
+        self.apmi_check().pliers(a="open")
+        sleep(1)
+        self.apmi_check().move(d=0, s=500)
+        sleep(3)
+        self.apmi_check().move(s=0)
+        sleep(1)
+        self.apmi_check().rotate(s="right", d=1, a=60)
+        sleep(3)
+        self.count = 0
+        self.first_stack_done = True
+        self.go_to_wall()
+
+    def drop_second_glass(self):
+        self.apmi_check().move(s=0)
+        sleep(1)
+        self.apmi_check().pliers(a="open")
+        sleep(1)
+        self.apmi_check().move(s=500, d=0)
+        sleep(2)
+        self.apmi_check().move(s=0, d=0)
+        exit(0)
+
+    def push_cherries(self):
+        sleep(DELAY)
+        self.apmi_check().move(s=500, d=0)
+        sleep(5)
+        self.apmi_check().move(s=0)
+        sleep(DELAY)
+
+    def stop(self):
+        print("Stop")
+        self.is_stopped.set()
+
+        self.cs.apmi.move(s=0)
+        sleep(DELAY)
+        self.cs.apmi.pliers(a="open")
 
 def main():
     pmi = PMI()
     pmi.run()
+
 
 if __name__ == '__main__':
     main()
