@@ -106,10 +106,6 @@ class TrajMan(Service):
         tab += (pack('ff', float(x), float(y)))
         self.command(bytes(tab))
 
-    def goto_xy_block(self, x, y):
-        self.goto_xy(x, y)
-        self.has_stopped.wait()
-
     @Service.action
     def goto_theta(self, theta):
         self.log_debug("GOING TO THETA", theta)
@@ -119,12 +115,8 @@ class TrajMan(Service):
         tab += pack('f', float(theta))
         self.command(bytes(tab))
 
-    def goto_theta_block(self, theta):
-        self.goto_theta(theta)
-        self.has_stopped.wait()
-
     @Service.action
-    def translate(self, dest, acc, dec, maxspeed, sens):
+    def move_trsl(self, dest, acc, dec, maxspeed, sens):
         tab = pack('B', 19)
         tab += pack('B', MOVE_TRSL)
         tab += pack('ffffb', float(dest), float(acc), float(dec),
@@ -132,7 +124,7 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
-    def rotate(self, dest, acc, dec, maxspeed, sens):
+    def move_rot(self, dest, acc, dec, maxspeed, sens):
         tab = pack('B', 19)
         tab += pack('B', MOVE_ROT)
         tab += pack('ffffb', float(dest), float(acc), float(dec),
@@ -159,11 +151,6 @@ class TrajMan(Service):
         self.log_debug(s)
         tab += pack('B', s)
         self.write(bytes(tab))
-
-    def curve_block(self, dt, at, det, mt, st, dr, ar, der, mr, sr, delayed):
-        self.curve(dt, at, det, mt, st, dr, ar, der, mr, sr, delayed)
-        self.has_stopped.wait()
-
 
     @Service.action
     def free(self):
