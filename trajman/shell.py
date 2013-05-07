@@ -242,13 +242,21 @@ class Shell(Service):
         self.set_trsl_max_speed(200)
         self.set_x(1000)
         self.set_y(1000)
+
         print("Recalage")
         self.recalibration_block(0)
+        sleep(.1)
+        self.flush_queue()
         print("Stopped")
         print("Y pos found !")
+
         self.goto_xy_block(1000, 1000)
         self.goto_theta_block(math.pi / 2.0 + math.pi / 2.0 * color)
+
         self.recalibration_block(0)
+        sleep(.1)
+        self.flush_queue()
+
         self.goto_xy_block(1500 + 1100 * color, 1000)
         self.set_trsl_max_speed(100)
         self.goto_xy_block(1500 + 1500 * color - 185 / 2.0 * color, 1000)
