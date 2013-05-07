@@ -64,6 +64,8 @@ class Shell(Service):
     def __init__(self):
         super().__init__()
 
+        self.do_print = True
+
         self.cs = CellaservProxy()
         self.tm = self.cs.trajman
 
@@ -131,6 +133,7 @@ class Shell(Service):
 #            "tr": TestRot,
 #            "tt": TestTrsl,
 
+            "wasd": self.wasd,
 #            "w": w,
 #            "a": a,
 #            "d": d,
@@ -154,18 +157,22 @@ class Shell(Service):
         self.is_stopped.set()
 
     def print(self, data):
-        if HAVE_PYGMENTS:
-            print(highlight(json.dumps(data, sort_keys=True, indent=4),
-                    JsonLexer(), Terminal256Formatter()), end='')
-        else:
-            print(data)
+        if self.do_print:
+            if HAVE_PYGMENTS:
+                print(highlight(json.dumps(data, sort_keys=True, indent=4),
+                        JsonLexer(), Terminal256Formatter()), end='')
+            else:
+                print(data)
 
     #########
     # Setup #
     #########
 
     def recalibration(self, sens):
-        self.print(self.tm.recalibration(sens=sens))
+        try:
+            self.print(self.tm.recalibration(sens=sens))
+        except: # Recalibration will timeout
+            pass
 
     def flush_serial(self):
         self.print(self.tm.flush_serial())
@@ -239,20 +246,57 @@ class Shell(Service):
         self.recalibration_block(0)
         print("Stopped")
         print("Y pos found !")
-        sleep(.1)
         self.goto_xy_block(1000, 1000)
-        sleep(.1)
         self.goto_theta_block(math.pi / 2.0 + math.pi / 2.0 * color)
-        sleep(.1)
         self.recalibration_block(0)
-        sleep(.1)
         self.goto_xy_block(1500 + 1100 * color, 1000)
-        sleep(.1)
         self.set_trsl_max_speed(100)
         self.goto_xy_block(1500 + 1500 * color - 185 / 2.0 * color, 1000)
-        sleep(.1)
         self.set_trsl_max_speed(800)
         print("X pos found !")
+
+    ###############
+    # Interactive #
+    ###############
+
+    def up(self, step):
+        pos = self.tm.get_position()
+        self.goto_xy_block(x=pos['x'], y=pos['y']+step)
+
+    def down(self, step):
+        self.up(-step)
+
+    def right(self, step):
+        pos = self.tm.get_position()
+        self.goto_xy_block(x=pos['x']+step, y=pos['y'])
+
+    def left(self, step):
+        self.right(-step)
+
+    def wasd(self):
+        STEP = 200
+
+        self.do_print = False
+
+        import curses
+        stdscr = curses.initscr()
+        curses.noecho()
+        while True:
+            c = stdscr.getch()
+            if c == 27: # Escape
+                break
+            elif chr(c) == 'w':
+                self.up(STEP)
+            elif chr(c) == 's':
+                self.down(STEP)
+            elif chr(c) == 'a':
+                self.left(STEP)
+            elif chr(c) == 'd':
+                self.right(STEP)
+
+        curses.echo()
+        curses.endwin()
+        self.do_print = True
 
     def loop(self):
         print(__doc__)
