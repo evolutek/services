@@ -73,6 +73,7 @@ class Shell(Service):
             # Setup
 
             "cl": self.flush_serial,
+            "fq": self.flush_queue,
             "help": self.help,
 
             "recal": self.recalibration,
@@ -165,7 +166,6 @@ class Shell(Service):
 
     def recalibration(self, sens):
         self.print(self.tm.recalibration(sens=sens))
-
 
     def flush_serial(self):
         self.print(self.tm.flush_serial())
