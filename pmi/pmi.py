@@ -32,6 +32,8 @@ class PMI(Service):
         self.worker = Thread(target=self.work)
 
         self.is_stopped = Event()
+        self.glass_ready_event1 = Event()
+        self.glass_ready_event2 = Event()
         self.null = Null()
 
     def apmi_check(self):
@@ -41,13 +43,21 @@ class PMI(Service):
         else:
             return self.cs.apmi
 
+    @Service.event
+    def glass_ready1(self):
+        self.glass_ready_event1.set()
+
+    @Service.event
+    def glass_ready2(self):
+        self.glass_ready_event2.set()
+
     @Service.action
     def test(self):
-        self.cs.apmi.move(d=1, s=100)
+        self.cs.apmi.move(d=1, s=300)
         sleep(1)
         self.cs.apmi.move(s=0)
         sleep(DELAY)
-        self.cs.apmi.move(d=0, s=100)
+        self.cs.apmi.move(d=0, s=300)
         sleep(1)
         self.cs.apmi.move(s=0)
         sleep(DELAY)
@@ -75,6 +85,7 @@ class PMI(Service):
 
     def work(self):
         self.push_cherries()
+        self.glass_ready_event1.wait()
         self.go_to_wall()
 
     # longe le mur droit
@@ -147,6 +158,7 @@ class PMI(Service):
         sleep(2)
         self.count = 0
         self.first_stack_done = True
+        self.glass_ready_event2.wait()
         self.go_to_wall()
 
     def drop_second_stack(self):
