@@ -132,11 +132,6 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
-    def courbe(self, d1, a1, de1, m1, s1, d2, a2, de2, m2, s2):
-        self.translate(d1, a1, de1, m1, s1)
-        self.rotate(d2, a2, de2, m2, s2)
-
-    @Service.action
     def curve(self, dt, at, det, mt, st, dr, ar, der, mr, sr, delayed):
         tab = pack('B', 35)
         tab += pack('B', CURVE)
@@ -373,28 +368,6 @@ class TrajMan(Service):
         tab += pack('B', RECALAGE)
         tab += pack('B', int(sens))
         return self.get_command(bytes(tab))
-
-    def find_position(c):
-        color = int(c)
-        self.free()
-        self.set_theta(math.pi / 2.0)
-        slef.set_trsl_max_speed(200)
-        self.set_x(1000)
-        self.set_y(1000)
-        self.log_debug("Recalage")
-        self.recalibration(0)
-        # WAIT STOP IN ^ ?
-        self.log_debug("Stopped")
-        self.log_debug("Y pos found !")
-        self.goto_xy_block(1000, 1000)
-        self.goto_theta_block(math.pi / 2.0 + math.pi / 2.0 * color)
-        self.recalibration(0)
-        # WAIT STOP IN ^ ?
-        self.goto_xy_block(1500 + 1100 * color, 1000)
-        self.set_trsl_max_speed(100)
-        self.goto_xy_block(1500 + 1500 * color - 185 / 2.0 * color, 1000)
-        self.set_trsl_max_speed(800)
-        self.log_debug("X pos found !")
 
     def compute_wheels_size(arg):
         self.free()
