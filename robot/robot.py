@@ -21,10 +21,12 @@ except ImportError:
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
+import record
+
 __doc__ = \
-"""     ######################
-     Welcome to your robot!
-     ######################
+"""     ##########################
+     # Welcome to your robot! #
+     ##########################
 
      Meta
          help -- This help
@@ -77,6 +79,7 @@ __doc__ = \
 
     Interactive commands
          cws [all|spacing|diam] -- Compute wheels size
+         record -- Record and replay actions
          wasd -- Control it yourself!"""
 
 class Robot(Service):
@@ -154,6 +157,7 @@ class Robot(Service):
             "getwheels": self.get_wheels,
 
             "wasd": self.wasd,
+            "record": self.record,
 #            "computewheelssize": compute_wheels_size,
 #            "cws": compute_wheels_size,
 
@@ -385,6 +389,83 @@ class Robot(Service):
         curses.echo()
         curses.endwin()
         self.do_print = True
+
+    def record(self):
+        self.free()
+
+        print("Welcome to the record subshell!")
+        print("""
+    kp -- record a key position
+    kt -- record a key theta
+    @service.action args... -- record a key action
+
+    Precede a move command with '!' to make it unblocking
+
+    list -- list keys
+    delete %d -- delete a key
+
+    replay -- replay keys
+    save name -- save to service 'name'
+    quit
+""")
+        keys = []
+
+        while True:
+            msg = input("{:2}: ".format(len(keys))).strip()
+
+            if not msg:
+                continue
+
+            if msg == 'kp':
+                block = not msg.startswith('!')
+                pos = self.tm.get_position()
+                keys.append(record.KeyPosition(self, self.cs, block,
+                    pos['x'], pos['y']))
+
+            elif msg == 'kt':
+                block = not msg.startswith('!')
+                pos = self.tm.get_position()
+                keys.append(record.KeyTheta(self, self.cs, block,
+                    pos['theta']))
+
+            elif msg.startswith('@'):
+                key_action = record.KeyAction(self, self.cs, msg[1:])
+                key_action()
+                keys.append(key_action)
+
+            elif 'list'.startswith(msg):
+                for i, key in enumerate(keys):
+                    print("{:2}: {}".format(i, key))
+
+            elif msg.startswith('save'):
+                name = msg.split()[1]
+                filename = name + '.py'
+
+                A = ''
+                for key in keys:
+                    A += ' ' * 8 + repr(key) + '\n'
+
+                with open(filename, "w") as f:
+                    f.write(record.TEMPLATE_KEY_IA.format(name=name, keys=A))
+
+                import os
+                import stat
+                st = os.stat(filename)
+                os.chmod(filename, st.st_mode | stat.S_IEXEC)
+
+                print("You can now run ./{}".format(filename))
+                print("It will wait for the event '{}-start'".format(name.replace('_', '-')))
+
+            elif 'replay'.startswith(msg):
+                for key in keys:
+                    key()
+                self.free()
+
+            elif msg.startswith('delete'):
+                del keys[int(msg.split()[1])]
+
+            elif 'quit'.startswith(msg):
+                return
 
     def loop(self):
         print(__doc__)
