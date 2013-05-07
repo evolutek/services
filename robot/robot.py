@@ -308,10 +308,10 @@ class Robot(Service):
         self.print(self.tm.set_theta(theta=theta))
 
     def set_wheels_diameter(self, w1, w2):
-        self.pinrt(self.tm.set_wheels_diameter(w1=w1, w2=w2))
+        self.print(self.tm.set_wheels_diameter(w1=w1, w2=w2))
 
     def set_wheels_spacing(self, spacing):
-        self.pinrt(self.tm.set_wheels_spacing(spacing=spacing))
+        self.print(self.tm.set_wheels_spacing(spacing=spacing))
 
     #######
     # Get #
