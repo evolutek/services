@@ -170,6 +170,9 @@ class Shell(Service):
     def flush_serial(self):
         self.print(self.tm.flush_serial())
 
+    def flush_queue(self):
+        self.print(self.tm.flush_queue())
+
     def help(self):
         print(__doc__)
 
