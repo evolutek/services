@@ -225,7 +225,7 @@ class TrajMan(Service):
         tab = pack('B', 6)
         tab += pack('B', SET_ROT_ACC)
         tab += pack('f', float(acc))
-        self.commnand(bytes(tab))
+        self.command(bytes(tab))
 
     @Service.action
     def set_rot_max_speed(self, maxspeed):
