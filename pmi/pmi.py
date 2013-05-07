@@ -30,6 +30,8 @@ class PMI(Service):
 
         self.timer_stop = Timer(88, self.stop)
         self.worker = Thread(target=self.work)
+        self.switch_event = Event()
+        self.switchWorker = Thread(target=self.loop_switch)
 
         self.is_stopped = Event()
         self.glass_ready_event1 = Event()
@@ -82,6 +84,7 @@ class PMI(Service):
         self.timer_stop.start()
         print("worker")
         self.worker.start()
+        self.switchWorker.start()
 
     def work(self):
         self.push_cherries()
@@ -100,19 +103,29 @@ class PMI(Service):
     # gere les interruptions
     @Service.event
     def switch(self, state):
-        if state == 1 and (not self.isWorking):
-            self.is_working = True
-            self.take_glass()
+        self.state = state
+        self.switch_event.set()
 
-            if (self.count == 4):  # and not self.first_stack_done
-                if(self.first_stack_done == False):
-                    self.drop_first_stack()
-                else:
-                    self.drop_second_stack()
-            else:  # continuer d'avancer
-                self.apmi_check().move(d=1, s=1023, w=self.opposit_side)
+    def loop_switch(self):
+        while True:
+            self.switch_event.wait()
+            self.switch_event.clear()
 
-            self.is_working = False
+            if self.state == 1 and (not self.isWorking):
+                self.is_working = True
+                self.take_glass()
+
+                if (self.count == 4):  # and not self.first_stack_done
+                    if(self.first_stack_done == False):
+                        self.drop_first_stack()
+                        self.glass_ready_event2.wait()
+                        self.go_to_wall()
+                    else:
+                        self.drop_second_stack()
+                else:  # continuer d'avancer
+                    self.apmi_check().move(d=1, s=1023, w=self.opposit_side)
+
+                self.is_working = False
 
     def take_glass(self):
         if self.count > 0:
@@ -158,8 +171,6 @@ class PMI(Service):
         sleep(2)
         self.count = 0
         self.first_stack_done = True
-        self.glass_ready_event2.wait()
-        self.go_to_wall()
 
     def drop_second_stack(self):
         self.apmi_check().move(s=0)
