@@ -80,6 +80,9 @@ class Tracker(Service):
         self.robots = []
         self.dt = 0.1
         self.cs = CellaservProxy()
+        self.cs.hokuyo['beacon2'].set_position(pos=2)
+        self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
+                radius=500)
 
     def scan(self):
         # merge les scans des 2 hokuyos
@@ -108,12 +111,17 @@ class Tracker(Service):
         #scan.extend(scan2)
         #print("SCAN")
         #print(scan)
-        scan = self.cs.hokuyo.robots()
+        scan = None
+        while not scan:
+            try:
+                scan = self.cs.hokuyo.robots()
+            except:
+                pass
         self.track(scan['robots'])
 
     def loop(self):
         while True:
-            timer = .2
+            timer = .1
             while timer > 0:
                 time.sleep(.01)
                 timer = timer - .01
@@ -121,20 +129,28 @@ class Tracker(Service):
             self.check_collision()
 
     def collision_androo(self):
-        limit = 200 ** 2
+        limit = 600 ** 2
+        pos = None
+        print("Collision")
         for r in self.robots:
             if r.name == "androo":
                 pos = r.get_coords()
+        if not pos:
+            print("Androo not found")
+            return False
         for r in self.robots:
             if r.name != "androo" and r.name != "pmi":
+                print("Testing androo " + str(pos) + " with " +
+                        str(r.get_coords()))
                 p = r.get_coords()
                 dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
-                if dist > limit:
+                if dist < limit:
+                    print("Event set !")
                     return True
         return False
 
     def check_collision(self):
-        if self.collision_androo(self):
+        if self.collision_androo():
             self.cs('robot-near')
         #if collision_pmi(self):
         #    self.
@@ -174,7 +190,7 @@ class Tracker(Service):
 
     @Service.action
     def rename_robot(self, name, x, y):
-        mindist = 400
+        mindist = 200
         currobot = None
         for r in self.robots:
             dist = (sqrt((r.get_coords()[0] - x) ** 2
@@ -193,7 +209,7 @@ class Tracker(Service):
         tmp_robots = copy.copy(self.robots)
         for measure in measurements:
             currobot = -1
-            mindist = 100
+            mindist = 500
             for m in range(len(tmp_robots)):
                 fx, fy = tmp_robots[m].predict_position(self.dt)
                 dist = (sqrt((measure['x'] - fx) ** 2
@@ -202,14 +218,24 @@ class Tracker(Service):
                     mindist = dist
                     currobot = m
             if currobot == -1:  # Pas de robot trouvé pour cette position
-                # on cree donc un nouveau robot
-                self.robots.append(Tracked(measure['x'], measure['y']))
+                # On teste si la position n'est pas trop pres d'un robot
+                mindist_ = 10000
+                for r in self.robots:
+                    rx, ry = r.predict_position(self.dt)
+                    dist_ = (sqrt((measure['x'] - rx) ** 2
+                            + (measure['y'] - ry) ** 2))
+                    if dist_ < mindist_:
+                        mindist_ = dist_
+                # on cree donc un nouveau robot si la distance minimale a tous
+                # les robots est superieur a 20cm
+                if mindist_ > 200:
+                    self.robots.append(Tracked(measure['x'], measure['y']))
             else:  # on actualise le robot correspondant
-                tmp_robots[m].update(measure['x'], measure['y'], self.dt)
-                tmp_robots.remove(tmp_robots[m])
+                tmp_robots[currobot].update(measure['x'], measure['y'], self.dt)
+                tmp_robots.remove(tmp_robots[currobot])
         for r in tmp_robots:
             r.idle()
-            if r.is_down():
+            if r.is_down() and r.name == "Unknown Robot":
                 self.robots.remove(r)
 
 
