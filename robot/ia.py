@@ -135,10 +135,11 @@ class Gift(Goal):
                 ####
 
                 self.setup()
-                self.goto_xy_block(600 + 600 * i + 85 * -self.color - 20, 200)
-                self.goto_theta_block(math.pi / 2 + math.pi / 2 * self.color)
+                self.robot.goto_xy_block(600 + 600 * i + 85 * -self.color - 20, 400)
+                self.robot.goto_theta_block(math.pi / 2 + math.pi / 2 * self.color)
                 self.cs.actuators.arm_2_gift_push()
                 sleep(.6)
+                self.gifts_done[i] = True
 
         self.unsetup()
 
@@ -196,7 +197,7 @@ class IA(Service):
         self.color = color
         self.goals = [
                 Cups(self.cs, self.robot, self.color),
-                Gift(sefl.cs, self.robot, self.color),
+                Gift(self.cs, self.robot, self.color),
         ]
 
     # Thread
