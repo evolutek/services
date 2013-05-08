@@ -161,6 +161,7 @@ class IA(Service):
         # Events
         self.match_start = Event()
         self.match_stop = Event()
+        sefl.robot_near_event = Event()
 
         # Goals
         # Goals are set in setup()
@@ -186,7 +187,7 @@ class IA(Service):
 
     @Service.event
     def robot_near(self):
-        self.robot_near.set()
+        self.robot_near_event.set()
 
     ###########
     # Actions #
