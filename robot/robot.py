@@ -92,7 +92,10 @@ class Robot(Service):
         self.cs = CellaservProxy()
         self.tm = self.cs.trajman
 
+        # Events
+
         self.is_stopped = Event()
+        self.robot_near_event = Event()
 
         self.commands = {
             "help": self.help,
@@ -175,10 +178,17 @@ class Robot(Service):
             self.is_stopped.wait()
 
         return _f
+    ##########
+    # Events #
+    ##########
 
     @Service.event
     def robot_stopped(self):
         self.is_stopped.set()
+
+    @Service.event
+    def robot_near(self):
+        self.robot_near_event.set()
 
     def print(self, data):
         if self.do_print:
