@@ -8,8 +8,8 @@ import threading
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
-# TODO: Periodic scan
-# TODO: Perimeter checking & configurating
+# DONE: Periodic scan
+# DONE: Perimeter checking & configurating
 # TODO: Zone marking & detecting
 
 
@@ -118,6 +118,27 @@ class Tracker(Service):
                 time.sleep(.01)
                 timer = timer - .01
             self.scan()
+            self.check_collision()
+
+    def collision_androo(self):
+        limit = 200 ** 2
+        for r in self.robots:
+            if r.name == "androo":
+                pos = r.get_coords()
+        for r in self.robots:
+            if r.name != "androo" and r.name != "pmi":
+                p = r.get_coords()
+                dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
+                if dist > limit:
+                    return True
+        return False
+
+    def check_collision(self):
+        if self.collision_androo(self):
+            self.robot_near_event.set()
+        #if collision_pmi(self):
+        #    self.
+
 
     # Returns the robots on the map
     @Service.action

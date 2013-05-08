@@ -86,6 +86,10 @@ class PMI(Service):
         self.worker.start()
         self.switchWorker.start()
 
+    #@Service.event
+    #def near_opponent(self):
+    #    a = 1
+
     def work(self):
         self.push_cherries()
         self.glass_ready_event1.wait()
