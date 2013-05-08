@@ -107,6 +107,41 @@ class Cups(Goal):
 
         self.done = True
 
+class Gift(Goal):
+
+    def __init__(self, cs, robot, color):
+        self.cs = cs
+        self.robot = robot
+        self.color = color
+
+        self.gifts_done= [False]*4
+        self.arm_setup = False
+
+    def setup(self):
+        if not self.arm_setup:
+            self.arm_setup = True
+            self.cs.actuators.arm_2_gift_setup()
+
+    def unsetup(self):
+        self.arm_setup = False
+        self.cs.actuators.arm_2_raise()
+
+    def execute(self):
+        # Find nearest gift not done & no
+        for i in range(4): # 4 gifts
+            if not self.gifts_done[i]:
+                ###
+                # TODO: Évitement
+                ####
+
+                self.setup()
+                self.goto_xy_block(600 + 600 * i + 85 * -self.color - 20, 200)
+                self.goto_theta_block(math.pi / 2 + math.pi / 2 * self.color)
+                self.cs.actuators.arm_2_gift_push()
+                sleep(.6)
+
+        self.unsetup()
+
 class IA(Service):
 
     def __init__(self):
@@ -161,6 +196,7 @@ class IA(Service):
         self.color = color
         self.goals = [
                 Cups(self.cs, self.robot, self.color),
+                Gift(sefl.cs, self.robot, self.color),
         ]
 
     # Thread
