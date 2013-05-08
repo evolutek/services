@@ -143,6 +143,80 @@ class Gift(Goal):
 
         self.unsetup()
 
+class HomologationPoints(Goal):
+
+    def __init__(self, cs, robot, color):
+        self.cs = cs
+        self.robot = robot
+        self.color = color
+
+        self.done = False
+
+    def execute(self):
+        if self.done:
+            return
+
+        self.cs.trajman.set_trsl_dec(dec=700)
+        self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
+
+        self.cs.actuators.collector_open()
+        self.robot.goto_xy_block(1500 + 400 * self.color, 1100)
+        self.cs.actuators.collector_hold()
+        sleep(.5)
+
+        # face our side
+        self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
+        self.cs.actuators.collector_open()
+
+        self.robot.goto_xy_block(1500 + 1200 * self.color, 1100)
+
+        self.robot.goto_xy_block(1500 + 850 * self.color, 1100)
+        self.cs.actuators.collector_close()
+        self.robot.goto_xy_block(1500 + 1200 * self.color, 1100)
+        self.robot.goto_xy_block(1500 + 850 * self.color, 1100)
+
+        # XXX: pmi start
+
+        self.done = True
+
+class HomologationEvitement(Goal):
+
+    def __init__(self, cs, robot, color):
+        self.cs = cs
+        self.robot = robot
+        self.color = color
+
+        self.done = False
+
+        self.square = [
+                (1500 + 1000 * self.color, 1000),
+                (1500 + 1000 * self.color, 500),
+                (1500 + 500 * self.color, 500),
+                (1500 + 500 * self.color, 1000),
+        ]
+
+    def execute(self):
+        if self.done:
+            return
+
+        self.cs.trajman.set_trsl_dec(dec=700)
+        self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
+        self.cs.trajman.set_trsl_max_speed(maxspeed=500)
+
+        self.done = True
+
+        while True:
+            for x, y in self.square:
+                self.robot.is_stopped.clear()
+                self.cs.trajman.goto_xy(x=x, y=y)
+                while not self.robot.is_stopped.is_set():
+
+                    if self.robot.robot_near_event.is_set():
+                        self.cs.trajman.free()
+                        return
+
+                    sleep(.1)
+
 class IA(Service):
 
     def __init__(self):
@@ -161,7 +235,6 @@ class IA(Service):
         # Events
         self.match_start = Event()
         self.match_stop = Event()
-        sefl.robot_near_event = Event()
 
         # Goals
         # Goals are set in setup()
@@ -185,10 +258,6 @@ class IA(Service):
         self.robot.free()
         self.actuators.free()
 
-    @Service.event
-    def robot_near(self):
-        self.robot_near_event.set()
-
     ###########
     # Actions #
     ###########
@@ -199,6 +268,20 @@ class IA(Service):
         self.goals = [
                 Cups(self.cs, self.robot, self.color),
                 Gift(self.cs, self.robot, self.color),
+        ]
+
+    @Service.action
+    def setup_homologation_points(self, color):
+        self.color = color
+        self.goals = [
+                HomologationPoints(self.cs, self.robot, self.color),
+        ]
+
+    @Service.action
+    def setup_homologation_evitement(self, color):
+        self.color = color
+        self.goals = [
+                HomologationEvitement(self.cs, self.robot, self.color),
         ]
 
     # Thread
