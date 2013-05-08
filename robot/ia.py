@@ -127,6 +127,8 @@ class Gift(Goal):
         self.cs.actuators.arm_2_raise()
 
     def execute(self):
+        #import pdb; pdb.set_trace()
+
         # Find nearest gift not done & no
         for i in range(4): # 4 gifts
             if not self.gifts_done[i]:
@@ -198,12 +200,11 @@ class HomologationEvitement(Goal):
     def execute(self):
         if self.done:
             return
+        self.done = True
 
         self.cs.trajman.set_trsl_dec(dec=700)
         self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
         self.cs.trajman.set_trsl_max_speed(maxspeed=500)
-
-        self.done = True
 
         while True:
             for x, y in self.square:
@@ -266,21 +267,15 @@ class IA(Service):
     def setup_match(self, color):
         self.color = color
         self.goals = [
-                Cups(self.cs, self.robot, self.color),
+                #Cups(self.cs, self.robot, self.color),
                 Gift(self.cs, self.robot, self.color),
         ]
 
     @Service.action
-    def setup_homologation_points(self, color):
+    def setup_homologation(self, color):
         self.color = color
         self.goals = [
                 HomologationPoints(self.cs, self.robot, self.color),
-        ]
-
-    @Service.action
-    def setup_homologation_evitement(self, color):
-        self.color = color
-        self.goals = [
                 HomologationEvitement(self.cs, self.robot, self.color),
         ]
 
