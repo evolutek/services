@@ -108,12 +108,15 @@ class Tracker(Service):
         #scan.extend(scan2)
         #print("SCAN")
         #print(scan)
-        scan = self.cs.hokuyo.robots()
-        self.track(scan['robots'])
+        try:
+            scan = self.cs.hokuyo["beacon2"].robots()
+            self.track(scan['robots'])
+        except:
+            pass
 
     def loop(self):
         while True:
-            timer = .2
+            timer = .1
             while timer > 0:
                 time.sleep(.01)
                 timer = timer - .01
@@ -147,7 +150,7 @@ class Tracker(Service):
         self.scan()
         for r in self.robots:
             print("Getting infos")
-            print(r.get_infos())
+            print(q.get_infos())
             ret.append(r.get_infos())
         return ret
 
@@ -174,7 +177,7 @@ class Tracker(Service):
 
     @Service.action
     def rename_robot(self, name, x, y):
-        mindist = 400
+        mindist = 200
         currobot = None
         for r in self.robots:
             dist = (sqrt((r.get_coords()[0] - x) ** 2
@@ -185,7 +188,7 @@ class Tracker(Service):
 
         if currobot is not None:
             currobot.rename(name)
-            return "Robot successfuly renamed to " + name
+            return "Robot successfuly renamed to " + name + ", X = " + str(r.get_coords()[0])
         else:
             return "Robot not found"
 
@@ -193,7 +196,7 @@ class Tracker(Service):
         tmp_robots = copy.copy(self.robots)
         for measure in measurements:
             currobot = -1
-            mindist = 100
+            mindist = 300
             for m in range(len(tmp_robots)):
                 fx, fy = tmp_robots[m].predict_position(self.dt)
                 dist = (sqrt((measure['x'] - fx) ** 2
@@ -205,12 +208,15 @@ class Tracker(Service):
                 # on cree donc un nouveau robot
                 self.robots.append(Tracked(measure['x'], measure['y']))
             else:  # on actualise le robot correspondant
-                tmp_robots[m].update(measure['x'], measure['y'], self.dt)
-                tmp_robots.remove(tmp_robots[m])
+                tmp_robots[currobot].update(measure['x'], measure['y'], self.dt)
+                tmp_robots.remove(tmp_robots[currobot])
         for r in tmp_robots:
             r.idle()
             if r.is_down():
-                self.robots.remove(r)
+                if r.name == "Unknown Robot":
+                    self.robots.remove(r)
+                else:
+                    print("Named robot " + r.name + " should be down")
 
 
 def main():
