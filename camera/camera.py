@@ -4,6 +4,7 @@
 
 __version__ = "1"
 
+import threading
 import socket
 from PIL import Image
 
@@ -19,6 +20,28 @@ class Camera(Service):
         self.port = None
         self.position = None
 
+    def compute(self):
+        result = "ok"
+        try:
+            s = socket.create_connection((self.ip, self.port))
+            data = bytes()
+            while True:
+                tmp = s.recv(4096)
+                if not tmp:
+                    break
+                data += tmp
+            s.close()
+            if len(data) == 0:
+                return "error: retreiving"
+            with open("/tmp/cake.jpg", "wb") as f:
+                f.write(data)
+            img = Image.open("/tmp/cake.jpg")
+            print(img.size)
+        except Exception as e:
+            print(e)
+            result = "error"
+        self.notify("camera-result", {"result": result})
+
     # Actions
     @Service.action
     def start(self, position):
@@ -33,27 +56,11 @@ class Camera(Service):
     def process(self):
         # position to know where we start
         if not self.port or not self.ip or not self.position:
-            return "error"
-        s = socket.create_connection((self.ip, self.port))
-        data = []
-        while True:
-            tmp = s.recv(4096)
-            if not tmp:
-                break
-            data.append(tmp)
-        res = [item for sublist in data for item in sublist]
-        s.close()
-        img = Image.fromstring(res)
-        print(img.size)
+            return {"result": "error"}
 
-
-    # Events sent
-    def done(self):
-        data = None
-        if self.identification:
-            data = {"camera": self.identification}
-
-        self.notify("process-done", data)
+        th = threading.Thread(None, self.compute, "computation")
+        th.start()
+        return {"result": "computing"}
 
 def main():
     camera = Camera()
