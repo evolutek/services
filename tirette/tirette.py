@@ -14,7 +14,10 @@ class Tirette(Service):
 
         gpio = open('/sys/class/gpio/export', 'w')
         gpio.write('9\n')
-        #gpio.close()
+        try:
+            gpio.close()
+        except:
+            pass
 
         gpio = open('/sys/class/gpio/gpio9/value', 'r')
         self.state = int(gpio.readline())
