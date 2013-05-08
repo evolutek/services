@@ -470,6 +470,9 @@ class Robot(Service):
     def loop(self):
         print(__doc__)
 
+        # XXX: Warning
+        self.flush_serial()
+
         while True:
             try:
                 s = input('>> ')
