@@ -212,7 +212,8 @@ class HomologationEvitement(Goal):
                 self.cs.trajman.goto_xy(x=x, y=y)
                 while not self.robot.is_stopped.is_set():
 
-                    if self.robot.robot_near_event.is_set():
+                    if (self.robot.robot_near_event.is_set()
+                            or self.robot.match_stop.is_set()):
                         self.cs.trajman.free()
                         return
 
@@ -231,11 +232,12 @@ class IA(Service):
 
         # Timers
 
-        self.balloon_timer = Timer(90, self.cs.balloon.go)
+        #self.balloon_timer = Timer(90, self.cs.balloon.go) XXX
+        self.match_stop_timer = Timer(85, self.match_stop)
 
         # Events
-        self.match_start = Event()
-        self.match_stop = Event()
+        self.robot.match_start = Event()
+        self.robot.match_stop = Event()
 
         # Goals
         # Goals are set in setup()
@@ -249,15 +251,22 @@ class IA(Service):
     @Service.action
     def match_start(self):
         print('Match start')
-        self.match_start.set()
-        self.balloon_timer.start()
+        self.robot.match_start.set()
+        #self.balloon_timer.start() XXX
+        self.match_stop_timer.start()
+        self.cs.apmi.move(s=500, d=1)
+        sleep(4)
+        self.cs.apmi.move(s=0, d=1)
 
     @Service.event
     @Service.action
     def match_stop(self):
-        self.match_stop.set()
-        self.robot.free()
-        self.actuators.free()
+        print("MATCH STOP")
+        self.cs.trajman.free()
+        self.robot.match_stop.set()
+        import os
+        os.system('killall cellaserv')
+        #self.actuators.free() XXX
 
     ###########
     # Actions #
@@ -282,9 +291,9 @@ class IA(Service):
     # Thread
 
     def objectives_loop(self):
-        self.match_start.wait()
+        self.robot.match_start.wait()
 
-        while not self.match_stop.is_set():
+        while not self.robot.match_stop.is_set():
             for goal in self.goals:
                 goal.execute()
 
