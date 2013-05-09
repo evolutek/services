@@ -218,7 +218,7 @@ class Tracker(Service):
         ret = ""
         if not self.rename_robot_bool("androo", 1500 + 1400 * color, 1000):
             ret = ret + "Robot androo not found"
-        if not self.rename_robot_bool("pmi", 1500 + 1400 * color, 600):
+        if not self.rename_robot_bool("pmi", 1500 + 1400 * color, 800):
             ret = ret + " Robot pmi not found"
         return ret
 
