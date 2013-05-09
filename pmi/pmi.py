@@ -26,6 +26,8 @@ class PMI(Service):
 
         self.count = 0
         self.first_stack_done = False
+        self.second_stack_done = False
+        self.first = True
         self.isWorking = False
 
         self.timer_stop = Timer(88, self.stop)
@@ -57,6 +59,10 @@ class PMI(Service):
 
     @Service.event
     def border(self):
+        print("Border")
+        sleep(DELAY)
+        self.cs.apmi.move(s=500, d=0)
+        sleep(2)
         self.cs.apmi.move(s=0)
         sleep(1)
         self.count = -1
@@ -109,10 +115,13 @@ class PMI(Service):
     def work(self):
         #self.push_cherries()
         self.glass_ready_event1.wait()
+        print("GO TO WALL de 112")
         self.go_to_wall()
 
     # longe le mur droit
     def go_to_wall(self):
+        if self.second_stack_done:
+            return
         print("go to wall")
         sleep(DELAY)
         self.apmi_check().lift(p=0)
@@ -138,17 +147,23 @@ class PMI(Service):
                 self.take_glass()
 
                 if (self.count == 4):  # and not self.first_stack_done
+                    print("4 verres !")
                     if(self.first_stack_done == False):
                         self.drop_first_stack()
                         self.glass_ready_event2.wait()
                         self.go_to_wall()
+                        print("GO TO WALL 145")
                     else:
                         self.drop_second_stack()
                 elif self.count >= 0:  # continuer d'avancer
+                    print("GO TO OPPOSIT SIDE")
                     self.apmi_check().move(d=1, s=1023, w=self.opposit_side)
                 else:
                     self.glass_ready_event2.wait()
-                    self.go_to_wall()
+                    if self.first == True:
+                        print("GO TO WALL 152")
+                        self.go_to_wall()
+                        self.first = False
 
                 self.is_working = False
 
@@ -219,6 +234,7 @@ class PMI(Service):
         self.first_stack_done = True
 
     def drop_second_stack(self):
+        self.second_stack_done = True
         print("Drop second stack")
         self.apmi_check().move(s=0)
         sleep(1)
