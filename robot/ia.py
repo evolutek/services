@@ -142,42 +142,6 @@ class Gift(Goal):
 
         self.unsetup()
 
-class HomologationPoints(Goal):
-
-    def __init__(self, cs, robot, color):
-        self.cs = cs
-        self.robot = robot
-        self.color = color
-
-        self.done = False
-
-    def execute(self):
-        if self.done:
-            return
-
-        self.cs.trajman.set_trsl_dec(dec=700)
-        self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
-
-        self.cs.actuators.collector_open()
-        self.robot.goto_xy_block(1500 + 400 * self.color, 1100)
-        self.cs.actuators.collector_hold()
-        sleep(.5)
-
-        # face our side
-        self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
-        self.cs.actuators.collector_open()
-
-        self.robot.goto_xy_block(1500 + 1200 * self.color, 1100)
-
-        self.robot.goto_xy_block(1500 + 850 * self.color, 1100)
-        self.cs.actuators.collector_close()
-        self.robot.goto_xy_block(1500 + 1200 * self.color, 1100)
-        self.robot.goto_xy_block(1500 + 850 * self.color, 1100)
-
-        # XXX: pmi start
-
-        self.done = True
-
 class Homologation(Goal):
 
     def __init__(self, cs, robot, color):
@@ -188,13 +152,20 @@ class Homologation(Goal):
         self.done = False
 
     def goto_xy_dodge(self, x, y):
-        self.cs.trajman.goto_xy(x=x, y=y)
+        self.robot.goto_xy_block(x=x, y=y)
+
+        return
 
         while not self.robot.is_stopped.is_set():
-            if (self.robot.robot_near_event.is_set()
-                    or self.robot.match_stop.is_set()):
+            if self.robot.robot_near_event.is_set():
+                print("ROBOT NEAR")
                 self.cs.trajman.free()
-                break
+                while True:
+                    sleep(1)
+            if self.robot.match_stop.is_set():
+                self.cs.trajman.free()
+                while True:
+                    sleep(1)
 
             sleep(.1)
 
@@ -203,9 +174,11 @@ class Homologation(Goal):
             return
         self.done = True
 
+        #import pdb; pdb.set_trace()
+
         self.cs.trajman.set_trsl_dec(dec=700)
         self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
-        self.cs.trajman.set_trsl_max_speed(maxspeed=500)
+        self.cs.trajman.set_trsl_max_speed(maxspeed=200)
 
         self.cs.actuators.collector_open()
         self.goto_xy_dodge(1500 + 400 * self.color, 1100)
@@ -219,7 +192,7 @@ class Homologation(Goal):
         self.cs.actuators.collector_open()
 
         # push
-        self.goto_xy_dodge(1500 + 1200 * self.color, 500)
+        self.goto_xy_dodge(1500 + 1100 * self.color, 500)
 
         # go back
         self.goto_xy_dodge(1500 + 850 * self.color,  500)
