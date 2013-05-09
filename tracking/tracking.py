@@ -25,6 +25,7 @@ class Tracked:
         self.vy = 0
         self.ax = 0
         self.ay = 0
+        self.alive = 0
         self.ours = False
 
     def __str__(self):
@@ -42,6 +43,7 @@ class Tracked:
         self.vy = (y - self.y) / dt
         self.x = x
         self.y = y
+        self.alive = self.alive + 1
 
     def predict_position(self, dt):
         futurx = self.x + self.vx * dt + (self.ax * dt * dt) / 2
@@ -60,6 +62,9 @@ class Tracked:
 
     def is_down(self):
         return self.idle_time > 10
+
+    def is_alive(self):
+        return self.alive > 20
 
     def get_coords(self):
         return self.x, self.y
@@ -80,9 +85,15 @@ class Tracker(Service):
         self.robots = []
         self.dt = 0.1
         self.cs = CellaservProxy()
-        self.cs.hokuyo['beacon2'].set_position(pos=2)
-        self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
-                radius=500)
+        done = False
+        while not done:
+            try:
+                self.cs.hokuyo['beacon2'].set_position(pos=2)
+                self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
+                        radius=500)
+                done = True
+            except:
+                pass
         self.pmi_wall = False
 
     def scan(self):
@@ -130,7 +141,7 @@ class Tracker(Service):
             self.check_collision()
 
     def collision_androo(self):
-        limit = 300 ** 2
+        limit = 600 ** 2
         pos = None
         print("Collision")
         for r in self.robots:
@@ -140,7 +151,7 @@ class Tracker(Service):
             print("Androo not found")
             return False
         for r in self.robots:
-            if r.name != "androo" and r.name != "pmi":
+            if r.name != "androo" and r.name != "pmi" and r.is_alive():
                 print("Testing androo " + str(pos) + " with " +
                         str(r.get_coords()))
                 p = r.get_coords()
@@ -148,6 +159,7 @@ class Tracker(Service):
                 if dist < limit:
                     print("Event set !")
                     return True
+                    #return False
         return False
 
     def collision_pmi_others(self):
@@ -246,7 +258,7 @@ class Tracker(Service):
         tmp_robots = copy.copy(self.robots)
         for measure in measurements:
             currobot = -1
-            mindist = 500
+            mindist = 50
             for m in range(len(tmp_robots)):
                 fx, fy = tmp_robots[m].predict_position(self.dt)
                 dist = (sqrt((measure['x'] - fx) ** 2
