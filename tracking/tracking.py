@@ -150,6 +150,27 @@ class Tracker(Service):
                     return True
         return False
 
+    def collision_pmi_others(self):
+        limit = 600 ** 2
+        pos = None
+        print("Collision pmi")
+        for r in self.robots:
+            if r.name == "pmi":
+                pos = r.get_coords()
+        if not pos:
+            print("PMI not found")
+            return False
+        for r in self.robots:
+            if r.name != "androo" and r.name != "pmi":
+                print("Testing pmi" + str(pos) + " with " +
+                        str(r.get_coords()))
+                p = r.get_coords()
+                dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
+                if dist < limit:
+                    print("Event set !")
+                    return True
+        return False
+
     def collision_pmi(self):
         border = 300
         print("Check pmi pos")
@@ -166,6 +187,8 @@ class Tracker(Service):
         if self.collision_pmi() and not self.pmi_wall:
             self.pmi_wall = True
             self.cs('border')
+        if self.collision_pmi_others():
+            self.cs('pmi-near')
         else:
             self.pmi_wall = False
 
