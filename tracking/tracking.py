@@ -36,6 +36,7 @@ class Tracked:
         return ret
 
     def update(self, x, y, dt):
+        self.alive = self.alive + 1
         self.idle_time = 0
         self.ax = (x - self.x) - self.vx / dt
         self.ay = (y - self.y) - self.vy / dt
@@ -43,7 +44,6 @@ class Tracked:
         self.vy = (y - self.y) / dt
         self.x = x
         self.y = y
-        self.alive = self.alive + 1
 
     def predict_position(self, dt):
         futurx = self.x + self.vx * dt + (self.ax * dt * dt) / 2
@@ -64,7 +64,7 @@ class Tracked:
         return self.idle_time > 10
 
     def is_alive(self):
-        return self.alive > 20
+        return self.alive > 10
 
     def get_coords(self):
         return self.x, self.y
@@ -127,8 +127,8 @@ class Tracker(Service):
         while not scan:
             try:
                 scan = self.cs.hokuyo.robots()
-            except:
-                pass
+            except Exception as e:
+                print(e)
         self.track(scan['robots'])
 
     def loop(self):
@@ -141,9 +141,9 @@ class Tracker(Service):
             self.check_collision()
 
     def collision_androo(self):
-        limit = 600 ** 2
+        limit = 500 ** 2
         pos = None
-        print("Collision")
+        print("Collision androo checking")
         for r in self.robots:
             if r.name == "androo":
                 pos = r.get_coords()
@@ -157,15 +157,17 @@ class Tracker(Service):
                 p = r.get_coords()
                 dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
                 if dist < limit:
-                    print("Event set !")
+                    print("Event set ! ANDROO")
                     return True
                     #return False
+            if not r.is_alive():
+                print("Robot not alive", r.alive)
         return False
 
     def collision_pmi_others(self):
-        limit = 300 ** 2
+        limit = 500 ** 2
         pos = None
-        print("Collision pmi")
+        print("Collision pmi checking")
         for r in self.robots:
             if r.name == "pmi":
                 pos = r.get_coords()
@@ -179,7 +181,7 @@ class Tracker(Service):
                 p = r.get_coords()
                 dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
                 if dist < limit:
-                    print("Event set !")
+                    print("Event set ! PMI")
                     return True
         return False
 
@@ -209,10 +211,7 @@ class Tracker(Service):
     @Service.action
     def update(self):
         ret = []
-        self.scan()
         for r in self.robots:
-            print("Getting infos")
-            print(r.get_infos())
             ret.append(r.get_infos())
         return ret
 
@@ -256,36 +255,68 @@ class Tracker(Service):
 
     def track(self, measurements):
         tmp_robots = copy.copy(self.robots)
-        for measure in measurements:
-            currobot = -1
-            mindist = 50
-            for m in range(len(tmp_robots)):
-                fx, fy = tmp_robots[m].predict_position(self.dt)
+        # Tous les robots non en cours de creation
+        for r in tmp_robots:
+            if not r.is_alive():
+                continue
+            mindist = 1000
+            best_mesure = None
+            for measure in measurements:
+                #fx, fy = r.predict_position(self.dt)
+                fx, fy = r.get_coords()
                 dist = (sqrt((measure['x'] - fx) ** 2
                         + (measure['y'] - fy) ** 2))
                 if dist <= mindist:
                     mindist = dist
-                    currobot = m
-            if currobot == -1:  # Pas de robot trouvé pour cette position
-                # On teste si la position n'est pas trop pres d'un robot
-                mindist_ = 10000
-                for r in self.robots:
-                    rx, ry = r.predict_position(self.dt)
-                    dist_ = (sqrt((measure['x'] - rx) ** 2
-                            + (measure['y'] - ry) ** 2))
-                    if dist_ < mindist_:
-                        mindist_ = dist_
-                # on cree donc un nouveau robot si la distance minimale a tous
-                # les robots est superieur a 20cm
-                if mindist_ > 200:
-                    self.robots.append(Tracked(measure['x'], measure['y']))
-            else:  # on actualise le robot correspondant
-                tmp_robots[currobot].update(measure['x'], measure['y'], self.dt)
-                tmp_robots.remove(tmp_robots[currobot])
+                    best_mesure = measure
+            if best_mesure:
+                r.update(best_mesure['x'], best_mesure['y'], self.dt)
+                measurements.remove(best_mesure)
+                tmp_robots.remove(r)
+            else:
+                print("#### No best mesure ####")
+                print("#### No best mesure " + r.name)
+                print("#### No best mesure ####")
+
+        # Tous les robots en cours de creation
+        for r in tmp_robots:
+            mindist = 1000
+            best_mesure = None
+            for measure in measurements:
+                #fx, fy = r.predict_position(self.dt)
+                fx, fy = r.get_coords()
+                dist = (sqrt((measure['x'] - fx) ** 2
+                        + (measure['y'] - fy) ** 2))
+                if dist <= mindist:
+                    mindist = dist
+                    best_mesure = measure
+            if best_mesure:
+                r.update(best_mesure['x'], best_mesure['y'], self.dt)
+                measurements.remove(best_mesure)
+                tmp_robots.remove(r)
+            else:
+                print("#### No best mesure ####")
+                print("#### No best mesure " + r.name)
+                print("#### No best mesure ####")
+        # Pour tous les robots qui n'ont pas ete update
         for r in tmp_robots:
             r.idle()
             if r.is_down() and r.name == "Unknown Robot":
                 self.robots.remove(r)
+
+        # Pour toutes les mesures qui n'ont pas de robot
+        for measure in measurements:
+            mindist_ = 10000
+            for r in self.robots:
+                rx, ry = r.predict_position(self.dt)
+                dist_ = (sqrt((measure['x'] - rx) ** 2
+                        + (measure['y'] - ry) ** 2))
+                if dist_ < mindist_:
+                    mindist_ = dist_
+            # on cree donc un nouveau robot si la distance minimale a tous
+            # les robots est superieur a XXcm
+            if mindist_ > 100:
+                self.robots.append(Tracked(measure['x'], measure['y']))
 
 
 def main():
