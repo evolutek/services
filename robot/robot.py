@@ -13,15 +13,8 @@ try:
 except ImportError:
     HAVE_PYGMENTS = False
 
-try:
-    import readline
-except ImportError:
-    print("You don't have readline, too bad for you...")
-
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-
-import record
 
 __doc__ = \
 """     ##########################
@@ -188,6 +181,10 @@ class Robot(Service):
 
     @Service.event
     def robot_near(self):
+        while True:
+            print("Evitement")
+            self.cs.actuators.free()
+            self.tm.free()
         self.robot_near_event.set()
 
     def print(self, data):
@@ -401,7 +398,9 @@ class Robot(Service):
         self.do_print = True
 
     def record(self):
-        self.free()
+        import record
+
+        elf.free()
 
         print("Welcome to the record subshell!")
         print("""
@@ -497,6 +496,11 @@ class Robot(Service):
                 print(e)
 
 def main():
+    try:
+        import readline
+    except ImportError:
+        print("You don't have readline, too bad for you...")
+
     robot = Robot()
     thread_loop = Thread(target=robot.loop)
     thread_loop.start()

@@ -14,6 +14,7 @@ DEVICE_ID = 0
 BAUD_RATE = 31 # 62500 // PMI w/ USB2Dynamixel
 BAUD_RATE = 1 # Main robot USB2AX
 
+AX_TORQUE_ENABLE_B     = 24
 AX_GOAL_POSITION_L     = 30
 AX_MOVING_SPEED_L      = 32
 AX_PRESENT_POSTION_L   = 36
@@ -51,7 +52,6 @@ class AXService(Service):
     @Service.action("reset")
     def ax_reset(self):
         self.move(500)
-
 
     @Service.action
     def dxl_get_result(self):
@@ -107,6 +107,10 @@ class AXService(Service):
     def turn(self, side, speed):
         self.dxl.dxl_write_word(self.ax, AX_MOVING_SPEED_L,
                 (2**10 if side else 0) | int(speed))
+
+    @Service.action
+    def free(self):
+        self.dxl.dxl_write_byte(self.ax, AX_TORQUE_ENABLE_B, 0)
 
 def main():
     #axs = [AXService(ax=i) for i in [1, 2, 3, 5, 6]] # PMI

@@ -4,6 +4,7 @@ from math import sqrt
 import copy
 import time
 import threading
+import random
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
@@ -17,7 +18,9 @@ class Tracked:
     """Classe d'un objet tracké par l'algorithme."""
 
     def __init__(self, x, y):
-        self.name = "Unknown Robot"
+
+        self.name = "Unknown Robot "
+        self.name += str(random.randint(0, 999))
         self.idle_time = 0
         self.x = x
         self.y = y
@@ -25,6 +28,7 @@ class Tracked:
         self.vy = 0
         self.ax = 0
         self.ay = 0
+        self.alive = 0
         self.ours = False
 
     def __str__(self):
@@ -35,6 +39,7 @@ class Tracked:
         return ret
 
     def update(self, x, y, dt):
+        self.alive = self.alive + 1
         self.idle_time = 0
         self.ax = (x - self.x) - self.vx / dt
         self.ay = (y - self.y) - self.vy / dt
@@ -61,6 +66,9 @@ class Tracked:
     def is_down(self):
         return self.idle_time > 10
 
+    def is_alive(self):
+        return self.alive > 10
+
     def get_coords(self):
         return self.x, self.y
 
@@ -80,9 +88,16 @@ class Tracker(Service):
         self.robots = []
         self.dt = 0.1
         self.cs = CellaservProxy()
-        self.cs.hokuyo['beacon2'].set_position(pos=2)
-        self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
-                radius=500)
+        done = False
+        while not done:
+            try:
+                self.cs.hokuyo['beacon2'].set_position(pos=2)
+                self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
+                        radius=500)
+                done = True
+            except:
+                print("Hokuyo timed out")
+                pass
         self.pmi_wall = False
 
     def scan(self):
@@ -116,8 +131,8 @@ class Tracker(Service):
         while not scan:
             try:
                 scan = self.cs.hokuyo.robots()
-            except:
-                pass
+            except Exception as e:
+                print(e)
         self.track(scan['robots'])
 
     def loop(self):
@@ -130,9 +145,9 @@ class Tracker(Service):
             self.check_collision()
 
     def collision_androo(self):
-        limit = 300 ** 2
+        limit = 500 ** 2
         pos = None
-        print("Collision")
+        print("Collision androo checking")
         for r in self.robots:
             if r.name == "androo":
                 pos = r.get_coords()
@@ -140,20 +155,23 @@ class Tracker(Service):
             print("Androo not found")
             return False
         for r in self.robots:
-            if r.name != "androo" and r.name != "pmi":
+            if r.name != "androo" and r.name != "pmi" and r.is_alive():
                 print("Testing androo " + str(pos) + " with " +
                         str(r.get_coords()))
                 p = r.get_coords()
                 dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
                 if dist < limit:
-                    print("Event set !")
+                    print("Event set ! ANDROO")
                     return True
+                    #return False
+            if not r.is_alive():
+                print("Robot not alive", r.alive)
         return False
 
     def collision_pmi_others(self):
-        limit = 300 ** 2
+        limit = 500 ** 2
         pos = None
-        print("Collision pmi")
+        print("Collision pmi checking")
         for r in self.robots:
             if r.name == "pmi":
                 pos = r.get_coords()
@@ -167,7 +185,7 @@ class Tracker(Service):
                 p = r.get_coords()
                 dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
                 if dist < limit:
-                    print("Event set !")
+                    print("Event set ! PMI")
                     return True
         return False
 
@@ -197,10 +215,7 @@ class Tracker(Service):
     @Service.action
     def update(self):
         ret = []
-        self.scan()
         for r in self.robots:
-            print("Getting infos")
-            print(r.get_infos())
             ret.append(r.get_infos())
         return ret
 
@@ -218,7 +233,7 @@ class Tracker(Service):
         ret = ""
         if not self.rename_robot_bool("androo", 1500 + 1400 * color, 1000):
             ret = ret + "Robot androo not found"
-        if not self.rename_robot_bool("pmi", 1500 + 1400 * color, 600):
+        if not self.rename_robot_bool("pmi", 1500 + 1400 * color, 800):
             ret = ret + " Robot pmi not found"
         return ret
 
@@ -242,38 +257,52 @@ class Tracker(Service):
         else:
             return "Robot not found"
 
+
+
+
     def track(self, measurements):
         tmp_robots = copy.copy(self.robots)
-        for measure in measurements:
-            currobot = -1
-            mindist = 500
-            for m in range(len(tmp_robots)):
-                fx, fy = tmp_robots[m].predict_position(self.dt)
-                dist = (sqrt((measure['x'] - fx) ** 2
-                        + (measure['y'] - fy) ** 2))
-                if dist <= mindist:
-                    mindist = dist
-                    currobot = m
-            if currobot == -1:  # Pas de robot trouvé pour cette position
-                # On teste si la position n'est pas trop pres d'un robot
-                mindist_ = 10000
-                for r in self.robots:
-                    rx, ry = r.predict_position(self.dt)
-                    dist_ = (sqrt((measure['x'] - rx) ** 2
-                            + (measure['y'] - ry) ** 2))
-                    if dist_ < mindist_:
-                        mindist_ = dist_
-                # on cree donc un nouveau robot si la distance minimale a tous
-                # les robots est superieur a 20cm
-                if mindist_ > 200:
-                    self.robots.append(Tracked(measure['x'], measure['y']))
-            else:  # on actualise le robot correspondant
-                tmp_robots[currobot].update(measure['x'], measure['y'], self.dt)
-                tmp_robots.remove(tmp_robots[currobot])
+        # Tous les robots non en cours de creation
+        while len(tmp_robots) > 0 and len (measurements) > 0:
+            print("This is sparta")
+            mindist = 100000
+            best_mesure = None
+            best_robot = None
+            for r in tmp_robots:
+                for m in measurements:
+                    fx, fy = r.get_coords()
+                    dist = (sqrt((m['x'] - fx) ** 2
+                            + (m['y'] - fy) ** 2))
+                    if dist <= mindist:
+                        mindist = dist
+                        best_mesure = m
+                        best_robot = r
+            if best_mesure and best_robot:
+                best_robot.update(best_mesure['x'], best_mesure['y'], self.dt)
+                measurements.remove(best_mesure)
+                tmp_robots.remove(best_robot)
+        print("There")
+
+        # Pour tous les robots qui n'ont pas ete update
         for r in tmp_robots:
             r.idle()
             if r.is_down() and r.name == "Unknown Robot":
                 self.robots.remove(r)
+
+        # Pour toutes les mesures qui n'ont pas de robot
+        for measure in measurements:
+            print("Measurements left")
+            mindist_ = 101
+            for r in self.robots:
+                rx, ry = r.get_coords()
+                dist_ = (sqrt((measure['x'] - rx) ** 2
+                        + (measure['y'] - ry) ** 2))
+                if dist_ < mindist_:
+                    mindist_ = dist_
+            # on cree donc un nouveau robot si la distance minimale a tous
+            # les robots est superieur a XXcm
+            if mindist_ > 100:
+                self.robots.append(Tracked(measure['x'], measure['y']))
 
 
 def main():

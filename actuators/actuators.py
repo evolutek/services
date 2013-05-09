@@ -18,6 +18,15 @@ class Actuators(Service):
         self.cs = CellaservProxy(self)
 
     @Service.action
+    def free(self):
+        for ax in [AX_ID_ARM_1,
+                AX_ID_ARM_2_BASE,
+                AX_ID_ARM_2_JOINT,
+                AX_ID_COLLECT_LEFT,
+                AX_ID_COLLECT_RIGHT]:
+            self.cs.ax[ax].free()
+
+    @Service.action
     def collector_open(self):
         self.cs.ax[AX_ID_COLLECT_RIGHT].mode_joint()
         self.cs.ax[AX_ID_COLLECT_LEFT].mode_joint()
