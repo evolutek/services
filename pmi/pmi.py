@@ -33,8 +33,10 @@ class PMI(Service):
         self.timer_stop = Timer(88, self.stop)
         self.worker = Thread(target=self.work)
         self.switch_event = Event()
+        self.near_event = Event()
         self.switchWorker = Thread(target=self.loop_switch)
         self.borderWorker = Thread(target=self.loop_border)
+        self.nearWorker = Thread(target=self.loop_near)
 
         self.is_stopped = Event()
         self.glass_ready_event1 = Event()
@@ -103,14 +105,7 @@ class PMI(Service):
         self.worker.start()
         self.switchWorker.start()
         self.borderWorker.start()
-
-    #@Service.event
-    #def near_opponent(self):
-    #    a = 1
-
-    #@Service.event
-    #def near_opponent(self):
-    #    a = 1
+        self.nearWorker.start()
 
     def work(self):
         #self.push_cherries()
@@ -135,6 +130,10 @@ class PMI(Service):
     def switch(self, state):
         self.state = state
         self.switch_event.set()
+
+    @Service.event
+    def near(self):
+        self.near_event.set()
 
     def loop_switch(self):
         while True:
@@ -177,6 +176,15 @@ class PMI(Service):
                 self.cs.apmi.move(s=0)
                 self.drop_second_stack()
             self.is_working = False
+
+    def loop_near(self):
+        while True:
+            print("Wait")
+            self.near_event.wait()
+            print("done")
+            self.cs.apmi.move(s=0)
+            import os
+            os.system("kill {}".format(os.getpid()))
 
     def take_glass(self):
         print("glass")
