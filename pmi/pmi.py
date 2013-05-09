@@ -34,9 +34,11 @@ class PMI(Service):
         self.worker = Thread(target=self.work)
         self.switch_event = Event()
         self.near_event = Event()
+        self.line_event = Event()
         self.switchWorker = Thread(target=self.loop_switch)
         self.borderWorker = Thread(target=self.loop_border)
         self.nearWorker = Thread(target=self.loop_near)
+        self.lineWorker = Thread(target=self.pmi_line)
 
         self.is_stopped = Event()
         self.glass_ready_event1 = Event()
@@ -106,6 +108,7 @@ class PMI(Service):
         self.switchWorker.start()
         self.borderWorker.start()
         self.nearWorker.start()
+        self.lineWorker.start()
 
     def work(self):
         #self.push_cherries()
@@ -132,8 +135,18 @@ class PMI(Service):
         self.switch_event.set()
 
     @Service.event
-    def near(self):
+    def pmi_near(self):
         self.near_event.set()
+
+    @Service.event
+    def line(self):
+        self.line_event.set()
+
+    def pmi_line(self):
+        self.line_event.wait()
+        self.cs.apmi.move(s=500, d=1)
+        sleep(6)
+        self.cs.apmi.move(s=0)
 
     def loop_switch(self):
         while True:
