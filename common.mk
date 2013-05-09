@@ -28,4 +28,3 @@ uninstall_systemd_files::
 
 upload::
 	scp $(EXE) root@$(IP_MINI):$(PREFIX)
-	ssh root@$(IP_MINI) killall $(EXE)
