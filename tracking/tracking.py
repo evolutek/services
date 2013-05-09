@@ -130,7 +130,7 @@ class Tracker(Service):
             self.check_collision()
 
     def collision_androo(self):
-        limit = 600 ** 2
+        limit = 300 ** 2
         pos = None
         print("Collision")
         for r in self.robots:
@@ -151,7 +151,7 @@ class Tracker(Service):
         return False
 
     def collision_pmi_others(self):
-        limit = 600 ** 2
+        limit = 300 ** 2
         pos = None
         print("Collision pmi")
         for r in self.robots:
