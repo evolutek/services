@@ -26,6 +26,8 @@ class PMI(Service):
 
         self.count = 0
         self.first_stack_done = False
+        self.second_stack_done = False
+        self.first = True
         self.isWorking = False
 
         self.timer_stop = Timer(88, self.stop)
@@ -57,8 +59,13 @@ class PMI(Service):
 
     @Service.event
     def border(self):
-        self.cs.apmi.move(s=0)
+        print("Border")
         sleep(DELAY)
+        self.cs.apmi.move(s=500, d=0)
+        sleep(2)
+        self.cs.apmi.move(s=0)
+        sleep(1)
+        self.count = -1
         self.cs.apmi.lift(p=0)
         sleep(1)
         self.border_event.set()
@@ -106,12 +113,16 @@ class PMI(Service):
     #    a = 1
 
     def work(self):
-        self.push_cherries()
+        #self.push_cherries()
         self.glass_ready_event1.wait()
+        print("GO TO WALL de 112")
         self.go_to_wall()
 
     # longe le mur droit
     def go_to_wall(self):
+        if self.second_stack_done:
+            return
+        print("go to wall")
         sleep(DELAY)
         self.apmi_check().lift(p=0)
         sleep(DELAY)
@@ -136,14 +147,23 @@ class PMI(Service):
                 self.take_glass()
 
                 if (self.count == 4):  # and not self.first_stack_done
+                    print("4 verres !")
                     if(self.first_stack_done == False):
                         self.drop_first_stack()
                         self.glass_ready_event2.wait()
                         self.go_to_wall()
+                        print("GO TO WALL 145")
                     else:
                         self.drop_second_stack()
-                else:  # continuer d'avancer
+                elif self.count >= 0:  # continuer d'avancer
+                    print("GO TO OPPOSIT SIDE")
                     self.apmi_check().move(d=1, s=1023, w=self.opposit_side)
+                else:
+                    self.glass_ready_event2.wait()
+                    if self.first == True:
+                        print("GO TO WALL 152")
+                        self.go_to_wall()
+                        self.first = False
 
                 self.is_working = False
 
@@ -153,13 +173,16 @@ class PMI(Service):
             self.border_event.clear()
             if(self.first_stack_done == False):
                 self.drop_first_stack()
-                self.glass_ready_event2.wait()
-                self.go_to_wall()
             else:
+                self.cs.apmi.move(s=0)
                 self.drop_second_stack()
             self.is_working = False
 
     def take_glass(self):
+        print("glass")
+        if self.count == -1:
+            print("ignore")
+            return
         if self.count > 0:
             sleep(2)
         self.apmi_check().pliers(a="open")
@@ -177,18 +200,24 @@ class PMI(Service):
             sleep(0.5)
             self.apmi_check().pliers(a="close")
             sleep(1)
+            self.apmi_check().lift(p=360)
+            sleep(DELAY)
         self.count += 1
 
     def drop_first_stack(self):
-        self.apmi_check().lift(p=360)
-        sleep(DELAY)
+        #self.apmi_check().lift(p=360)
+        #sleep(DELAY)
+        print("Drop first stack")
         self.apmi_check().move(d=0, s=1023)
         # FIXME hokuyo
         sleep(3)
         self.apmi_check().move(s=0)
         sleep(1)
-        self.apmi_check().rotate(s=self.opposit_side, d=0, a=90)
-        sleep(3)
+        try:
+            self.apmi_check().rotate(s=self.opposit_side, d=0, a=90)
+        except:
+            pass
+        sleep(2)
         self.apmi_check().move(d=1, s=500)
         sleep(3)
         self.apmi_check().move(s=0)
@@ -205,6 +234,8 @@ class PMI(Service):
         self.first_stack_done = True
 
     def drop_second_stack(self):
+        self.second_stack_done = True
+        print("Drop second stack")
         self.apmi_check().move(s=0)
         sleep(1)
         self.apmi_check().pliers(a="open")
