@@ -253,51 +253,30 @@ class Tracker(Service):
         else:
             return "Robot not found"
 
+
+
+
     def track(self, measurements):
         tmp_robots = copy.copy(self.robots)
         # Tous les robots non en cours de creation
-        for r in tmp_robots:
-            if not r.is_alive():
-                continue
+        while len(tmp_robots) > 0 and len(measurements) > 0:
             mindist = 1000
             best_mesure = None
-            for measure in measurements:
-                #fx, fy = r.predict_position(self.dt)
-                fx, fy = r.get_coords()
-                dist = (sqrt((measure['x'] - fx) ** 2
-                        + (measure['y'] - fy) ** 2))
-                if dist <= mindist:
-                    mindist = dist
-                    best_mesure = measure
-            if best_mesure:
-                r.update(best_mesure['x'], best_mesure['y'], self.dt)
+            best_robot = None
+            for r in tmp_robots:
+                for m in measurements:
+                    fx, fy = r.get_coords()
+                    dist = (sqrt((m['x'] - fx) ** 2
+                            + (m['y'] - fy) ** 2))
+                    if dist <= mindist:
+                        mindist = dist
+                        best_mesure = measure
+                        best_robot = r
+            if best_mesure and best_robot:
+                best_robot.update(best_mesure['x'], best_mesure['y'])
                 measurements.remove(best_mesure)
-                tmp_robots.remove(r)
-            else:
-                print("#### No best mesure ####")
-                print("#### No best mesure " + r.name)
-                print("#### No best mesure ####")
+                tmp_robots.remove(best_robot)
 
-        # Tous les robots en cours de creation
-        for r in tmp_robots:
-            mindist = 1000
-            best_mesure = None
-            for measure in measurements:
-                #fx, fy = r.predict_position(self.dt)
-                fx, fy = r.get_coords()
-                dist = (sqrt((measure['x'] - fx) ** 2
-                        + (measure['y'] - fy) ** 2))
-                if dist <= mindist:
-                    mindist = dist
-                    best_mesure = measure
-            if best_mesure:
-                r.update(best_mesure['x'], best_mesure['y'], self.dt)
-                measurements.remove(best_mesure)
-                tmp_robots.remove(r)
-            else:
-                print("#### No best mesure ####")
-                print("#### No best mesure " + r.name)
-                print("#### No best mesure ####")
         # Pour tous les robots qui n'ont pas ete update
         for r in tmp_robots:
             r.idle()
@@ -306,9 +285,9 @@ class Tracker(Service):
 
         # Pour toutes les mesures qui n'ont pas de robot
         for measure in measurements:
-            mindist_ = 10000
+            mindist_ = 100
             for r in self.robots:
-                rx, ry = r.predict_position(self.dt)
+                rx, ry = r.get_coords()
                 dist_ = (sqrt((measure['x'] - rx) ** 2
                         + (measure['y'] - ry) ** 2))
                 if dist_ < mindist_:
