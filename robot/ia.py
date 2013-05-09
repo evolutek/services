@@ -34,8 +34,6 @@ class Cups(Goal):
 
         self.cs.actuators.collector_open()
 
-#        import pdb; pdb.set_trace()
-
         print("Milieu de la table")
         #self.robot.goto_xy_block(1500 + 400 * self.color, 1100)
 
@@ -127,7 +125,6 @@ class Gift(Goal):
         self.cs.actuators.arm_2_raise()
 
     def execute(self):
-        #import pdb; pdb.set_trace()
 
         # Find nearest gift not done & no
         for i in range(4): # 4 gifts
@@ -181,7 +178,7 @@ class HomologationPoints(Goal):
 
         self.done = True
 
-class HomologationEvitement(Goal):
+class Homologation(Goal):
 
     def __init__(self, cs, robot, color):
         self.cs = cs
@@ -190,12 +187,16 @@ class HomologationEvitement(Goal):
 
         self.done = False
 
-        self.square = [
-                (1500 + 1000 * self.color, 1000),
-                (1500 + 1000 * self.color, 500),
-                (1500 + 500 * self.color, 500),
-                (1500 + 500 * self.color, 1000),
-        ]
+    def goto_xy_dodge(self, x, y):
+        self.cs.trajman.goto_xy(x=x, y=y)
+
+        while not self.robot.is_stopped.is_set():
+            if (self.robot.robot_near_event.is_set()
+                    or self.robot.match_stop.is_set()):
+                self.cs.trajman.free()
+                break
+
+            sleep(.1)
 
     def execute(self):
         if self.done:
@@ -206,18 +207,30 @@ class HomologationEvitement(Goal):
         self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
         self.cs.trajman.set_trsl_max_speed(maxspeed=500)
 
-        while True:
-            for x, y in self.square:
-                self.robot.is_stopped.clear()
-                self.cs.trajman.goto_xy(x=x, y=y)
-                while not self.robot.is_stopped.is_set():
+        self.cs.actuators.collector_open()
+        self.goto_xy_dodge(1500 + 400 * self.color, 1100)
+        self.cs.actuators.collector_hold()
 
-                    if (self.robot.robot_near_event.is_set()
-                            or self.robot.match_stop.is_set()):
-                        self.cs.trajman.free()
-                        return
+        # go down
+        self.goto_xy_dodge(1500 + 400 * self.color, 500)
 
-                    sleep(.1)
+        # face our side
+        self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
+        self.cs.actuators.collector_open()
+
+        # push
+        self.goto_xy_dodge(1500 + 1200 * self.color, 500)
+
+        # go back
+        self.goto_xy_dodge(1500 + 850 * self.color,  500)
+        self.cs.actuators.collector_close()
+
+        # push more
+        self.goto_xy_dodge(1500 + 1200 * self.color, 500)
+
+        # go PMI!
+        self.cs.pmi.start(color='blue')
+        self.cs('line')
 
 class IA(Service):
 
@@ -254,19 +267,14 @@ class IA(Service):
         self.robot.match_start.set()
         #self.balloon_timer.start() XXX
         self.match_stop_timer.start()
-        self.cs.apmi.move(s=500, d=1)
-        sleep(4)
-        self.cs.apmi.move(s=0, d=1)
 
     @Service.event
     @Service.action
     def match_stop(self):
         print("MATCH STOP")
-        self.cs.trajman.free()
         self.robot.match_stop.set()
-        import os
-        os.system('killall cellaserv')
-        #self.actuators.free() XXX
+        self.cs.trajman.free()
+        self.cs.actuators.free()
 
     ###########
     # Actions #
@@ -284,8 +292,7 @@ class IA(Service):
     def setup_homologation(self, color):
         self.color = color
         self.goals = [
-                HomologationPoints(self.cs, self.robot, self.color),
-                HomologationEvitement(self.cs, self.robot, self.color),
+                Homologation(self.cs, self.robot, self.color),
         ]
 
     # Thread
