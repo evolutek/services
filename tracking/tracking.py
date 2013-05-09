@@ -4,6 +4,7 @@ from math import sqrt
 import copy
 import time
 import threading
+import random
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
@@ -17,7 +18,9 @@ class Tracked:
     """Classe d'un objet tracké par l'algorithme."""
 
     def __init__(self, x, y):
-        self.name = "Unknown Robot"
+
+        self.name = "Unknown Robot "
+        self.name += str(random.randint(0, 999))
         self.idle_time = 0
         self.x = x
         self.y = y
@@ -93,6 +96,7 @@ class Tracker(Service):
                         radius=500)
                 done = True
             except:
+                print("Hokuyo timed out")
                 pass
         self.pmi_wall = False
 
@@ -259,8 +263,9 @@ class Tracker(Service):
     def track(self, measurements):
         tmp_robots = copy.copy(self.robots)
         # Tous les robots non en cours de creation
-        while len(tmp_robots) > 0 and len(measurements) > 0:
-            mindist = 1000
+        while len(tmp_robots) > 0 and len (measurements) > 0:
+            print("This is sparta")
+            mindist = 100000
             best_mesure = None
             best_robot = None
             for r in tmp_robots:
@@ -270,12 +275,13 @@ class Tracker(Service):
                             + (m['y'] - fy) ** 2))
                     if dist <= mindist:
                         mindist = dist
-                        best_mesure = measure
+                        best_mesure = m
                         best_robot = r
             if best_mesure and best_robot:
-                best_robot.update(best_mesure['x'], best_mesure['y'])
+                best_robot.update(best_mesure['x'], best_mesure['y'], self.dt)
                 measurements.remove(best_mesure)
                 tmp_robots.remove(best_robot)
+        print("There")
 
         # Pour tous les robots qui n'ont pas ete update
         for r in tmp_robots:
@@ -285,7 +291,8 @@ class Tracker(Service):
 
         # Pour toutes les mesures qui n'ont pas de robot
         for measure in measurements:
-            mindist_ = 100
+            print("Measurements left")
+            mindist_ = 101
             for r in self.robots:
                 rx, ry = r.get_coords()
                 dist_ = (sqrt((measure['x'] - rx) ** 2
