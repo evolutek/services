@@ -101,6 +101,10 @@ class PMI(Service):
     #def near_opponent(self):
     #    a = 1
 
+    #@Service.event
+    #def near_opponent(self):
+    #    a = 1
+
     def work(self):
         self.push_cherries()
         self.glass_ready_event1.wait()

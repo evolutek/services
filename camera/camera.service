@@ -1,0 +1,11 @@
+[Unit]
+Description=Camera
+Requires=cellaserv.service
+After=cellaserv.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/camera camera
+User=evolutek
+
+[Install]
+WantedBy=evolutek.target
