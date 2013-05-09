@@ -83,6 +83,7 @@ class Tracker(Service):
         self.cs.hokuyo['beacon2'].set_position(pos=2)
         self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
                 radius=500)
+        self.pmi_wall = False
 
     def scan(self):
         # merge les scans des 2 hokuyos
@@ -149,11 +150,24 @@ class Tracker(Service):
                     return True
         return False
 
+    def collision_pmi(self):
+        border = 300
+        print("Check pmi pos")
+        for r in self.robots:
+            if r.name == "pmi":
+                if r.get_coords[1] < border:
+                    return True
+                return False
+        return False
+
     def check_collision(self):
         if self.collision_androo():
             self.cs('robot-near')
-        #if collision_pmi(self):
-        #    self.
+        if self.collision_pmi() and not self.pmi_wall:
+            self.pmi_wall = True
+            self.cs('border')
+        else:
+            self.pmi_wall = False
 
 
     # Returns the robots on the map
