@@ -22,7 +22,7 @@ class PMI(Service):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cs = CellaservProxy(self)
+        self.cs = CellaservProxy()
 
         self.count = 0
         self.first_stack_done = False
@@ -32,10 +32,12 @@ class PMI(Service):
         self.worker = Thread(target=self.work)
         self.switch_event = Event()
         self.switchWorker = Thread(target=self.loop_switch)
+        self.borderWorker = Thread(target=self.loop_border)
 
         self.is_stopped = Event()
         self.glass_ready_event1 = Event()
         self.glass_ready_event2 = Event()
+        self.border_event = Event()
         self.null = Null()
 
     def apmi_check(self):
@@ -52,6 +54,14 @@ class PMI(Service):
     @Service.event
     def glass_ready2(self):
         self.glass_ready_event2.set()
+
+    @Service.event
+    def border(self):
+        self.cs.apmi.move(s=0)
+        sleep(DELAY)
+        self.cs.apmi.lift(p=0)
+        sleep(1)
+        self.border_event.set()
 
     @Service.action
     def test(self):
@@ -85,6 +95,11 @@ class PMI(Service):
         print("worker")
         self.worker.start()
         self.switchWorker.start()
+        self.borderWorker.start()
+
+    #@Service.event
+    #def near_opponent(self):
+    #    a = 1
 
     def work(self):
         self.push_cherries()
@@ -108,6 +123,7 @@ class PMI(Service):
 
     def loop_switch(self):
         while True:
+            # check switch_event or < 300
             self.switch_event.wait()
             self.switch_event.clear()
 
@@ -126,6 +142,18 @@ class PMI(Service):
                     self.apmi_check().move(d=1, s=1023, w=self.opposit_side)
 
                 self.is_working = False
+
+    def loop_border(self):
+        while True:
+            self.border_event.wait()
+            self.border_event.clear()
+            if(self.first_stack_done == False):
+                self.drop_first_stack()
+                self.glass_ready_event2.wait()
+                self.go_to_wall()
+            else:
+                self.drop_second_stack()
+            self.is_working = False
 
     def take_glass(self):
         if self.count > 0:
