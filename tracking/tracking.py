@@ -176,7 +176,7 @@ class Tracker(Service):
         print("Check pmi pos")
         for r in self.robots:
             if r.name == "pmi":
-                if r.get_coords[1] < border:
+                if r.get_coords()[1] < border:
                     return True
                 return False
         return False
