@@ -110,7 +110,7 @@ class Tracker(Service):
         for r in self.robots:
             rx, ry = r.get_coords()
             if r.name != "androo" and r.name != "pmi":
-                if (rx - x) ** 2 + (ry - y) ** 2 < safe
+                if (rx - x) ** 2 + (ry - y) ** 2 < safe:
                     return False
         return True
 
