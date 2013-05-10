@@ -88,6 +88,7 @@ class Tracker(Service):
         self.robots = []
         self.dt = 0.1
         self.cs = CellaservProxy()
+        self.collide_androo = False
         done = False
         while not done:
             try:
@@ -167,11 +168,14 @@ class Tracker(Service):
                 p = r.get_coords()
                 dist = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2
                 if dist < limit:
+                    self.collide_androo = True
                     print("Event set ! ANDROO")
                     return True
                     #return False
             if not r.is_alive():
                 print("Robot not alive", r.alive)
+        self.collide_androo = False
+        self.cs('robot-far')
         return False
 
     def collision_pmi_others(self):
@@ -197,7 +201,7 @@ class Tracker(Service):
     def collision_pmi(self):
         def reset_wall():
             nonlocal self
-            sleep(6)
+            time.sleep(6)
             self.pmi_wall = False
         border = 600
         for r in self.robots:
@@ -239,6 +243,7 @@ class Tracker(Service):
     @Service.action
     def init_color(self, color):
         ret = ""
+        done = False
         while not done:
             try:
                 self.cs.hokuyo['beacon2'].set_position(pos=2 if color == -1 else 5)
@@ -281,6 +286,29 @@ class Tracker(Service):
         tmp_robots = copy.copy(self.robots)
         # Tous les robots non en cours de creation
         while len(tmp_robots) > 0 and len (measurements) > 0:
+            mindist = 400
+            best_mesure = None
+            best_robot = None
+            for r in tmp_robots:
+                if r.name != "androo" and r.name != "pmi":
+                    continue
+                for m in measurements:
+                    fx, fy = r.get_coords()
+                    dist = (sqrt((m['x'] - fx) ** 2
+                            + (m['y'] - fy) ** 2))
+                    if dist <= mindist:
+                        mindist = dist
+                        best_mesure = m
+                        best_robot = r
+            if best_mesure and best_robot:
+                best_robot.update(best_mesure['x'], best_mesure['y'], self.dt)
+                measurements.remove(best_mesure)
+                tmp_robots.remove(best_robot)
+            else:
+                #print("breaking")
+                break
+        #print("There")
+        while len(tmp_robots) > 0 and len (measurements) > 0:
             mindist = 1000
             best_mesure = None
             best_robot = None
@@ -300,7 +328,6 @@ class Tracker(Service):
             else:
                 #print("breaking")
                 break
-        #print("There")
 
         # Pour tous les robots qui n'ont pas ete update
         print("Robots left " + str(len(tmp_robots)))
