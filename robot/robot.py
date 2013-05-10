@@ -185,10 +185,6 @@ class Robot(Service):
     @Service.event
     def robot_near(self):
         self.robot_near_event.set()
-        while True:
-            print("Evitement")
-            self.cs.actuators.free()
-            self.tm.free()
 
     def print(self, data):
         if self.do_print:
