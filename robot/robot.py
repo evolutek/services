@@ -418,7 +418,7 @@ class Robot(Service):
     def record(self):
         import record
 
-        elf.free()
+        self.free()
 
         print("Welcome to the record subshell!")
         print("""
