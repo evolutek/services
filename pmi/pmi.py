@@ -191,13 +191,14 @@ class PMI(Service):
             self.is_working = False
 
     def loop_near(self):
-        while True:
-            print("Wait")
-            self.near_event.wait()
-            print("done")
-            self.cs.apmi.move(s=0)
-            import os
-            os.system("kill {}".format(os.getpid()))
+        return
+        #while True:
+        #    print("Wait")
+        #    self.near_event.wait()
+        #    print("done")
+        #    self.cs.apmi.move(s=0)
+        #    import os
+        #    os.system("kill {}".format(os.getpid()))
 
     def take_glass(self):
         print("glass")
