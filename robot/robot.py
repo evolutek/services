@@ -91,6 +91,7 @@ class Robot(Service):
 
         self.is_stopped = Event()
         self.robot_near_event = Event()
+        self.robot_far_event = Event()
 
         self.commands = {
             "help": self.help,
@@ -187,6 +188,10 @@ class Robot(Service):
     @Service.event
     def robot_near(self):
         self.robot_near_event.set()
+
+    @Service.event
+    def robot_far(self):
+        self.robot_far_event.set()
 
     def print(self, data):
         if self.do_print:
