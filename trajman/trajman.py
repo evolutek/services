@@ -76,6 +76,8 @@ class TrajMan(Service):
         self.thread = Thread(target=self.async_read)
         self.thread.start()
 
+        self.soft_free_state = False
+
     def log_debug(self, *args, **kwargs):
         if PRINT_DEBUG:
             print(*args, **kwargs)
@@ -85,11 +87,17 @@ class TrajMan(Service):
         self.serial.flush()
 
     def command(self, data):
+        if self.soft_free_state:
+            return
+
         self.ack_recieved.clear()
         self.write(data)
         self.ack_recieved.wait()
 
     def get_command(self, data):
+        if self.soft_free_state:
+            return
+
         self.write(data)
         return self.queue.get(timeout=1)
 
@@ -152,6 +160,14 @@ class TrajMan(Service):
         tab = pack('B', 2)
         tab += pack('B', FREE)
         self.command(bytes(tab))
+
+    @Service.action
+    def soft_free(self):
+        self.soft_free_state = True
+
+    @Service.action
+    def soft_asserv(self):
+        self.soft_free_state = False
 
     @Service.action
     def unfree(self):

@@ -13,15 +13,8 @@ try:
 except ImportError:
     HAVE_PYGMENTS = False
 
-try:
-    import readline
-except ImportError:
-    print("You don't have readline, too bad for you...")
-
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-
-import record
 
 __doc__ = \
 """     ##########################
@@ -92,7 +85,10 @@ class Robot(Service):
         self.cs = CellaservProxy()
         self.tm = self.cs.trajman
 
+        # Events
+
         self.is_stopped = Event()
+        self.robot_near_event = Event()
 
         self.commands = {
             "help": self.help,
@@ -105,6 +101,9 @@ class Robot(Service):
             "recal": self.recalibration,
             "find_pos": self.find_position,
             "fp": self.find_position,
+
+            "-1": self.side_minus_one,
+            "1": self.side_plus_one,
 
             "free": self.free,
             "f": self.free,
@@ -175,10 +174,17 @@ class Robot(Service):
             self.is_stopped.wait()
 
         return _f
+    ##########
+    # Events #
+    ##########
 
     @Service.event
     def robot_stopped(self):
         self.is_stopped.set()
+
+    @Service.event
+    def robot_near(self):
+        self.robot_near_event.set()
 
     def print(self, data):
         if self.do_print:
@@ -237,6 +243,18 @@ class Robot(Service):
         self.goto_xy_block(1500 + 1500 * color - 185 / 2.0 * color, 1000)
         self.set_trsl_max_speed(800)
         print("Setup done")
+
+    def side_minus_one(self):
+        self.free()
+        self.set_x(94)
+        self.set_y(1000)
+        self.set_theta(0)
+
+    def side_plus_one(self):
+        self.free()
+        self.set_x(2906)
+        self.set_y(1000)
+        self.set_theta(math.pi)
 
     ###########
     # Un/Free #
@@ -391,7 +409,9 @@ class Robot(Service):
         self.do_print = True
 
     def record(self):
-        self.free()
+        import record
+
+        elf.free()
 
         print("Welcome to the record subshell!")
         print("""
@@ -470,6 +490,9 @@ class Robot(Service):
     def loop(self):
         print(__doc__)
 
+        # XXX: Warning
+        self.flush_serial()
+
         while True:
             try:
                 s = input('>> ')
@@ -484,6 +507,11 @@ class Robot(Service):
                 print(e)
 
 def main():
+    try:
+        import readline
+    except ImportError:
+        print("You don't have readline, too bad for you...")
+
     robot = Robot()
     thread_loop = Thread(target=robot.loop)
     thread_loop.start()

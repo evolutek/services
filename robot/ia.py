@@ -34,8 +34,6 @@ class Cups(Goal):
 
         self.cs.actuators.collector_open()
 
-#        import pdb; pdb.set_trace()
-
         print("Milieu de la table")
         #self.robot.goto_xy_block(1500 + 400 * self.color, 1100)
 
@@ -107,6 +105,93 @@ class Cups(Goal):
 
         self.done = True
 
+class Gift(Goal):
+
+    def __init__(self, cs, robot, color):
+        self.cs = cs
+        self.robot = robot
+        self.color = color
+
+        self.gifts_done= [False]*4
+        self.arm_setup = False
+
+    def setup(self):
+        if not self.arm_setup:
+            self.arm_setup = True
+            self.cs.actuators.arm_2_gift_setup()
+
+    def unsetup(self):
+        self.arm_setup = False
+        self.cs.actuators.arm_2_raise()
+
+    def execute(self):
+
+        # Find nearest gift not done & no
+        for i in range(4): # 4 gifts
+            if not self.gifts_done[i]:
+                ###
+                # TODO: Évitement
+                ####
+
+                self.setup()
+                self.robot.goto_xy_block(600 + 600 * i + 85 * -self.color - 20, 400)
+                self.robot.goto_theta_block(math.pi / 2 + math.pi / 2 * self.color)
+                self.cs.actuators.arm_2_gift_push()
+                sleep(.6)
+                self.gifts_done[i] = True
+
+        self.unsetup()
+
+class Homologation(Goal):
+
+    def __init__(self, cs, robot, color):
+        self.cs = cs
+        self.robot = robot
+        self.color = color
+
+        self.done = False
+
+    def goto_xy_dodge(self, x, y):
+        self.robot.goto_xy_block(x=x, y=y)
+
+        return
+
+    def execute(self):
+        if self.done:
+            return
+        self.done = True
+
+        #import pdb; pdb.set_trace()
+
+        self.cs.trajman.set_trsl_dec(dec=700)
+        self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
+        self.cs.trajman.set_trsl_max_speed(maxspeed=200)
+
+        self.cs.actuators.collector_open()
+        self.goto_xy_dodge(1500 + 400 * self.color, 1100)
+        self.cs.actuators.collector_hold()
+
+        # go down
+        self.goto_xy_dodge(1500 + 400 * self.color, 500)
+
+        # face our side
+        self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
+        self.cs.actuators.collector_open()
+
+        # push
+        self.goto_xy_dodge(1500 + 1100 * self.color, 500)
+
+        # go back
+        self.goto_xy_dodge(1500 + 850 * self.color,  500)
+        self.cs.actuators.collector_close()
+
+        # push more
+        self.goto_xy_dodge(1500 + 1200 * self.color, 500)
+
+        # go PMI!
+        self.cs.pmi.start(color='blue')
+        self.cs('line')
+
 class IA(Service):
 
     def __init__(self):
@@ -120,11 +205,12 @@ class IA(Service):
 
         # Timers
 
-        self.balloon_timer = Timer(90, self.cs.balloon.go)
+        #self.balloon_timer = Timer(90, self.cs.balloon.go) XXX
+        self.match_stop_timer = Timer(85, self.match_stop)
 
         # Events
-        self.match_start = Event()
-        self.match_stop = Event()
+        self.robot.match_start = Event()
+        self.robot.match_stop = Event()
 
         # Goals
         # Goals are set in setup()
@@ -138,19 +224,18 @@ class IA(Service):
     @Service.action
     def match_start(self):
         print('Match start')
-        self.match_start.set()
-        self.balloon_timer.start()
+        self.robot.robot_near_event.clear()
+        self.robot.match_start.set()
+        #self.balloon_timer.start() XXX
+        self.match_stop_timer.start()
 
     @Service.event
     @Service.action
     def match_stop(self):
-        self.match_stop.set()
-        self.robot.free()
-        self.actuators.free()
-
-    @Service.event
-    def robot_near(self):
-        self.robot_near.set()
+        print("MATCH STOP")
+        self.robot.match_stop.set()
+        self.cs.trajman.free()
+        self.cs.actuators.free()
 
     ###########
     # Actions #
@@ -160,17 +245,50 @@ class IA(Service):
     def setup_match(self, color):
         self.color = color
         self.goals = [
-                Cups(self.cs, self.robot, self.color),
+                #Cups(self.cs, self.robot, self.color),
+                Gift(self.cs, self.robot, self.color),
         ]
+
+    @Service.action
+    def setup_homologation(self, color):
+        self.color = color
+        self.goals = [
+                Homologation(self.cs, self.robot, self.color),
+        ]
+
+        print("Getting tracker...")
+        print("Tracker: " + self.cs.tracker.init_color(color=color))
+        print("Done!")
 
     # Thread
 
     def objectives_loop(self):
-        self.match_start.wait()
+        self.robot.match_start.wait()
+        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
+        sleep(.5)
+        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
 
-        while not self.match_stop.is_set():
+        while not self.robot.match_stop.is_set():
             for goal in self.goals:
                 goal.execute()
+
+    # OWN THREAD
+    def evitement(self):
+        print("Evitement start")
+        self.robot.match_start.wait()
+        self.robot.robot_near_event.wait()
+
+        self.robot.robot_near_event.clear() # XXX Better with robot_far?
+        print("Evitement")
+
+        self.cs.buzzer.freq_seconds(freq=440, seconds=1)
+        self.cs.trajman.free()
+        self.cs.trajman.soft_free()
+        self.cs.actuators.free()
+
+        self.robot.match_stop.wait() # XXX robot_far?
+
+        self.cs.trajman.soft_asserv()
 
 def main():
     ia = IA()
@@ -178,6 +296,9 @@ def main():
 
     thread_ia = Thread(target=ia.objectives_loop)
     thread_ia.start()
+
+    ia.evitement = Thread(target=ia.evitement)
+    ia.evitement.start()
 
     Service.loop()
 
