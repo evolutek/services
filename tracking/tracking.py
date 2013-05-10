@@ -105,7 +105,7 @@ class Tracker(Service):
 
     @Service.action
     def is_safe(self, x, y):
-        safe = 300
+        safe = 500
         safe = safe ** 2
         for r in self.robots:
             rx, ry = r.get_coords()
