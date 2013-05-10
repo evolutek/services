@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from threading import Thread, Event
+from threading import Thread, Timer, Event
 
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
@@ -11,6 +11,8 @@ class ia(Service):
         super().__init__()
 
         self.cs = CellaservProxy()
+
+        self.match_stop_timer = Timer(15, self.match_stop)
 
         self.start_event = Event()
 
@@ -29,21 +31,38 @@ class ia(Service):
 
         self.cs.pmi.start(color='blue' if self.color == -1 else 'red')
 
+        self.cs.trajman.set_trsl_dec(dec=1000)
+        self.cs.trajman.set_pid_trsl(P=100, I=0, D=3000)
+        self.cs.trajman.set_trsl_max_speed(maxspeed=800)
+
+        self.cs.trajman.set_rot_acc(acc=15)
+        self.cs.trajman.set_rot_dec(dec=15)
+        self.cs.trajman.set_rot_max_speed(maxspeed=15)
+
     @Service.action
     def setup_match(self, color):
+        print("Setup")
         self.color = color
 
     def start(self):
+        print("Start...")
         self.start_event.wait()
+        self.match_stop_timer.start()
+        print("Start!")
 
         self.cs.actuators.collector_open()
         self.robot.goto_xy_block(x=1023.81, y=998.801)
+
         self.robot.goto_xy_block(x=1243.51, y=823.024)
         self.cs.actuators.collector_hold()
         self.robot.goto_theta_block(theta=-3.11914)
         self.cs.actuators.collector_open()
         self.robot.goto_xy_block(x=430.393, y=763.216)
 
+    def match_stop(self):
+        print("Stop")
+        self.cs.trajman.free()
+        self.cs.actuators.free()
 
 def main():
     service = ia()
