@@ -195,15 +195,16 @@ class Tracker(Service):
         return False
 
     def collision_pmi(self):
-        def reset_wall(self):
+        def reset_wall():
+            nonlocal self
             sleep(6)
             self.pmi_wall = False
-        border = 500
+        border = 600
         for r in self.robots:
             if r.name == "pmi":
                 if r.get_coords()[1] < border:
                     self.cs.buzzer.freq_seconds(freq=1500, seconds=0.2)
-                    Thread(target=self.reset_wall).start()
+                    threading.Thread(target=reset_wall).start()
                     return True
                 return False
         return False
