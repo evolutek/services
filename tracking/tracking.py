@@ -195,10 +195,15 @@ class Tracker(Service):
         return False
 
     def collision_pmi(self):
-        border = 300
+        def reset_wall(self):
+            sleep(6)
+            self.pmi_wall = False
+        border = 500
         for r in self.robots:
             if r.name == "pmi":
                 if r.get_coords()[1] < border:
+                    self.cs.buzzer.freq_seconds(freq=1500, seconds=0.2)
+                    Thread(target=self.reset_wall).start()
                     return True
                 return False
         return False
@@ -211,8 +216,6 @@ class Tracker(Service):
             self.cs('border')
         if self.collision_pmi_others():
             self.cs('pmi-near')
-        else:
-            self.pmi_wall = False
 
 
     # Returns the robots on the map
