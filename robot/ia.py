@@ -71,7 +71,12 @@ class ia(Service):
             print("Milieu de la table")
 
         print("Courbe")
-        self.robot.curve_block(450, 450, 450, 225, 1, 3.14, 3.14, 3.14, 1.6, 1 if self.color == 1 else 0, 0)
+        #self.robot.curve_block(450, 450, 450, 225, 1, 3.14, 3.14, 3.14, 1.6, 1 if self.color == 1 else 0, 0)
+        self.robot.goto_xy_block(1500 - 150 * self.color, 800)
+        self.cs.actuators.collector_hold()
+        self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
+        self.cs.actuators.collector_open()
+        self.robot.goto_xy_block(1500 + 800 * self.color, 800)
 
         print("Setting glasses in place")
         self.robot.goto_xy_block(1500 + 850 * self.color, 800)
