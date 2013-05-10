@@ -111,7 +111,7 @@ class PMI(Service):
         self.lineWorker.start()
 
     def work(self):
-        #self.push_cherries()
+        self.push_cherries()
         self.glass_ready_event1.wait()
         print("GO TO WALL de 112")
         self.go_to_wall()
