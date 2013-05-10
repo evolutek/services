@@ -24,11 +24,6 @@ class PMI(Service):
         super().__init__(*args, **kwargs)
         self.cs = CellaservProxy()
 
-        self.count = 0
-        self.first_stack_done = False
-        self.second_stack_done = False
-        self.first = True
-        self.isWorking = False
 
         self.timer_stop = Timer(88, self.stop)
         self.worker = Thread(target=self.work)
@@ -99,6 +94,11 @@ class PMI(Service):
 
     @Service.action
     def start(self, color):
+        self.count = 0
+        self.first_stack_done = False
+        self.second_stack_done = False
+        self.first = True
+        self.isWorking = False
         self.opposit_side = "right" if color == "blue" else "left"
         print("timer")
         self.is_stopped.clear()
