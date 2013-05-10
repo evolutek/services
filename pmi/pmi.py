@@ -24,11 +24,6 @@ class PMI(Service):
         super().__init__(*args, **kwargs)
         self.cs = CellaservProxy()
 
-        self.count = 0
-        self.first_stack_done = False
-        self.second_stack_done = False
-        self.first = True
-        self.isWorking = False
 
         self.timer_stop = Timer(88, self.stop)
         self.worker = Thread(target=self.work)
@@ -68,7 +63,7 @@ class PMI(Service):
         self.cs.apmi.move(s=500, d=0)
         sleep(2)
         self.cs.apmi.move(s=0)
-        sleep(1)
+        sleep(2)
         self.count = -1
         self.cs.apmi.lift(p=0)
         sleep(1)
@@ -99,6 +94,11 @@ class PMI(Service):
 
     @Service.action
     def start(self, color):
+        self.count = 0
+        self.first_stack_done = False
+        self.second_stack_done = False
+        self.first = True
+        self.isWorking = False
         self.opposit_side = "right" if color == "blue" else "left"
         print("timer")
         self.is_stopped.clear()
@@ -145,7 +145,7 @@ class PMI(Service):
     def pmi_line(self):
         self.line_event.wait()
         self.cs.apmi.move(s=500, d=1)
-        sleep(6)
+        sleep(4)
         self.cs.apmi.move(s=0)
 
     def loop_switch(self):
