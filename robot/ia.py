@@ -94,35 +94,38 @@ class ia(Service):
         self.cs('glass-ready1')
 
         # Décision 2
-        if True:
-            print("Face opponent")
-            self.robot.goto_theta_block(math.pi / 2 + math.pi / 2 * self.color)
-            self.cs.actuators.collector_open()
+        #if True:
+        print("Face opponent")
+        self.robot.goto_theta_block(math.pi / 2 + math.pi / 2 * self.color)
+        self.cs.actuators.collector_open()
 
-            print("Going to opponent")
+        print("Going to opponent")
+        if cs.tracker.is_safe(1500 - 500 * self.color, 600):
             self.robot.goto_xy_block(1500 - 500 * self.color, 600)
-            self.cs.actuators.collector_hold()
-            sleep(.5)
+        else:
+            self.robot.goto_xy_block(1500 * self.color, 600)
+        self.cs.actuators.collector_hold()
+        sleep(.5)
 
-            print("Going back")
-            self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
-            self.cs.actuators.collector_open()
-            self.robot.goto_xy_block(1500 + 1100 * self.color, 600)
+        print("Going back")
+        self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
+        self.cs.actuators.collector_open()
+        self.robot.goto_xy_block(1500 + 1100 * self.color, 600)
 
-            print("Going to push")
-            self.robot.goto_xy_block(1500 + 850 * self.color, 600)
-            self.cs.actuators.collector_close()
-            speeds = self.cs.trajman.get_speeds()
-            self.robot.set_trsl_max_speed(300)
+        print("Going to push")
+        self.robot.goto_xy_block(1500 + 850 * self.color, 600)
+        self.cs.actuators.collector_close()
+        speeds = self.cs.trajman.get_speeds()
+        self.robot.set_trsl_max_speed(300)
 
-            self.stack_event.wait()
+        self.stack_event.wait()
 
-            print("Pushing")
-            self.robot.goto_xy_block(1500 + 1300 * self.color, 600)
+        print("Pushing")
+        self.robot.goto_xy_block(1500 + 1300 * self.color, 600)
 
-            print("Done")
-            self.robot.set_trsl_max_speed(speeds['trmax'])
-            self.robot.goto_xy_block(1500 + 800 * self.color, 600)
+        print("Done")
+        self.robot.set_trsl_max_speed(speeds['trmax'])
+        self.robot.goto_xy_block(1500 + 800 * self.color, 600)
 
         self.cs('glass-ready2')
 
