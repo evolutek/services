@@ -14,8 +14,8 @@ class ia(Service):
 
         self.cs = CellaservProxy()
 
-        self.match_stop_timer = Timer(15, self.match_stop)
-        self.balloon_timer = Timer(20, self.cs.balloon.go)
+        self.match_stop_timer = Timer(35, self.match_stop)
+        self.balloon_timer = Timer(40, self.cs.balloon.go)
 
         self.start_event = Event()
 
@@ -28,11 +28,22 @@ class ia(Service):
     def match_start(self):
         self.start_event.set()
 
+    @Service.action
+    def setup_match(self, color):
+        print("Setup")
+        self.color = color
+
         print("Getting tracker...")
         print("Tracker: " + self.cs.tracker.init_color(color=color))
         print("Done!")
 
-        self.cs.pmi.start(color='blue' if self.color == -1 else 'red')
+    def start(self):
+        print("Start...")
+        self.start_event.wait()
+        print("Start!")
+
+        self.match_stop_timer.start()
+        self.balloon_timer.start()
 
         self.cs.trajman.set_trsl_dec(dec=1000)
         self.cs.trajman.set_pid_trsl(P=100, I=0, D=3000)
@@ -42,17 +53,7 @@ class ia(Service):
         self.cs.trajman.set_rot_dec(dec=15)
         self.cs.trajman.set_rot_max_speed(maxspeed=15)
 
-    @Service.action
-    def setup_match(self, color):
-        print("Setup")
-        self.color = color
-
-    def start(self):
-        print("Start...")
-        self.start_event.wait()
-        self.match_stop_timer.start()
-        self.balloon_timer.start()
-        print("Start!")
+        self.cs.pmi.start(color='blue' if self.color == -1 else 'red')
 
         self.cs.actuators.collector_open()
 
@@ -124,6 +125,8 @@ class ia(Service):
             print("Done")
             self.robot.set_trsl_max_speed(speeds['trmax'])
             self.robot.goto_xy_block(1500 + 800 * self.color, 600)
+
+        self.cs('glass-ready2')
 
     def match_stop(self):
         print("Stop")
