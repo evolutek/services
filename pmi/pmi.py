@@ -63,7 +63,7 @@ class PMI(Service):
         self.cs.apmi.move(s=500, d=0)
         sleep(2)
         self.cs.apmi.move(s=0)
-        sleep(1)
+        sleep(2)
         self.count = -1
         self.cs.apmi.lift(p=0)
         sleep(1)
