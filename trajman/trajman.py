@@ -80,7 +80,7 @@ class TrajMan(Service):
 
         self.flush_serial()
         #self.set_wheels_diameter(w1=53.234, w2=54.248)
-        self.set_wheels_diameter(w1=54, w2=54)
+        self.set_wheels_diameter(w1=53, w2=53)
         self.set_wheels_spacing(spacing=302.447)
 
     def log_debug(self, *args, **kwargs):
