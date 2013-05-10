@@ -14,10 +14,11 @@ class ia(Service):
 
         self.cs = CellaservProxy()
 
-        self.match_stop_timer = Timer(35, self.match_stop)
-        self.balloon_timer = Timer(40, self.cs.balloon.go)
+        self.match_stop_timer = Timer(85, self.match_stop)
+        self.balloon_timer = Timer(90, self.cs.balloon.go)
 
         self.start_event = Event()
+        self.stack_event = Event()
 
         self.robot = Robot()
         self.robot.setup()
@@ -27,6 +28,10 @@ class ia(Service):
     @Service.event
     def match_start(self):
         self.start_event.set()
+
+    @Service.event
+    def stack(self):
+        self.stack_event.set()
 
     @Service.action
     def setup_match(self, color):
@@ -80,7 +85,7 @@ class ia(Service):
         self.robot.set_trsl_max_speed(300)
         self.cs.actuators.collector_close()
         print("Pushing")
-        self.robot.goto_xy_block(1500 + 1200 * self.color, 800)
+        self.robot.goto_xy_block(1500 + 1300 * self.color, 800)
 
         print("Done")
         self.robot.set_trsl_max_speed(speeds['trmax'])
@@ -109,8 +114,11 @@ class ia(Service):
             self.cs.actuators.collector_close()
             speeds = self.cs.trajman.get_speeds()
             self.robot.set_trsl_max_speed(300)
+
+            self.stack_event.wait()
+
             print("Pushing")
-            self.robot.goto_xy_block(1500 + 1200 * self.color, 600)
+            self.robot.goto_xy_block(1500 + 1300 * self.color, 600)
 
             print("Done")
             self.robot.set_trsl_max_speed(speeds['trmax'])
