@@ -19,7 +19,7 @@ class Tracked:
 
     def __init__(self, x, y):
 
-        self.name = "Unknown Robot "
+        self.name = "PILPPE Robot "
         self.name += str(random.randint(0, 999))
         self.idle_time = 0
         self.x = x
@@ -105,8 +105,14 @@ class Tracker(Service):
         #scan1 = None
         #scan2 = None
 
-        #scan1 = self.cs.hokuyo["beacon1"].robots()
-        #scan2 = self.cs.hokuyo["beacon2"].robots()
+        #while not scan1 or not scan2:
+        #    try:
+        #        scan1 = self.cs.hokuyo["beacon1"].robots()
+        #        scan2 = self.cs.hokuyo["beacon2"].robots()
+        #    except Exception as e:
+        #        print(e)
+
+
         #print("SCAN 1")
         #print(scan1)
         #print("SCAN 2")
@@ -118,26 +124,26 @@ class Tracker(Service):
         #        print(r1, r2)
         #        if (r1['x'] - r2['x']) ** 2 + (r1['y'] - r2['y']) ** 2 < 10000:
         #            print("merge " + str(r1) + " and " + str(r2))
-        #            #scan.append((r1 + r2) / 2)
+        #            scan.append({'x' : r1['x'] + r2['x'] / 2,
+        #                        'y' : r1['y'] + r2['y'] /2})
         #            #del scan2.remove(r2)
         #            tmp = 1
         #            break
         #    if tmp == 0:
         #        scan.append(r1)
         #scan.extend(scan2)
-        #print("SCAN")
-        #print(scan)
+
         scan = None
         while not scan:
             try:
-                scan = self.cs.hokuyo.robots()
+                scan = self.cs.hokuyo["beacon2"].robots()
             except Exception as e:
                 print(e)
         self.track(scan['robots'])
 
     def loop(self):
         while True:
-            timer = .1
+            timer = .2
             while timer > 0:
                 time.sleep(.01)
                 timer = timer - .01
@@ -147,12 +153,12 @@ class Tracker(Service):
     def collision_androo(self):
         limit = 500 ** 2
         pos = None
-        print("Collision androo checking")
+        #print("Collision androo checking")
         for r in self.robots:
             if r.name == "androo":
                 pos = r.get_coords()
         if not pos:
-            print("Androo not found")
+            #print("Androo not found")
             return False
         for r in self.robots:
             if r.name != "androo" and r.name != "pmi" and r.is_alive():
@@ -171,12 +177,11 @@ class Tracker(Service):
     def collision_pmi_others(self):
         limit = 500 ** 2
         pos = None
-        print("Collision pmi checking")
         for r in self.robots:
             if r.name == "pmi":
                 pos = r.get_coords()
         if not pos:
-            print("PMI not found")
+            #print("PMI not found")
             return False
         for r in self.robots:
             if r.name != "androo" and r.name != "pmi":
@@ -191,7 +196,6 @@ class Tracker(Service):
 
     def collision_pmi(self):
         border = 300
-        print("Check pmi pos")
         for r in self.robots:
             if r.name == "pmi":
                 if r.get_coords()[1] < border:
@@ -264,8 +268,7 @@ class Tracker(Service):
         tmp_robots = copy.copy(self.robots)
         # Tous les robots non en cours de creation
         while len(tmp_robots) > 0 and len (measurements) > 0:
-            print("This is sparta")
-            mindist = 100000
+            mindist = 1000
             best_mesure = None
             best_robot = None
             for r in tmp_robots:
@@ -281,12 +284,17 @@ class Tracker(Service):
                 best_robot.update(best_mesure['x'], best_mesure['y'], self.dt)
                 measurements.remove(best_mesure)
                 tmp_robots.remove(best_robot)
-        print("There")
+            else:
+                #print("breaking")
+                break
+        #print("There")
 
         # Pour tous les robots qui n'ont pas ete update
+        print("Robots left " + str(len(tmp_robots)))
         for r in tmp_robots:
             r.idle()
-            if r.is_down() and r.name == "Unknown Robot":
+            print(r.idle_time)
+            if r.is_down() and r.name != "androo" and r.name != "pmi":
                 self.robots.remove(r)
 
         # Pour toutes les mesures qui n'ont pas de robot
