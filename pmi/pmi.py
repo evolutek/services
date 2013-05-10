@@ -231,7 +231,7 @@ class PMI(Service):
         print("Drop first stack")
         self.apmi_check().move(d=0, s=1023)
         # FIXME hokuyo
-        sleep(3)
+        sleep(6)
         self.apmi_check().move(s=0)
         sleep(1)
         try:
@@ -253,6 +253,7 @@ class PMI(Service):
         sleep(2)
         self.count = 0
         self.first_stack_done = True
+        self.cs("stack")
 
     def drop_second_stack(self):
         self.second_stack_done = True

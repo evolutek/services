@@ -239,6 +239,15 @@ class Tracker(Service):
     @Service.action
     def init_color(self, color):
         ret = ""
+        while not done:
+            try:
+                self.cs.hokuyo['beacon2'].set_position(pos=2 if color == -1 else 5)
+                self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
+                        radius=500)
+                done = True
+            except:
+                print("Hokuyo timed out")
+                pass
         if not self.rename_robot_bool("androo", 1500 + 1400 * color, 1000):
             ret = ret + "Robot androo not found"
         if not self.rename_robot_bool("pmi", 1500 + 1400 * color, 800):
