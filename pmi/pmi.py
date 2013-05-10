@@ -25,7 +25,7 @@ class PMI(Service):
         self.cs = CellaservProxy()
 
 
-        self.timer_stop = Timer(88, self.stop)
+        self.timer_stop = Timer(87, self.stop)
         self.worker = Thread(target=self.work)
         self.switch_event = Event()
         self.near_event = Event()
@@ -66,7 +66,7 @@ class PMI(Service):
         sleep(2)
         self.count = -1
         self.cs.apmi.lift(p=0)
-        sleep(1)
+        sleep(2)
         self.border_event.set()
 
     @Service.action
@@ -232,11 +232,13 @@ class PMI(Service):
         print("Drop first stack")
         self.apmi_check().move(d=0, s=1023)
         # FIXME hokuyo
-        sleep(6)
+        sleep(2)
+        self.cs("stack")
+        sleep(2)
         self.apmi_check().move(s=0)
         sleep(1)
         try:
-            self.apmi_check().rotate(s=self.opposit_side, d=0, a=90)
+            self.apmi_check().rotate(s=self.opposit_side, d=0, a=70)
         except:
             pass
         sleep(2)
@@ -254,7 +256,6 @@ class PMI(Service):
         sleep(2)
         self.count = 0
         self.first_stack_done = True
-        self.cs("stack")
 
     def drop_second_stack(self):
         self.second_stack_done = True
@@ -271,16 +272,17 @@ class PMI(Service):
     def push_cherries(self):
         sleep(DELAY)
         self.apmi_check().move(s=500, d=0)
-        sleep(5)
+        sleep(7)
         self.apmi_check().move(s=0)
         sleep(DELAY)
 
     def stop(self):
         print("Stop")
         self.is_stopped.set()
-
         self.cs.apmi.move(s=0)
         sleep(DELAY)
+        self.cs.apmi.lift(p=0)
+        sleep(2)
         self.cs.apmi.pliers(a="open")
 
 def main():
