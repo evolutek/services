@@ -145,7 +145,7 @@ class PMI(Service):
     def pmi_line(self):
         self.line_event.wait()
         self.cs.apmi.move(s=500, d=1)
-        sleep(6)
+        sleep(4)
         self.cs.apmi.move(s=0)
 
     def loop_switch(self):
