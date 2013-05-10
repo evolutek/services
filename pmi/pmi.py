@@ -25,7 +25,7 @@ class PMI(Service):
         self.cs = CellaservProxy()
 
 
-        self.timer_stop = Timer(88, self.stop)
+        self.timer_stop = Timer(87, self.stop)
         self.worker = Thread(target=self.work)
         self.switch_event = Event()
         self.near_event = Event()
@@ -278,9 +278,10 @@ class PMI(Service):
     def stop(self):
         print("Stop")
         self.is_stopped.set()
-
         self.cs.apmi.move(s=0)
         sleep(DELAY)
+        self.cs.apmi.lift(p=0)
+        sleep(2)
         self.cs.apmi.pliers(a="open")
 
 def main():
