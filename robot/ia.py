@@ -26,11 +26,20 @@ class Cups(Goal):
         self.done = False
 
     def execute(self):
+        print("Done?")
         if self.done:
             return
+        print("Not done")
 
-        self.cs.trajman.set_trsl_dec(dec=700)
-        self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
+        #self.cs.trajman.set_trsl_dec(dec=1000)
+        #self.cs.trajman.set_pid_trsl(P=100, I=0, D=3000)
+        #self.cs.trajman.set_trsl_max_speed(maxspeed=800)
+
+        #self.cs.trajman.set_rot_acc(acc=15)
+        #self.cs.trajman.set_rot_dec(dec=15)
+        #self.cs.trajman.set_rot_max_speed(maxspeed=15)
+
+        print("Trajman ok")
 
         self.cs.actuators.collector_open()
 
@@ -40,8 +49,9 @@ class Cups(Goal):
         # robots self.cs.tracker.
         # DÉCISION
         if True:
-            print("Coté adverse")
-            self.robot.goto_xy_block(1500 - 500 * self.color, 1100)
+            print("Cote adverse")
+            sleep(.1)
+            self.robot.goto_xy_block(1500 - 500 * self.color, 1000)
             #self.cs.actuators.collector_hold()
             sleep(.5)
 
@@ -52,28 +62,33 @@ class Cups(Goal):
         print("Courbe")
         #self.robot.curve_block(1000, 1000, 1000, 315, 1, 3.14, 3.14, 3.14, 1.6, 1, 0)
         #self.robot.curve_block(785, 785, 0, 196.25, 1, 3.14, 3.14, 3.14, 0.79, 1, 0)
-        self.robot.curve_block(450, 450, 450, 225, 1, 3.14, 3.14, 3.14, 1.6, 1, 0)
-        self.robot.get_position()
+        sleep(.1)
+        self.robot.curve_block(450, 450, 450, 225, 1, 3.14, 3.14, 3.14, 1.6, 1 if self.color == 1 else 0, 0)
         #self.robot.curve_block(400, 0, 392.5, 315, 1, 0, 0, 0, 0, 1, 1)
         #self.robot.goto_xy_block(1500 + 1100 * self.color, 600)
 
         print("Setting glasses in place")
-        self.robot.goto_xy_block(1500 + 850 * self.color, 600)
+        sleep(.1)
+        self.robot.goto_xy_block(1500 + 850 * self.color, 800)
+        sleep(.1)
         self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
+        sleep(.1)
         self.cs.actuators.collector_open()
-        self.robot.goto_xy_block(1500 + 1100 * self.color, 600)
+        self.robot.goto_xy_block(1500 + 1100 * self.color, 800)
 
         print("Going to push")
-        self.robot.goto_xy_block(1500 + 850 * self.color, 600)
+        self.robot.goto_xy_block(1500 + 850 * self.color, 800)
         speeds = self.cs.trajman.get_speeds()
         self.robot.set_trsl_max_speed(300)
         self.cs.actuators.collector_close()
         print("Pushing")
-        self.robot.goto_xy_block(1500 + 1200 * self.color, 600)
+        self.robot.goto_xy_block(1500 + 1200 * self.color, 800)
 
         print("Done")
         self.robot.set_trsl_max_speed(speeds['trmax'])
-        self.robot.goto_xy_block(1500 + 900 * self.color, 600)
+        self.robot.goto_xy_block(1500 + 950 * self.color, 800)
+
+        self.cs('glass-ready1')
 
         # Décision 2
         if True:
@@ -105,6 +120,7 @@ class Cups(Goal):
 
         self.done = True
 
+# {{{
 class Gift(Goal):
 
     def __init__(self, cs, robot, color):
@@ -141,7 +157,9 @@ class Gift(Goal):
                 self.gifts_done[i] = True
 
         self.unsetup()
+# }}}
 
+# {{{
 class Homologation(Goal):
 
     def __init__(self, cs, robot, color):
@@ -161,8 +179,6 @@ class Homologation(Goal):
             return
         self.done = True
 
-        #import pdb; pdb.set_trace()
-
         self.cs.trajman.set_trsl_dec(dec=700)
         self.cs.trajman.set_pid_trsl(P=100, I=0, D=2000)
         self.cs.trajman.set_trsl_max_speed(maxspeed=200)
@@ -172,25 +188,26 @@ class Homologation(Goal):
         self.cs.actuators.collector_hold()
 
         # go down
-        self.goto_xy_dodge(1500 + 400 * self.color, 500)
+        self.goto_xy_dodge(1500 + 400 * self.color, 400)
 
         # face our side
         self.robot.goto_theta_block(math.pi / 2 - math.pi / 2 * self.color)
         self.cs.actuators.collector_open()
 
         # push
-        self.goto_xy_dodge(1500 + 1100 * self.color, 500)
+        self.goto_xy_dodge(1500 + 1100 * self.color, 400)
 
         # go back
-        self.goto_xy_dodge(1500 + 850 * self.color,  500)
+        self.goto_xy_dodge(1500 + 850 * self.color,  400)
         self.cs.actuators.collector_close()
 
         # push more
-        self.goto_xy_dodge(1500 + 1200 * self.color, 500)
+        self.goto_xy_dodge(1500 + 1200 * self.color, 400)
 
         # go PMI!
         self.cs.pmi.start(color='blue')
         self.cs('line')
+# }}}
 
 class IA(Service):
 
@@ -205,7 +222,7 @@ class IA(Service):
 
         # Timers
 
-        #self.balloon_timer = Timer(90, self.cs.balloon.go) XXX
+        self.balloon_timer = Timer(90, self.cs.balloon.go)
         self.match_stop_timer = Timer(85, self.match_stop)
 
         # Events
@@ -225,8 +242,13 @@ class IA(Service):
     def match_start(self):
         print('Match start')
         self.robot.robot_near_event.clear()
+
         self.robot.match_start.set()
-        #self.balloon_timer.start() XXX
+        self.balloon_timer.start()
+
+        # go PMI!
+        self.cs.pmi.start(color='blue' if self.color == -1 else 'red')
+
         self.match_stop_timer.start()
 
     @Service.event
@@ -245,9 +267,13 @@ class IA(Service):
     def setup_match(self, color):
         self.color = color
         self.goals = [
-                #Cups(self.cs, self.robot, self.color),
-                Gift(self.cs, self.robot, self.color),
+                Cups(self.cs, self.robot, self.color),
+                #Gift(self.cs, self.robot, self.color),
         ]
+
+        print("Getting tracker...")
+        print("Tracker: " + self.cs.tracker.init_color(color=color))
+        print("Done!")
 
     @Service.action
     def setup_homologation(self, color):
@@ -263,22 +289,27 @@ class IA(Service):
     # Thread
 
     def objectives_loop(self):
+        print("start")
         self.robot.match_start.wait()
-        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
-        sleep(.5)
-        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
+        print(self.goals)
+        print(self.robot.match_stop.is_set())
+        self.cs.buzzer.freq_seconds(freq=440, seconds=1)
+        print(self.goals)
+        print(self.robot.match_stop.is_set())
 
         while not self.robot.match_stop.is_set():
+            print("in loop")
             for goal in self.goals:
                 goal.execute()
 
     # OWN THREAD
     def evitement(self):
         print("Evitement start")
+        #return
         self.robot.match_start.wait()
         self.robot.robot_near_event.wait()
+        #self.robot.robot_far_event.clear()
 
-        self.robot.robot_near_event.clear() # XXX Better with robot_far?
         print("Evitement")
 
         self.cs.buzzer.freq_seconds(freq=440, seconds=1)
@@ -286,7 +317,7 @@ class IA(Service):
         self.cs.trajman.soft_free()
         self.cs.actuators.free()
 
-        self.robot.match_stop.wait() # XXX robot_far?
+        self.robot.robot_far_event.wait()
 
         self.cs.trajman.soft_asserv()
 
@@ -304,3 +335,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# vim:fdm=marker:
