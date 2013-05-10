@@ -215,8 +215,8 @@ class Tracker(Service):
         if self.collision_pmi() and not self.pmi_wall:
             self.pmi_wall = True
             self.cs('border')
-        if self.collision_pmi_others():
-            self.cs('pmi-near')
+        #if self.collision_pmi_others():
+        #    self.cs('pmi-near')
 
 
     # Returns the robots on the map
