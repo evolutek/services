@@ -174,8 +174,9 @@ class Tracker(Service):
                     #return False
             if not r.is_alive():
                 print("Robot not alive", r.alive)
+        if self.collide_androo
+            self.cs('robot-far')
         self.collide_androo = False
-        self.cs('robot-far')
         return False
 
     def collision_pmi_others(self):
