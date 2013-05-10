@@ -58,25 +58,15 @@ class ia(Service):
         self.cs.actuators.collector_open()
 
         print("Milieu de la table")
-        #self.robot.goto_xy_block(1500 + 400 * self.color, 1100)
 
-        # robots self.cs.tracker.
-        # DÉCISION
         if True:
             print("Cote adverse")
             self.robot.goto_xy_block(1500 - 0 * self.color, 1000)
-            #self.cs.actuators.collector_hold()
 
             print("Milieu de la table")
-            #self.robot.goto_xy_block(1500 + 500 * self.color, 1100)
-            #self.cs.actuators.collector_open()
 
         print("Courbe")
-        #self.robot.curve_block(1000, 1000, 1000, 315, 1, 3.14, 3.14, 3.14, 1.6, 1, 0)
-        #self.robot.curve_block(785, 785, 0, 196.25, 1, 3.14, 3.14, 3.14, 0.79, 1, 0)
         self.robot.curve_block(450, 450, 450, 225, 1, 3.14, 3.14, 3.14, 1.6, 1 if self.color == 1 else 0, 0)
-        #self.robot.curve_block(400, 0, 392.5, 315, 1, 0, 0, 0, 0, 1, 1)
-        #self.robot.goto_xy_block(1500 + 1100 * self.color, 600)
 
         print("Setting glasses in place")
         self.robot.goto_xy_block(1500 + 850 * self.color, 800)
