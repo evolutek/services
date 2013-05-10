@@ -16,6 +16,8 @@ except ImportError:
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
+# TODO: Robot bacon (Pilipe!)
+
 __doc__ = \
 """     ##########################
      # Welcome to your robot! #
