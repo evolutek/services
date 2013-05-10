@@ -1,7 +1,7 @@
 #!/bin/sh
 
 CMD="cellaquery --verbose"
-IP=10.3.90.19
+IP=192.168.3.192
 PORT=4242
 
 $CMD camera.start position=1

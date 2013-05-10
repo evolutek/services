@@ -6,9 +6,11 @@ __version__ = "1"
 
 import threading
 import socket
-from PIL import Image
+import json
 
 from cellaserv.service import Service
+
+default = { top:"B??????R", bottom:"B???WWWW???R" }
 
 class Camera(Service):
 
@@ -21,26 +23,20 @@ class Camera(Service):
         self.position = None
 
     def compute(self):
-        result = "ok"
         try:
             s = socket.create_connection((self.ip, self.port))
-            data = bytes()
+            data = ""
             while True:
-                tmp = s.recv(4096)
+                tmp = str(s.recv(4096), 'ascii')
                 if not tmp:
                     break
                 data += tmp
             s.close()
             if len(data) == 0:
-                return "error: retreiving"
-            with open("/tmp/cake.jpg", "wb") as f:
-                f.write(data)
-            img = Image.open("/tmp/cake.jpg")
-            print(img.size)
+                raise InputError("read", "read result failed")
+            self.notify("camera-result", { "result": "ok", "data": json.loads(data) })
         except Exception as e:
-            print(e)
-            result = "error"
-        self.notify("camera-result", {"result": result})
+            self.notify("camera-result", { "result": "error", "data": default })
 
     # Actions
     @Service.action
@@ -56,7 +52,7 @@ class Camera(Service):
     def process(self):
         # position to know where we start
         if not self.port or not self.ip or not self.position:
-            return {"result": "error"}
+            return { "result": "default", "data": default }
 
         th = threading.Thread(None, self.compute, "computation")
         th.start()
