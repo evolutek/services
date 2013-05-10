@@ -92,14 +92,27 @@ class Tracker(Service):
         done = False
         while not done:
             try:
-                self.cs.hokuyo['beacon2'].set_position(pos=2)
-                self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
+                self.cs.hokuyo['beacon1'].set_position(pos=2)
+                self.cs.hokuyo['beacon1'].add_deadzone(type='circle', x=1500,  y=2000,
                         radius=500)
                 done = True
             except:
                 print("Hokuyo timed out")
+                time.sleep(1)
                 pass
         self.pmi_wall = False
+
+
+    @Service.action
+    def is_safe(self, x, y):
+        safe = 300
+        safe = safe ** 2
+        for r in self.robots:
+            rx, ry = r.get_coords()
+            if r.name != "androo" and r.name != "pmi":
+                if (rx - x) ** 2 + (ry - y) ** 2 < safe
+                    return False
+        return True
 
     def scan(self):
         # merge les scans des 2 hokuyos
@@ -137,8 +150,9 @@ class Tracker(Service):
         scan = None
         while not scan:
             try:
-                scan = self.cs.hokuyo["beacon2"].robots()
+                scan = self.cs.hokuyo["beacon1"].robots()
             except Exception as e:
+                time.sleep(.01)
                 print(e)
         self.track(scan['robots'])
 
@@ -159,7 +173,7 @@ class Tracker(Service):
             if r.name == "androo":
                 pos = r.get_coords()
         if not pos:
-            #print("Androo not found")
+            print("Androo not found")
             return False
         for r in self.robots:
             if r.name != "androo" and r.name != "pmi" and r.is_alive():
@@ -174,7 +188,7 @@ class Tracker(Service):
                     #return False
             if not r.is_alive():
                 print("Robot not alive", r.alive)
-        if self.collide_androo
+        if self.collide_androo:
             self.cs('robot-far')
         self.collide_androo = False
         return False
@@ -186,7 +200,7 @@ class Tracker(Service):
             if r.name == "pmi":
                 pos = r.get_coords()
         if not pos:
-            #print("PMI not found")
+            print("PMI not found")
             return False
         for r in self.robots:
             if r.name != "androo" and r.name != "pmi":
@@ -204,7 +218,7 @@ class Tracker(Service):
             nonlocal self
             time.sleep(6)
             self.pmi_wall = False
-        border = 600
+        border = 500
         for r in self.robots:
             if r.name == "pmi":
                 if r.get_coords()[1] < border:
@@ -247,8 +261,8 @@ class Tracker(Service):
         done = False
         while not done:
             try:
-                self.cs.hokuyo['beacon2'].set_position(pos=2 if color == -1 else 5)
-                self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
+                self.cs.hokuyo['beacon1'].set_position(pos=2 if color == -1 else 5)
+                self.cs.hokuyo['beacon1'].add_deadzone(type='circle', x=1500,  y=2000,
                         radius=500)
                 done = True
             except:
@@ -287,11 +301,35 @@ class Tracker(Service):
         tmp_robots = copy.copy(self.robots)
         # Tous les robots non en cours de creation
         while len(tmp_robots) > 0 and len (measurements) > 0:
-            mindist = 400
+            mindist = 200
             best_mesure = None
             best_robot = None
             for r in tmp_robots:
                 if r.name != "androo" and r.name != "pmi":
+                    continue
+                for m in measurements:
+                    fx, fy = r.get_coords()
+                    dist = (sqrt((m['x'] - fx) ** 2
+                            + (m['y'] - fy) ** 2))
+                    if dist <= mindist:
+                        mindist = dist
+                        best_mesure = m
+                        best_robot = r
+            if best_mesure and best_robot:
+                best_robot.update(best_mesure['x'], best_mesure['y'], self.dt)
+                measurements.remove(best_mesure)
+                tmp_robots.remove(best_robot)
+            else:
+                #print("breaking")
+                break
+
+        # Boucle des robots deja crees
+        while len(tmp_robots) > 0 and len (measurements) > 0:
+            mindist = 1000
+            best_mesure = None
+            best_robot = None
+            for r in tmp_robots:
+                if not r.is_alive():
                     continue
                 for m in measurements:
                     fx, fy = r.get_coords()
