@@ -92,8 +92,8 @@ class Tracker(Service):
         done = False
         while not done:
             try:
-                self.cs.hokuyo['beacon1'].set_position(pos=2)
-                self.cs.hokuyo['beacon1'].add_deadzone(type='circle', x=1500,  y=2000,
+                self.cs.hokuyo['beacon2'].set_position(pos=2)
+                self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
                         radius=500)
                 done = True
             except:
@@ -121,7 +121,7 @@ class Tracker(Service):
 
         #while not scan1 or not scan2:
         #    try:
-        #        scan1 = self.cs.hokuyo["beacon1"].robots()
+        #        scan1 = self.cs.hokuyo["beacon2"].robots()
         #        scan2 = self.cs.hokuyo["beacon2"].robots()
         #    except Exception as e:
         #        print(e)
@@ -150,7 +150,7 @@ class Tracker(Service):
         scan = None
         while not scan:
             try:
-                scan = self.cs.hokuyo["beacon1"].robots()
+                scan = self.cs.hokuyo["beacon2"].robots()
             except Exception as e:
                 time.sleep(.01)
                 print(e)
@@ -218,7 +218,7 @@ class Tracker(Service):
             nonlocal self
             time.sleep(6)
             self.pmi_wall = False
-        border = 500
+        border = 550
         for r in self.robots:
             if r.name == "pmi":
                 if r.get_coords()[1] < border:
@@ -261,8 +261,8 @@ class Tracker(Service):
         done = False
         while not done:
             try:
-                self.cs.hokuyo['beacon1'].set_position(pos=2 if color == -1 else 5)
-                self.cs.hokuyo['beacon1'].add_deadzone(type='circle', x=1500,  y=2000,
+                self.cs.hokuyo['beacon2'].set_position(pos=2 if color == -1 else 5)
+                self.cs.hokuyo['beacon2'].add_deadzone(type='circle', x=1500,  y=2000,
                         radius=500)
                 done = True
             except:
