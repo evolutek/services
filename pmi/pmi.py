@@ -111,7 +111,7 @@ class PMI(Service):
         self.lineWorker.start()
 
     def work(self):
-        #self.push_cherries()
+        self.push_cherries()
         self.glass_ready_event1.wait()
         print("GO TO WALL de 112")
         self.go_to_wall()
@@ -191,13 +191,14 @@ class PMI(Service):
             self.is_working = False
 
     def loop_near(self):
-        while True:
-            print("Wait")
-            self.near_event.wait()
-            print("done")
-            self.cs.apmi.move(s=0)
-            import os
-            os.system("kill {}".format(os.getpid()))
+        return
+        #while True:
+        #    print("Wait")
+        #    self.near_event.wait()
+        #    print("done")
+        #    self.cs.apmi.move(s=0)
+        #    import os
+        #    os.system("kill {}".format(os.getpid()))
 
     def take_glass(self):
         print("glass")
