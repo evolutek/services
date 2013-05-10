@@ -256,10 +256,17 @@ class IA(Service):
                 Homologation(self.cs, self.robot, self.color),
         ]
 
+        print("Getting tracker...")
+        print("Tracker: " + self.cs.tracker.init_color(color=color))
+        print("Done!")
+
     # Thread
 
     def objectives_loop(self):
         self.robot.match_start.wait()
+        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
+        sleep(.5)
+        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
 
         while not self.robot.match_stop.is_set():
             for goal in self.goals:
