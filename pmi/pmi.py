@@ -66,7 +66,7 @@ class PMI(Service):
         sleep(2)
         self.count = -1
         self.cs.apmi.lift(p=0)
-        sleep(1)
+        sleep(2)
         self.border_event.set()
 
     @Service.action
@@ -232,11 +232,11 @@ class PMI(Service):
         print("Drop first stack")
         self.apmi_check().move(d=0, s=1023)
         # FIXME hokuyo
-        sleep(6)
+        sleep(4)
         self.apmi_check().move(s=0)
         sleep(1)
         try:
-            self.apmi_check().rotate(s=self.opposit_side, d=0, a=90)
+            self.apmi_check().rotate(s=self.opposit_side, d=0, a=70)
         except:
             pass
         sleep(2)
@@ -271,7 +271,7 @@ class PMI(Service):
     def push_cherries(self):
         sleep(DELAY)
         self.apmi_check().move(s=500, d=0)
-        sleep(5)
+        sleep(7)
         self.apmi_check().move(s=0)
         sleep(DELAY)
 
