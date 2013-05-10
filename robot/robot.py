@@ -102,6 +102,9 @@ class Robot(Service):
             "find_pos": self.find_position,
             "fp": self.find_position,
 
+            "-1": self.side_minus_one,
+            "1": self.side_plus_one,
+
             "free": self.free,
             "f": self.free,
             "unfree": self.unfree,
@@ -181,10 +184,6 @@ class Robot(Service):
 
     @Service.event
     def robot_near(self):
-        while True:
-            print("Evitement")
-            self.cs.actuators.free()
-            self.tm.free()
         self.robot_near_event.set()
 
     def print(self, data):
@@ -244,6 +243,18 @@ class Robot(Service):
         self.goto_xy_block(1500 + 1500 * color - 185 / 2.0 * color, 1000)
         self.set_trsl_max_speed(800)
         print("Setup done")
+
+    def side_minus_one(self):
+        self.free()
+        self.set_x(94)
+        self.set_y(1000)
+        self.set_theta(0)
+
+    def side_plus_one(self):
+        self.free()
+        self.set_x(2906)
+        self.set_y(1000)
+        self.set_theta(math.pi)
 
     ###########
     # Un/Free #

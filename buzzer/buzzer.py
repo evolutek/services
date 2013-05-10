@@ -24,7 +24,6 @@ class Buzzer(Service):
 
     @Service.action
     def freq_seconds(self, freq, seconds):
-        # TODO: Test
         self.freq(freq)
         self.t = threading.Timer(float(seconds), self.stop)
         self.t.start()

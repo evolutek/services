@@ -156,19 +156,6 @@ class Homologation(Goal):
 
         return
 
-        while not self.robot.is_stopped.is_set():
-            if self.robot.robot_near_event.is_set():
-                print("ROBOT NEAR")
-                self.cs.trajman.free()
-                while True:
-                    sleep(1)
-            if self.robot.match_stop.is_set():
-                self.cs.trajman.free()
-                while True:
-                    sleep(1)
-
-            sleep(.1)
-
     def execute(self):
         if self.done:
             return
@@ -237,6 +224,7 @@ class IA(Service):
     @Service.action
     def match_start(self):
         print('Match start')
+        self.robot.robot_near_event.clear()
         self.robot.match_start.set()
         #self.balloon_timer.start() XXX
         self.match_stop_timer.start()
@@ -268,14 +256,39 @@ class IA(Service):
                 Homologation(self.cs, self.robot, self.color),
         ]
 
+        print("Getting tracker...")
+        print("Tracker: " + self.cs.tracker.init_color(color=color))
+        print("Done!")
+
     # Thread
 
     def objectives_loop(self):
         self.robot.match_start.wait()
+        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
+        sleep(.5)
+        self.cs.buzzer.freq_seconds(freq=440, seconds=.5)
 
         while not self.robot.match_stop.is_set():
             for goal in self.goals:
                 goal.execute()
+
+    # OWN THREAD
+    def evitement(self):
+        print("Evitement start")
+        self.robot.match_start.wait()
+        self.robot.robot_near_event.wait()
+
+        self.robot.robot_near_event.clear() # XXX Better with robot_far?
+        print("Evitement")
+
+        self.cs.buzzer.freq_seconds(freq=440, seconds=1)
+        self.cs.trajman.free()
+        self.cs.trajman.soft_free()
+        self.cs.actuators.free()
+
+        self.robot.match_stop.wait() # XXX robot_far?
+
+        self.cs.trajman.soft_asserv()
 
 def main():
     ia = IA()
@@ -283,6 +296,9 @@ def main():
 
     thread_ia = Thread(target=ia.objectives_loop)
     thread_ia.start()
+
+    ia.evitement = Thread(target=ia.evitement)
+    ia.evitement.start()
 
     Service.loop()
 
