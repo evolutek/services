@@ -502,7 +502,7 @@ class Robot(Service):
 
         while True:
             try:
-                s = input('>> ')
+                s = input('<< ')
                 if not s:
                     continue
                 words = s.split()
