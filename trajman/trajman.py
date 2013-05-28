@@ -176,7 +176,7 @@ class TrajMan(Service):
 
     @Service.action
     def unfree(self):
-        self.translate(0, 1, 1, 1, 1)
+        self.move_trsl(0, 1, 1, 1, 1)
 
     #######
     # Set #
