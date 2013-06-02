@@ -44,7 +44,7 @@ class ia(Service):
 
     def start(self):
         print("Start...")
-        self.start_event.wait()
+        #self.start_event.wait()
         print("Start!")
 
         self.match_stop_timer.start()
@@ -105,7 +105,7 @@ class ia(Service):
         self.cs.actuators.collector_open()
 
         print("Going to opponent")
-        if self.cs.tracker.is_safe(1500 - 500 * self.color, 600):
+        if self.cs.tracker.is_safe(x=1500 - 500 * self.color, y=600):
             self.robot.goto_xy_block(1500 - 500 * self.color, 600)
         else:
             self.robot.goto_xy_block(1500 * self.color, 600)
