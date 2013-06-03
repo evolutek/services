@@ -44,7 +44,7 @@ class ia(Service):
 
     def start(self):
         print("Start...")
-        #self.start_event.wait()
+        self.start_event.wait()
         print("Start!")
 
         self.match_stop_timer.start()
