@@ -297,6 +297,13 @@ class TrajMan(Service):
         tab += pack('f', float(spacing))
         self.command(bytes(tab))
 
+    @Service.action
+        def set_pwm(self, left, right):
+        tab = pack('B', 10)
+        tab += pack('B', SET_PWM)
+        tab += pack('ff', float(left), float(right))
+        self.command(bytes(tab))
+
     #######
     # Get #
     #######
