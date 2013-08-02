@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 from math import sqrt
 import copy
 import time
@@ -9,16 +8,10 @@ import random
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
-# DONE: Periodic scan
-# DONE: Perimeter checking & configurating
-# TODO: Zone marking & detecting
-
-
 class Tracked:
     """Classe d'un objet tracké par l'algorithme."""
 
     def __init__(self, x, y):
-
         self.name = "PILPPE Robot "
         self.name += str(random.randint(0, 999))
         self.idle_time = 0
@@ -54,8 +47,7 @@ class Tracked:
         return [futurx, futury]
 
     def predict_state(self, dt):
-        futurx = self.x + self.vx * dt + (self.ax * dt * dt) / 2
-        futury = self.y + self.vy * dt + (self.ay * dt * dt) / 2
+        futurx, futury = self.predict_position(dt)
         futurvx = self.vx + self.ax * dt
         futurvy = self.vy + self.ay * dt
         return [futurx, futury, futurvx, futurvy]
@@ -115,38 +107,7 @@ class Tracker(Service):
         return True
 
     def scan(self):
-        # merge les scans des 2 hokuyos
-        #scan1 = None
-        #scan2 = None
-
-        #while not scan1 or not scan2:
-        #    try:
-        #        scan1 = self.cs.hokuyo["beacon2"].robots()
-        #        scan2 = self.cs.hokuyo["beacon2"].robots()
-        #    except Exception as e:
-        #        print(e)
-
-
-        #print("SCAN 1")
-        #print(scan1)
-        #print("SCAN 2")
-        #print(scan2)
-        #scan = []
-        #for r1 in scan1["robots"]:
-        #    tmp = 0
-        #    for r2 in scan2["robots"]:
-        #        print(r1, r2)
-        #        if (r1['x'] - r2['x']) ** 2 + (r1['y'] - r2['y']) ** 2 < 10000:
-        #            print("merge " + str(r1) + " and " + str(r2))
-        #            scan.append({'x' : r1['x'] + r2['x'] / 2,
-        #                        'y' : r1['y'] + r2['y'] /2})
-        #            #del scan2.remove(r2)
-        #            tmp = 1
-        #            break
-        #    if tmp == 0:
-        #        scan.append(r1)
-        #scan.extend(scan2)
-
+        # TODO: Merge 2 hokuyos
         scan = None
         while not scan:
             try:
@@ -158,6 +119,7 @@ class Tracker(Service):
 
     def loop(self):
         while True:
+            # Fixme: use sleep(remaining_time) ?
             timer = .2
             while timer > 0:
                 time.sleep(.01)
@@ -168,7 +130,6 @@ class Tracker(Service):
     def collision_androo(self):
         limit = 500 ** 2
         pos = None
-        #print("Collision androo checking")
         for r in self.robots:
             if r.name == "androo":
                 pos = r.get_coords()
@@ -185,7 +146,6 @@ class Tracker(Service):
                     self.collide_androo = True
                     print("Event set ! ANDROO")
                     return True
-                    #return False
             if not r.is_alive():
                 print("Robot not alive", r.alive)
         if self.collide_androo:
@@ -237,10 +197,9 @@ class Tracker(Service):
         #if self.collision_pmi_others():
         #    self.cs('pmi-near')
 
-
-    # Returns the robots on the map
     @Service.action
     def update(self):
+        """Returns the robots on the map."""
         ret = []
         for r in self.robots:
             ret.append(r.get_infos())
@@ -253,10 +212,10 @@ class Tracker(Service):
                 return r.get_coords()
         return None
 
-    # Tries to rename our robots on the map.
-    # According to the rule : 1 stands for red, -1 stands for blue
     @Service.action
     def init_color(self, color):
+        """Tries to rename our robots on the map.
+        According to the rule: 1 stands for red, -1 stands for blue"""
         ret = ""
         done = False
         while not done:
@@ -294,9 +253,6 @@ class Tracker(Service):
         else:
             return "Robot not found"
 
-
-
-
     def track(self, measurements):
         tmp_robots = copy.copy(self.robots)
         # Tous les robots non en cours de creation
@@ -320,7 +276,6 @@ class Tracker(Service):
                 measurements.remove(best_mesure)
                 tmp_robots.remove(best_robot)
             else:
-                #print("breaking")
                 break
 
         # Boucle des robots deja crees
@@ -344,9 +299,8 @@ class Tracker(Service):
                 measurements.remove(best_mesure)
                 tmp_robots.remove(best_robot)
             else:
-                #print("breaking")
                 break
-        #print("There")
+
         while len(tmp_robots) > 0 and len (measurements) > 0:
             mindist = 1000
             best_mesure = None
@@ -365,7 +319,6 @@ class Tracker(Service):
                 measurements.remove(best_mesure)
                 tmp_robots.remove(best_robot)
             else:
-                #print("breaking")
                 break
 
         # Pour tous les robots qui n'ont pas ete update
@@ -390,7 +343,6 @@ class Tracker(Service):
             # les robots est superieur a XXcm
             if mindist_ > 100:
                 self.robots.append(Tracked(measure['x'], measure['y']))
-
 
 def main():
     tracker = Tracker()
