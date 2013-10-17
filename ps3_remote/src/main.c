@@ -8,7 +8,9 @@
 
 #define INCREMENT 500
 
+typedef void (*handler_f)();
 struct dualshock3_s b;
+
 clasClient c;
 int maxPWM = 0;
 
@@ -53,36 +55,37 @@ static void send_cmd(int l, int r)
         cJSON_AddNumberToObject(arg, "r", r);
         clas_client_query(c, "trajman", NULL, "set-pwm", arg, &ret);
     }
+
     last_l = l;
     last_r = r;
 }
 
 void splitStick()
 {
-    int spos = ((float)(b.stick.leftStick_y - 127.5) / 127.5) * 100;
-    float rpos = ((float)(b.stick.rightStick_x - 127.5) / 127.5) * 100.;
-    int pwmpc = maxPWM / 10;
-    int max = spos * maxPWM / 100;
-    int leftPWM = max;
-    int rightPWM = max;
-    if (spos > 10 && spos < 10)
+    float spos = ((float)(b.stick.leftStick_y) - 127.5) / 127.5;
+    float rpos = ((float)(b.stick.rightStick_x) - 127.5) / 127.5;
+
+    int leftPWM = 0;
+    int rightPWM = 0;
+
+    // if speed joystick is activated
+    if (spos > 0.05 || spos < -0.05)
     {
-        if (rpos < -10 || rpos > 10)
-        {
-            leftPWM = (float)-maxPWM * rpos / 100.;
-            rightPWM = (float)maxPWM * rpos / 100.;
-        }
-        else
-            return;
+        leftPWM = maxPWM * spos;
+        rightPWM = maxPWM * spos;
+
+        if (rpos < 0.05)
+            leftPWM *= -rpos;
+        else if (rpos > 0.05)
+            rightPWM *= rpos;
     }
     else
     {
-        if (rpos < 10)
-            leftPWM = ((float)leftPWM) / (-rpos);
-        else if (rpos > 10)
-            rightPWM = ((float)rightPWM) / rpos;
-        else
-            return;
+        if (rpos > 0.1 || rpos < -0.1)
+        {
+            leftPWM = maxPWM * rpos;
+            rightPWM = -maxPWM * rpos;
+        }
     }
     printf("left %d, right %d\n", leftPWM, rightPWM);
     //send_cmd(leftPWM, rightPWM);
@@ -99,19 +102,84 @@ void dualStick()
     send_cmd(leftPWM, rightPWM);
 }
 
-int main(int argc, const char* argv[])
+const struct {
+    const char *name;
+    handler_f   func;
+} modes[] = {
+    { "dual",  dualStick },
+    { "split", splitStick },
+    { NULL,    0 }
+};
+
+static void usage(const char *prg)
 {
-    int mode = 0;
-    if(argc < 3)
-        fprintf(stdout, "No mode specified, using dualstick mode\n");
-    else {
-        if(!strcmp(argv[1], "--mode")) {
-            if(!strcmp(argv[2], "split"))
-                mode = 2;
-            if(!strcmp(argv[2], "dual"))
-                mode = 0;
+    printf(
+        "Usage: %s [OPTIONS]\n"
+        "Options:\n"
+        "   -h,--help\n"
+        "   -m,--mode <mode>\n"
+        , prg);
+    for (int i = 0; modes[i].name; ++i)
+        printf("      %s\n", modes[i].name);
+}
+
+typedef enum {
+    PARSE_OK,
+    PARSE_EXIT,
+    PARSE_EXIT_ERR
+} parse_e;
+
+static handler_f parse_opts(int argc, const char *argv[])
+{
+    handler_f h = dualStick;
+    parse_e ok = PARSE_OK;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        if (argv[i][0] == '-')
+        {
+            if (argc > i + 1 &&
+                (!strcmp(argv[i], "-m") || !strcmp(argv[i], "--mode")))
+            {
+                ++i;
+                bool found = false;
+                for (int j = 0; modes[j].name; ++j)
+                {
+                    if (!strcmp(argv[i], modes[j].name))
+                    {
+                        h = modes[j].func;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    ok = PARSE_EXIT_ERR;
+            }
+            else
+            {
+                ok = PARSE_EXIT_ERR;
+                break;
+            }
+        }
+        else
+        {
+            ok = PARSE_EXIT_ERR;
+            break;
         }
     }
+
+    if (ok != PARSE_OK)
+    {
+        usage(argv[0]);
+        exit(ok == PARSE_EXIT ? 0 : 1);
+    }
+
+    return h;
+}
+
+static void init_blueshock()
+{
     fprintf(stdout, "Init libblueshock...");
     fflush(stdout);
     if(blueshock_start() == -1)
@@ -119,23 +187,31 @@ int main(int argc, const char* argv[])
     fprintf(stdout, " [DONE]\n");
 
     fprintf(stdout, "Waiting for a controller");
+    fflush(stdout);
     while(blueshock_get(0, &b) == -1) {
         usleep(1000 * 250);
         fprintf(stdout, ".");
+        fflush(stdout);
     }
     fprintf(stdout, " [DONE]\n");
+}
 
+int main(int argc, const char* argv[])
+{
+    handler_f handler = parse_opts(argc, argv);
+    if (!handler)
+        return EXIT_FAILURE;
+
+    init_blueshock();
     c = clas_client_init(NULL, 0);
 
     while(1) {
         if(!blueshock_get(0, &b)) {
             setMaxPwm();
-            if(mode == 2)
-                splitStick();
-            else if(mode == 1)
-                dualStick();
+            handler();
         }
     }
+
     clas_client_stop(c);
     return EXIT_SUCCESS;
 }
