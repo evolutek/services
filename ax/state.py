@@ -9,7 +9,7 @@ def main():
         sys.exit(1)
 
     cs = CellaservProxy()
-    axs = [cs.ax[int(ax_id)] for ax_id in sys.argv[1:]]
+    axs = [cs.ax[ax_id] for ax_id in sys.argv[1:]]
     for ax in axs:
         print("AX:          {:4}".format(ax.identification))
         print("Position:    {:4}".format(ax.get_present_position()))

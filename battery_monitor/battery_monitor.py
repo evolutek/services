@@ -10,8 +10,8 @@ INTERVAL_BETWEEN_CHECKS = 10.0 # seconds
 
 class BatteryMonitor(Service):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
 
         self.cs = CellaservProxy()
 

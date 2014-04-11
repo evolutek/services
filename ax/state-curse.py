@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-__version__ = "1"
-
 import curses
 import sys
 
@@ -56,7 +54,7 @@ def app(stdscr):
     curses.curs_set(0) # invisible cursor
     stdscr.timeout(20) # 20 ms max delay
 
-    cs = CellaservProxy(host='192.168.1.168')
+    cs = CellaservProxy()
     axs = [cs.ax[ax_id] for ax_id in sys.argv[1:]]
 
     ax_windows = [AX(ax, stdscr.derwin(7, 20, i*7, 0)) for i, ax in enumerate(axs)]
