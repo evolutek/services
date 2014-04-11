@@ -78,7 +78,8 @@ class TrajMan(Service):
 
         self.soft_free_state = False
 
-        self.flush_serial()
+        #self.flush_serial()
+        self.init_sequence()
         #self.set_wheels_diameter(w1=53.234, w2=54.248)
         self.set_wheels_diameter(w1=53, w2=53)
         self.set_wheels_spacing(spacing=302.447)
@@ -336,6 +337,15 @@ class TrajMan(Service):
     def flush_serial(self):
         self.log_debug("Clearing CM buffer")
         self.write(bytes(1024))
+
+    @Service.action
+    def init_sequence(self):
+        self.log_debug("Sending init sequence")
+        self.write(bytes([5]))
+        self.write(bytes([254]))
+        self.write(bytes([0xAA]))
+        self.write(bytes([0xAA]))
+        self.write(bytes([0xAA]))
 
     @Service.action
     def flush_queue(self):

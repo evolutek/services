@@ -84,7 +84,7 @@ class Robot(Service):
 
         self.do_print = True
 
-        self.cs = CellaservProxy()
+        self.cs = CellaservProxy(host='192.168.1.230')
         self.tm = self.cs.trajman
 
         # Events
@@ -160,8 +160,8 @@ class Robot(Service):
 
             "wasd": self.wasd,
             "record": self.record,
-#            "computewheelssize": compute_wheels_size,
-#            "cws": compute_wheels_size,
+            "computewheelssize": self.compute_wheels_size,
+            "cws": self.compute_wheels_size,
 
         }
 
@@ -343,19 +343,29 @@ class Robot(Service):
     #######
 
     def get_pid_trsl(self):
-        self.print(self.tm.get_pid_trsl())
+        ret = self.tm.get_pid_trsl()
+        self.print(ret)
+        return ret
 
     def get_pid_rot(self):
-        self.print(self.tm.get_pid_rot())
+        ret = self.tm.get_pid_rot()
+        self.print(ret)
+        return ret
 
     def get_position(self):
-        self.print(self.tm.get_position())
+        ret = self.tm.get_position()
+        self.print(ret)
+        return ret
 
     def get_speeds(self):
-        self.print(self.tm.get_speeds())
+        ret = self.tm.get_speeds()
+        self.print(ret)
+        return ret
 
     def get_wheels(self):
-        self.print(self.tm.get_wheels())
+        ret = self.tm.get_wheels()
+        self.print(ret)
+        return ret
 
     ###############
     # Interactive #
@@ -512,6 +522,103 @@ class Robot(Service):
                     print("Command not found.")
             except Exception as e:
                 print(e)
+
+    def compute_wheels_size(self, arg):
+        self.free()
+        print("###############################################################")
+        print("## Hi ! and welcome to the wheels size computing assistant ! ##")
+        print("###############################################################")
+        print("Please place the robot on a special mark, facing the right direction. Press enter when ready")
+        input()
+        self.set_x(1000)
+        self.set_y(1000)
+        self.set_theta(0)
+        sleep(.1)
+        old = self.get_wheels()
+        sleep(.1)
+        speeds = self.get_speeds()
+        sleep(.1)
+        if arg == "all" or arg == "diam":
+            print("########################################################")
+            print("Please enter the length of the distance to mesure (mm) :")
+            print("########################################################")
+            length = float(input())
+            print("Length = ", length)
+            print("Getting the old settings...")
+            self.set_trsl_max_speed(100)
+            sleep(.1)
+            print("################################################################")
+            print("Do you want the robot to go to the second mark by itself (y/n) ?")
+            print("################################################################")
+            if input()[0] == 'y':
+                print("Going...")
+                self.goto_xy_block(1000 + length, 1000)
+            sleep(.1)
+            self.free()
+            print("#################################################################")
+            print("Please place the robot on the second mark, press Enter when ready")
+            print("#################################################################")
+            input()
+            newpos = self.get_position()
+            #mesured = ((newpos[0] - 1000) ** 2 + (newpos[1] - 1000) ** 2))
+            mesured = (newpos['x'] - 1000)
+            coef = float(length) / float(mesured)
+            coef1 = float(length) / float(mesured - math.sin(newpos['theta']) *
+                    old['spacing'])
+            coef2 = float(length) / float(mesured + math.sin(newpos['theta']) *
+                    old['spacing'])
+            print("The error was of :", length - (newpos['x'] - 1000))
+            print("The new diameters are :", old['left_diameter'] * coef,
+                    old['right_diameter'] * coef)
+            print("Setting the new diameters")
+            self.set_wheels_diameter(old['left_diameter'] * coef,
+                    old['right_diameter'] * coef)
+            sleep(.1)
+            print("########################")
+            print("Going back to the origin")
+            print("########################")
+            self.set_x(1000 + length)
+            self.goto_xy_block(1000, 1000)
+            self.free()
+        if arg == "all" or arg == "spacing":
+            print("##########################################")
+            print("Please enter the number of turns to mesure")
+            print("##########################################")
+            nbturns = float(input())
+            print("nbturns = ", nbturns)
+            nbturns = nbturns * 2
+            print("#######################################################")
+            print("Do you want the robot to do the turns by itself (y/n) ?")
+            print("#######################################################")
+            if input()[0] == 'y':
+                print("Going...")
+                self.rotate(nbturns * math.pi, 3, 3, 3, 1)
+                self.has_stopped.wait()
+                sleep(.1)
+                self.free()
+                print("############################################################")
+                print("Please replace the robot on the mark, press Enter when ready")
+                print("############################################################")
+            else:
+                print("################################################################")
+                print("Please make the robot do turns on itself, press Enter when ready")
+                print("################################################################")
+            input()
+            newpos = self.get_position()
+            mesured = newpos['theta'] + nbturns * math.pi
+            coef = float(mesured) / float(nbturns * math.pi)
+            print("The error was of :", newpos['theta'])
+            print("The new spacing is :", old['spacing'] * coef)
+            print("Setting the new spacing")
+            self.set_wheels_spacing(old['spacing'] * coef)
+            self.set_theta(0)
+            self.rotate(nbturns * math.pi, 3, 3, 3, 0)
+            self.has_stopped.wait()
+        self.set_trsl_max_speed(speeds['trmax'])
+        print("#############################################")
+        print("## GO TO THE MOTOR CARD AND SET THE VALUES ##")
+        print("#############################################")
+        print(self.get_wheels())
 
 def main():
     try:

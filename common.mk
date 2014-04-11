@@ -1,6 +1,6 @@
 PREFIX         ?= /root/services
 SYSTEMD_PREFIX ?= /usr/lib/systemd/system
-IP_MINI        ?= 192.168.1.168
+IP_MINI        ?= 192.168.1.230
 INSTALL_FILE   = install -m 644 -p -D
 INSTALL_EXEC   = install -m 755 -p -D
 INSTALL_LIB    = $(INSTALL_EXEC)
