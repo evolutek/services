@@ -318,7 +318,7 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
-        def set_pwm(self, left, right):
+    def set_pwm(self, left, right):
         tab = pack('B', 10)
         tab += pack('B', SET_PWM)
         tab += pack('ff', float(left), float(right))
@@ -450,7 +450,7 @@ class TrajMan(Service):
                 elif tab[1] == MOVE_END:
                     self.log_debug("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.cs('robot-stopped')
+                    self.cs('robot_stopped')
 
                 elif tab[1] == GET_SPEEDS:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
