@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
 import serial
-from threading import Thread, Event
-from queue import Queue, Empty
 import time
+from threading import Thread, Event
+from queue import Queue
 from struct import *
-from types import *
 
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
@@ -58,6 +57,16 @@ DESTINATION_UNREACHABLE = 2
 BAD_ORDER               = 3
 
 class TrajMan(Service):
+    """The trajman service is the interface between cellaserv and the motors of
+    the robot.
+
+    It uses two threads: one for the service and one to read the serial
+    asynchronously.
+
+    It can be switched to a "soft free" mode in order to stop processing
+    commands. This mode is used to completely stop the robot until the soft
+    free state is reset.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,10 +98,15 @@ class TrajMan(Service):
             print(*args, **kwargs)
 
     def write(self, data):
+        """Write data to serial and flush."""
         self.serial.write(data)
         self.serial.flush()
 
     def command(self, data):
+        """Handle commands sent to the card and wait for ack.
+
+        If trajman is in soft_tree (ie. does not process commands anymore) then
+        this function does not send the command."""
         if self.soft_free_state:
             return
 
@@ -101,8 +115,13 @@ class TrajMan(Service):
         self.ack_recieved.wait()
 
     def get_command(self, data):
+        """Handle commands that waits for an answer from the motors.
+
+        If trajman is in soft_tree (ie. does not process commands anymore) then
+        this function does not send the command and returns None."""
+
         if self.soft_free_state:
-            return
+            return None
 
         self.write(data)
         return self.queue.get(timeout=1)
@@ -168,16 +187,16 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
+    def unfree(self):
+        self.move_trsl(0, 1, 1, 1, 1)
+
+    @Service.action
     def soft_free(self):
         self.soft_free_state = True
 
     @Service.action
     def soft_asserv(self):
         self.soft_free_state = False
-
-    @Service.action
-    def unfree(self):
-        self.move_trsl(0, 1, 1, 1, 1)
 
     #######
     # Set #
@@ -298,6 +317,13 @@ class TrajMan(Service):
         tab += pack('f', float(spacing))
         self.command(bytes(tab))
 
+    @Service.action
+        def set_pwm(self, left, right):
+        tab = pack('B', 10)
+        tab += pack('B', SET_PWM)
+        tab += pack('ff', float(left), float(right))
+        self.command(bytes(tab))
+
     #######
     # Get #
     #######
@@ -355,7 +381,132 @@ class TrajMan(Service):
             ret.append(self.queue.get())
         return ret
 
-    # OLD
+    @Service.action
+    def is_moving(self):
+        return not self.has_stopped.is_set()
+
+    # Calibrate
+
+    @Service.action
+    def recalibration(self, sens):
+        tab = pack('B', 3);
+        tab += pack('B', RECALAGE)
+        tab += pack('B', int(sens))
+        return self.get_command(bytes(tab))
+
+    # Thread 2
+
+    def async_read(self):
+        """Read events from serial and add them to queue."""
+        while True:
+            length = unpack('b', self.serial.read())[0]
+            tab = [length]
+            self.log_debug("Message length expected:", length)
+            for i in range(length - 1): # Fixme: use read(lenght)?
+                tab += self.serial.read()
+            self.log_debug("Received message with length:", len(tab))
+
+            # Fixme: Use function lookup table?
+            if len(tab) > 1:
+                if tab[1] == ACKNOWLEDGE:
+                    self.log_debug("Robot acknowledged!")
+                    self.ack_recieved.set()
+
+                elif tab[1] == GET_PID_TRSL:
+                    self.log_debug("Received the robot's translation pid!")
+
+                    # TODO: use [2:]
+                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
+                    self.log_debug("P =", kp, "I =", ki, "D =", kd)
+
+                    self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
+
+                elif tab[1] == GET_PID_ROT:
+                    self.log_debug("Received the robot's rotation pid!")
+
+                    # TODO: use [2:]
+                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
+                    self.log_debug("P =", kp, "I =", ki, "D =", kd)
+
+                    self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
+
+                elif tab[1] == GET_POSITION:
+                    self.log_debug("Received the robot's position!")
+
+                    # TODO: use [2:]
+                    a, b, x, y, theta = unpack('=bbfff', bytes(tab))
+                    self.log_debug("Position is x:", x, "y:", y, "th:", theta)
+
+                    self.queue.put({
+                        'x': x,
+                        'y': y,
+                        'theta': theta,
+                    })
+
+                elif tab[1] == MOVE_BEGIN:
+                    self.log_debug("Robot started to move!")
+                    self.has_stopped.clear()
+
+                elif tab[1] == MOVE_END:
+                    self.log_debug("Robot stopped moving!")
+                    self.has_stopped.set()
+                    self.cs('robot-stopped')
+
+                elif tab[1] == GET_SPEEDS:
+                    a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
+
+                    self.queue.put({
+                        'tracc': tracc,
+                        'trdec': trdec,
+                        'trmax': trmax,
+                        'rtacc': rtacc,
+                        'rtdec': rtdec,
+                        'rtmax': rtmax,
+                        })
+
+                    self.log_debug("Translation:    Acc:", tracc, "\tDec:", trdec, "\tMax :", trmax,
+                    " (mm/(s*s) mm/(s*s) mm/s)")
+                    self.log_debug("Rotation:       Acc: {0:.3f}\tDec: {1:.3f}\tMax:"
+                            " {2:.3f} (rad/(s*s) rad/(s*s) rad/s)".format(rtacc, rtdec, rtmax))
+
+                elif tab[1] == GET_WHEELS:
+                    a, b, spacing, left_diameter, right_diameter = unpack('=bbfff', bytes(tab))
+
+                    self.queue.put({
+                        'spacing': spacing,
+                        'left_diameter': left_diameter,
+                        'right_diameter': right_diameter,
+                        })
+
+                    if PRINT_DEBUG:
+                        self.log_debug("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
+
+                elif tab[1] == RECALAGE:
+                    a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
+
+                    self.queue.put({
+                        'recal_xpos': recal_xpos,
+                        'recal_ypos': recal_ypos,
+                        'recal_theta': recal_theta,
+                        })
+
+                elif tab[1] == DEBUG_MESSAGE:
+                    counter, commandid, time, xpos, wpx, ypos, wpy, theta, wpth, trspeed, rotspeed, trp, tri, trd, rtp, rti, rtd = unpack("=bbfffffffffffffff", bytes(tab))
+                    if not fdebug.closed:
+                        self.debug_file.write(str(time) + " ")
+                        self.debug_file.write(str(xpos) + " " + str(ypos) + " " + str(theta) + " ")
+                        self.debug_file.write(str(wpx) + " " + str(wpy) + " " + str(wpth) + " ")
+                        self.debug_file.write(str(trspeed) + " " + str(rotspeed) + " ")
+                        self.debug_file.write(str(trp) + " " + str(tri) + " " + str(trd) + " ")
+                        self.debug_file.write(str(rtp) + " ")
+                        self.debug_file.write(str(rti) + " ")
+                        self.debug_file.write(str(rtd) + " ")
+                        self.debug_file.write("\n")
+                else:
+                    self.log_debug("Message not recognised")
+
+    # OLD self tests
+
     def test_trsl(self):
         self.GotoXY(10100, 10000)
         self.WaitForStop()
@@ -387,20 +538,10 @@ class TrajMan(Service):
                 int(2))
         self.command(bytes(tab))
 
-    @Service.action
-    def is_moving(self):
-        return not self.has_stopped.is_set()
-
-    # Calibrate
-
-    @Service.action
-    def recalibration(self, sens):
-        tab = pack('B', 3);
-        tab += pack('B', RECALAGE)
-        tab += pack('B', int(sens))
-        return self.get_command(bytes(tab))
-
     def compute_wheels_size(arg):
+        """ TODO: Move this to robot.py """
+        return False
+
         self.free()
         self.log_debug("###############################################################")
         self.log_debug("## Hi ! and welcome to the wheels size computing assistant ! ##")
@@ -492,113 +633,6 @@ class TrajMan(Service):
         self.log_debug("## GO TO THE MOTOR CARD AND SET THE VALUES ##")
         self.log_debug("#############################################")
         self.log_debug(self.get_wheels())
-
-    # Read serial
-    def async_read(self):
-        while True:
-            length = unpack('b', self.serial.read())[0]
-            tab = [length]
-            self.log_debug("Message length expected :", length)
-            for i in range(length - 1):
-                tab += self.serial.read()
-            self.log_debug("Received message with length :", len(tab))
-            if len(tab) > 1:
-                if tab[1] == ACKNOWLEDGE:
-                    self.log_debug("Robot acknowledged !")
-                    self.ack_recieved.set()
-
-                elif tab[1] == GET_PID_TRSL:
-                    self.log_debug("Received the robot's translation pid!")
-
-                    # TODO: use [2:]
-                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
-                    self.log_debug("P =", kp, "I =", ki, "D =", kd)
-
-                    self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
-
-                elif tab[1] == GET_PID_ROT:
-                    self.log_debug("Received the robot's rotation pid!")
-
-                    # TODO: use [2:]
-                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
-                    self.log_debug("P =", kp, "I =", ki, "D =", kd)
-
-                    self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
-
-                elif tab[1] == GET_POSITION:
-                    self.log_debug("Received the robot's position !")
-
-                    # TODO: use [2:]
-                    a, b, x, y, theta = unpack('=bbfff', bytes(tab))
-                    self.log_debug("Position is x:", x, "y:", y, "th:", theta)
-
-                    self.queue.put({
-                        'x': x,
-                        'y': y,
-                        'theta': theta,
-                    })
-
-                elif tab[1] == MOVE_BEGIN:
-                    self.log_debug("Robot started to move!")
-                    self.has_stopped.clear()
-
-                elif tab[1] == MOVE_END:
-                    self.log_debug("Robot stoped moving!")
-                    self.has_stopped.set()
-                    self.cs('robot-stopped')
-
-                elif tab[1] == GET_SPEEDS:
-                    a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
-
-                    self.queue.put({
-                        'tracc': tracc,
-                        'trdec': trdec,
-                        'trmax': trmax,
-                        'rtacc': rtacc,
-                        'rtdec': rtdec,
-                        'rtmax': rtmax,
-                        })
-
-                    self.log_debug("Translation :    Acc :", tracc, "\tDec :", trdec, "\tMax :", trmax,
-                    " (mm/(s*s) mm/(s*s) mm/s)")
-                    self.log_debug("Rotation :       Acc : {0:.3f}\tDec : {1:.3f}\tMax :"
-                            " {2:.3f} (rad/(s*s) rad/(s*s) rad/s)".format(rtacc, rtdec, rtmax))
-
-                elif tab[1] == GET_WHEELS:
-                    a, b, spacing, left_diameter, right_diameter = unpack('=bbfff', bytes(tab))
-
-                    self.queue.put({
-                        'spacing': spacing,
-                        'left_diameter': left_diameter,
-                        'right_diameter': right_diameter,
-                        })
-
-                    if PRINT_DEBUG:
-                        self.log_debug("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
-
-                elif tab[1] == RECALAGE:
-                    a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
-
-                    self.queue.put({
-                        'recal_xpos': recal_xpos,
-                        'recal_ypos': recal_ypos,
-                        'recal_theta': recal_theta,
-                        })
-
-                elif tab[1] == DEBUG_MESSAGE:
-                    counter, commandid, time, xpos, wpx, ypos, wpy, theta, wpth, trspeed, rotspeed, trp, tri, trd, rtp, rti, rtd = unpack("=bbfffffffffffffff", bytes(tab))
-                    if not fdebug.closed:
-                        self.debug_file.write(str(time) + " ")
-                        self.debug_file.write(str(xpos) + " " + str(ypos) + " " + str(theta) + " ")
-                        self.debug_file.write(str(wpx) + " " + str(wpy) + " " + str(wpth) + " ")
-                        self.debug_file.write(str(trspeed) + " " + str(rotspeed) + " ")
-                        self.debug_file.write(str(trp) + " " + str(tri) + " " + str(trd) + " ")
-                        self.debug_file.write(str(rtp) + " ")
-                        self.debug_file.write(str(rti) + " ")
-                        self.debug_file.write(str(rtd) + " ")
-                        self.debug_file.write("\n")
-                else:
-                    self.log_debug("Message not recognised")
 
 def main():
     trajman = TrajMan()

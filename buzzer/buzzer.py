@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-__version__ = "1"
-
 import fcntl
 import threading
 
@@ -11,8 +9,6 @@ from cellaserv.service import Service
 PWM_IOCTL_SET_FREQ) = range(0, 2)
 
 class Buzzer(Service):
-
-    __version__ = __version__
 
     def __init__(self):
         super().__init__()

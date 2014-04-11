@@ -1,16 +1,12 @@
-SERVICES = actuators \
+SERVICES = \
 	   ax \
-	   balloon \
-	   battery \
 	   battery_monitor \
 	   buzzer \
-	   date \
 	   leds \
-	   pmi \
-	   timer \
+	   robot \
+	   tirette \
 	   tracking \
-	   trajman \
-	   tweet
+	   trajman
 
 help::
 	@echo == How to use this Makefile ==
@@ -18,7 +14,7 @@ help::
 	@echo "    $ make install"
 	@echo Run one service individualy:
 	@echo "    $ make service-name"
-	@echo Upload all services to the mini:
+	@echo Upload all services to the robot:
 	@echo "    $ make upload"
 
 every_services::
