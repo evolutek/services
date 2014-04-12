@@ -3,6 +3,7 @@ SERVICES = \
 	   battery_monitor \
 	   buzzer \
 	   leds \
+	   mbed \
 	   robot \
 	   tirette \
 	   tracking \
