@@ -29,9 +29,9 @@ class Mbed(Service):
                 self.cs('log.mbed', msg='Connection closed')
                 break
 
-            if data[0] == ord('G'):
+            if data[0] == ord('g'):
                 self.cs('match_start')
-            elif data[0] == ord('1') or dara[1] == ord('1'):
+            elif data[0] == ord('1') or data[1] == ord('1'):
                 self.cs('robot_near')
             elif data[0] == ord('0'):
                 pass
