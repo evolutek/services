@@ -254,7 +254,7 @@ class Robot(Service):
     def recalibration(self, sens):
         try:
             self.print(self.tm.recalibration(sens=sens))
-        except: # Recalibration will timeout
+        except RequestTimeout: # Recalibration will timeout
             pass
 
     def find_position(self, c):
@@ -669,4 +669,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
