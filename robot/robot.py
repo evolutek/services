@@ -91,7 +91,8 @@ class Robot(Service):
 
         self.is_stopped = Event()
         self.robot_near_event = Event()
-        #self.robot_far_event = Event()
+        self.robot_far_event = Event()
+        self.robot_must_stop = Event()
 
         self.commands = {
             "help": self.help,
@@ -172,6 +173,11 @@ class Robot(Service):
         self.move_rot_block = self.wrap_block(self.move_rot)
         self.move_trsl_block = self.wrap_block(self.move_trsl)
 
+        self.goto_xy_block_avoid = self.wrap_block_avoid(self.goto_xy)
+        self.goto_theta_block_avoid = self.wrap_block_avoid(self.goto_theta)
+        self.move_rot_block_avoid = self.wrap_block_avoid(self.move_rot)
+        self.move_trsl_block_avoid = self.wrap_block_avoid(self.move_trsl)
+
     def wrap_block(self, f):
         def _f(*args, **kwargs):
             self.is_stopped.clear()
@@ -179,6 +185,26 @@ class Robot(Service):
             self.is_stopped.wait()
 
         return _f
+
+    def wrap_block_avoid(self, f):
+        """Evitement no. 1"""
+        def _f(*args, **kwargs):
+            self.is_stopped.clear()
+            f(*args, **kwargs)
+            while not self.is_stopped.is_set():
+                self.robot_must_stop.wait()
+                self.cs('log.robot', is_stopped=self.is_stopped.is_set(),
+                        robot_must_stop=self.robot_must_stop.is_set(),
+                        robot_near=self.robot_near_event.is_set())
+                if self.robot_near_event.is_set():
+                    self.cs('log.robot', msg='Robot evitement')
+                    self.free()
+                    self.robot_far_event.wait()
+                    f(*args, **kwargs)
+                else:
+                    break
+        return _f
+
     ##########
     # Events #
     ##########
@@ -186,10 +212,19 @@ class Robot(Service):
     @Service.event
     def robot_stopped(self):
         self.is_stopped.set()
+        self.robot_must_stop.set()
 
     @Service.event
     def robot_near(self):
         self.robot_near_event.set()
+        self.robot_must_stop.set()
+        self.robot_far_event.clear()
+
+    @Service.event
+    def robot_far(self):
+        self.robot_far_event.set()
+        self.robot_near_event.clear()
+        self.robot_must_stop.clear()
 
     #@Service.event
     #def robot_far(self):

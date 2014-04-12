@@ -26,6 +26,7 @@ class ia(Service):
 
         self.color = None
         self.diam = 0
+        self.IDONTCAREABOUTPEOPLE = False
 
     @Service.action
     def setup_match(self, color):
@@ -63,31 +64,48 @@ class ia(Service):
 
         self.match_stop_timer.start()
 
-        #self.cs.actuators.collector_open()
-        self.robot.goto_xy_block(600, 1500 + self.color * (1500 - 302/2 -
-            23))
+        self.robot.goto_xy_block(600, 1500 + self.color * (1500 - 302/2 - 23))
         self.robot.goto_xy_block(1100, 1500 + self.color * 1100)
+        self.robot.goto_theta_block(-math.pi / 2.)
         self.robot.goto_xy_block(600, 1500 + self.color * 1100)
-        self.robot.goto_theta_block(math.pi / 2 * -self.color)
+        self.robot.goto_theta_block(math.pi / 2. * -self.color)
         self.robot.goto_xy_block(600, 1500)
 
         self.robot.goto_xy_block(600, 1500 + self.color * 150)
+        self.robot.set_trsl_max_speed(100)
+
+        self.robot.goto_theta_block(-math.pi / 2.)
         self.robot.goto_theta_block(0)
+        self.match_stop()
+        return
+
+        #Going to fresque
+        self.IDONTCAREABOUTPEOPLE = True
         speeds = self.cs.trajman.get_speeds()
         self.robot.set_trsl_max_speed(100)
-        self.robot.goto_xy_block(142, 1500 + self.color * 150)
+        self.robot.goto_xy_block(150, 1500 + self.color * 150)
         self.robot.set_trsl_max_speed(speeds['trmax'])
         self.robot.goto_xy_block(600, 1500 + self.color * 150)
+        self.IDONTCAREABOUTPEOPLE = False
+        self.robot.goto_xy_block(600, 1500 + self.color * 600)
+        self.robot.goto_xy_block(1600, 1500 + self.color * 200)
+        self.robot.goto_theta_block(math.pi / 2 * self.color)
+        self.robot.goto_xy_block(1600, 1500 + self.color * 600)
+        self.robot.goto_xy_block(1600, 1500 - self.color * 200)
+        self.robot.goto_xy_block(600, 1500 - self.color * 600)
+        self.robot.goto_xy_block(600, 1500 - self.color * 1200)
 
     # Called by a timer thread
     def match_stop(self):
-        print("Stop")
+        self.cs('log.ia', msg='Stopping robot')
         self.cs.trajman.free()
         self.cs.trajman.soft_free()
 
     @Service.event
     def robot_near(self):
-        self.match_stop()
+        if self.match_start.is_set() and not self.IDONTCAREABOUTPEOPLE:
+            self.cs('log.ia', msg='Detected robot near')
+            self.match_stop()
 
 def main():
     service = ia()
