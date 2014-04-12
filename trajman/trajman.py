@@ -9,8 +9,6 @@ from struct import *
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 
-PRINT_DEBUG = True
-
 #######################
 # All the commands ID #
 #######################
@@ -97,8 +95,7 @@ class TrajMan(Service):
         self.log_debug("Init ended correctly")
 
     def log_debug(self, *args, **kwargs):
-        if PRINT_DEBUG:
-            print(*args, **kwargs)
+        self.cs('log.trajman', msg=args, **kwargs)
 
     def write(self, data):
         """Write data to serial and flush."""
