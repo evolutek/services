@@ -22,22 +22,19 @@ class Mbed(Service):
         conn, addr = s.accept()
         self.cs('log.mbed', msg='Connected by {0}'.format(addr))
 
-        counter = 0
         while True:
             # A message is 1 byte long
-            data = conn.recv(1)
+            data = conn.recv(2)
             if not data:
                 self.cs('log.mbed', msg='Connection closed')
                 break
 
             if data[0] == ord('G'):
                 self.cs('match_start')
-            elif data[0] == ord('1'):
-                counter += 1
-                if counter == 3:
-                    self.cs('robot_near')
+            elif data[0] == ord('1') or dara[1] == ord('1'):
+                self.cs('robot_near')
             elif data[0] == ord('0'):
-                counter = 0
+                pass
             else:
                 self.cs('log.mbed', msg='Unknown data: {0}'.format(data))
 
