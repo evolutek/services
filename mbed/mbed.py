@@ -22,6 +22,7 @@ class Mbed(Service):
         conn, addr = s.accept()
         self.cs('log.mbed', msg='Connected by {0}'.format(addr))
 
+        counter = 0
         while True:
             # A message is 1 byte long
             data = conn.recv(2)
@@ -32,9 +33,13 @@ class Mbed(Service):
             if data[0] == ord('g'):
                 self.cs('match_start')
             elif data[0] == ord('1') or data[1] == ord('1'):
-                self.cs('robot_near')
-            elif data[0] == ord('0'):
-                pass
+                counter += 1
+                if counter == 3:
+                    self.cs('robot_near')
+            elif data[0] == ord('0') or data[1] == ord('0'):
+                if counter >= 3:
+                    self.cs('robot_far')
+                counter = 0
             else:
                 self.cs('log.mbed', msg='Unknown data: {0}'.format(data))
 
