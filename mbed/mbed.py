@@ -16,6 +16,7 @@ class Mbed(Service):
         HOST = ''
         PORT =  4201
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((HOST, PORT))
         s.listen(1)
         conn, addr = s.accept()
@@ -33,7 +34,7 @@ class Mbed(Service):
                 self.cs('match_start')
             elif data[0] == ord('1'):
                 counter += 1
-                if counter == 2:
+                if counter == 3:
                     self.cs('robot_near')
             elif data[0] == ord('0'):
                 counter = 0
