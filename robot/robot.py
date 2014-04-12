@@ -169,6 +169,8 @@ class Robot(Service):
         self.goto_xy_block = self.wrap_block(self.goto_xy)
         self.goto_theta_block = self.wrap_block(self.goto_theta)
         self.curve_block = self.wrap_block(self.curve)
+        self.move_rot_block = self.wrap_block(self.move_rot)
+        self.move_trsl_block = self.wrap_block(self.move_trsl)
 
     def wrap_block(self, f):
         def _f(*args, **kwargs):
@@ -563,10 +565,10 @@ class Robot(Service):
             #mesured = ((newpos[0] - 1000) ** 2 + (newpos[1] - 1000) ** 2))
             mesured = (newpos['x'] - 1000)
             coef = float(length) / float(mesured)
-            coef1 = float(length) / float(mesured - math.sin(newpos['theta']) *
-                    old['spacing'])
-            coef2 = float(length) / float(mesured + math.sin(newpos['theta']) *
-                    old['spacing'])
+            coef1 = float(length)\
+                / float(mesured - math.sin(newpos['theta']) * old['spacing'])
+            coef2 = float(length)\
+                / float(mesured + math.sin(newpos['theta']) * old['spacing'])
             print("The error was of :", length - (newpos['x'] - 1000))
             print("The new diameters are :", old['left_diameter'] * coef,
                     old['right_diameter'] * coef)
@@ -578,6 +580,7 @@ class Robot(Service):
             print("Going back to the origin")
             print("########################")
             self.set_x(1000 + length)
+            self.set_theta(0)
             self.goto_xy_block(1000, 1000)
             self.free()
         if arg == "all" or arg == "spacing":
@@ -592,8 +595,7 @@ class Robot(Service):
             print("#######################################################")
             if input()[0] == 'y':
                 print("Going...")
-                self.rotate(nbturns * math.pi, 3, 3, 3, 1)
-                self.has_stopped.wait()
+                self.move_rot_block(nbturns * math.pi, 3, 3, 3, 1)
                 sleep(.1)
                 self.free()
                 print("############################################################")
@@ -612,8 +614,7 @@ class Robot(Service):
             print("Setting the new spacing")
             self.set_wheels_spacing(old['spacing'] * coef)
             self.set_theta(0)
-            self.rotate(nbturns * math.pi, 3, 3, 3, 0)
-            self.has_stopped.wait()
+            self.move_rot_block(nbturns * math.pi, 3, 3, 3, 0)
         self.set_trsl_max_speed(speeds['trmax'])
         print("#############################################")
         print("## GO TO THE MOTOR CARD AND SET THE VALUES ##")

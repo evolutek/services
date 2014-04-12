@@ -9,7 +9,7 @@ from struct import *
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 
-PRINT_DEBUG = False
+PRINT_DEBUG = True
 
 #######################
 # All the commands ID #
@@ -86,12 +86,15 @@ class TrajMan(Service):
         self.thread.start()
 
         self.soft_free_state = False
+        self.log_debug("Starting init")
 
         #self.flush_serial()
         self.init_sequence()
+        self.log_debug("Init ended correctly")
         #self.set_wheels_diameter(w1=53.234, w2=54.248)
-        self.set_wheels_diameter(w1=53, w2=53)
-        self.set_wheels_spacing(spacing=302.447)
+        self.set_wheels_diameter(w1=53.8364, w2=53.8364)
+        self.set_wheels_spacing(spacing=302.67)
+        self.log_debug("Init ended correctly")
 
     def log_debug(self, *args, **kwargs):
         if PRINT_DEBUG:
