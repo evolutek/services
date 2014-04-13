@@ -7,6 +7,7 @@ from cellaserv.service import Service, Variable
 from cellaserv.proxy import CellaservProxy
 from robot import Robot
 
+
 class ia(Service):
 
     match_start = Variable()
@@ -17,7 +18,6 @@ class ia(Service):
         self.cs = CellaservProxy()
 
         self.match_stop_timer = Timer(85, self.match_stop)
-        #self.balloon_timer = Timer(90, self.cs.balloon.go)
 
         self.start_event = Event()
 
@@ -25,12 +25,11 @@ class ia(Service):
         self.robot.setup()
 
         self.color = None
-        self.diam = 0
         self.IDONTCAREABOUTPEOPLE = False
 
     @Service.action
     def setup_match(self, color):
-        print("Setup")
+        self.cs('log.ia', msg="Setup done")
         if type(color) == str:
             if color[0] == "y":
                 self.color = 1
@@ -38,6 +37,7 @@ class ia(Service):
                 self.color = -1
         else:
             self.color = color
+
         self.robot.free()
         self.robot.set_x(142)
         self.robot.set_y(1500 + self.color * (1500 - 302/2 - 32))
@@ -48,48 +48,79 @@ class ia(Service):
         self.robot.set_pid_trsl(100, 0, 3000)
         self.robot.set_trsl_max_speed(500)
 
-        self.robot.set_rot_acc(10)
-        self.robot.set_rot_dec(10)
-        self.robot.set_rot_max_speed(10)
+        self.robot.set_rot_acc(3)
+        self.robot.set_rot_dec(3)
+        self.robot.set_rot_max_speed(3)
         self.robot.unfree()
-        #print("Getting tracker...")
-        #print("Tracker: " + self.cs.tracker.init_color(color=color))
-        #print("Done!")
+
+    @Service.action
+    def status(self):
+        return {'color': self.color,
+                'started': self.match_start.is_set()}
+
+
+    #TODO: Check this function as a color wrapper
+    def goto_xy_block(self, x, y):
+        if self.color == 1:
+            self.robot.goto_xy_block(x, 3000 - y)
+        else:
+            self.robot.goto_xy_block(x, y)
+
+
 
     # Called in a separate thread
     def start(self):
         print("Waiting...")
+        self.cs('log.ia', msg="Waiting")
         self.match_start.wait()
         print("Start!")
+        self.cs('log.ia', msg="Match started")
 
         self.match_stop_timer.start()
 
         self.robot.goto_xy_block(600, 1500 + self.color * (1500 - 302/2 - 23))
         self.robot.goto_xy_block(1100, 1500 + self.color * 1100)
-        self.robot.goto_theta_block(-math.pi / 2.)
+        self.cs('log.ia', message='Pushed first fire')
+        self.robot.goto_theta_block(-math.pi)
         self.robot.goto_xy_block(600, 1500 + self.color * 1100)
         self.robot.goto_theta_block(math.pi / 2. * -self.color)
         self.robot.goto_xy_block(600, 1500)
+        self.cs('log.ia', message='Pushed second fire')
 
         self.robot.goto_xy_block(600, 1500 + self.color * 150)
+        speeds = self.cs.trajman.get_speeds()
         self.robot.set_trsl_max_speed(100)
+        self.cs('log.ia', message='Going to scan pizzahut')
 
-        self.robot.goto_theta_block(-math.pi / 2.)
+        self.robot.goto_theta_block(-math.pi)
+        sleep(1)
+        self.IDONTCAREABOUTPEOPLE = True
+        #Starting back maneuver
         self.robot.goto_theta_block(0)
+
+        #Going to fresque
+        self.robot.set_trsl_max_speed(100)
+        self.cs('log.ia', message='Going to apply pizzahut')
+        self.robot.goto_xy_block(150, 1500 + self.color * 150)
+        self.robot.goto_xy_block(140, 1500 + self.color * 150)
+        self.cs('log.ia', message='Applied pizza hut trolol')
+        self.robot.set_trsl_max_speed(speeds['trmax'])
+        self.IDONTCAREABOUTPEOPLE = False
+
+        #Going to the last fire
+        self.robot.goto_xy_block(600, 1500 + self.color * 150)
+        self.robot.goto_theta_block(math.pi / 2. * self.color)
+        self.robot.goto_xy_block(600, 1500 + self.color * 400)
+        self.robot.goto_theta_block(0)
+        self.cs('log.ia', message='Last fire')
+        self.robot.goto_xy_block(1600, 1500 + self.color * 400)
+        self.robot.goto_theta_block(math.pi / 2. * self.color)
+        self.robot.goto_xy_block(1600, 1500 + 600 * self.color)
         self.match_stop()
         return
 
-        #Going to fresque
-        self.IDONTCAREABOUTPEOPLE = True
-        speeds = self.cs.trajman.get_speeds()
-        self.robot.set_trsl_max_speed(100)
-        self.robot.goto_xy_block(150, 1500 + self.color * 150)
-        self.robot.set_trsl_max_speed(speeds['trmax'])
-        self.robot.goto_xy_block(600, 1500 + self.color * 150)
-        self.IDONTCAREABOUTPEOPLE = False
-        self.robot.goto_xy_block(600, 1500 + self.color * 600)
-        self.robot.goto_xy_block(1600, 1500 + self.color * 200)
-        self.robot.goto_theta_block(math.pi / 2 * self.color)
+
+        self.robot.goto_theta_block(math.pi / 2. * self.color)
         self.robot.goto_xy_block(1600, 1500 + self.color * 600)
         self.robot.goto_xy_block(1600, 1500 - self.color * 200)
         self.robot.goto_xy_block(600, 1500 - self.color * 600)
