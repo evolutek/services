@@ -116,15 +116,28 @@ class ia(Service):
         self.robot.goto_xy_block(1600, 1500 + self.color * 400)
         self.robot.goto_theta_block(math.pi / 2. * self.color)
         self.robot.goto_xy_block(1600, 1500 + 600 * self.color)
+
+        self.robot.goto_theta_block(-self.color * math.pi / 2)
+        self.robot.goto_xy_block(1600, 1500 - 200 * self.color)
+        self.robot.goto_xy_block(1100, 1500 - 600 * self.color)
+        self.robot.goto_theta_block(math.pi / 4 * -self.color)
+        self.robot.goto_xy_block(1600, 1500 - 1100 * self.color)
+        self.robot.goto_theta_block(math.pi)
+        self.robot.goto_xy_block(1000, 1500 - 1100 * self.color)
+        self.robot.goto_theta_block(0)
+        self.robot.goto_xy_block(1600, 1500 - 1100 * self.color)
+        self.robot.goto_theta_block(math.pi / 2 * self.color)
+        self.robot.goto_xy_block(1600, 1500 - 600 * self.color)
+        self.robot.goto_theta_block(math.pi)
+        self.robot.goto_xy_block(1100, 1500 - 600 * self.color)
+        self.robot.goto_xy_block(600, 1500 - 150 * self.color)
+        self.robot.goto_theta_block(math.pi / 2 * -self.color)
+        self.robot.goto_xy_block(600, 1500 - 600 * self.color)
+
         self.match_stop()
         return
 
 
-        self.robot.goto_theta_block(math.pi / 2. * self.color)
-        self.robot.goto_xy_block(1600, 1500 + self.color * 600)
-        self.robot.goto_xy_block(1600, 1500 - self.color * 200)
-        self.robot.goto_xy_block(600, 1500 - self.color * 600)
-        self.robot.goto_xy_block(600, 1500 - self.color * 1200)
 
     # Called by a timer thread
     def match_stop(self):
