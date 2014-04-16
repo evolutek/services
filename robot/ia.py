@@ -43,14 +43,15 @@ class ia(Service):
         self.robot.set_y(1500 + self.color * (1500 - 302/2 - 32))
         self.robot.set_theta(0)
 
-        self.robot.set_trsl_dec(500)
-        self.robot.set_trsl_acc(500)
-        self.robot.set_pid_trsl(100, 0, 3000)
-        self.robot.set_trsl_max_speed(500)
+        self.robot.set_trsl_acc(1500)
+        self.robot.set_trsl_max_speed(900)
+        self.robot.set_trsl_dec(800)
+        self.robot.set_pid_trsl(200, 0, 2000)
 
-        self.robot.set_rot_acc(3)
-        self.robot.set_rot_dec(3)
-        self.robot.set_rot_max_speed(3)
+        self.robot.set_rot_acc(15)
+        self.robot.set_rot_dec(15)
+        self.robot.set_rot_max_speed(15)
+        self.robot.set_pid_rot(5000, 0, 25000)
         self.robot.unfree()
 
     @Service.action
