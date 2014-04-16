@@ -218,13 +218,12 @@ class TrajMan(Service):
 
     @Service.action
     def set_debug(self, state):
-        self.debug_file = open("debug.data", "w")
 
         tab = pack('B', 3)
         tab += pack('B', SET_DEBUG)
         if state:
+            self.debug_file = open("debug.data", "w")
             tab += pack('B', 1)
-            self.fdebug = open("debug.data", "w")
 
             data = self.get_pid_trsl()
             with open("trslpid.data", "w") as f:
@@ -492,7 +491,7 @@ class TrajMan(Service):
 
                 elif tab[1] == DEBUG_MESSAGE:
                     counter, commandid, time, xpos, wpx, ypos, wpy, theta, wpth, trspeed, rotspeed, trp, tri, trd, rtp, rti, rtd = unpack("=bbfffffffffffffff", bytes(tab))
-                    if not fdebug.closed:
+                    if self.debug_file and not self.debug_file.closed:
                         self.debug_file.write(str(time) + " ")
                         self.debug_file.write(str(xpos) + " " + str(ypos) + " " + str(theta) + " ")
                         self.debug_file.write(str(wpx) + " " + str(wpy) + " " + str(wpth) + " ")
