@@ -113,6 +113,7 @@ class Robot(Service):
             "f": self.free,
             "unfree": self.unfree,
             "re": self.unfree,
+            "debug": self.set_debug,
 
             # Move
 
@@ -299,6 +300,9 @@ class Robot(Service):
         self.set_x(2906)
         self.set_y(1000)
         self.set_theta(math.pi)
+
+    def set_debug(self, state):
+        self.print(self.tm.set_debug(state=state))
 
     ###########
     # Un/Free #
