@@ -11,7 +11,7 @@ class Trajman(Service):
         super().__init__()
 
         self.cs = CellaservProxy()
-        self.soft_free_state = False
+        self.disabled = False
 
         self.speeds = {'trmax': 0}
 
@@ -54,12 +54,12 @@ class Trajman(Service):
         pass
 
     @Service.action
-    def soft_free(self):
-        self.soft_free_state = True
+    def disable(self):
+        self.disabled = True
 
     @Service.action
-    def soft_asserv(self):
-        self.soft_free_state = False
+    def enable(self):
+        self.disabled = False
 
     #######
     # Set #

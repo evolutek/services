@@ -144,7 +144,7 @@ class ia(Service):
     def match_stop(self):
         self.cs('log.ia', msg='Stopping robot')
         self.cs.trajman.free()
-        self.cs.trajman.soft_free()
+        self.cs.trajman.disable()
 
     @Service.event
     def robot_near(self):

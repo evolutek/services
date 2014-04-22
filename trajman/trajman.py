@@ -62,9 +62,8 @@ class TrajMan(Service):
     It uses two threads: one for the service and one to read on the serial
     asynchronously.
 
-    It can be switched to a "soft free" mode in order to stop processing
-    commands. This mode is used to completely stop the robot until the soft
-    free state is reset.
+    It can be disabled in order to stop processing commands and make sure that
+    the robot will not move.
     """
 
     def __init__(self, *args, **kwargs):
@@ -78,25 +77,27 @@ class TrajMan(Service):
 
         # Used to generate debug
         self.debug_file = None
+        self.disabled = False
 
         self.serial = serial.Serial('/dev/ttySAC0', 115200)
+
+    def setup(self):
+        """Setup the service."""
+        super().setup()
 
         self.thread = Thread(target=self.async_read)
         self.thread.start()
 
-        self.soft_free_state = False
-        self.log_debug("Starting init")
-
-        #self.flush_serial()
+        self.log_debug("Init starting")
         self.init_sequence()
         self.log_debug("Init ended correctly")
-        #self.set_wheels_diameter(w1=53.234, w2=54.248)
+
         self.set_wheels_diameter(w1=53.8364, w2=53.8364)
         self.set_wheels_spacing(spacing=302.67)
-        self.log_debug("Init ended correctly")
 
     def log_debug(self, *args, **kwargs):
-        self.cs('log.trajman', msg=args, **kwargs)
+        """Send log to cellaserv"""
+        self.log(msg=args, **kwargs)
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -104,11 +105,13 @@ class TrajMan(Service):
         self.serial.flush()
 
     def command(self, data):
-        """Handle commands sent to the card and wait for ack.
+        """
+        Handle commands sent to the card and wait for ack.
 
-        If trajman is in soft_tree (ie. does not process commands anymore) then
-        this function does not send the command."""
-        if self.soft_free_state:
+        If trajman is disabled (ie. does not process commands anymore) then
+        this function does not send the command.
+        """
+        if self.disabled:
             return
 
         self.ack_recieved.clear()
@@ -116,12 +119,14 @@ class TrajMan(Service):
         self.ack_recieved.wait()
 
     def get_command(self, data):
-        """Handle commands that waits for an answer from the motors.
+        """
+        Handle commands that waits for an answer from the motors.
 
-        If trajman is in soft_tree (ie. does not process commands anymore) then
-        this function does not send the command and returns None."""
+        If trajman is disabled (ie. does not process commands anymore) then
+        this function does not send the command and returns None.
+        """
 
-        if self.soft_free_state:
+        if self.disabled:
             return None
 
         self.write(data)
@@ -192,12 +197,12 @@ class TrajMan(Service):
         self.move_trsl(0, 1, 1, 1, 1)
 
     @Service.action
-    def soft_free(self):
-        self.soft_free_state = True
+    def disable(self):
+        self.disabled = True
 
     @Service.action
-    def soft_asserv(self):
-        self.soft_free_state = False
+    def enable(self):
+        self.disabled = False
 
     #######
     # Set #
