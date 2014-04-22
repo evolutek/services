@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+from threading import Thread, Timer, Event
 from time import sleep
 import math
-from threading import Thread, Timer, Event
 
 from cellaserv.service import Service, Variable
 from cellaserv.proxy import CellaservProxy
