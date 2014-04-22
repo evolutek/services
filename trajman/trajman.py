@@ -55,10 +55,11 @@ DESTINATION_UNREACHABLE = 2
 BAD_ORDER               = 3
 
 class TrajMan(Service):
-    """The trajman service is the interface between cellaserv and the motors of
+    """
+    The trajman service is the interface between cellaserv and the motors of
     the robot.
 
-    It uses two threads: one for the service and one to read the serial
+    It uses two threads: one for the service and one to read on the serial
     asynchronously.
 
     It can be switched to a "soft free" mode in order to stop processing
@@ -374,6 +375,10 @@ class TrajMan(Service):
 
     @Service.action
     def flush_queue(self):
+        """
+        If the serial spits out more messages than expected it will be
+        necessary to clean the message buffer.
+        """
         self.log_debug("Clearing queue")
         ret = []
         while not self.queue.empty():
@@ -396,7 +401,7 @@ class TrajMan(Service):
     # Thread 2
 
     def async_read(self):
-        """Read events from serial and add them to queue."""
+        """Read events from serial and add them to the queue."""
         while True:
             length = unpack('b', self.serial.read())[0]
             tab = [length]
@@ -405,7 +410,6 @@ class TrajMan(Service):
                 tab += self.serial.read()
             self.log_debug("Received message with length:", len(tab))
 
-            # Fixme: Use function lookup table?
             if len(tab) > 1:
                 if tab[1] == ACKNOWLEDGE:
                     self.log_debug("Robot acknowledged!")
@@ -414,8 +418,7 @@ class TrajMan(Service):
                 elif tab[1] == GET_PID_TRSL:
                     self.log_debug("Received the robot's translation pid!")
 
-                    # TODO: use [2:]
-                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
+                    _, _, kp, ki, kd = unpack("=bbfff", bytes(tab))
                     self.log_debug("P =", kp, "I =", ki, "D =", kd)
 
                     self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
@@ -423,8 +426,7 @@ class TrajMan(Service):
                 elif tab[1] == GET_PID_ROT:
                     self.log_debug("Received the robot's rotation pid!")
 
-                    # TODO: use [2:]
-                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
+                    _, _, kp, ki, kd = unpack("=bbfff", bytes(tab))
                     self.log_debug("P =", kp, "I =", ki, "D =", kd)
 
                     self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
@@ -432,8 +434,7 @@ class TrajMan(Service):
                 elif tab[1] == GET_POSITION:
                     self.log_debug("Received the robot's position!")
 
-                    # TODO: use [2:]
-                    a, b, x, y, theta = unpack('=bbfff', bytes(tab))
+                    _, _, x, y, theta = unpack('=bbfff', bytes(tab))
                     self.log_debug("Position is x:", x, "y:", y, "th:", theta)
 
                     self.queue.put({
