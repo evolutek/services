@@ -132,6 +132,15 @@ class TrajMan(Service):
         self.write(data)
         return self.queue.get(timeout=1)
 
+    ########
+    # Meta #
+    ########
+
+    @Service.action
+    def status(self):
+        return {'disabled': self.disabled,
+                'moving': self.is_moving()}
+
     ###########
     # Actions #
     ###########
