@@ -221,7 +221,7 @@ class TrajMan(Service):
 
         tab = pack('B', 3)
         tab += pack('B', SET_DEBUG)
-        if state:
+        if state == "on":
             self.debug_file = open("debug.data", "w")
             tab += pack('B', 1)
 
@@ -235,7 +235,8 @@ class TrajMan(Service):
                 f.write("P = {kp} I = {ki} D = {kd}\n".format(**data))
         else:
             tab += pack('B', 0)
-            self.debug_file.close()
+            if self.debug_file:
+                self.debug_file.close()
 
         self.command(bytes(tab))
 
