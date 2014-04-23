@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+from threading import Thread, Timer, Event
 from time import sleep
 import math
-from threading import Thread, Timer, Event
 
 from cellaserv.service import Service, Variable
 from cellaserv.proxy import CellaservProxy
@@ -144,7 +144,7 @@ class ia(Service):
     def match_stop(self):
         self.cs('log.ia', msg='Stopping robot')
         self.cs.trajman.free()
-        self.cs.trajman.soft_free()
+        self.cs.trajman.disable()
 
     @Service.event
     def robot_near(self):

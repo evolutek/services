@@ -55,15 +55,15 @@ DESTINATION_UNREACHABLE = 2
 BAD_ORDER               = 3
 
 class TrajMan(Service):
-    """The trajman service is the interface between cellaserv and the motors of
+    """
+    The trajman service is the interface between cellaserv and the motors of
     the robot.
 
-    It uses two threads: one for the service and one to read the serial
+    It uses two threads: one for the service and one to read on the serial
     asynchronously.
 
-    It can be switched to a "soft free" mode in order to stop processing
-    commands. This mode is used to completely stop the robot until the soft
-    free state is reset.
+    It can be disabled in order to stop processing commands and make sure that
+    the robot will not move.
     """
 
     def __init__(self, *args, **kwargs):
@@ -77,25 +77,27 @@ class TrajMan(Service):
 
         # Used to generate debug
         self.debug_file = None
+        self.disabled = False
 
         self.serial = serial.Serial('/dev/ttySAC0', 115200)
+
+    def setup(self):
+        """Setup the service."""
+        super().setup()
 
         self.thread = Thread(target=self.async_read)
         self.thread.start()
 
-        self.soft_free_state = False
-        self.log_debug("Starting init")
-
-        #self.flush_serial()
+        self.log_debug("Init starting")
         self.init_sequence()
         self.log_debug("Init ended correctly")
-        #self.set_wheels_diameter(w1=53.234, w2=54.248)
+
         self.set_wheels_diameter(w1=53.8364, w2=53.8364)
         self.set_wheels_spacing(spacing=302.67)
-        self.log_debug("Init ended correctly")
 
     def log_debug(self, *args, **kwargs):
-        self.cs('log.trajman', msg=args, **kwargs)
+        """Send log to cellaserv"""
+        self.log(msg=args, **kwargs)
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -103,11 +105,13 @@ class TrajMan(Service):
         self.serial.flush()
 
     def command(self, data):
-        """Handle commands sent to the card and wait for ack.
+        """
+        Handle commands sent to the card and wait for ack.
 
-        If trajman is in soft_tree (ie. does not process commands anymore) then
-        this function does not send the command."""
-        if self.soft_free_state:
+        If trajman is disabled (ie. does not process commands anymore) then
+        this function does not send the command.
+        """
+        if self.disabled:
             return
 
         self.ack_recieved.clear()
@@ -115,16 +119,27 @@ class TrajMan(Service):
         self.ack_recieved.wait()
 
     def get_command(self, data):
-        """Handle commands that waits for an answer from the motors.
+        """
+        Handle commands that waits for an answer from the motors.
 
-        If trajman is in soft_tree (ie. does not process commands anymore) then
-        this function does not send the command and returns None."""
+        If trajman is disabled (ie. does not process commands anymore) then
+        this function does not send the command and returns None.
+        """
 
-        if self.soft_free_state:
+        if self.disabled:
             return None
 
         self.write(data)
         return self.queue.get(timeout=1)
+
+    ########
+    # Meta #
+    ########
+
+    @Service.action
+    def status(self):
+        return {'disabled': self.disabled,
+                'moving': self.is_moving()}
 
     ###########
     # Actions #
@@ -191,12 +206,12 @@ class TrajMan(Service):
         self.move_trsl(0, 1, 1, 1, 1)
 
     @Service.action
-    def soft_free(self):
-        self.soft_free_state = True
+    def disable(self):
+        self.disabled = True
 
     @Service.action
-    def soft_asserv(self):
-        self.soft_free_state = False
+    def enable(self):
+        self.disabled = False
 
     #######
     # Set #
@@ -375,6 +390,10 @@ class TrajMan(Service):
 
     @Service.action
     def flush_queue(self):
+        """
+        If the serial spits out more messages than expected it will be
+        necessary to clean the message buffer.
+        """
         self.log_debug("Clearing queue")
         ret = []
         while not self.queue.empty():
@@ -397,7 +416,7 @@ class TrajMan(Service):
     # Thread 2
 
     def async_read(self):
-        """Read events from serial and add them to queue."""
+        """Read events from serial and add them to the queue."""
         while True:
             length = unpack('b', self.serial.read())[0]
             tab = [length]
@@ -406,7 +425,6 @@ class TrajMan(Service):
                 tab += self.serial.read()
             self.log_debug("Received message with length:", len(tab))
 
-            # Fixme: Use function lookup table?
             if len(tab) > 1:
                 if tab[1] == ACKNOWLEDGE:
                     self.log_debug("Robot acknowledged!")
@@ -415,8 +433,7 @@ class TrajMan(Service):
                 elif tab[1] == GET_PID_TRSL:
                     self.log_debug("Received the robot's translation pid!")
 
-                    # TODO: use [2:]
-                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
+                    _, _, kp, ki, kd = unpack("=bbfff", bytes(tab))
                     self.log_debug("P =", kp, "I =", ki, "D =", kd)
 
                     self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
@@ -424,8 +441,7 @@ class TrajMan(Service):
                 elif tab[1] == GET_PID_ROT:
                     self.log_debug("Received the robot's rotation pid!")
 
-                    # TODO: use [2:]
-                    a, b, kp, ki, kd = unpack("=bbfff", bytes(tab))
+                    _, _, kp, ki, kd = unpack("=bbfff", bytes(tab))
                     self.log_debug("P =", kp, "I =", ki, "D =", kd)
 
                     self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
@@ -433,8 +449,7 @@ class TrajMan(Service):
                 elif tab[1] == GET_POSITION:
                     self.log_debug("Received the robot's position!")
 
-                    # TODO: use [2:]
-                    a, b, x, y, theta = unpack('=bbfff', bytes(tab))
+                    _, _, x, y, theta = unpack('=bbfff', bytes(tab))
                     self.log_debug("Position is x:", x, "y:", y, "th:", theta)
 
                     self.queue.put({
@@ -504,135 +519,6 @@ class TrajMan(Service):
                         self.debug_file.write("\n")
                 else:
                     self.log_debug("Message not recognised")
-
-    # OLD self tests
-
-    def test_trsl(self):
-        self.GotoXY(10100, 10000)
-        self.WaitForStop()
-        time.sleep(0.1)
-        self.GotoXY(10000, 10000)
-        self.WaitForStop()
-        time.sleep(0.1)
-
-    def test_rot(self):
-        self.GotoTheta(1.6)
-        self.WaitForStop()
-        time.sleep(0.1)
-        self.GotoTheta(3)
-        self.WaitForStop()
-        time.sleep(0.1)
-        self.GotoTheta(0)
-        self.WaitForStop()
-        time.sleep(0.1)
-
-    def test_queued(self):
-        tab = pack('B', 19)
-        tab += pack('B', MOVE_TRSL)
-        tab += pack('ffffb', float(100), float(100), float(100), float(100),
-                int(3))
-        self.command(bytes(tab))
-        tab = pack('B', 19)
-        tab += pack('B', MOVE_TRSL)
-        tab += pack('ffffb', float(100), float(100), float(100), float(100),
-                int(2))
-        self.command(bytes(tab))
-
-    def compute_wheels_size(arg):
-        """ TODO: Move this to robot.py """
-        return False
-
-        self.free()
-        self.log_debug("###############################################################")
-        self.log_debug("## Hi ! and welcome to the wheels size computing assistant ! ##")
-        self.log_debug("###############################################################")
-        self.log_debug("Please place the robot on a special mark, facing the right direction. Press enter when ready")
-        input()
-        self.set_x(1000)
-        self.set_y(1000)
-        self.set_theta(0)
-        time.sleep(.1)
-        old = self.get_wheels()
-        time.sleep(.1)
-        speeds = self.get_speeds()
-        time.sleep(.1)
-        if arg == "all" or arg == "diam":
-            self.log_debug("########################################################")
-            self.log_debug("Please enter the length of the distance to mesure (mm) :")
-            self.log_debug("########################################################")
-            length = float(sys.stdin.readline())
-            self.log_debug("Length = ", length)
-            self.log_debug("Getting the old settings...")
-            self.set_trsl_max_speed(100)
-            time.sleep(.1)
-            self.log_debug("################################################################")
-            self.log_debug("Do you want the robot to go to the second mark by itself (y/n) ?")
-            self.log_debug("################################################################")
-            if input()[0] == 'y':
-                self.log_debug("Going...")
-                self.goto_xy_block(1000 + length, 1000)
-            time.sleep(.1)
-            self.free()
-            self.log_debug("#################################################################")
-            self.log_debug("Please place the robot on the second mark, press Enter when ready")
-            self.log_debug("#################################################################")
-            sys.stdin.readline()
-            newpos = self.get_position()
-            #mesured = ((newpos[0] - 1000) ** 2 + (newpos[1] - 1000) ** 2))
-            mesured = (newpos[0] - 1000)
-            coef = float(length) / float(mesured)
-            coef1 = float(length) / float(mesured - math.sin(newpos[2]) * old[0])
-            coef2 = float(length) / float(mesured + math.sin(newpos[2]) * old[0])
-            self.log_debug("The error was of :", length - (newpos[0] - 1000))
-            self.log_debug("The new diameters are :", old[1] * coef, old[2] * coef)
-            self.log_debug("Setting the new diameters")
-            self.set_wheels_diameter(old['left'] * coef, old['right'] * coef)
-            time.sleep(.1)
-            self.log_debug("########################")
-            self.log_debug("Going back to the origin")
-            self.log_debug("########################")
-            self.set_x(1000 + length)
-            self.goto_xy_block(1000, 1000)
-            self.free()
-        if arg == "all" or arg == "spacing":
-            self.log_debug("##########################################")
-            self.log_debug("Please enter the number of turns to mesure")
-            self.log_debug("##########################################")
-            nbturns = float(sys.stdin.readline())
-            self.log_debug("nbturns = ", nbturns)
-            nbturns = nbturns * 2
-            self.log_debug("#######################################################")
-            self.log_debug("Do you want the robot to do the turns by itself (y/n) ?")
-            self.log_debug("#######################################################")
-            if sys.stdin.readline()[0] == 'y':
-                self.log_debug("Going...")
-                self.rotate(nbturns * math.pi, 3, 3, 3, 1)
-                self.has_stopped.wait()
-                time.sleep(.1)
-                self.free()
-                self.log_debug("############################################################")
-                self.log_debug("Please replace the robot on the mark, press Enter when ready")
-                self.log_debug("############################################################")
-            else:
-                self.log_debug("################################################################")
-                self.log_debug("Please make the robot do turns on itself, press Enter when ready")
-                self.log_debug("################################################################")
-            sys.stdin.readline()
-            newpos = self.get_position()
-            mesured = newpos['theta'] + nbturns * math.pi
-            coef = float(mesured) / float(nbturns * math.pi)
-            self.log_debug("The error was of :", newpos['theta'])
-            self.log_debug("The new spacing is :", old['spacing'] * coef)
-            self.log_debug("Setting the new spacing")
-            self.set_wheels_spacing(old['spacing'] * coef)
-            self.set_theta(0)
-            self.rotate(nbturns * math.pi, 3, 3, 3, 0)
-            self.has_stopped.wait()
-        self.set_trsl_max_speed(speeds['trmax'])
-        self.log_debug("#############################################")
-        self.log_debug("## GO TO THE MOTOR CARD AND SET THE VALUES ##")
-        self.log_debug("#############################################")
-        self.log_debug(self.get_wheels())
 
 def main():
     trajman = TrajMan()
