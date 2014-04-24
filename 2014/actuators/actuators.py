@@ -18,10 +18,10 @@ AX_ID_COLLECT_ELEVATOR = "12"
 
 class Actuators(Service):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
 
-        self.cs = CellaservProxy(self)
+        self.cs = CellaservProxy()
 
     @Service.action
     def free(self):

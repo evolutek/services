@@ -8,4 +8,4 @@ build::
 run::
 	$(PYTHON3) actuators.py
 
-include ../common.mk
+include ../../common.mk
