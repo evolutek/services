@@ -7,7 +7,7 @@ class TestConfig(Service):
 
     @Service.action
     def test(self):
-        return foo
+        return self.foo()
 
 def main():
     service = TestConfig()
