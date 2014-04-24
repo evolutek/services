@@ -44,6 +44,8 @@ class Config(Service):
             self.config_file.add_section(section)
             self.config_file.set(section, option, value)
 
+        self('config.{0}.{1}'.format(section, option), value=value)
+
         self.write_config()
 
     def write_config(self):
