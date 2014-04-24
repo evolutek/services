@@ -25,7 +25,10 @@ class Config(Service):
         if section + '.' + option in self.temporary_config:
             return self.temporary_config[section + '.' + option]
 
-        return self.config_file.get(section, option)
+        try:
+            return self.config_file.get(section, option)
+        except NoSectionError:
+            raise KeyError("Unknown config: {0}.{1}".format(section, option))
 
     @Service.action
     def set(self, section:str, option:str, value:str) -> None:
