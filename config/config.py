@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from configparser import ConfigParser, NoSectionError
+from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from cellaserv.service import Service
 
@@ -21,14 +21,17 @@ class Config(Service):
 
     @Service.action
     def get(self, section:str, option:str) -> str:
-        """Return value from config file."""
+        """
+        Return value from config file. If the section does not exists, a
+        KeyError is raised.
+        """
         if section + '.' + option in self.temporary_config:
             return self.temporary_config[section + '.' + option]
 
         try:
             return self.config_file.get(section, option)
-        except NoSectionError:
-            raise KeyError("Unknown config: {0}.{1}".format(section, option))
+        except (NoSectionError, NoOptionError) as exc:
+            raise KeyError("Unknown config: {0}.{1}".format(section, option)) from exc
 
     @Service.action
     def set(self, section:str, option:str, value:str) -> None:
