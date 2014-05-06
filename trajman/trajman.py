@@ -23,6 +23,7 @@ GET_PID_ROT             = 11
 GET_POSITION            = 12
 GET_SPEEDS              = 13
 GET_WHEELS              = 14
+GET_DELTA_MAX           = 15
 GOTO_XY                 = 100
 GOTO_THETA              = 101
 MOVE_TRSL               = 102
@@ -43,6 +44,8 @@ SET_Y                   = 159
 SET_THETA               = 160
 SET_DIAM_WHEELS         = 161
 SET_WHEELS_SPACING      = 162
+SET_DELAT_MAX_ROT       = 163
+SET_DELAT_TRSL_ROT      = 163
 SET_DEBUG               = 200
 ERROR                   = 255
 
@@ -95,9 +98,20 @@ class TrajMan(Service):
         self.set_wheels_diameter(w1=53.8364, w2=53.8364)
         self.set_wheels_spacing(spacing=302.67)
 
+        self.set_pid_trsl(500, 0, 1450)
+        self.set_trsl_acc(1500)
+        self.set_trsl_dec(900)
+        self.set_trsl_max_speed(800)
+
+        self.set_pid_rot(60000, 0, 450000)
+        self.set_rot_acc(15)
+        self.set_rot_dec(15)
+        self.set_rot_max_speed(15)
+
     def log_debug(self, *args, **kwargs):
         """Send log to cellaserv"""
-        self.log(msg=args, **kwargs)
+        #self.log(msg=args, **kwargs)
+        print(*args, **kwargs)
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -326,6 +340,20 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
+    def set_delta_max_rot(self, delta):
+        tab = pack('B', 6)
+        tab += pack('B', SET_DELTA_MAX_ROT)
+        tab += pack('f', float(delta))
+        self.command(bytes(tab))
+
+    @Service.action
+    def set_delta_max_trsl(self, delta):
+        tab = pack('B', 6)
+        tab += pack('B', SET_DELTA_MAX_TRSL)
+        tab += pack('f', float(delta))
+        self.command(bytes(tab))
+
+    @Service.action
     def set_wheels_spacing(self, spacing):
         tab = pack('B', 6)
         tab += pack('B', SET_WHEELS_SPACING)
@@ -372,6 +400,12 @@ class TrajMan(Service):
     def get_wheels(self):
         tab = pack('B', 2)
         tab += pack('B', GET_WHEELS)
+        return self.get_command(bytes(tab))
+
+    @Service.action
+    def get_delta_max(self):
+        tab = pack('B', 2)
+        tab += pack('B', GET_DELTA_MAX)
         return self.get_command(bytes(tab))
 
     @Service.action
@@ -495,6 +529,17 @@ class TrajMan(Service):
 
                     if PRINT_DEBUG:
                         self.log_debug("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
+
+                elif tab[1] == GET_DELTA_MAX:
+                    a, b, translation, rotation = unpack('bbff', bytes(tab))
+
+                    self.queue.put({
+                        'delta_rot_max': rotation,
+                        'delta_trsl_max': translation,
+                        })
+
+                    self.log_debug("delta_rot_max : ", rotation,
+                    "delta_trsl_max", translation)
 
                 elif tab[1] == RECALAGE:
                     a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
