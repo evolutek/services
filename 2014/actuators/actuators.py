@@ -8,6 +8,14 @@ AX_ID_COLLECT_ROTATION = "10"
 AX_ID_COLLECT = "11"
 AX_ID_COLLECT_ELEVATOR = "12"
 
+AX_ELEVATOR_UP = 1000
+AX_ELEVATOR_DOWN = 0
+AX_ELEVATOR_FIREPLACE = 300
+AX_COLLECTOR_OPEN = 1000
+AX_COLLECTOR_CLOSE = 650
+AX_ROTATION_START = 320
+AX_ROTATION_END = 0
+
 # others to come
 
 # TODO:
@@ -23,6 +31,7 @@ class Actuators(Service):
 
         self.cs = CellaservProxy()
 
+
     @Service.action
     def free(self):
         for ax in [
@@ -32,56 +41,67 @@ class Actuators(Service):
                 ]:
             self.cs.ax[ax].free()
 
-    @service.action
-    def reset(self):
-        self.cs.ax[AX_ID_COLLECT].mode_joint()
-        self.cs.ax[AX_ID_COLLECT].move(goal=520)
-
+    @Service.action("reset")
+    def collector_reset(self):
         self.cs.ax[AX_ID_COLLECT_ELEVATOR].mode_joint()
-        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=200)
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_UP)
 
+        sleep(.5)
         self.cs.ax[AX_ID_COLLECT_ROTATION].mode_joint()
-        self.cs.ax[AX_ID_COLLECT_ROTATION].move(goal=200)
+        self.cs.ax[AX_ID_COLLECT_ROTATION].move(goal=AX_ROTATION_START)
+        self.rotation = AX_ROTATION_START
+
+        self.cs.ax[AX_ID_COLLECT].mode_joint()
+        self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_OPEN)
+        
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_UP)
+
 
     @Service.action
     def collector_open(self):
         self.cs.ax[AX_ID_COLLECT].mode_joint()
-        self.cs.ax[AX_ID_COLLECT].move(goal=520)
+        self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_OPEN)
 
     @Service.action
     def collector_close(self):
         self.cs.ax[AX_ID_COLLECT].mode_joint()
-        self.cs.ax[AX_ID_COLLECT].move(goal=520)
+        self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_CLOSE)
 
     @Service.action
     def collector_hold(self):
         self.cs.ax[AX_ID_COLLECT].mode_wheel()
-        self.cs.ax[AX_ID_COLLECT].turn(side=1, speed=512)
+        # increase if too weak
+        self.cs.ax[AX_ID_COLLECT].turn(side=-1, speed=350)
 
     @Service.action
     def collector_up(self):
-        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=800)
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_UP)
 
     def collector_is_up(self):
-        return self.cs.ax[AX_ID_COLLECT_ELEVATOR].get_present_position == 800
+        return self.cs.ax[AX_ID_COLLECT_ELEVATOR].get_present_position == AX_ELEVATOR_UP
 
     @Service.action
     def collector_down(self):
-        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=200)
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_DOWN)
 
     def collector_is_down(self):
-        return self.cs.ax[AX_ID_COLLECT_ELEVATOR].get_present_position == 200
+        return self.cs.ax[AX_ID_COLLECT_ELEVATOR].get_present_position == AX_ELEVATOR_DOWN
 
     @Service.action
     def collector_fireplace(self):
-        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=400)
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_FIREPLACE)
 
     @Service.action
     def collector_rotate(self):
         if not self.collector_is_up():
             self.collector_up()
-        rotate = 800 if self.rotation == 400 else 400
-        self.cs.ax[AX_ID_COLLECT_ROTATION].move(goal=rotate)
+
+        if self.rotation == AX_ROTATION_START:
+            self.rotation = AX_ROTATION_END
+        else:
+            self.rotation = AX_ROTATION_START
+
+        self.cs.ax[AX_ID_COLLECT_ROTATION].move(goal=self.rotation)
 
     @Service.action
     def test(self):
