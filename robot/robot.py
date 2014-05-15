@@ -29,6 +29,7 @@ __doc__ = \
      Setup
          cl -- Clear serial buffer
          fq -- Flush message queue
+         init -- Sends init sequence to the motor card
 
          free                                    //Alias : f
          unfree                                  //Alias : re
@@ -62,6 +63,9 @@ __doc__ = \
          sety y
          sett theta
 
+         setdeltarot theta
+         setdeltatrsl mm
+
          setwheels diam1 diam2                   //Alias: sw
          setspacing dist
 
@@ -71,6 +75,7 @@ __doc__ = \
          getpos                                  //Alias: gp
          getspeeds
          getwheels
+         getdelta
 
     Interactive commands
          cws [all|spacing|diam] -- Compute wheels size
@@ -101,6 +106,7 @@ class Robot(Service):
 
             "cl": self.flush_serial,
             "fq": self.flush_queue,
+            "init": self.init_sequence,
 
             "recal": self.recalibration,
             "find_pos": self.find_position,
@@ -150,6 +156,9 @@ class Robot(Service):
             "sw": self.set_wheels_diameter,
             "setspacing": self.set_wheels_spacing,
 
+            "setdeltarot": self.set_delta_rot,
+            "setdeltatrsl": self.set_delta_trsl,
+
             # Get
 
             "getpidt": self.get_pid_trsl,
@@ -159,6 +168,7 @@ class Robot(Service):
             "getspeeds": self.get_speeds,
             "gs": self.get_speeds,
             "getwheels": self.get_wheels,
+            "getdelta": self.get_delta_max,
 
             "wasd": self.wasd,
             "record": self.record,
@@ -251,6 +261,9 @@ class Robot(Service):
 
     def flush_queue(self):
         self.print(self.tm.flush_queue())
+
+    def init_sequence(self):
+        self.print(self.tm.init_sequence())
 
     def recalibration(self, sens):
         try:
@@ -379,6 +392,12 @@ class Robot(Service):
     def set_wheels_spacing(self, spacing):
         self.print(self.tm.set_wheels_spacing(spacing=spacing))
 
+    def set_delta_rot(self, theta):
+        self.print(self.tm.set_delta_max_rot(delta=theta))
+
+    def set_delta_trsl(self, mm):
+        self.print(self.tm.set_delta_max_trsl(delta=mm))
+
     #######
     # Get #
     #######
@@ -405,6 +424,11 @@ class Robot(Service):
 
     def get_wheels(self):
         ret = self.tm.get_wheels()
+        self.print(ret)
+        return ret
+
+    def get_delta_max(self):
+        ret = self.tm.get_delta_max()
         self.print(ret)
         return ret
 
