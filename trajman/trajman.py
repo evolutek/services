@@ -14,6 +14,7 @@ from cellaserv.proxy import CellaservProxy
 #######################
 
 DEBUG_MESSAGE           = 127
+DEBUG                   = 126
 ACKNOWLEDGE             = 200
 MOVE_BEGIN              = 128
 MOVE_END                = 129
@@ -44,8 +45,8 @@ SET_Y                   = 159
 SET_THETA               = 160
 SET_DIAM_WHEELS         = 161
 SET_WHEELS_SPACING      = 162
-SET_DELAT_MAX_ROT       = 163
-SET_DELAT_TRSL_ROT      = 163
+SET_DELTA_MAX_ROT       = 163
+SET_DELTA_MAX_TRSL      = 164
 SET_DEBUG               = 200
 ERROR                   = 255
 
@@ -98,15 +99,15 @@ class TrajMan(Service):
         self.set_wheels_diameter(w1=53.8364, w2=53.8364)
         self.set_wheels_spacing(spacing=302.67)
 
-        self.set_pid_trsl(500, 0, 1450)
-        self.set_trsl_acc(1500)
-        self.set_trsl_dec(900)
-        self.set_trsl_max_speed(800)
+        self.set_pid_trsl(220 , 1000000, 8)
+        self.set_trsl_acc(2500)
+        self.set_trsl_dec(1500)
+        self.set_trsl_max_speed(900)
 
-        self.set_pid_rot(60000, 0, 450000)
-        self.set_rot_acc(15)
-        self.set_rot_dec(15)
-        self.set_rot_max_speed(15)
+        self.set_pid_rot(60000, 1000, 10)
+        self.set_rot_acc(21)
+        self.set_rot_dec(21)
+        self.set_rot_max_speed(21)
 
     def log_debug(self, *args, **kwargs):
         """Send log to cellaserv"""
@@ -411,7 +412,7 @@ class TrajMan(Service):
     @Service.action
     def flush_serial(self):
         self.log_debug("Clearing CM buffer")
-        self.write(bytes(1024))
+        self.write(bytes(128))
 
     @Service.action
     def init_sequence(self):
@@ -454,10 +455,10 @@ class TrajMan(Service):
         while True:
             length = unpack('b', self.serial.read())[0]
             tab = [length]
-            self.log_debug("Message length expected:", length)
+            #self.log_debug("Message length expected:", length)
             for i in range(length - 1): # Fixme: use read(lenght)?
                 tab += self.serial.read()
-            self.log_debug("Received message with length:", len(tab))
+            #self.log_debug("Received message with length:", len(tab))
 
             if len(tab) > 1:
                 if tab[1] == ACKNOWLEDGE:
@@ -531,7 +532,7 @@ class TrajMan(Service):
                         self.log_debug("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
 
                 elif tab[1] == GET_DELTA_MAX:
-                    a, b, translation, rotation = unpack('bbff', bytes(tab))
+                    a, b, translation, rotation = unpack('=bbff', bytes(tab))
 
                     self.queue.put({
                         'delta_rot_max': rotation,
@@ -562,6 +563,20 @@ class TrajMan(Service):
                         self.debug_file.write(str(rti) + " ")
                         self.debug_file.write(str(rtd) + " ")
                         self.debug_file.write("\n")
+
+                elif tab[1] == ERROR:
+                    self.log_debug("CM returned an error")
+                    if tab[2] == 1:
+                        self.log_debug("Error was : COULD_NOT_READ")
+                    elif tab[2] == 2:
+                        self.log_debug("Error was : DESTINATION_UNREACHABLE")
+                    elif tab[2] == 3:
+                        self.log_debug("Error was : BAD_ORDER")
+
+                elif tab[1] == DEBUG:
+                    message = bytes(tab)[2:]
+                    print(message)
+
                 else:
                     self.log_debug("Message not recognised")
 
