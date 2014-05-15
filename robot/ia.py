@@ -6,6 +6,7 @@ import math
 from cellaserv.service import Service, Variable
 from cellaserv.proxy import CellaservProxy
 from robot import Robot
+from objective import Objective, ObjectiveList, FedexObjective
 
 
 class ia(Service):
@@ -42,16 +43,20 @@ class ia(Service):
         self.robot.set_x(142)
         self.robot.set_y(1500 + self.color * (1500 - 302/2 - 32))
         self.robot.set_theta(0)
+        self.objectives = ObjectiveList()
+        self.objectives.append(FedexObjective(1000, 1500, 10))
+        self.objectives.append(FedexObjective(1000, 2000, 10))
+        self.objectives.append(FedexObjective(1000, 1000, 10))
 
-        self.robot.set_trsl_acc(1500)
-        self.robot.set_trsl_max_speed(900)
-        self.robot.set_trsl_dec(800)
-        self.robot.set_pid_trsl(200, 0, 2000)
+        #self.robot.set_trsl_acc(1500)
+        #self.robot.set_trsl_max_speed(900)
+        #self.robot.set_trsl_dec(800)
+        #self.robot.set_pid_trsl(200, 0, 2000)
 
-        self.robot.set_rot_acc(15)
-        self.robot.set_rot_dec(15)
-        self.robot.set_rot_max_speed(15)
-        self.robot.set_pid_rot(5000, 0, 25000)
+        #self.robot.set_rot_acc(15)
+        #self.robot.set_rot_dec(15)
+        #self.robot.set_rot_max_speed(15)
+        #self.robot.set_pid_rot(5000, 0, 25000)
         self.robot.unfree()
 
     @Service.action
@@ -77,11 +82,27 @@ class ia(Service):
         print("Start!")
         self.cs('log.ia', msg="Match started")
 
-        self.match_stop_timer.start()
+
+        # TODO: UNCOMMENT BEFORE GOING TO THE COUPE DE FRANCE
+        #self.match_stop_timer.start()
 
         self.robot.goto_xy_block(600, 1500 + self.color * (1500 - 302/2 - 23))
         self.robot.goto_xy_block(1100, 1500 + self.color * 1100)
         self.cs('log.ia', message='Pushed first fire')
+        #import pdb; pdb.set_trace()
+        while len(self.objectives):
+            for obj in self.objectives:
+                print(obj.get_position())
+            pos = self.robot.get_position()
+            print(pos)
+            obj = self.objectives.get_best(pos['x'], pos['y'])
+            print("going to obj", obj.get_position())
+            self.robot.goto_xy_block(*(obj.get_position()))
+            obj.execute(self.robot, self.cs)
+            self.objectives.remove(obj)
+        return
+
+
         self.robot.goto_theta_block(-math.pi)
         self.robot.goto_xy_block(600, 1500 + self.color * 1100)
         self.robot.goto_theta_block(math.pi / 2. * -self.color)
