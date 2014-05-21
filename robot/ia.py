@@ -6,7 +6,7 @@ import math
 from cellaserv.service import Service, Variable
 from cellaserv.proxy import CellaservProxy
 from robot import Robot
-from objective import Objective, ObjectiveList, FedexObjective
+from objective import *
 
 
 class ia(Service):
@@ -43,10 +43,8 @@ class ia(Service):
         self.robot.set_x(142)
         self.robot.set_y(1500 + self.color * (1500 - 302/2 - 32))
         self.robot.set_theta(0)
-        self.objectives = ObjectiveList()
-        self.objectives.append(FedexObjective(1000, 1500, 10))
-        self.objectives.append(FedexObjective(1000, 2000, 10))
-        self.objectives.append(FedexObjective(1000, 1000, 10))
+        self.objectives =\
+        DefaultObjectives.generate_default_objectives(self.color)
 
         #self.robot.set_trsl_acc(1500)
         #self.robot.set_trsl_max_speed(900)
@@ -91,15 +89,16 @@ class ia(Service):
         self.cs('log.ia', message='Pushed first fire')
         #import pdb; pdb.set_trace()
         while len(self.objectives):
-            for obj in self.objectives:
-                print(obj.get_position())
             pos = self.robot.get_position()
             print(pos)
             obj = self.objectives.get_best(pos['x'], pos['y'])
-            print("going to obj", obj.get_position())
+            print("going to obj " +  str(obj))
             self.robot.goto_xy_block(*(obj.get_position()))
             obj.execute(self.robot, self.cs)
             self.objectives.remove(obj)
+            print("--------------------")
+            input()
+        print("DONE")
         return
 
 
