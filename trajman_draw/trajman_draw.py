@@ -143,7 +143,11 @@ class Trajman(Service):
 
     @Service.action
     def get_position(self):
-        return
+        return {
+                "x": (turtle.xcor() + 2000/10/2) * 10,
+                "y": (turtle.ycor() + 3000/10/2) * 10,
+                "theta": 0,
+                }
 
     @Service.action
     def get_speeds(self):
