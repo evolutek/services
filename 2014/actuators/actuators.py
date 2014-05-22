@@ -9,12 +9,12 @@ AX_ID_COLLECT = "11"
 AX_ID_COLLECT_ELEVATOR = "12"
 
 AX_ELEVATOR_UP = 1000
-AX_ELEVATOR_DOWN = 0
+AX_ELEVATOR_DOWN = 200
 AX_ELEVATOR_FIREPLACE = 300
 AX_COLLECTOR_OPEN = 1000
 AX_COLLECTOR_CLOSE = 650
-AX_ROTATION_START = 320
-AX_ROTATION_END = 0
+AX_ROTATION_START = 420
+AX_ROTATION_END = 60
 
 # others to come
 
@@ -46,15 +46,16 @@ class Actuators(Service):
         self.cs.ax[AX_ID_COLLECT_ELEVATOR].mode_joint()
         self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_UP)
 
-        sleep(.5)
+        sleep(1)
         self.cs.ax[AX_ID_COLLECT_ROTATION].mode_joint()
         self.cs.ax[AX_ID_COLLECT_ROTATION].move(goal=AX_ROTATION_START)
         self.rotation = AX_ROTATION_START
 
+        sleep(2)
         self.cs.ax[AX_ID_COLLECT].mode_joint()
         self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_OPEN)
-        
-        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_UP)
+
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_DOWN)
 
 
     @Service.action
