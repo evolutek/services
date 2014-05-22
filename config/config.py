@@ -47,6 +47,7 @@ class Config(Service):
             self.config_file.add_section(section)
             self.config_file.set(section, option, value)
 
+        # Publish update event
         self('config.{0}.{1}'.format(section, option), value=value)
 
         self.write_config()
@@ -75,6 +76,7 @@ class Config(Service):
 
         self.write_config()
         self.temporary_config.clear()
+
 
 def main():
     config = Config()
