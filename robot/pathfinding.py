@@ -1,27 +1,35 @@
 #!/usr/bin/env python3
 
-### API - DO NOT USE OTHER FUNCTIONS ###
+### API ###
 
+# Initializes the map (must be called once, at the beginning)
 def Init(map_width, map_height, robot_radius):
     Data.mapw = map_width
     Data.maph = map_height
     Data.robot_radius = robot_radius
 
+# Add an obstacle in the map
 def AddObstacle(x, y, radius, tag = "No tag"):
     Data.obstacles.append(Obstacle(x, y, radius, tag))
 
+# Remove an obstacle located at a specified position
 def RemoveObstacleByPosition(x, y):
     Data.obstacles = filter(lambda o: o.x != x or o.y != y, Data.obstacles)
 
+# Remove an obstacle that has a specific tag
 def RemoveObstacleByTag(tag):
     Data.obstacles = filter(lambda o: o.tag != tag, Data.obstacles)
 
+# Clear all the obstacles in the map
 def ClearObstacles():
     Data.obstacles.clear()
 
+# Compute the shortest path between (rx, ry) and (dx, dy).
+# Includes the initial position of the robot (first point) and the destination (last point).
 def GetPath(rx, ry, dx, dy):
     return PathFinding(rx, ry, dx, dy, Data.obstacles)
 
+# Compute the lenght of a path (given by GetPath)
 def PathLen(path):
     l = 0
     for i in range(0, len(path) - 1):

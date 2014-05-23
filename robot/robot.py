@@ -217,6 +217,11 @@ class Robot(Service):
                     break
         return _f
 
+    # Makes the robot go to a point avoiding obstacles.
+    # In order to decrease the computing time, coordinates are expressed in cm and not mm
+    # (this is why we have many '// 10')A
+    # We use aproximates coordinates for every point except for the last point
+    # The first point is ignored since it's the robot's position
     def goto_with_pathfinding(self, x, y):
         pos = self.get_position()
         path = pathfinding.GetPath(pos['x'] // 10, pos['y'] // 10, x // 10, y // 10)
