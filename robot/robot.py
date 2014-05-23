@@ -4,6 +4,7 @@ import math
 import json
 from threading import Event, Thread
 from time import sleep
+import pathfinding
 
 try:
     from pygments import highlight
@@ -215,6 +216,13 @@ class Robot(Service):
                 else:
                     break
         return _f
+
+    def goto_with_pathfinding(self, x, y):
+        pos = self.get_position()
+        path = pathfinding.GetPath(pos['x'] // 10, pos['y'] // 10, x // 10, y // 10)
+        for i in range(1, len(path) - 1):
+            self.goto_xy_block(path[i].x * 10, path[i].y * 10)
+        self.goto_xy_block(x, y)
 
     ##########
     # Events #

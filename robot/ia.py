@@ -8,6 +8,8 @@ from cellaserv.proxy import CellaservProxy
 from robot import Robot
 from objective import *
 
+import pathfinding
+
 
 class ia(Service):
 
@@ -30,6 +32,7 @@ class ia(Service):
 
     @Service.action
     def setup_match(self, color):
+        pathfinding.Init(200, 300, 15)
         self.cs('log.ia', msg="Setup done")
         if type(color) == str:
             if color[0] == "y":
