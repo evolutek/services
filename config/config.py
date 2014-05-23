@@ -47,6 +47,7 @@ class Config(Service):
             self.config_file.add_section(section)
             self.config_file.set(section, option, value)
 
+        # Publish update event
         self('config.{0}.{1}'.format(section, option), value=value)
 
         self.write_config()
@@ -75,6 +76,16 @@ class Config(Service):
 
         self.write_config()
         self.temporary_config.clear()
+
+    @Service.action
+    def list(self) -> str:
+        """Get the content of the config file."""
+        ret = {}
+        for section in self.config_file.sections():
+            ret[section] = {}
+            for k, v in self.config_file.items(section):
+                ret[section][k] = v
+        return ret
 
 def main():
     config = Config()
