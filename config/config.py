@@ -77,6 +77,15 @@ class Config(Service):
         self.write_config()
         self.temporary_config.clear()
 
+    @Service.action
+    def list(self) -> str:
+        """Get the content of the config file."""
+        ret = {}
+        for section in self.config_file.sections():
+            ret[section] = {}
+            for k, v in self.config_file.items(section):
+                ret[section][k] = v
+        return ret
 
 def main():
     config = Config()
