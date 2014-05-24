@@ -13,12 +13,11 @@ try:
 except ImportError:
     HAVE_PYGMENTS = False
 
+from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-
 import pathfinding
 
-# TODO: Robot bacon (Pilipe!)
 
 __doc__ = """     ##########################
      # Welcome to your robot! #
@@ -291,34 +290,38 @@ class Robot(Service):
             pass
 
     def find_position(self, c):
-        """ c = -1 (blue) or c = 1 (red) """
+        """ c = -1 (red) or c = 1 (yellow) """
         color = int(c)
         self.free()
-        self.set_theta(math.pi / 2.0)
+        speeds = self.get_speeds()
+        self.set_theta(0)
         self.set_trsl_max_speed(200)
+        self.set_trsl_acc(200)
+        self.set_trsl_dec(200)
         self.set_x(1000)
         self.set_y(1000)
 
-        print("Recalibration Y")
-        self.recalibration_block(0)
-        sleep(.1)
-        self.flush_queue()
-        print("Stopped")
-        print("Y pos found!")
-
-        self.goto_xy_block(1000, 1000)
-        self.goto_theta_block(math.pi / 2.0 + math.pi / 2.0 * color)
-
+        #import pdb; pdb.set_trace()
         print("Recalibration X")
         self.recalibration_block(0)
-        sleep(.1)
-        self.flush_queue()
+        sleep(1)
+        print("Stopped")
         print("X pos found!")
 
-        self.goto_xy_block(1500 + 1100 * color, 1000)
-        self.set_trsl_max_speed(100)
-        self.goto_xy_block(1500 + 1500 * color - 185 / 2.0 * color, 1000)
-        self.set_trsl_max_speed(800)
+        self.goto_xy_block(470, 1000)
+        self.goto_theta_block(math.pi / 2 * -color)
+
+        print("Recalibration Y")
+        self.recalibration_block(0)
+        sleep(1)
+        print("Y pos found!")
+        self.goto_xy_block(470, 1500 + 1200 * color)
+        sleep(.5)
+        self.goto_xy_block(410, 1500 + 1310 * color)
+
+        self.set_trsl_max_speed(speeds['trmax'])
+        self.set_trsl_acc(speeds['tracc'])
+        self.set_trsl_dec(speeds['trdec'])
         print("Setup done")
 
     def side_minus_one(self):
