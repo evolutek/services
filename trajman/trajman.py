@@ -96,17 +96,17 @@ class TrajMan(Service):
         self.init_sequence()
         self.log_debug("Init ended correctly")
 
-        self.set_wheels_diameter(w1=53.8364, w2=53.8364)
-        self.set_wheels_spacing(spacing=302.67)
+        self.set_wheels_diameter(w1=53.7196, w2=53.7196)
+        self.set_wheels_spacing(spacing=302.59)
 
         self.set_pid_trsl(220 , 1000000, 8)
-        self.set_trsl_acc(2500)
-        self.set_trsl_dec(1500)
+        self.set_trsl_acc(1500)
+        self.set_trsl_dec(900)
         self.set_trsl_max_speed(900)
 
         self.set_pid_rot(60000, 1000, 10)
         self.set_rot_acc(21)
-        self.set_rot_dec(21)
+        self.set_rot_dec(15)
         self.set_rot_max_speed(21)
 
     def log_debug(self, *args, **kwargs):
@@ -446,7 +446,7 @@ class TrajMan(Service):
         tab = pack('B', 3);
         tab += pack('B', RECALAGE)
         tab += pack('B', int(sens))
-        return self.get_command(bytes(tab))
+        return self.command(bytes(tab))
 
     # Thread 2
 
@@ -528,8 +528,7 @@ class TrajMan(Service):
                         'right_diameter': right_diameter,
                         })
 
-                    if PRINT_DEBUG:
-                        self.log_debug("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
+                    self.log_debug("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
 
                 elif tab[1] == GET_DELTA_MAX:
                     a, b, translation, rotation = unpack('=bbff', bytes(tab))
@@ -553,16 +552,19 @@ class TrajMan(Service):
 
                 elif tab[1] == DEBUG_MESSAGE:
                     counter, commandid, time, xpos, wpx, ypos, wpy, theta, wpth, trspeed, rotspeed, trp, tri, trd, rtp, rti, rtd = unpack("=bbfffffffffffffff", bytes(tab))
-                    if self.debug_file and not self.debug_file.closed:
-                        self.debug_file.write(str(time) + " ")
-                        self.debug_file.write(str(xpos) + " " + str(ypos) + " " + str(theta) + " ")
-                        self.debug_file.write(str(wpx) + " " + str(wpy) + " " + str(wpth) + " ")
-                        self.debug_file.write(str(trspeed) + " " + str(rotspeed) + " ")
-                        self.debug_file.write(str(trp) + " " + str(tri) + " " + str(trd) + " ")
-                        self.debug_file.write(str(rtp) + " ")
-                        self.debug_file.write(str(rti) + " ")
-                        self.debug_file.write(str(rtd) + " ")
-                        self.debug_file.write("\n")
+                    try:
+                        if self.debug_file and not self.debug_file.closed:
+                            self.debug_file.write(str(time) + " ")
+                            self.debug_file.write(str(xpos) + " " + str(ypos) + " " + str(theta) + " ")
+                            self.debug_file.write(str(wpx) + " " + str(wpy) + " " + str(wpth) + " ")
+                            self.debug_file.write(str(trspeed) + " " + str(rotspeed) + " ")
+                            self.debug_file.write(str(trp) + " " + str(tri) + " " + str(trd) + " ")
+                            self.debug_file.write(str(rtp) + " ")
+                            self.debug_file.write(str(rti) + " ")
+                            self.debug_file.write(str(rtd) + " ")
+                            self.debug_file.write("\n")
+                    except:
+                        pass
 
                 elif tab[1] == ERROR:
                     self.log_debug("CM returned an error")
