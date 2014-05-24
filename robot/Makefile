@@ -9,4 +9,4 @@ run::
 include ../common.mk
 
 upload::
-	scp robot.py root@$(IP_MINI):$(PREFIX)
+	scp robot.py root@$(HOST_ROBOT):$(PREFIX)

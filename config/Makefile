@@ -9,4 +9,4 @@ run::
 include ../common.mk
 
 upload::
-	scp $(EXE) root@$(IP_MINI):$(PREFIX)
+	scp $(EXE) root@$(HOST_ROBOT):$(PREFIX)
