@@ -43,9 +43,6 @@ class ia(Service):
             self.color = color
 
         self.robot.free()
-        self.robot.set_x(142)
-        self.robot.set_y(1500 + self.color * (1500 - 302/2 - 32))
-        self.robot.set_theta(0)
         self.objectives =\
         DefaultObjectives.generate_default_objectives(self.color)
 
@@ -87,10 +84,7 @@ class ia(Service):
         # TODO: UNCOMMENT BEFORE GOING TO THE COUPE DE FRANCE
         #self.match_stop_timer.start()
 
-        self.robot.goto_xy_block(600, 1500 + self.color * (1500 - 302/2 - 23))
-        self.robot.goto_xy_block(1100, 1500 + self.color * 1100)
-        self.cs('log.ia', message='Pushed first fire')
-        #import pdb; pdb.set_trace()
+        self.robot.goto_xy_block(616, 1500 + self.color * (890))
         while len(self.objectives):
             pos = self.robot.get_position()
             print(pos)
@@ -100,63 +94,7 @@ class ia(Service):
             obj.execute(self.robot, self.cs)
             self.objectives.remove(obj)
             print("--------------------")
-            input()
         print("DONE")
-        return
-
-
-        self.robot.goto_theta_block(-math.pi)
-        self.robot.goto_xy_block(600, 1500 + self.color * 1100)
-        self.robot.goto_theta_block(math.pi / 2. * -self.color)
-        self.robot.goto_xy_block(600, 1500)
-        self.cs('log.ia', message='Pushed second fire')
-
-        self.robot.goto_xy_block(600, 1500 + self.color * 150)
-        speeds = self.cs.trajman.get_speeds()
-        self.robot.set_trsl_max_speed(100)
-        self.cs('log.ia', message='Going to scan pizzahut')
-
-        self.robot.goto_theta_block(-math.pi)
-        sleep(1)
-        self.IDONTCAREABOUTPEOPLE = True
-        #Starting back maneuver
-        self.robot.goto_theta_block(0)
-
-        #Going to fresque
-        self.robot.set_trsl_max_speed(100)
-        self.cs('log.ia', message='Going to apply pizzahut')
-        self.robot.goto_xy_block(150, 1500 + self.color * 150)
-        self.robot.goto_xy_block(140, 1500 + self.color * 150)
-        self.cs('log.ia', message='Applied pizza hut trolol')
-        self.robot.set_trsl_max_speed(speeds['trmax'])
-        self.IDONTCAREABOUTPEOPLE = False
-
-        #Going to the last fire
-        self.robot.goto_xy_block(600, 1500 + self.color * 150)
-        self.robot.goto_theta_block(math.pi / 2. * self.color)
-        self.robot.goto_xy_block(600, 1500 + self.color * 400)
-        self.robot.goto_theta_block(0)
-        self.cs('log.ia', message='Last fire')
-        self.robot.goto_xy_block(1600, 1500 + self.color * 400)
-        self.robot.goto_theta_block(math.pi / 2. * self.color)
-        self.robot.goto_xy_block(1600, 1500 + 600 * self.color)
-
-        self.robot.goto_theta_block(-self.color * math.pi / 2)
-        self.robot.goto_xy_block(1600, 1500 - 200 * self.color)
-        self.robot.goto_xy_block(1100, 1500 - 600 * self.color)
-        self.robot.goto_theta_block(math.pi / 4 * -self.color)
-        self.robot.goto_xy_block(1600, 1500 - 1100 * self.color)
-        self.robot.goto_theta_block(math.pi)
-        self.robot.goto_xy_block(1000, 1500 - 1100 * self.color)
-        self.robot.goto_theta_block(0)
-        self.robot.goto_xy_block(1600, 1500 - 1100 * self.color)
-        self.robot.goto_theta_block(math.pi / 2 * self.color)
-        self.robot.goto_xy_block(1600, 1500 - 600 * self.color)
-        self.robot.goto_theta_block(math.pi)
-        self.robot.goto_xy_block(1100, 1500 - 600 * self.color)
-        self.robot.goto_xy_block(600, 1500 - 150 * self.color)
-        self.robot.goto_theta_block(math.pi / 2 * -self.color)
-        self.robot.goto_xy_block(600, 1500 - 600 * self.color)
 
         self.match_stop()
         return
