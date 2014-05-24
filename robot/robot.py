@@ -4,7 +4,6 @@ import math
 import json
 from threading import Event, Thread
 from time import sleep
-import pathfinding
 
 try:
     from pygments import highlight
@@ -17,10 +16,11 @@ except ImportError:
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
+import pathfinding
+
 # TODO: Robot bacon (Pilipe!)
 
-__doc__ = \
-"""     ##########################
+__doc__ = """     ##########################
      # Welcome to your robot! #
      ##########################
 
@@ -82,6 +82,7 @@ __doc__ = \
          cws [all|spacing|diam] -- Compute wheels size
          record -- Record and replay actions
          wasd -- Control it yourself!"""
+
 
 class Robot(Service):
 
@@ -171,8 +172,13 @@ class Robot(Service):
             "getwheels": self.get_wheels,
             "getdelta": self.get_delta_max,
 
+            # Misc
+
             "wasd": self.wasd,
             "record": self.record,
+
+            # Calibrate
+
             "computewheelssize": self.compute_wheels_size,
             "cws": self.compute_wheels_size,
 
@@ -258,7 +264,7 @@ class Robot(Service):
         if self.do_print:
             if HAVE_PYGMENTS:
                 print(highlight(json.dumps(data, sort_keys=True, indent=4),
-                        JsonLexer(), Terminal256Formatter()), end='')
+                      JsonLexer(), Terminal256Formatter()), end='')
             else:
                 print(data)
 
@@ -535,13 +541,13 @@ class Robot(Service):
                 block = not msg.startswith('!')
                 pos = self.tm.get_position()
                 keys.append(record.KeyPosition(self, self.cs, block,
-                    pos['x'], pos['y']))
+                                               pos['x'], pos['y']))
 
             elif msg == 'kt':
                 block = not msg.startswith('!')
                 pos = self.tm.get_position()
                 keys.append(record.KeyTheta(self, self.cs, block,
-                    pos['theta']))
+                                            pos['theta']))
 
             elif msg.startswith('@'):
                 key_action = record.KeyAction(self, self.cs, msg[1:])
@@ -569,7 +575,7 @@ class Robot(Service):
                 os.chmod(filename, st.st_mode | stat.S_IEXEC)
 
                 print("You can now run ./{}".format(filename))
-                print("It will wait for the event '{}-start'".format(name.replace('_', '-')))
+                print("It will wait for the event '{}-start'".format(name))
 
             elif 'replay'.startswith(msg):
                 for key in keys:
