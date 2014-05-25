@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
+import math
+import json
 from threading import Event, Thread
 from time import sleep
-import json
-import math
-import os
 
 try:
     from pygments import highlight
@@ -17,7 +16,6 @@ except ImportError:
 from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-import cellaserv.settings
 import pathfinding
 
 
@@ -78,6 +76,8 @@ __doc__ = """     ##########################
          getspeeds
          getwheels
          getdelta
+         getvectrsl
+         getvecrot
 
     Interactive commands
          cws [all|spacing|diam] -- Compute wheels size
@@ -87,17 +87,13 @@ __doc__ = """     ##########################
 
 class Robot(Service):
 
-    def __init__(self, robot):
+    def __init__(self):
         super().__init__()
 
         self.do_print = True
 
-        self.cs = CellaservProxy()
-
-        if robot is not None:
-            self.tm = self.cs.trajman[robot]
-        else:
-            self.tm = self.cs.trajman
+        self.cs = CellaservProxy(host='192.168.1.230')
+        self.tm = self.cs.trajman
 
         # Events
 
@@ -176,6 +172,8 @@ class Robot(Service):
             "gs": self.get_speeds,
             "getwheels": self.get_wheels,
             "getdelta": self.get_delta_max,
+            "getvectrsl": self.get_vector_trsl,
+            "getvecrot": self.get_vector_rot,
 
             # Misc
 
@@ -307,6 +305,7 @@ class Robot(Service):
         self.set_x(1000)
         self.set_y(1000)
 
+        #import pdb; pdb.set_trace()
         print("Recalibration X")
         self.recalibration_block(0)
         print("X pos found!")
@@ -463,6 +462,16 @@ class Robot(Service):
         self.print(ret)
         return ret
 
+    def get_vector_trsl(self):
+        ret = self.tm.get_vector_trsl()
+        self.print(ret)
+        return ret
+
+    def get_vector_rot(self):
+        ret = self.tm.get_vector_rot()
+        self.print(ret)
+        return ret
+
     ###############
     # Interactive #
     ###############
@@ -600,7 +609,6 @@ class Robot(Service):
             elif 'quit'.startswith(msg):
                 return
 
-    @Service.thread
     def loop(self):
         print(__doc__)
 
@@ -617,8 +625,6 @@ class Robot(Service):
                     self.commands[words[0]](*words[1:])
                 else:
                     print("Command not found.")
-            except (KeyboardInterrupt, EOFError):
-                os.kill(os.getpid(), 9)
             except Exception as e:
                 print(e)
 
@@ -724,8 +730,9 @@ def main():
     except ImportError:
         print("You don't have readline, too bad for you...")
 
-    robot_name = cellaserv.settings.ROBOT
-    robot = Robot(robot_name)
+    robot = Robot()
+    thread_loop = Thread(target=robot.loop)
+    thread_loop.start()
     robot.run()
 
 if __name__ == "__main__":

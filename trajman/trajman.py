@@ -26,6 +26,8 @@ GET_POSITION            = 12
 GET_SPEEDS              = 13
 GET_WHEELS              = 14
 GET_DELTA_MAX           = 15
+GET_VECTOR_TRSL         = 16
+GET_VECTOR_ROT          = 17
 GOTO_XY                 = 100
 GOTO_THETA              = 101
 MOVE_TRSL               = 102
@@ -409,6 +411,18 @@ class TrajMan(Service):
         tab += pack('B', GET_DELTA_MAX)
         return self.get_command(bytes(tab))
 
+    @service.action
+    def get_vector_trsl(self):
+        tab = pack('B', 2)
+        tab += pack('B', GET_VECTOR_TRSL)
+        return self.get_command(bytes(tab))
+
+    @service.action
+    def get_vector_rot(self):
+        tab = pack('B', 2)
+        tab += pack('B', GET_VECTOR_ROT)
+        return self.get_command(bytes(tab))
+
     @Service.action
     def flush_serial(self):
         self.log_debug("Clearing CM buffer")
@@ -540,6 +554,24 @@ class TrajMan(Service):
 
                     self.log_debug("delta_rot_max : ", rotation,
                     "delta_trsl_max", translation)
+
+                elif tab[1] == GET_VECTOR_TRSL:
+                    a, b, speed = unpack('=bbf', bytes(tab))
+
+                    self.queue.put({
+                        'trsl_vector': speed,
+                        })
+
+                    self.log_debug("Translation vector: ", speed)
+
+                elif tab[1] == GET_VECTOR_ROT:
+                    a, b, speed = unpack('=bbf', bytes(tab))
+
+                    self.queue.put({
+                        'rot_vector': speed,
+                        })
+
+                    self.log_debug("Rotation vector: ", speed)
 
                 elif tab[1] == RECALAGE:
                     a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
