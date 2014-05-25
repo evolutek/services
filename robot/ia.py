@@ -84,7 +84,7 @@ class ia(Service):
         # TODO: UNCOMMENT BEFORE GOING TO THE COUPE DE FRANCE
         #self.match_stop_timer.start()
 
-        self.robot.goto_xy_block(616, 1500 + self.color * (890))
+        #self.robot.goto_xy_block(616, 1500 + self.color * (890))
         while len(self.objectives):
             pos = self.robot.get_position()
             print(pos)
@@ -94,9 +94,9 @@ class ia(Service):
             obj.execute(self.robot, self.cs)
             self.objectives.remove(obj)
             print("--------------------")
+        self.robot.free()
         print("DONE")
 
-        self.match_stop()
         return
 
 
