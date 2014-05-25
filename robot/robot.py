@@ -301,7 +301,6 @@ class Robot(Service):
         self.set_x(1000)
         self.set_y(1000)
 
-        #import pdb; pdb.set_trace()
         print("Recalibration X")
         self.recalibration_block(0)
         print("X pos found!")
