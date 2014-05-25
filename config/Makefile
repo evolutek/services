@@ -7,6 +7,3 @@ run::
 	$(PYTHON3) $(EXE)
 
 include ../common.mk
-
-upload::
-	scp $(EXE) root@$(HOST_ROBOT):$(PREFIX)
