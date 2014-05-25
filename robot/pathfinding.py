@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+# Example:
+#
+# pf = Pathfinding(10, 10, 0)
+# pf.AddObstacle(5, 5, 1)
+# path = pf.GetPath(2, 5, 8, 5)
+# for p in path:
+#     print(str(p))
+
 from math import sqrt
-
-
-
-
 
 class Point:
     def __init__(self, x, y):
@@ -35,30 +39,44 @@ class Obstacle:
 
 class Map:
 
-    def __init__(self, h, w):
-        self.h = h
+    # Initializes a new map (with cost set to 1)
+    def __init__(self, w, h, obstacleCost, robot_radius):
         self.w = w
+        self.h = h
+        self.obstacleCost = obstacleCost
+        self.robot_radius = robot_radius
         self.map = []
-        for i in range(0, Data.mapw + 1):
+        for i in range(0, self.w + 1):
             self.map.append([])
-            for j in range(0, Data.maph + 1):
+            for j in range(0, self.h + 1):
                 self.map[i].append(Point(i, j))
 
-    def GetPoint(self, x, y, radius):
-        valid = (x >= robot_radius
-                and x <= self.w - robot_radius
-                and y >= robot_radius
-                and y <= self.h - robot_radius)
-        return self.map[x][y] if valid else None
+    # Put the obstacles on the map
+    def SetObstacles(self, obstacles):
+        for o in obstacles:
+            minX = o.x - o.r - self.robot_radius
+            maxX = o.x + o.r + self.robot_radius
+            minY = o.y - o.r - self.robot_radius
+            maxY = o.y + o.r + self.robot_radius;
+            for i in range(minX, maxX + 1):
+                for j in range(minY, maxY + 1):
+                    if (i - o.x)**2 + (j - o.y)**2 <= o.r**2:
+                        self.map[i][j].cost = self.obstacleCost
 
-    def IsBlocked(self, x, y, robot_radius):
-        if (x < robot_radius
-            or x > self.mapw - self.robot_radius
+    # Returns a point of the map
+    def GetPoint(self, x, y):
+        return self.map[x][y]
+
+    # Indicates if the robot can access a cell
+    def IsBlocked(self, x, y):
+        if (x < self.robot_radius
+            or x > self.w - self.robot_radius
             or y < self.robot_radius
-            or y > self.maph - self.robot_radius):
+            or y > self.h - self.robot_radius):
             return True;
-        return self.[x][y].cost == Data.obstacleCost
+        return self.map[x][y].cost == self.obstacleCost
 
+    # Returns all neighbors cell of p
     def GetNghbrs(self, p):
         n = []
         n.append(self.GetPointFromMap(p.x - 1, p.y))
@@ -72,14 +90,15 @@ class Map:
 
         return [x for x in n if x is not None]
 
-    def GetPointFromMap(self, x, y, robot_radius):
-        valid = (x >= robot_radius
-                and x <= self.w - robot_radius
-                and y >= robot_radius
-                and y <= self.h - robot_radius)
+    # Return the requested cell if it is inside the map (None else)
+    def GetPointFromMap(self, x, y):
+        valid = (x >= self.robot_radius
+                and x <= self.w - self.robot_radius
+                and y >= self.robot_radius
+                and y <= self.h - self.robot_radius)
         return self.map[x][y] if valid else None
 
-
+    # Indicates if a line can join points a and b without obstacle
     def LineOfSight(self, a, b):
         x0 = a.x
         y0 = a.y
@@ -138,19 +157,16 @@ class Map:
 
 
 
-class PathFinding():
+class Pathfinding:
 
+    ### PUBLIC PART ###
+
+    # Initializes the Pathfinding class
     def __init__(self, map_width, map_height, robot_radius):
-        self.maap = None
-        self.robot = None
-        self.dest = None
-        self.opened = None
-        self.closed = None
-
         self.mapw = map_width
         self.maph = map_height
-        self.robot_radius = robot_radius
         self.obstacles = []
+        self.robot_radius = robot_radius
         self.obstacleCost = 10000
         pass
 
@@ -170,29 +186,17 @@ class PathFinding():
     def ClearObstacles(self):
         self.obstacles.clear()
 
-    # Compute the lenght of a path (given by GetPath)
-    def PathLen(self, path):
-        l = 0
-        for i in range(0, len(path) - 1):
-            l += path[i].distance(path[i + 1])
-        return l
-
     # Compute the shortest path between (rx, ry) and (dx, dy).
     # Includes the initial position of the robot (first point) and the destination (last point).
-    def GetPath(rx, ry, dx, dy):
-        return self.PathFinding(rx, ry, dx, dy, self.obstacles)
-
-    #Same as above
-    def PathFinding(self, rx, ry, dx, dy, obstacles):
-        global robot, dest
-        InitPathfinding(rx, ry, dx, dy, obstacles)
-        if ThetaStar():
+    def GetPath(self, rx, ry, dx, dy):
+        self.InitPathfinding(rx, ry, dx, dy)
+        if self.ThetaStar():
             path = []
-            current = dest
-            while current != robot:
+            current = self.dest
+            while current != self.robot:
                 path.append(current)
                 current = current.parent
-            path.append(robot)
+            path.append(self.robot)
 
             path.reverse()
             #print("Path found (" + str(len(path)) + " points):");
@@ -204,49 +208,28 @@ class PathFinding():
             return []
             #print("No path found.")
 
-    #Create a new map with cost set to the obstacles
-    def InitPathfinding(self, rx, ry, dx, dy, obstacles):
-        global robot, dest, opened, closed
-        self.maap = []
+    # Compute the lenght of a path (given by GetPath)
+    def PathLen(self, path):
+        l = 0
+        for i in range(0, len(path) - 1):
+            l += path[i].distance(path[i + 1])
+        return l
 
-        for o in obstacles:
-            minX = o.x - o.r - Data.self.robot_radius
-            maxX = o.x + o.r + Data.self.robot_radius
-            minY = o.y - o.r - Data.self.robot_radius
-            maxY = o.y + o.r + Data.self.robot_radius;
-            for i in range(minX, maxX + 1):
-                for j in range(minY, maxY + 1):
-                    if (i - o.x)**2 + (j - o.y)**2 <= o.r**2:
-                        self.maap[i][j].cost = Data.obstacleCost
+    ### PRIVATE PART ###
 
-        self.robot = self.maap[rx][ry]
-        self.dest = self.maap[dx][dy]
+    # Create a new map with cost set to the obstacles
+    def InitPathfinding(self, rx, ry, dx, dy):
+        self.opened = None
+        self.closed = None
 
+        self.map = Map(self.mapw, self.maph, self.obstacleCost, self.robot_radius)
+        self.map.SetObstacles(self.obstacles)
 
-    def UpdateVertex(self, s, n):
-        global dest, opened
-        gOld = n.g
-        self.ComputeCost(s, n)
-        if gOld == None or n.g < gOld:
-            n.totalEstimatedCost = n.g + n.distance(dest)
-            if not opened.__contains__(n):
-                opened.append(n)
+        self.robot = self.map.GetPoint(rx, ry)
+        self.dest = self.map.GetPoint(dx, dy)
 
 
-    def ComputeCost(self, s, n):
-        if self.LineOfSight(s.parent, n):
-            cost = s.parent.g + n.cost * s.parent.distance(n)
-            if n.g == None or cost < n.g:
-                n.parent = s.parent
-                n.g = cost
-        else:
-            cost = s.g + n.cost * s.distance(n)
-            if n.g == None or cost < n.g:
-                n.parent = s
-                n.g = cost
-
-
-
+    # Apply the Theta* algorithm. Returns true if a path was found, false else.
     def ThetaStar(self):
         self.robot.g = 0
         self.robot.parent = self.robot
@@ -261,34 +244,36 @@ class PathFinding():
             if s == self.dest:
                 return True
 
-            nghbr = GetNghbrs(s)
+            nghbr = self.map.GetNghbrs(s)
 
             for n in nghbr:
                 if self.closed.__contains__(n):
                     continue
-                UpdateVertex(s, n)
+                self.UpdateVertex(s, n)
 
             self.opened.sort(key = lambda p: p.totalEstimatedCost)
             self.opened.reverse()
 
         return False
 
+    def UpdateVertex(self, s, n):
+        gOld = n.g
+        self.ComputeCost(s, n)
+        if gOld == None or n.g < gOld:
+            n.totalEstimatedCost = n.g + n.distance(self.dest)
+            if not self.opened.__contains__(n):
+                self.opened.append(n)
 
-### TEST ###
+    # Update the cost of n from s
+    def ComputeCost(self, s, n):
+        if self.map.LineOfSight(s.parent, n):
+            cost = s.parent.g + n.cost * s.parent.distance(n)
+            if n.g == None or cost < n.g:
+                n.parent = s.parent
+                n.g = cost
+        else:
+            cost = s.g + n.cost * s.distance(n)
+            if n.g == None or cost < n.g:
+                n.parent = s
+                n.g = cost
 
-#Init(20, 20, 0)
-#AddObstacle(6, 1, 1, "toto")
-#AddObstacle(6, 3, 1)
-#AddObstacle(6, 5, 1)
-#AddObstacle(6, 7, 1)
-#AddObstacle(14, 7, 1)
-#AddObstacle(14, 9, 1)
-#AddObstacle(14, 11, 1)
-#AddObstacle(14, 13, 1)
-#AddObstacle(14, 15, 1)
-#AddObstacle(14, 17, 1)
-#AddObstacle(14, 19, 1)
-#AddObstacle(16, 11, 1)
-#PathLen(GetPath(2, 4, 16, 18))
-
-### END TEST ###
