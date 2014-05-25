@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import math
-import json
 from threading import Event, Thread
 from time import sleep
+import json
+import math
+import os
 
 try:
     from pygments import highlight
@@ -610,6 +611,8 @@ class Robot(Service):
                     self.commands[words[0]](*words[1:])
                 else:
                     print("Command not found.")
+            except (KeyboardInterrupt, EOFError):
+                os.kill(os.getpid(), 9)
             except Exception as e:
                 print(e)
 
