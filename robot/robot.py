@@ -326,7 +326,7 @@ class Robot(Service):
         self.set_trsl_dec(speeds['trdec'])
 
         print("Setup done")
-        self('beep_ok')
+        self('beep_ready')
 
     def side_minus_one(self):
         self.free()
