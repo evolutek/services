@@ -89,7 +89,7 @@ __doc__ = """     ##########################
 
 class Robot(Service):
 
-    def __init__(self, robot):
+    def __init__(self, robot=None):
         super().__init__()
 
         self.do_print = True
