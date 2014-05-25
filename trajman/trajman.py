@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
-import serial
-import time
-from threading import Thread, Event
 from queue import Queue
 from struct import *
+from threading import Thread, Event
+import os
+import serial
+import time
 
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
@@ -70,8 +71,8 @@ class TrajMan(Service):
     the robot will not move.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, identification=None):
+        super().__init__(identification)
 
         self.cs = CellaservProxy()
 
@@ -582,7 +583,8 @@ class TrajMan(Service):
                     self.log_debug("Message not recognised")
 
 def main():
-    trajman = TrajMan()
+    robot = os.getenv('CS_ROBOT') or None
+    trajman = TrajMan(robot)
     trajman.run()
 
 if __name__ == '__main__':
