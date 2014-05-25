@@ -83,7 +83,7 @@ class TrajMan(Service):
         self.debug_file = None
         self.disabled = False
 
-        self.serial = serial.Serial('/dev/ttySAC0', 115200)
+        self.serial = serial.Serial('/dev/ttySAC0', 38400)
 
     def setup(self):
         """Setup the service."""
