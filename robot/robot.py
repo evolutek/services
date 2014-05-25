@@ -304,17 +304,19 @@ class Robot(Service):
         #import pdb; pdb.set_trace()
         print("Recalibration X")
         self.recalibration_block(0)
-        sleep(1)
-        print("Stopped")
         print("X pos found!")
+        self('beep_ok')
+        sleep(1)
 
         self.goto_xy_block(470, 1000)
         self.goto_theta_block(math.pi / 2 * -color)
 
         print("Recalibration Y")
         self.recalibration_block(0)
-        sleep(1)
         print("Y pos found!")
+        self('beep_ok')
+        sleep(1)
+
         self.goto_xy_block(470, 1500 + 1200 * color)
         sleep(.5)
         self.goto_xy_block(410, 1500 + 1310 * color)
@@ -322,7 +324,9 @@ class Robot(Service):
         self.set_trsl_max_speed(speeds['trmax'])
         self.set_trsl_acc(speeds['tracc'])
         self.set_trsl_dec(speeds['trdec'])
+
         print("Setup done")
+        self('beep_ok')
 
     def side_minus_one(self):
         self.free()
