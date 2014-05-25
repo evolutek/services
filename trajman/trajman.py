@@ -111,8 +111,7 @@ class TrajMan(Service):
 
     def log_debug(self, *args, **kwargs):
         """Send log to cellaserv"""
-        #self.log(msg=args, **kwargs)
-        print(*args, **kwargs)
+        self.log(msg=' '.join(map(str, args)), **kwargs)
 
     def write(self, data):
         """Write data to serial and flush."""
