@@ -2,6 +2,7 @@
 
 import fcntl
 import threading
+import time
 
 from cellaserv.service import Service
 
@@ -27,6 +28,22 @@ class Buzzer(Service):
     @Service.action
     def stop(self):
         fcntl.ioctl(self._pwm, PWM_IOCTL_STOP)
+
+    @Service.event
+    def beep_ok(self):
+        self.freq_seconds(freq=4, seconds=.5)
+
+    @Service.event
+    def beep_ko(self):
+        self.freq_seconds(freq=200, seconds=.5)
+
+    @Service.event
+    def beep_ready(self):
+        for f in range(2000, 4000, 50):
+            self.freq(f)
+            time.sleep(.04)
+
+        self.stop()
 
 def main():
     buzzer = Buzzer()
