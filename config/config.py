@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import os
 
 from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from cellaserv.service import Service
 
-CONFIG_FILE = "config.ini"
+CONFIG_FILE = os.getenv('CS_CONFIG') or "config.ini"
 
 class Config(Service):
 
