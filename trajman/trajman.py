@@ -411,13 +411,13 @@ class TrajMan(Service):
         tab += pack('B', GET_DELTA_MAX)
         return self.get_command(bytes(tab))
 
-    @service.action
+    @Service.action
     def get_vector_trsl(self):
         tab = pack('B', 2)
         tab += pack('B', GET_VECTOR_TRSL)
         return self.get_command(bytes(tab))
 
-    @service.action
+    @Service.action
     def get_vector_rot(self):
         tab = pack('B', 2)
         tab += pack('B', GET_VECTOR_ROT)
