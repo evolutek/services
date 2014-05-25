@@ -9,10 +9,12 @@ AX_ID_COLLECT = "11"
 AX_ID_COLLECT_ELEVATOR = "12"
 
 AX_ELEVATOR_UP = 1000
-AX_ELEVATOR_DOWN = 200
-AX_ELEVATOR_FIREPLACE = 300
+AX_ELEVATOR_PUSH_FIRE = 400
+AX_ELEVATOR_DOWN = 50
+AX_ELEVATOR_FIREPLACE = 350
 AX_COLLECTOR_OPEN = 1000
 AX_COLLECTOR_CLOSE = 650
+AX_COLLECTOR_PUSH_FIRE = 350
 AX_ROTATION_START = 420
 AX_ROTATION_END = 60
 
@@ -69,10 +71,17 @@ class Actuators(Service):
         self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_CLOSE)
 
     @Service.action
+    def collector_push_fire(self):
+        self.cs.ax[AX_ID_COLLECT].mode_joint()
+        self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_PUSH_FIRE)
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].mode_joint()
+        self.cs.ax[AX_ID_COLLECT_ELEVATOR].move(goal=AX_ELEVATOR_PUSH_FIRE)
+
+    @Service.action
     def collector_hold(self):
         self.cs.ax[AX_ID_COLLECT].mode_wheel()
         # increase if too weak
-        self.cs.ax[AX_ID_COLLECT].turn(side=-1, speed=350)
+        self.cs.ax[AX_ID_COLLECT].turn(side=-1, speed=650)
 
     @Service.action
     def collector_up(self):
@@ -103,6 +112,10 @@ class Actuators(Service):
             self.rotation = AX_ROTATION_START
 
         self.cs.ax[AX_ID_COLLECT_ROTATION].move(goal=self.rotation)
+
+    @Service.action
+    def collector_has_fire(self):
+        return 570 < self.cs.ax[AX_ID_COLLECT].get_present_position()
 
     @Service.action
     def test(self):
