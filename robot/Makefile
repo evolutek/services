@@ -10,3 +10,5 @@ include ../common.mk
 
 upload::
 	scp robot.py root@$(HOST_ROBOT):$(PREFIX)
+	scp homologation_pal.py root@$(HOST_ROBOT):$(PREFIX)
+	scp pathfinding.py root@$(HOST_ROBOT):$(PREFIX)
