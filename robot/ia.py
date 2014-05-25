@@ -3,7 +3,7 @@ from threading import Thread, Timer, Event
 from time import sleep
 import math
 
-from cellaserv.service import Service, Variable
+from cellaserv.service import Service, Variable, ConfigVariable
 from cellaserv.proxy import CellaservProxy
 from robot import Robot
 from objective import *
@@ -14,6 +14,8 @@ import pathfinding
 class ia(Service):
 
     match_start = Variable()
+    color = ConfigVariable(section='match', option='color', coerc=lambda v:
+            {'red': -1, 'yellow': 1}[v])
 
     def __init__(self):
         super().__init__()
@@ -27,24 +29,15 @@ class ia(Service):
         self.robot = Robot()
         self.robot.setup()
 
-        self.color = None
-        self.IDONTCAREABOUTPEOPLE = False
 
     @Service.action
     def setup_match(self, color):
         pathfinding.Init(200, 300, 15)
         self.cs('log.ia', msg="Setup done")
-        if type(color) == str:
-            if color[0] == "y":
-                self.color = 1
-            else:
-                self.color = -1
-        else:
-            self.color = color
 
         self.robot.free()
         self.objectives =\
-        DefaultObjectives.generate_default_objectives(self.color)
+        DefaultObjectives.generate_default_objectives(self.color())
 
         #self.robot.set_trsl_acc(1500)
         #self.robot.set_trsl_max_speed(900)
@@ -59,23 +52,22 @@ class ia(Service):
 
     @Service.action
     def status(self):
-        return {'color': self.color,
-                'started': self.match_start.is_set()}
+        return {'started': self.match_start.is_set()}
 
 
     #TODO: Check this function as a color wrapper
     def goto_xy_block(self, x, y):
-        if self.color == 1:
+        if self.color() == 1:
             self.robot.goto_xy_block(x, 3000 - y)
         else:
             self.robot.goto_xy_block(x, y)
 
 
 
-    # Called in a separate thread
+    @Service.thread
     def start(self):
         print("Waiting...")
-        self.cs('log.ia', msg="Waiting")
+        self.log(msg='Waiting')
         self.match_start.wait()
         print("Start!")
         self.cs('log.ia', msg="Match started")
@@ -115,12 +107,7 @@ class ia(Service):
 
 def main():
     service = ia()
-    service.setup()
-
-    service_thread = Thread(target=service.start)
-    service_thread.start()
-
-    Service.loop()
+    service.run()
 
 if __name__ == '__main__':
     main()

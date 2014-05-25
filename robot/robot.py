@@ -18,8 +18,8 @@ from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 import cellaserv.settings
-import pathfinding
 
+#import pathfinding
 
 __doc__ = """     ##########################
      # Welcome to your robot! #
@@ -78,6 +78,8 @@ __doc__ = """     ##########################
          getspeeds
          getwheels
          getdelta
+         getvectrsl
+         getvecrot
 
     Interactive commands
          cws [all|spacing|diam] -- Compute wheels size
@@ -176,6 +178,8 @@ class Robot(Service):
             "gs": self.get_speeds,
             "getwheels": self.get_wheels,
             "getdelta": self.get_delta_max,
+            "getvectrsl": self.get_vector_trsl,
+            "getvecrot": self.get_vector_rot,
 
             # Misc
 
@@ -228,17 +232,17 @@ class Robot(Service):
                     break
         return _f
 
-    # Makes the robot go to a point avoiding obstacles.
-    # In order to decrease the computing time, coordinates are expressed in cm and not mm
-    # (this is why we have many '// 10')A
-    # We use aproximates coordinates for every point except for the last point
-    # The first point is ignored since it's the robot's position
-    def goto_with_pathfinding(self, x, y):
-        pos = self.get_position()
-        path = pathfinding.GetPath(pos['x'] // 10, pos['y'] // 10, x // 10, y // 10)
-        for i in range(1, len(path) - 1):
-            self.goto_xy_block(path[i].x * 10, path[i].y * 10)
-        self.goto_xy_block(x, y)
+#    # Makes the robot go to a point avoiding obstacles.
+#    # In order to decrease the computing time, coordinates are expressed in cm and not mm
+#    # (this is why we have many '// 10')A
+#    # We use aproximates coordinates for every point except for the last point
+#    # The first point is ignored since it's the robot's position
+#    def goto_with_pathfinding(self, x, y):
+#        pos = self.get_position()
+#        path = pathfinding.GetPath(pos['x'] // 10, pos['y'] // 10, x // 10, y // 10)
+#        for i in range(1, len(path) - 1):
+#            self.goto_xy_block(path[i].x * 10, path[i].y * 10)
+#        self.goto_xy_block(x, y)
 
     ##########
     # Events #
@@ -370,7 +374,7 @@ class Robot(Service):
 
     def move_trsl(self, dest, acc, dec, maxspeed, sens):
         self.print(self.tm.move_trsl(dest=dest, acc=acc, dec=dec,
-            maxspeed=maxpseed, sens=sens))
+            maxspeed=maxspeed, sens=sens))
 
     def move_rot(self, dest, acc, dec, maxspeed, sens):
         self.print(self.tm.move_rot(dest=dest, acc=acc, dec=dec,
@@ -460,6 +464,16 @@ class Robot(Service):
 
     def get_delta_max(self):
         ret = self.tm.get_delta_max()
+        self.print(ret)
+        return ret
+
+    def get_vector_trsl(self):
+        ret = self.tm.get_vector_trsl()
+        self.print(ret)
+        return ret
+
+    def get_vector_rot(self):
+        ret = self.tm.get_vector_rot()
         self.print(ret)
         return ret
 
@@ -618,7 +632,7 @@ class Robot(Service):
                 else:
                     print("Command not found.")
             except (KeyboardInterrupt, EOFError):
-                os.kill(os.getpid(), 9)
+                    os.kill(os.getpid(), 9)
             except Exception as e:
                 print(e)
 
@@ -724,8 +738,8 @@ def main():
     except ImportError:
         print("You don't have readline, too bad for you...")
 
-    robot_name = cellaserv.settings.ROBOT
-    robot = Robot(robot_name)
+    robot_cellaserv = cellaserv.settings.ROBOT
+    robot = Robot(robot_cellaserv)
     robot.run()
 
 if __name__ == "__main__":
