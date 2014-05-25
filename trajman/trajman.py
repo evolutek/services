@@ -7,8 +7,9 @@ import os
 import serial
 import time
 
-from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
+from cellaserv.service import Service
+import cellaserv.settings
 
 #######################
 # All the commands ID #
@@ -615,7 +616,7 @@ class TrajMan(Service):
                     self.log_debug("Message not recognised")
 
 def main():
-    robot = os.getenv('CS_ROBOT') or None
+    robot = cellaserv.settings.ROBOT
     trajman = TrajMan(robot)
     trajman.run()
 
