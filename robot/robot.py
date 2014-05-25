@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import math
-import json
 from threading import Event, Thread
 from time import sleep
+import json
+import math
+import os
 
 try:
     from pygments import highlight
@@ -16,8 +17,9 @@ except ImportError:
 from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-#import pathfinding
+import cellaserv.settings
 
+#import pathfinding
 
 __doc__ = """     ##########################
      # Welcome to your robot! #
@@ -87,13 +89,17 @@ __doc__ = """     ##########################
 
 class Robot(Service):
 
-    def __init__(self):
+    def __init__(self, robot):
         super().__init__()
 
         self.do_print = True
 
-        self.cs = CellaservProxy(host='192.168.1.230')
-        self.tm = self.cs.trajman
+        self.cs = CellaservProxy()
+
+        if robot is not None:
+            self.tm = self.cs.trajman[robot]
+        else:
+            self.tm = self.cs.trajman
 
         # Events
 
@@ -305,7 +311,6 @@ class Robot(Service):
         self.set_x(1000)
         self.set_y(1000)
 
-        #import pdb; pdb.set_trace()
         print("Recalibration X")
         self.recalibration_block(0)
         print("X pos found!")
@@ -609,6 +614,7 @@ class Robot(Service):
             elif 'quit'.startswith(msg):
                 return
 
+    @Service.thread
     def loop(self):
         print(__doc__)
 
@@ -625,6 +631,8 @@ class Robot(Service):
                     self.commands[words[0]](*words[1:])
                 else:
                     print("Command not found.")
+            except (KeyboardInterrupt, EOFError):
+                    os.kill(os.getpid(), 9)
             except Exception as e:
                 print(e)
 
@@ -730,9 +738,8 @@ def main():
     except ImportError:
         print("You don't have readline, too bad for you...")
 
-    robot = Robot()
-    thread_loop = Thread(target=robot.loop)
-    thread_loop.start()
+    robot_cellaserv = cellaserv.settings.ROBOT
+    robot = Robot(robot_cellaserv)
     robot.run()
 
 if __name__ == "__main__":
