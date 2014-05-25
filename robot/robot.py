@@ -17,6 +17,7 @@ except ImportError:
 from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
+import cellaserv.settings
 import pathfinding
 
 
@@ -86,13 +87,17 @@ __doc__ = """     ##########################
 
 class Robot(Service):
 
-    def __init__(self):
+    def __init__(self, robot):
         super().__init__()
 
         self.do_print = True
 
-        self.cs = CellaservProxy(host='192.168.1.230')
-        self.tm = self.cs.trajman
+        self.cs = CellaservProxy()
+
+        if robot is not None:
+            self.tm = self.cs.trajman[robot]
+        else:
+            self.tm = self.cs.trajman
 
         # Events
 
@@ -595,6 +600,7 @@ class Robot(Service):
             elif 'quit'.startswith(msg):
                 return
 
+    @Service.thread
     def loop(self):
         print(__doc__)
 
@@ -718,9 +724,8 @@ def main():
     except ImportError:
         print("You don't have readline, too bad for you...")
 
-    robot = Robot()
-    thread_loop = Thread(target=robot.loop)
-    thread_loop.start()
+    robot_name = cellaserv.settings.ROBOT
+    robot = Robot(robot_name)
     robot.run()
 
 if __name__ == "__main__":
