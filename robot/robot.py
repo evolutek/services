@@ -374,7 +374,7 @@ class Robot(Service):
 
     def move_trsl(self, dest, acc, dec, maxspeed, sens):
         self.print(self.tm.move_trsl(dest=dest, acc=acc, dec=dec,
-            maxspeed=maxpseed, sens=sens))
+            maxspeed=maxspeed, sens=sens))
 
     def move_rot(self, dest, acc, dec, maxspeed, sens):
         self.print(self.tm.move_rot(dest=dest, acc=acc, dec=dec,
