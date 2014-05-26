@@ -13,7 +13,7 @@ import pathfinding
 
 class ia(Service):
 
-    match_start = Variable()
+    match_start = Variable('start')
     color = ConfigVariable(section='match', option='color', coerc=lambda v:
             {'red': -1, 'yellow': 1}[v])
 
@@ -26,13 +26,14 @@ class ia(Service):
 
         self.start_event = Event()
 
-        self.robot = Robot()
+        self.robot = Robot('pal')
         self.robot.setup()
 
 
-    @Service.action
-    def setup_match(self, color):
-        pathfinding.Init(200, 300, 15)
+    def setup(self):
+        super().setup()
+
+        # pathfinding.Init(200, 300, 15)
         self.cs('log.ia', msg="Setup done")
 
         self.robot.free()
