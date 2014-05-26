@@ -62,8 +62,7 @@ class Map:
             maxY = o.y + o.r + self.robot_radius;
             for i in range(minX, maxX + 1):
                 for j in range(minY, maxY + 1):
-                    if (i - o.x)**2 + (j - o.y)**2 <= o.r**2:
-                        self.map[i][j].cost = self.obstacleCost
+                    self.map[i][j].cost = self.obstacleCost
 
     # Returns a point of the map
     def GetPoint(self, x, y):
