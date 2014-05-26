@@ -45,6 +45,14 @@ class Buzzer(Service):
 
         self.stop()
 
+    @Service.event
+    def beep_down(self):
+        for f in range(4000, 2000, -50):
+            self.freq(f)
+            time.sleep(.04)
+
+        self.stop()
+
 def main():
     buzzer = Buzzer()
     buzzer.run()
