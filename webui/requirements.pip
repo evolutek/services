@@ -1,2 +1,2 @@
 python-cellaserv2
-git+https://github.com/adicu/pantograph.git#egg=pantograph
+git+https://bitbucket.org/halfr/pantograph.git#egg=pantograph
