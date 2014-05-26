@@ -9,6 +9,7 @@ from robot import Robot
 from objective import *
 
 import pathfinding
+import robot_status
 
 
 class ia(Service):
@@ -39,6 +40,7 @@ class ia(Service):
         self.robot.free()
         self.objectives =\
         DefaultObjectives.generate_default_objectives(self.color())
+        self.status = RobotStatus()
 
         #self.robot.set_trsl_acc(1500)
         #self.robot.set_trsl_max_speed(900)
@@ -81,10 +83,12 @@ class ia(Service):
         while len(self.objectives):
             pos = self.robot.get_position()
             print(pos)
-            obj = self.objectives.get_best(pos['x'], pos['y'])
+            obj = self.objectives.get_best(pos['x'], pos['y'], self.status)
+            print("Executing requirements")
+            obj.execute_requirements(self.robot, self.cs, self.status)
             print("going to obj " +  str(obj))
             self.robot.goto_xy_block(*(obj.get_position()))
-            obj.execute(self.robot, self.cs)
+            obj.execute(self.robot, self.cs, self.status)
             self.objectives.remove(obj)
             print("--------------------")
         self.robot.free()
@@ -102,7 +106,7 @@ class ia(Service):
 
     @Service.event
     def robot_near(self):
-        if self.match_start.is_set() and not self.IDONTCAREABOUTPEOPLE:
+        if self.match_start.is_set():
             self.cs('log.ia', msg='Detected robot near')
             self.match_stop()
 

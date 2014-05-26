@@ -7,6 +7,8 @@
 # path = pf.GetPath(2, 5, 8, 5)
 # for p in path:
 #     print(str(p))
+from math import sqrt
+from collections import namedtuple
 
 from math import sqrt
 
