@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from threading import Timer
+
+from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, Variable
 
 from robot import Robot
