@@ -616,6 +616,9 @@ class Robot(Service):
 
     @Service.thread
     def loop(self):
+        if __name__ != '__main__':
+            return
+
         print(__doc__)
 
         # XXX: Warning
