@@ -26,6 +26,9 @@ class RobotsMonitor(Service):
                 self.monitored.add(self.position_pmi) if value else
                 self.monitored.remove(self.position_pmi))
 
+        self.pal = self.cs.trajman['pal']
+        self.pmi = self.cs.trajman['pmi']
+
     def setup(self):
         super().setup()
 
@@ -36,11 +39,11 @@ class RobotsMonitor(Service):
 
     def position_pal(self):
         log_name = 'log.monitor.robot_position'
-        self(log_name, robot="pal", **self.cs.trajman.get_position())
+        self(log_name, robot="pal", **self.pal.get_position())
 
     def position_pmi(self):
         log_name = 'log.monitor.robot_position'
-        self(log_name, robot="pmi", **self.cs.trajman.get_position())
+        self(log_name, robot="pmi", **self.pmi.get_position())
 
     @Service.thread
     def loop(self):
