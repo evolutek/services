@@ -7,7 +7,7 @@
 # path = pf.GetPath(2, 5, 8, 5)
 # for p in path:
 #     print(str(p))
-from math import sqrt
+from math import sqrt, ceil, floor
 from collections import namedtuple
 
 from math import sqrt
@@ -28,6 +28,10 @@ class Point:
         dx = self.x - p.x
         dy = self.y - p.y
         return sqrt(dx**2 + dy**2)
+
+    def multiply(self, nb):
+        self.x *= nb
+        self.y *= nb
 
     def __str__(self):
         return str(self.x) + ", " + str(self.y)
@@ -53,16 +57,9 @@ class Map:
             for j in range(0, self.h + 1):
                 self.map[i].append(Point(i, j))
 
-    # Put the obstacles on the map
-    def SetObstacles(self, obstacles):
-        for o in obstacles:
-            minX = o.x - o.r - self.robot_radius
-            maxX = o.x + o.r + self.robot_radius
-            minY = o.y - o.r - self.robot_radius
-            maxY = o.y + o.r + self.robot_radius;
-            for i in range(minX, maxX + 1):
-                for j in range(minY, maxY + 1):
-                    self.map[i][j].cost = self.obstacleCost
+    # Set the cost of a cell to an obstacle
+    def SetObstacle(self, x, y):
+        self.map[x][y].cost = self.obstacleCost
 
     # Returns a point of the map
     def GetPoint(self, x, y):
@@ -157,9 +154,7 @@ class Map:
         return True;
 
 
-
 class Pathfinding:
-
     ### PUBLIC PART ###
 
     # Initializes the Pathfinding class
@@ -192,22 +187,24 @@ class Pathfinding:
     def GetPath(self, rx, ry, dx, dy):
         self.InitPathfinding(rx, ry, dx, dy)
         if self.ThetaStar():
-            path = []
-            current = self.dest
+            path = [Point(dx, dy)]
+            current = self.dest.parent
             while current != self.robot:
                 path.append(current)
                 current = current.parent
-            path.append(self.robot)
+            path.append(Point(rx, ry))
 
             path.reverse()
+            for i in range (1, len(path) - 1):
+                path[i].multiply(self.smallerRadius)
             #print("Path found (" + str(len(path)) + " points):");
             #for p in path:
             #    print(p.toString())
 
             return path
         else:
-            return []
             #print("No path found.")
+            return []
 
     # Compute the lenght of a path (given by GetPath)
     def PathLen(self, path):
@@ -223,11 +220,19 @@ class Pathfinding:
         self.opened = None
         self.closed = None
 
-        self.map = Map(self.mapw, self.maph, self.obstacleCost, self.robot_radius)
-        self.map.SetObstacles(self.obstacles)
+        self.smallerRadius = min(o.r for o in self.obstacles)
+        self.map = Map(ceil(self.mapw / self.smallerRadius), ceil(self.maph / self.smallerRadius), self.obstacleCost, self.robot_radius)
+        for o in self.obstacles:
+            minX = floor((o.x - o.r - self.robot_radius) / self.smallerRadius)
+            maxX = ceil((o.x + o.r + self.robot_radius) / self.smallerRadius)
+            minY = floor((o.y - o.r - self.robot_radius) / self.smallerRadius)
+            maxY = ceil((o.y + o.r + self.robot_radius) / self.smallerRadius)
+            for i in range(minX, maxX + 1):
+                for j in range(minY, maxY + 1):
+                    self.map.SetObstacle(i, j)
 
-        self.robot = self.map.GetPoint(rx, ry)
-        self.dest = self.map.GetPoint(dx, dy)
+        self.robot = self.map.GetPoint(round(rx / self.smallerRadius), round(ry / self.smallerRadius))
+        self.dest= self.map.GetPoint(round(dx / self.smallerRadius), round(dy / self.smallerRadius))
 
 
     # Apply the Theta* algorithm. Returns true if a path was found, false else.
