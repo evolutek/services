@@ -36,6 +36,9 @@ __doc__ = """     ##########################
          free                                    //Alias : f
          unfree                                  //Alias : re
 
+         enable                                  //Alias : e
+         disable                                 //Alias : d
+
          fp side -- Find initial position, side is 1 or -1
          recal direction -- Low level recalibration, direction is 0 or 1
          debug on/off
@@ -128,6 +131,12 @@ class Robot(Service):
             "f": self.free,
             "unfree": self.unfree,
             "re": self.unfree,
+
+            "enable": self.enable,
+            "e": self.enable,
+            "disable": self.disable,
+            "d": self.disable,
+
             "debug": self.set_debug,
 
             # Move
@@ -352,15 +361,22 @@ class Robot(Service):
     def set_debug(self, state):
         self.print(self.tm.set_debug(state=state))
 
-    ###########
-    # Un/Free #
-    ###########
+    ########################
+    # Un/Free (En/Dis)able #
+    ########################
 
     def free(self):
         self.print(self.tm.free())
 
     def unfree(self):
         self.print(self.tm.unfree())
+
+    def enable(self):
+        self.print(self.tm.enable())
+
+    def disable(self):
+        self.print(self.tm.disable())
+
 
     ########
     # Move #
