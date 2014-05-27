@@ -26,6 +26,7 @@ class ia(Service):
         self.match_stop_timer = Timer(85, self.match_stop)
 
         self.start_event = Event()
+        self.pathfinding = pathfinding.Pathfinding(2000, 3000, 150)
 
         self.robot = Robot('pal')
         self.robot.setup()
@@ -40,7 +41,14 @@ class ia(Service):
         self.robot.free()
         self.objectives =\
         DefaultObjectives.generate_default_objectives(self.color())
-        self.status = RobotStatus()
+        self.status = robot_status.RobotStatus()
+        self.pathfinding.AddObstacle(600, 900, 100)
+        self.pathfinding.AddObstacle(600, 2100, 100)
+        self.pathfinding.AddObstacle(1100, 400, 100)
+        self.pathfinding.AddObstacle(1100, 2600, 100)
+        self.pathfinding.AddObstacle(1600, 900, 100)
+        self.pathfinding.AddObstacle(1600, 2100, 100)
+        self.pathfinding.AddObstacle(1050, 1500, 150, "fireplacecenter")
 
         #self.robot.set_trsl_acc(1500)
         #self.robot.set_trsl_max_speed(900)
@@ -65,7 +73,24 @@ class ia(Service):
         else:
             self.robot.goto_xy_block(x, y)
 
+    # Makes the robot go to a point avoiding obstacles.
+    # We use aproximates coordinates for every point except for the last point
+    # The first point is ignored since it's the robot's position
+    def goto_with_pathfinding(self, x, y):
+        pos = self.get_position()
+        path = self.pathfinding.GetPath(pos['x'], pos['y'], x, y)
+        for i in range(1, len(path) - 1):
+            self.robot.goto_xy_block(path[i].x, path[i].y)
+        self.robot.goto_xy_block(x, y)
 
+    def get_position(self):
+        pos = None
+        while not pos:
+            try:
+                pos = self.robot.get_position()
+            except:
+                pass
+        return pos
 
     @Service.thread
     def start(self):
@@ -81,13 +106,16 @@ class ia(Service):
 
         #self.robot.goto_xy_block(616, 1500 + self.color * (890))
         while len(self.objectives):
-            pos = self.robot.get_position()
+            pos = self.get_position()
             print(pos)
             obj = self.objectives.get_best(pos['x'], pos['y'], self.status)
+            if obj.get_cost(pos['x'], pos['y'], self.status) > 10000:
+                break
             print("Executing requirements")
             obj.execute_requirements(self.robot, self.cs, self.status)
             print("going to obj " +  str(obj))
-            self.robot.goto_xy_block(*(obj.get_position()))
+            print("At pos " +  str(obj.x) + " " + str(obj.y))
+            self.goto_with_pathfinding(*(obj.get_position()))
             obj.execute(self.robot, self.cs, self.status)
             self.objectives.remove(obj)
             print("--------------------")
