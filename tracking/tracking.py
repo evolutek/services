@@ -15,6 +15,7 @@ def distance(point_a, point_b):
     return math.sqrt((point_b.x - point_a.x) ** 2 + (point_b.y - point_a.y) ** 2)
 
 
+
 class Tracked:
 
     internal_id = 0
@@ -22,8 +23,8 @@ class Tracked:
     def __init__(self, location):
         self.location = location
 
-        self._name = "PLIPPE {}".format(self.internal_id)
-        self.internal_id += 1
+        self._name = "PLIPPE {}".format(Tracked.internal_id)
+        Tracked.internal_id += 1
 
         self.last_seen = time.time()
         self.is_evolutek = False
