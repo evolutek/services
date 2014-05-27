@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
 from itertools import zip_longest
+import math
 import random
+import threading
 
 import pantograph
 
+from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 
 ADDR = '0.0.0.0'
@@ -20,7 +23,50 @@ def grouper(iterable, n, fillvalue=None):
     return zip_longest(*args, fillvalue=fillvalue)
 
 
+def distance(a, b):
+    return math.sqrt((b['x'] - a['x']) ** 2 + (b['y'] - a['y']) ** 2)
+
+
+class WebMonitor(Service):
+
+    def __init__(self):
+        super().__init__(identification=str(random.random()))
+
+        self.pal = {'x': 0, 'y': 0, 'theta': 0}
+        self.pmi = {'x': 0, 'y': 0, 'theta': 0}
+
+        self.pal_traj = []
+
+    @Service.event('log.monitor.robot_position')
+    def update_robot_position(self, robot, x, y, theta):
+        print(x, y)
+        if robot == 'pal':
+            self.pal['x'] = x
+            self.pal['y'] = y
+            self.pal['theta'] = theta
+
+            if not self.pal_traj:
+                self.pal_traj = [self.pal.copy()]
+            else:
+                dist = distance(self.pal, self.pal_traj[-1])
+                if dist > 1:
+                    self.pal_traj.append(self.pal.copy())
+        else:
+            self.pmi['x'] = x
+            self.pmi['y'] = y
+            self.pmi['theta'] = theta
+
+
 class EvolutekSimulator(pantograph.PantographHandler):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.monitor = WebMonitor()
+        self.monitor_thread = threading.Thread(target=self.monitor.run)
+        self.monitor_thread.start()
+        self.mouse_pos = {'x': 0, 'y': 0}
+        # self.cs = CellaservProxy()
 
     def get_xscale(self):
         return self.width / 3000
@@ -38,14 +84,54 @@ class EvolutekSimulator(pantograph.PantographHandler):
     def update(self):
         """Update canvas."""
         self.clear_rect(0, 0, self.width, self.height)
+
+        # Draw table
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
-        text = pantograph.Text('hello', 42, 42)
-        text.fill_color = 'red'
+        self.update_self_tracking()
+        self.update_mouse()
+
+    def update_self_tracking(self):
+
+        # Draw pal traj
+        if len(self.monitor.pal_traj) > 2:
+            X = self.monitor.pal_traj
+            for i in range(len(self.monitor.pal_traj)-1):
+                self.draw_line(X[i]['y']*self.xscale, X[i]['x']*self.yscale,
+                               X[i+1]['y']*self.xscale, X[i+1]['x']*self.yscale,
+                               color='blue')
+
+        # Draw pal circle
+        shape = pantograph.Rect(
+            x=(self.monitor.pal['y']-75)*self.xscale,
+            y=(self.monitor.pal['x']-75)*self.yscale,
+            width=150*self.yscale,
+            height=150*self.xscale,
+            fill_color='rgba(0, 0, 255, 0.5)',
+        )
+        shape.rotate(float(self.monitor.pal['theta']))
+        shape.draw(self)
+
+        # Draw pal text
+        text = pantograph.Text('pal ({},{})'.format(int(self.monitor.pal['x']),
+                                                    int(self.monitor.pal['y'])),
+                               self.monitor.pal['y']*self.xscale,
+                               self.monitor.pal['x']*self.yscale,
+                               )
+        text.fill_color = 'black'
         text.draw(self)
 
-        return
+    def update_mouse(self):
+        # Draw mouse
+        text = pantograph.Text(
+            '({},{})'.format(int(self.mouse_pos['y']/self.yscale),
+                             int(self.mouse_pos['x']/self.xscale)),
+            self.mouse_pos['x'],
+            self.mouse_pos['y'])
+        text.fill_color = 'blue'
+        text.draw(self)
 
+    def update_hokuyo(self):
         for robot in self.cs.hokuyo['1'].robots()['robots']:
             shape = pantograph.Circle(
                 x=int(robot['x']*self.xscale),
@@ -64,8 +150,7 @@ class EvolutekSimulator(pantograph.PantographHandler):
 
             shape.draw(self)
 
-        return
-
+    def update_tracking(self):
         for robot in self.cs.tracking.get_robots():
             if robot['name'] not in self.robots:
                 # New robot
@@ -84,13 +169,24 @@ class EvolutekSimulator(pantograph.PantographHandler):
             shape.draw(self)
 
     def on_mouse_move(self, event):
-        try:
-            self.cs.trajman.gotoxy(
-                x=int(event.x/self.xscale),
-                y=int(event.y/self.yscale))
-        except:
-            pass
+        #self.cs('log.monitor.robot_position',
+        #        robot='pal',
+        #        y=event.x/self.xscale,
+        #        x=event.y/self.yscale,
+        #        theta=0)
+        #self.cs.trajman.gotoxy(
+        #    x=int(event.x/self.xscale),
+        #    y=int(event.y/self.yscale))
+        self.mouse_pos['x'] = event.x
+        self.mouse_pos['y'] = event.y
 
+    def on_mouse_down(self, event):
+        data = {
+            'x': int(self.mouse_pos['y']/self.yscale),
+            'y': int(self.mouse_pos['x']/self.xscale),
+            }
+        print(data)
+        self.cs.trajman['pal'].goto_xy(**data)
 
 def main():
     app = pantograph.SimplePantographApplication(EvolutekSimulator)
