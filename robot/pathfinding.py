@@ -9,8 +9,7 @@
 #     print(str(p))
 from math import sqrt, ceil, floor
 from collections import namedtuple
-
-from math import sqrt
+import heapq
 
 class Point:
     def __init__(self, x, y):
@@ -23,6 +22,9 @@ class Point:
 
     def __eq__(self, p):
         return self.x == p.x and self.y == p.y
+
+    def __lt__(self, p):
+        return self.totalEstimatedCost < p.totalEstimatedCost
 
     def distance(self, p):
         dx = self.x - p.x
@@ -241,11 +243,13 @@ class Pathfinding:
         self.robot.parent = self.robot
         self.robot.totalEstimatedCost = self.robot.distance(self.dest)
 
-        self.opened = [self.robot]
+        self.opened = []
         self.closed = []
 
+        heapq.heappush(self.opened, self.robot)
+
         while len(self.opened) != 0:
-            s = self.opened.pop();
+            s = heapq.heappop(self.opened)
 
             if s == self.dest:
                 return True
@@ -257,9 +261,6 @@ class Pathfinding:
                     continue
                 self.UpdateVertex(s, n)
 
-            self.opened.sort(key = lambda p: p.totalEstimatedCost)
-            self.opened.reverse()
-
         return False
 
     def UpdateVertex(self, s, n):
@@ -268,7 +269,7 @@ class Pathfinding:
         if gOld == None or n.g < gOld:
             n.totalEstimatedCost = n.g + n.distance(self.dest)
             if not self.opened.__contains__(n):
-                self.opened.append(n)
+                heapq.heappush(self.opened, n)
 
     # Update the cost of n from s
     def ComputeCost(self, s, n):
