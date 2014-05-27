@@ -45,6 +45,9 @@ class Obstacle:
         self.r = radius
         self.tag = tag
 
+    def __str__(self):
+        return self.tag + " (" + str(self.x) + ", " + str(self.y) + ")"
+
 class Map:
 
     # Initializes a new map (with cost set to 1)
@@ -223,7 +226,9 @@ class Pathfinding:
         self.closed = None
 
         self.smallerRadius = min(o.r for o in self.obstacles)
-        self.map = Map(ceil(self.mapw / self.smallerRadius), ceil(self.maph / self.smallerRadius), self.obstacleCost, self.robot_radius)
+        realMapW = ceil(self.mapw / self.smallerRadius);
+        realMapH = ceil(self.maph / self.smallerRadius);
+        self.map = Map(realMapW, realMapH, self.obstacleCost, self.robot_radius)
         for o in self.obstacles:
             minX = floor((o.x - o.r - self.robot_radius) / self.smallerRadius)
             maxX = ceil((o.x + o.r + self.robot_radius) / self.smallerRadius)
@@ -231,7 +236,10 @@ class Pathfinding:
             maxY = ceil((o.y + o.r + self.robot_radius) / self.smallerRadius)
             for i in range(minX, maxX + 1):
                 for j in range(minY, maxY + 1):
-                    self.map.SetObstacle(i, j)
+                    if i >= 0 and i <= realMapW and j >= 0 and j <= realMapH:
+                        self.map.SetObstacle(i, j)
+                    else:
+                        print("Warning: obstacle " + str(o) + " is out of the map")
 
         self.robot = self.map.GetPoint(round(rx / self.smallerRadius), round(ry / self.smallerRadius))
         self.dest= self.map.GetPoint(round(dx / self.smallerRadius), round(dy / self.smallerRadius))
