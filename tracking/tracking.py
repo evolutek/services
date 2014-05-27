@@ -88,6 +88,19 @@ class Tracking(Service):
         self.hokuyo_scan_pal.add_update_cb(pal.is_scanned_set)
         self.hokuyo_scan_pmi.add_update_cb(pmi.is_scanned_set)
 
+    # Actions
+
+    @Service.action
+    def get_robots(self):
+        ret = []
+        for r in self.robots:
+            robot = {'name': r.name,
+                     'x': r.location.x,
+                     'y': r.location.y}
+            ret.append(robot)
+        return ret
+
+
     # Utility functions
 
     def is_alive(self, obj):
