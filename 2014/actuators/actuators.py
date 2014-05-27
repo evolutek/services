@@ -15,8 +15,8 @@ AX_ELEVATOR_FIREPLACE = 350
 AX_COLLECTOR_OPEN = 1000
 AX_COLLECTOR_CLOSE = 650
 AX_COLLECTOR_PUSH_FIRE = 350
-AX_ROTATION_START = 420
-AX_ROTATION_END = 60
+AX_ROTATION_START = 500
+AX_ROTATION_END = 138
 
 # others to come
 
@@ -32,6 +32,7 @@ class Actuators(Service):
         super().__init__()
 
         self.cs = CellaservProxy()
+        self.rotation = AX_ROTATION_START
 
 
     @Service.action
