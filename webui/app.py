@@ -122,24 +122,25 @@ class EvolutekSimulator(pantograph.PantographHandler):
 
         # Draw pal circle
         x, y = self.from_evo_to_canvas(
-            (self.monitor.pal['x']-75,
-             self.monitor.pal['y']-75))
+            (self.monitor.pal['x']-150,
+             self.monitor.pal['y']-150))
         shape = pantograph.Rect(
             x=x,
             y=y,
-            width=150*self.xscale,
-            height=150*self.yscale,
+            width=300*self.xscale,
+            height=300*self.yscale,
             fill_color='rgba(0, 0, 255, 0.5)',
         )
         shape.rotate(float(self.monitor.pal['theta']))
         shape.draw(self)
 
         # Draw pal orientation
-        dir_poly = [(self.monitor.pal['x'] + 75, self.monitor.pal['y']),
-            (self.monitor.pal['x'] - 75,self.monitor.pal['y']),
-            (self.monitor.pal['x'], self.monitor.pal['y'] + 75)]
+        dir_poly = [
+            (self.monitor.pal['x'] + 150, self.monitor.pal['y']),
+            (self.monitor.pal['x'] - 150, self.monitor.pal['y']),
+            (self.monitor.pal['x'], self.monitor.pal['y'] + 150)]
         dir_shape = pantograph.Polygon(
-                [self.from_evo_to_canvas(p) for p in dir_poly], None, '#000')
+            [self.from_evo_to_canvas(p) for p in dir_poly], None, '#000')
         dir_shape.rotate(float(self.monitor.pal['theta']))
         dir_shape.draw(self)
 
