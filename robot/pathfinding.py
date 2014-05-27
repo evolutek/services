@@ -228,7 +228,8 @@ class Pathfinding:
         self.smallerRadius = min(o.r for o in self.obstacles)
         realMapW = ceil(self.mapw / self.smallerRadius);
         realMapH = ceil(self.maph / self.smallerRadius);
-        self.map = Map(realMapW, realMapH, self.obstacleCost, self.robot_radius)
+        realRobotRadius = round(self.robot_radius / self.smallerRadius)
+        self.map = Map(realMapW, realMapH, self.obstacleCost, realRobotRadius)
         for o in self.obstacles:
             minX = floor((o.x - o.r - self.robot_radius) / self.smallerRadius)
             maxX = ceil((o.x + o.r + self.robot_radius) / self.smallerRadius)
