@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from collections import deque
 from itertools import zip_longest
 import math
 import random
@@ -34,8 +35,11 @@ class WebMonitor(Service):
 
         self.pal = {'x': 1000, 'y': 1000, 'theta': 0}
         self.pmi = {'x': 0, 'y': 0, 'theta': 0}
-
         self.pal_traj = []
+
+        self.hokuyo_robots = {}
+        self.hokuyo_robots_persist_lock = threading.Lock()
+        self.hokuyo_robots_persist = deque()
 
     @Service.event('log.monitor.robot_position')
     def update_robot_position(self, robot, x, y, theta):
@@ -56,6 +60,14 @@ class WebMonitor(Service):
             self.pmi['y'] = y
             self.pmi['theta'] = theta
 
+    @Service.event('hokuyo.robots')
+    def update_hokuyo(self, robots):
+        self.hokuyo_robots = robots
+        with self.hokuyo_robots_persist_lock:
+            if len(self.hokuyo_robots_persist) > 25:
+                self.hokuyo_robots_persist.popleft()
+            self.hokuyo_robots_persist.append(robots)
+
 
 class EvolutekSimulator(pantograph.PantographHandler):
 
@@ -65,8 +77,10 @@ class EvolutekSimulator(pantograph.PantographHandler):
         self.monitor = WebMonitor()
         self.monitor_thread = threading.Thread(target=self.monitor.run)
         self.monitor_thread.start()
+
         self.mouse_pos = {'x': 0, 'y': 0}
-        # self.cs = CellaservProxy()
+
+        self.cs = CellaservProxy()
 
     def get_xscale(self):
         return self.width / 3000
@@ -88,7 +102,9 @@ class EvolutekSimulator(pantograph.PantographHandler):
         # Draw table
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
-        self.update_self_tracking()
+        # self.update_self_tracking()
+        self.update_hokuyo_robots()
+
         self.update_mouse()
 
     def from_evo_to_canvas(self, point):
@@ -145,16 +161,23 @@ class EvolutekSimulator(pantograph.PantographHandler):
         text.fill_color = 'blue'
         text.draw(self)
 
-    def update_hokuyo(self):
-        for robot in self.cs.hokuyo['1'].robots()['robots']:
-            shape = pantograph.Circle(
-                x=int(robot['y']*self.xscale),
-                y=int(robot['x']*self.yscale),
-                radius=int(robot['g']) * 10,
-                fill_color=random.choice(COLORS))
+    def update_hokuyo_robots(self):
+        with self.monitor.hokuyo_robots_persist_lock:
+            for i, robot_trace in enumerate(self.monitor.hokuyo_robots_persist):
+                for robot in robot_trace:
+                    shape = pantograph.Circle(
+                        x=int(robot['y']*self.xscale),
+                        y=int(robot['x']*self.yscale),
+                        radius=int(robot['g']) * 5,
+                        fill_color='hsla({}, 60%, 70%, 0.5)'.format(i * 10),
+                        line_color='black')
+                    shape.draw(self)
 
-            shape.draw(self)
+                    self.draw_text('({r[x]}, {r[y]})'.format(r=robot),
+                                   x=robot['y']*self.yscale,
+                                   y=robot['x']*self.xscale)
 
+    def update_hokuyo_scan(self):
         for x, y in grouper(self.cs.hokuyo['1'].scan()['points'], 2):
             shape = pantograph.Circle(
                 x=int(x)*self.xscale,
