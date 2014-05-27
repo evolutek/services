@@ -144,30 +144,31 @@ class Tracking(Service):
     @Service.event('hokuyo.robots')
     def hokuyo(self, robots):
         with self.robots_lock:
-            scans = [Point(r['x'], r['y']) for r in robots]  # XXX: dropping 'g'
+            # XXX: 'g' unused
+            scans = [Point(r['x'], r['y']) for r in robots]
             robots = [r for r in self.robots if r.is_scanned]
 
             # First, try to lock down on our robots in order to avoid false
             # positives with ourselves
-            self.match_scans_to_robots(min_dist=200,
-                    robots=robots,
-                    robots_filter=lambda r: r.is_evolutek,
-                    scans=scans)
+            self.match_scans_to_robots(
+                min_dist=200,
+                robots=robots,
+                robots_filter=lambda r: r.is_evolutek,
+                scans=scans)
 
             # Try to match alive robots
-            self.match_scans_to_robots(min_dist=1000,
-                    robots=robots,
-                    robots_filter=lambda r: self.is_alive(r),
-                    scans=scans)
+            self.match_scans_to_robots(
+                min_dist=1000,
+                robots=robots,
+                robots_filter=lambda r: self.is_alive(r),
+                scans=scans)
 
             # Then try to revive dead robots
-            self.match_scans_to_robots(min_dist=1000,
-                    robots=robots,
-                    robots_filter=lambda r: True,  # Do not filter
-                    scans=scans)
-
-            self.log(msg='Robots not matched to a scan',
-                    robots=str(robots))
+            self.match_scans_to_robots(
+                min_dist=1000,
+                robots=robots,
+                robots_filter=lambda r: True,  # Do not filter
+                scans=scans)
 
             # Pour toutes les mesures qui n'ont pas de robot
             for scan in scans:
@@ -183,10 +184,10 @@ class Tracking(Service):
 
     @Service.event
     def sharp_avoid(self, n):
-        robot_moving_side = self.get_robot_moving_side()
+        robot_moving_side = self.cs.tm['pal'].get_vector_trsl()
         # For now only pal has sharps
-        front_sharps = [0, 1]
-        back_sharps = [2, 3]
+        pal_front_sharps = [0, 1]
+        pal_back_sharps = [2, 3]
         if n in front_sharps:
             pass
         elif n in back_sharps:
@@ -194,6 +195,11 @@ class Tracking(Service):
         else:
             self.log('Unknown sharp: %s'.format(n))
             return
+
+    @Service.event
+    def sharp_pmi_avoid(self, m):
+        front_sharp = [0]  # 80cm
+        back_sharp = [1]  # 30cm
 
     # Threads
 
