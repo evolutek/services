@@ -8,6 +8,7 @@
 # for p in path:
 #     print(str(p))
 from math import sqrt, ceil, floor
+from fractions import gcd
 from collections import namedtuple
 import heapq
 
@@ -220,12 +221,19 @@ class Pathfinding:
 
     ### PRIVATE PART ###
 
+    def FindSmallerRadius(self):
+        sr = self.robot_radius
+        for o in self.obstacles:
+            sr = gcd(sr, o.r)
+        return sr
+
     # Create a new map with cost set to the obstacles
     def InitPathfinding(self, rx, ry, dx, dy):
         self.opened = None
         self.closed = None
 
-        self.smallerRadius = min(o.r for o in self.obstacles)
+        #self.smallerRadius = min(o.r for o in self.obstacles)
+        self.smallerRadius = self.FindSmallerRadius()
         realMapW = ceil(self.mapw / self.smallerRadius);
         realMapH = ceil(self.maph / self.smallerRadius);
         realRobotRadius = round(self.robot_radius / self.smallerRadius)
