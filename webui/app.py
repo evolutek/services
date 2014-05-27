@@ -102,8 +102,8 @@ class EvolutekSimulator(pantograph.PantographHandler):
         # Draw table
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
-        # self.update_self_tracking()
-        self.update_hokuyo_robots()
+        self.update_self_tracking()
+        #self.update_hokuyo_robots()
 
         self.update_mouse()
 
@@ -121,11 +121,12 @@ class EvolutekSimulator(pantograph.PantographHandler):
                                color='blue')
 
         # Draw pal circle
-        pal_rect = self.from_evo_to_canvas((self.monitor.pal['x']-75,
-            self.monitor.pal['y']-75))
+        x, y = self.from_evo_to_canvas(
+            (self.monitor.pal['x']-75,
+             self.monitor.pal['y']-75))
         shape = pantograph.Rect(
-            x=pal_rect[0],
-            y=pal_rect[1],
+            x=x,
+            y=y,
             width=150*self.xscale,
             height=150*self.yscale,
             fill_color='rgba(0, 0, 255, 0.5)',
