@@ -144,11 +144,11 @@ class EvolutekSimulator(pantograph.PantographHandler):
         dir_shape.draw(self)
 
         # Draw pal text
-        text = pantograph.Text('pal ({},{})'.format(int(self.monitor.pal['x']),
-                                                    int(self.monitor.pal['y'])),
-                               self.monitor.pal['y']*self.xscale,
-                               self.monitor.pal['x']*self.yscale,
-                               )
+        text = pantograph.Text(
+            'pal ({r[x]:.0f},{r[y]:.0f},{r[theta]:.1f})'.format(r=self.monitor.pal),
+            self.monitor.pal['y']*self.xscale,
+            self.monitor.pal['x']*self.yscale,
+            text_align='center')
         text.fill_color = 'black'
         text.draw(self)
 
