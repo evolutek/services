@@ -51,6 +51,7 @@ __doc__ = """     ##########################
          mvrot dist acc dec maxspeed sens        //Alias: mv
 
          curve desttr acc dec max sens destrot acc dec max sens
+         stop trsldec rotdec -- Stops the robot as soon as the deceleration permits it
 
     Set
          setpidt P I D
@@ -152,6 +153,8 @@ class Robot(Service):
             "mr": self.move_rot,
 
             "curve": self.curve,
+            "stop": self.stop_asap,
+
 
             # Set
 
@@ -399,6 +402,9 @@ class Robot(Service):
     def curve(self, dt, at, det, mt, st, dr, ar, der, mr, sr, delayed):
         self.print(self.tm.curve(dt=dt, at=at, det=det, mt=mt, st=st, dr=dr,
             ar=ar, der=der, mr=mr, sr=sr, delayed=delayed))
+
+    def stop_asap(self, trsldec, rotdec):
+        self.print(self.tm.stop_asap(trsldec=trsldec, rotdec=rotdec))
 
     #######
     # Set #
