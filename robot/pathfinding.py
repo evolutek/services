@@ -40,17 +40,19 @@ class Point:
         return str(self.x) + ", " + str(self.y)
 
 class Obstacle:
-    def __init__(self, x, y, radius, tag = "No tag"):
-        self.x = x
-        self.y = y
-        self.r = radius
+    def __init__(self, x1, y1, x2, y2, tag):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+        self.cx = round((x1 + x2) / 2)
+        self.cy = round((y1 + y2) / 2)
         self.tag = tag
 
     def __str__(self):
-        return self.tag + " (" + str(self.x) + ", " + str(self.y) + ")"
+        return self.tag + " (" + str(self.x1) + ", " + str(self.y1) + "), (" + str(self.x2) + ", " + str(self.y2) + ")"
 
 class Map:
-
     # Initializes a new map (with cost set to 1)
     def __init__(self, w, h, obstacleCost, robot_radius):
         self.w = w
@@ -172,13 +174,20 @@ class Pathfinding:
         self.obstacleCost = 10000
         pass
 
-    # Add an obstacle in the map
-    def AddObstacle(self, x, y, radius, tag = "No tag"):
-        self.obstacles.append(Obstacle(x, y, radius, tag))
+    # Add a square obstacle in the map
+    def AddSquareObstacle(self, x, y, radius, tag = "No tag"):
+        self.obstacles.append(Obstacle(x - radius, y - radius, x + radius, y + radius, tag))
+
+    # Add a rectange obstacle in the map
+    def AddRectangleObstacle(self, x1, y1, x2, y2, tag = "No tag"):
+        self.obstacles.append(Obstacle(x1, y1, x2, y2, tag))
 
     # Remove an obstacle located at a specified position
-    def RemoveObstacleByPosition(self, x, y):
-        self.obstacles = filter(lambda o: o.x != x or o.y != y, self.obstacles)
+    def RemoveObstacleByPosition(self, x1, y1, x2 = -1, y2 = -1):
+        if x2 == -1 and y2 == -1: # Use (x1,y1) as the center of the object
+            self.obstacles = [o for o in self.obstacles if o.cx != x1 or o.cy != y1]
+        else:
+            self.obstacles = [o for o in self.obstacles if o.x1 != x1 or o.y1 != y1 or o.x2 != x2 or o.y2 != y2]
 
     # Remove an obstacle that has a specific tag
     def RemoveObstacleByTag(self, tag):
@@ -224,7 +233,9 @@ class Pathfinding:
     def FindSmallerRadius(self):
         sr = self.robot_radius
         for o in self.obstacles:
-            sr = gcd(sr, o.r)
+            lx = o.x2 - o.x1
+            ly = o.y2 - o.y1
+            sr = gcd(sr, gcd(lx, ly))
         return sr
 
     # Create a new map with cost set to the obstacles
@@ -232,23 +243,27 @@ class Pathfinding:
         self.opened = None
         self.closed = None
 
-        #self.smallerRadius = min(o.r for o in self.obstacles)
         self.smallerRadius = self.FindSmallerRadius()
         realMapW = ceil(self.mapw / self.smallerRadius);
         realMapH = ceil(self.maph / self.smallerRadius);
         realRobotRadius = round(self.robot_radius / self.smallerRadius)
         self.map = Map(realMapW, realMapH, self.obstacleCost, realRobotRadius)
         for o in self.obstacles:
-            minX = floor((o.x - o.r - self.robot_radius) / self.smallerRadius)
-            maxX = ceil((o.x + o.r + self.robot_radius) / self.smallerRadius)
-            minY = floor((o.y - o.r - self.robot_radius) / self.smallerRadius)
-            maxY = ceil((o.y + o.r + self.robot_radius) / self.smallerRadius)
-            for i in range(minX, maxX + 1):
-                for j in range(minY, maxY + 1):
-                    if i >= 0 and i <= realMapW and j >= 0 and j <= realMapH:
+            if o.x1 < 0 or o.x2 > self.mapw or o.y1 < 0 or o.y2 > self.maph:
+                print("Warning: obstacle " + str(o) + " is out of the map. It will be ignored.")
+                continue
+            else:
+                minX = floor((o.x1 - self.robot_radius) / self.smallerRadius)
+                maxX = ceil((o.x2 + self.robot_radius) / self.smallerRadius)
+                minY = floor((o.y1 - self.robot_radius) / self.smallerRadius)
+                maxY = ceil((o.y2 + self.robot_radius) / self.smallerRadius)
+                if minX < 0: minX = 0
+                if maxX > realMapW: maxX = realMapW
+                if minY < 0: minY = 0
+                if maxY > realMapH: maxY = realMapH
+                for i in range(minX, maxX + 1):
+                    for j in range(minY, maxY + 1):
                         self.map.SetObstacle(i, j)
-                    else:
-                        print("Warning: obstacle " + str(o) + " is out of the map")
 
         self.robot = self.map.GetPoint(round(rx / self.smallerRadius), round(ry / self.smallerRadius))
         self.dest= self.map.GetPoint(round(dx / self.smallerRadius), round(dy / self.smallerRadius))
@@ -290,6 +305,7 @@ class Pathfinding:
 
     # Update the cost of n from s
     def ComputeCost(self, s, n):
+        los = self.map.LineOfSight(s.parent, n)
         if self.map.LineOfSight(s.parent, n):
             cost = s.parent.g + n.cost * s.parent.distance(n)
             if n.g == None or cost < n.g:
