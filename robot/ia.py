@@ -10,13 +10,13 @@ from objective import *
 from subprocess import call
 
 import pathfinding
+from pathfinding import AvoidException
 import robot_status
 
 
 class ia(Service):
 
     match_start = Variable('start')
-    sharp_avoid = Variable('sharp_avoid')
     color = ConfigVariable(section='match', option='color', coerc=lambda v:
             {'red': -1, 'yellow': 1}[v])
 
@@ -57,6 +57,7 @@ class ia(Service):
         return {'started': self.match_start.is_set()}
 
 
+
     #TODO: Check this function as a color wrapper
     def goto_xy_block(self, x, y):
         self.stopped = False
@@ -87,8 +88,6 @@ class ia(Service):
 
     @Service.thread
     def start(self):
-        avoid = Thread(target=self.avoid_opponent)
-        avoid.start()
         print("Waiting...")
         self.log(msg='Waiting')
         self.match_start.wait()
@@ -107,6 +106,7 @@ class ia(Service):
             obj = self.objectives.get_best(pos['x'], pos['y'], self.status)
             if tmpobj:
                 self.objectives.append(tmpobj)
+                tmpobg = None
             if obj.get_cost(pos['x'], pos['y'], self.status) > 10000:
                 break
             obj.execute_requirements(self.robot, self.cs, self.status)
@@ -114,12 +114,12 @@ class ia(Service):
             print("At pos " +  str(obj.x) + " " + str(obj.y))
             try:
                 self.goto_with_pathfinding(*(obj.get_position()))
-                obj.execute(self.robot, self.cs, self.status)
-            except:
+                obj.execute(self.robot, self.cs, self.status, self)
+            except AvoidException:
                 tmpobj = obj
                 self.objectives.remove(obj)
                 pos = self.get_position()
-                self.robot.goto_theta_block(pos[2] + math.pi / 2)
+                self.robot.goto_theta_block(pos['theta'] + math.pi / 2)
                 continue
             if obj.get_tag():
                 self.pathfinding.RemoveObstacleByTag(obj.get_tag())
@@ -132,31 +132,22 @@ class ia(Service):
 
         return
 
-
-    def avoid_opponent(self):
-        while True:
-            sharp = self.sharp_avoid.wait()
-            print(sharp)
-            if not self.stopped:
-                v = self.robot.get_vector_trsl()
-                if ((v['trsl_vector'] > 0 and sharp['n'] in [0, 1])
-                        or v['trsl_vector'] < 0 and sharp['n'] in [2, 3]):
-                    self.robot.stop_asap(trsldec=1500, rotdec=3.1)
-                    self.stopped = True
-                    call(['aplay', '/root/horn.wav'])
-            self.sharp_avoid.clear()
-
     # Called by a timer thread
     def match_stop(self):
         self.cs('log.ia', msg='Stopping robot')
-        self.cs.trajman.free()
-        self.cs.trajman.disable()
+        self.cs.trajman['pal'].free()
+        self.cs.trajman['pal'].disable()
 
     @Service.event
     def robot_near(self):
-        if self.match_start.is_set():
-            self.cs('log.ia', msg='Detected robot near')
-            self.match_stop()
+        print("Robot near, robot should be avoiding")
+        if not self.stopped:
+            self.robot.stop_asap(trsldec=1500, rotdec=3.1)
+            self.stopped = True
+            call(['aplay', '/root/horn.wav'])
+        #if self.match_start.is_set():
+        #    self.cs('log.ia', msg='Detected robot near')
+        #    self.match_stop()
 
 def main():
     service = ia()

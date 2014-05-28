@@ -12,3 +12,5 @@ upload::
 	scp robot.py root@$(HOST_ROBOT):$(PREFIX)
 	scp homologation_pal.py root@$(HOST_ROBOT):$(PREFIX)
 	scp pathfinding.py root@$(HOST_ROBOT):$(PREFIX)
+	scp objective.py root@$(HOST_ROBOT):$(PREFIX)
+	scp robot_status.py root@$(HOST_ROBOT):$(PREFIX)

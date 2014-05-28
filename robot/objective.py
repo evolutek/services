@@ -23,7 +23,7 @@ class Objective(metaclass=ABCMeta):
         return (self.x, self.y)
 
     @abstractmethod
-    def execute(self, robot, cs, status):
+    def execute(self, robot, cs, status, ia):
         pass
 
     def get_tag(self):
@@ -42,7 +42,7 @@ class ObjectiveList(list):
 
 class FedexObjective(Objective):
 
-    def execute(self, robot, cs, status):
+    def execute(self, robot, cs, status, ia):
         pass
 
 class FirePlaceDrop(Objective):
@@ -55,37 +55,37 @@ class FirePlaceDrop(Objective):
     def execute_requirements(self, robot, cs, status):
         cs.actuators.collector_up()
 
-    def execute(self, robot, cs, status):
+    def execute(self, robot, cs, status, ia):
         robot.goto_theta_block(self.direction)
-        robot.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
+        ia.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
                 130 * sin(self.direction))
         cs.actuators.collector_open()
         sleep(.5)
         cs.actuators.collector_fireplace()
-        robot.goto_xy_block(self.x + 50 * cos(self.direction), self.y +
+        ia.goto_xy_block(self.x + 50 * cos(self.direction), self.y +
                 50 * sin(self.direction))
         cs.actuators.collector_close()
         sleep(1)
-        robot.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
+        ia.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
                 130 * sin(self.direction))
-        robot.goto_xy_block(self.x, self.y)
+        ia.goto_xy_block(self.x, self.y)
         status.has_fire = False
 
 class FirePlaceDropCenter(FirePlaceDrop):
-    def execute(self, robot, cs, status):
+    def execute(self, robot, cs, status, ia):
         robot.goto_theta_block(self.direction)
-        robot.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
+        ia.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
                 130 * sin(self.direction))
         cs.actuators.collector_open()
         sleep(.5)
         cs.actuators.collector_fireplace()
-        robot.goto_xy_block(self.x + 20 * cos(self.direction), self.y +
+        ia.goto_xy_block(self.x + 20 * cos(self.direction), self.y +
                 20 * sin(self.direction))
         cs.actuators.collector_close()
         sleep(1)
-        robot.goto_xy_block(self.x + 150 * cos(self.direction), self.y +
+        ia.goto_xy_block(self.x + 150 * cos(self.direction), self.y +
                 150 * sin(self.direction))
-        robot.goto_xy_block(self.x, self.y)
+        ia.goto_xy_block(self.x, self.y)
         status.has_fire = False
 
 class StandingFire(Objective):
@@ -98,16 +98,16 @@ class StandingFire(Objective):
     def execute_requirements(self, robot, cs, status):
         cs.actuators.collector_push_fire()
 
-    def execute(self, robot, cs, status):
+    def execute(self, robot, cs, status, ia):
         robot.goto_theta_block(self.direction)
-        robot.goto_xy_block(self.x + (DST_STDFR + 100) * cos(self.direction),
+        ia.goto_xy_block(self.x + (DST_STDFR + 100) * cos(self.direction),
                             self.y + (DST_STDFR + 100) * sin(self.direction))
         cs.actuators.collector_open()
-        robot.goto_xy_block(self.x + DST_STDFR * cos(self.direction),
+        ia.goto_xy_block(self.x + DST_STDFR * cos(self.direction),
                             self.y + DST_STDFR * sin(self.direction))
         cs.actuators.collector_down()
         sleep(1)
-        robot.goto_xy_block(self.x + (DST_STDFR + 150) * cos(self.direction),
+        ia.goto_xy_block(self.x + (DST_STDFR + 150) * cos(self.direction),
                             self.y + (DST_STDFR + 150) * sin(self.direction))
         cs.actuators.collector_close()
         sleep(.5)
@@ -117,11 +117,11 @@ class StandingFire(Objective):
         sleep(1)
         if not cs.actuators.collector_has_fire():
             cs.actuators.collector_open()
-            robot.goto_xy_block(self.x + (DST_STDFR + 50) * cos(self.direction),
+            ia.goto_xy_block(self.x + (DST_STDFR + 50) * cos(self.direction),
                                 self.y + (DST_STDFR + 50) * sin(self.direction))
             cs.actuators.collector_down()
             sleep(1)
-            robot.goto_xy_block(self.x + (DST_STDFR + 250) * cos(self.direction),
+            ia.goto_xy_block(self.x + (DST_STDFR + 250) * cos(self.direction),
                                 self.y + (DST_STDFR + 250) * sin(self.direction))
             cs.actuators.collector_close()
             sleep(.5)
@@ -141,11 +141,11 @@ class StandingFire(Objective):
 
 class WallFire(Objective):
 
-    def execute(self, robot, cs, status):
+    def execute(self, robot, cs, status, ia):
         robot.goto_theta_block(self.direction)
-        robot.goto_xy_block(self.x + 100 * cos(self.direction),
+        ia.goto_xy_block(self.x + 100 * cos(self.direction),
                             self.y + 100 * sin(self.direction))
-        robot.goto_xy_block(self.x, self.y)
+        ia.goto_xy_block(self.x, self.y)
         robot.goto_theta_block(2 * pi - self.direction)
 
     def __str__(self):
@@ -155,7 +155,7 @@ class WallFire(Objective):
 
 class Torch(Objective):
 
-    def execute(self, robot, cs, status):
+    def execute(self, robot, cs, status, ia):
         robot.goto_theta_block(0)
         robot.goto_theta_block(pi / 2)
 
