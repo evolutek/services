@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 from time import sleep
 
-from math import pi, cos, sin
+from math import pi, cos, sin, sqrt
 
 class Objective(metaclass=ABCMeta):
 
@@ -14,7 +14,7 @@ class Objective(metaclass=ABCMeta):
         self.points = points
 
     def get_cost(self, x, y, status):
-        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2) / self.points
+        return sqrt((x - self.x) ** 2 + (y - self.y) ** 2) / self.points
 
     def get_position(self):
         return (self.x, self.y)
@@ -23,7 +23,6 @@ class Objective(metaclass=ABCMeta):
     def execute(self, robot, cs, status):
         pass
 
-    @abstractmethod
     def execute_requirements(self, robot, cs, status):
         """ Function supposed to be called while going to the place of the
         current objective. Do *NOT* make blocking calls in this method"""
@@ -45,14 +44,13 @@ class FirePlaceDrop(Objective):
     def get_cost(self, x, y, status):
         if not status.has_fire:
             return 10**9
-        return super.get_cost(x, y, status)
+        return super(FirePlaceDrop, self).get_cost(x, y, status)
 
     def execute_requirements(self, robot, cs, status):
         cs.actuators.collector_up()
 
     def execute(self, robot, cs, status):
         robot.goto_theta_block(self.direction)
-        sleep(.5)
         robot.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
                 130 * sin(self.direction))
         cs.actuators.collector_open()
@@ -70,17 +68,17 @@ class FirePlaceDrop(Objective):
 class FirePlaceDropCenter(FirePlaceDrop):
     def execute(self, robot, cs, status):
         robot.goto_theta_block(self.direction)
-        robot.goto_xy_block(self.x + 100 * cos(self.direction), self.y +
-                100 * sin(self.direction))
+        robot.goto_xy_block(self.x + 130 * cos(self.direction), self.y +
+                130 * sin(self.direction))
         cs.actuators.collector_open()
         sleep(.5)
         cs.actuators.collector_fireplace()
-        robot.goto_xy_block(self.x + 50 * cos(self.direction), self.y +
-                50 * sin(self.direction))
+        robot.goto_xy_block(self.x + 20 * cos(self.direction), self.y +
+                20 * sin(self.direction))
         cs.actuators.collector_close()
         sleep(1)
-        robot.goto_xy_block(self.x + 100 * cos(self.direction), self.y +
-                100 * sin(self.direction))
+        robot.goto_xy_block(self.x + 150 * cos(self.direction), self.y +
+                150 * sin(self.direction))
         robot.goto_xy_block(self.x, self.y)
         status.has_fire = False
 
@@ -89,7 +87,7 @@ class StandingFire(Objective):
     def get_cost(self, x, y, status):
         if status.has_fire:
             return 10**9
-        return super.get_cost(x, y, status)
+        return super(StandingFire, self).get_cost(x, y, status)
 
     def execute_requirements(self, robot, cs, status):
         cs.actuators.collector_push_fire()
@@ -182,7 +180,7 @@ class DefaultObjectives():
                 [1650, 2650, pi / 4],
         ]
         for pos in positions:
-            defobj.append(FirePlaceDrop(1, *DefaultObjectives.color_pos(color,
+            defobj.append(FirePlaceDrop(2, *DefaultObjectives.color_pos(color,
                 pos[0], pos[1], pos[2])))
 
         # Standing fire. all 6 of them are declared because of the change
@@ -203,8 +201,8 @@ class DefaultObjectives():
         # Center fire. Is defined as multiple position to prevent stacking
         # fires
         for i in range(8):
-            defobj.append(FirePlaceDropCenter(2, 1050 + cos(pi/4 * i) * 400, 1500 +
-                sin(pi/4 * i) * 400, pi - pi/8*i))
+            defobj.append(FirePlaceDropCenter(1, 1050 + cos(pi/4 * i) * 400, 1500 +
+                sin(pi/4 * i) * 400, pi/4*i - pi))
 
         return defobj
 
