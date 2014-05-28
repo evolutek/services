@@ -50,15 +50,6 @@ class ia(Service):
         self.pathfinding.AddObstacle(1600, 2100, 100)
         self.pathfinding.AddObstacle(1050, 1500, 150, "fireplacecenter")
 
-        #self.robot.set_trsl_acc(1500)
-        #self.robot.set_trsl_max_speed(900)
-        #self.robot.set_trsl_dec(800)
-        #self.robot.set_pid_trsl(200, 0, 2000)
-
-        #self.robot.set_rot_acc(15)
-        #self.robot.set_rot_dec(15)
-        #self.robot.set_rot_max_speed(15)
-        #self.robot.set_pid_rot(5000, 0, 25000)
         self.robot.unfree()
 
     @Service.action
@@ -80,7 +71,9 @@ class ia(Service):
         pos = self.get_position()
         path = self.pathfinding.GetPath(pos['x'], pos['y'], x, y)
         for i in range(1, len(path) - 1):
+            print("Waypoint : ", path[i].x, path[i].y)
             self.robot.goto_xy_block(path[i].x, path[i].y)
+        print("Final waypoint : ", x, y)
         self.robot.goto_xy_block(x, y)
 
     def get_position(self):
@@ -111,7 +104,6 @@ class ia(Service):
             obj = self.objectives.get_best(pos['x'], pos['y'], self.status)
             if obj.get_cost(pos['x'], pos['y'], self.status) > 10000:
                 break
-            print("Executing requirements")
             obj.execute_requirements(self.robot, self.cs, self.status)
             print("going to obj " +  str(obj))
             print("At pos " +  str(obj.x) + " " + str(obj.y))
