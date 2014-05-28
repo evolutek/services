@@ -216,20 +216,30 @@ class Tracking(Service):
         pal_front_sharps = [0, 1]
         pal_back_sharps = [2, 3]
         
-        sharp_robot_x = self.pal.location.x + (-150 if n in pal_back_sharps else
-                150)
-        sharp_robot_y = self.pal.location.y + (-140 if n in [2, 0] else 140)
+        sharp_robot_x = (-150 if n in pal_back_sharps else 150)
+        sharp_robot_y = (-140 if n in [2, 0] else 140)
 
-        obj_x = sharp_robot_x
-        obj_y = sharp_robot_y + (self.sharp_threshold()*10,
+        obj_x = sharp_robot_x + (self.sharp_threshold()*10,
                 -self.sharp_threshold()*10)[n in 
                 pal_back_sharps]
 
-        print("oX="+str(obj_x)+";oY="+str(obj_y))
+        obj_y = sharp_robot_y
+
         # apply rotation to object's position
         theta = self.pal.theta
         real_obj_x = obj_x*math.cos(theta) - obj_y*math.sin(theta)
         real_obj_y = obj_x*math.sin(theta) + obj_y*math.cos(theta)
+
+        # Add robots's position to get absolute coord
+
+        real_obj_x += self.pal.location.x
+        real_obj_y += self.pal.location.y
+
+        print("X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        
+        if(real_obj_x < 0 or real_obj_x > 2000 or real_obj_y < 0 or real_obj_y >
+                3000):
+            return
 
         # Ignore if it's on the opposite side of its movement
         if ((n in pal_front_sharps) and (robot_moving_side['trsl_vector'] < 0)) or ((n in
