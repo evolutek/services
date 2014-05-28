@@ -212,10 +212,15 @@ class Tracking(Service):
     @Service.event
     def sharp_avoid(self, n):
         robot_moving_side = self.cs.trajman['pal'].get_vector_trsl()
+
+        # trajman dead ....
+        if robot_moving_side['trsl_vector'] == None: 
+            return
+
         # For now only pal has sharps
         pal_front_sharps = [0, 1]
         pal_back_sharps = [2, 3]
-        
+
         sharp_robot_x = (-150 if n in pal_back_sharps else 150)
         sharp_robot_y = (-140 if n in [2, 0] else 140)
 
@@ -231,7 +236,6 @@ class Tracking(Service):
         real_obj_y = obj_x*math.sin(theta) + obj_y*math.cos(theta)
 
         # Add robots's position to get absolute coord
-
         real_obj_x += self.pal.location.x
         real_obj_y += self.pal.location.y
 
@@ -241,6 +245,7 @@ class Tracking(Service):
                 3000):
             return
 
+        print(robot_moving_side)
         # Ignore if it's on the opposite side of its movement
         if ((n in pal_front_sharps) and (robot_moving_side['trsl_vector'] < 0)) or ((n in
             pal_back_sharps) and (robot_moving_side['trsl_vector'] > 0)):
@@ -265,6 +270,17 @@ class Tracking(Service):
     def sharp_pmi_avoid(self, m):
         front_sharp = [0]  # 80cm
         back_sharp = [1]  # 30cm
+
+        sharp_robot_x = (-75 if n in pal_back_sharps else 75)
+        sharp_robot_y = 0
+        
+        obj_x = sharp_robot_x + (self.sharp_threshold()*10,
+                -self.sharp_threshold()*10)[n in 
+                back_sharp]
+
+        obj_y = sharp_robot_y
+
+
 
     # Threads
 
