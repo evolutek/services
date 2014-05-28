@@ -239,7 +239,7 @@ class Tracking(Service):
         real_obj_x += self.pal.location.x
         real_obj_y += self.pal.location.y
 
-        print("X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        print("[DETECTED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
         
         if(real_obj_x < 0 or real_obj_x > 2000 or real_obj_y < 0 or real_obj_y >
                 3000):
@@ -257,17 +257,23 @@ class Tracking(Service):
             return
 
         # Check if it's the PMI
-        if(Obstacle(self.pmi.location.x-100,
-            self.pmi.location.y-75,200,150)
+        if(Obstacle(self.pmi.location.x-75,
+            self.pmi.location.y-100,150,200)
             .intersect(real_obj_x, real_obj_y)):
             return
 
-        print("X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        print("[CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
 
         self('robot_near')
 
     @Service.event
     def sharp_pmi_avoid(self, m):
+        robot_moving_side = self.cs.trajman['pmi'].get_vector_trsl()
+
+        # trajman dead ....
+        if robot_moving_side['trsl_vector'] == None: 
+            return
+
         front_sharp = [0]  # 80cm
         back_sharp = [1]  # 30cm
 
@@ -279,7 +285,41 @@ class Tracking(Service):
                 back_sharp]
 
         obj_y = sharp_robot_y
+        
+        # apply rotation to object's position
+        theta = self.pmi.theta
+        real_obj_x = obj_x*math.cos(theta) - obj_y*math.sin(theta)
+        real_obj_y = obj_x*math.sin(theta) + obj_y*math.cos(theta)
 
+        # Add robots's position to get absolute coord
+        real_obj_x += self.pmi.location.x
+        real_obj_y += self.pmi.location.y
+
+        print("[DETECTED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        
+        if(real_obj_x < 0 or real_obj_x > 2000 or real_obj_y < 0 or real_obj_y >
+                3000):
+            return
+
+        # Ignore if it's on the opposite side of its movement
+        if ((n in front_sharp) and (robot_moving_side['trsl_vector'] < 0)) or ((n in
+            back_sharp) and (robot_moving_side['trsl_vector'] > 0)):
+            return
+
+        # Check if inside any of safe zones
+        if(any([x.intersect(real_obj_x, real_obj_y) for x in 
+            self.sharp_safe_zone])):
+            return
+
+        # Check if it's the PAL
+        if(Obstacle(self.pal.location.x-150,
+            self.pal.location.y-150,300,300)
+            .intersect(real_obj_x, real_obj_y)):
+            return
+
+        print("[CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
+
+        self('robot_near_pmi')
 
 
     # Threads
