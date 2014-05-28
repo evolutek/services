@@ -43,7 +43,6 @@ class WebMonitor(Service):
 
     @Service.event('log.monitor.robot_position')
     def update_robot_position(self, robot, x, y, theta):
-        print(x, y)
         if robot == 'pal':
             self.pal['x'] = x
             self.pal['y'] = y
@@ -64,7 +63,7 @@ class WebMonitor(Service):
     def update_hokuyo(self, robots):
         self.hokuyo_robots = robots
         with self.hokuyo_robots_persist_lock:
-            if len(self.hokuyo_robots_persist) > 25:
+            if len(self.hokuyo_robots_persist) > 5:
                 self.hokuyo_robots_persist.popleft()
             self.hokuyo_robots_persist.append(robots)
 
@@ -103,7 +102,7 @@ class EvolutekSimulator(pantograph.PantographHandler):
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
         self.update_self_tracking()
-        #self.update_hokuyo_robots()
+        self.update_hokuyo_robots()
 
         self.update_mouse()
 
@@ -120,7 +119,7 @@ class EvolutekSimulator(pantograph.PantographHandler):
                                X[i+1]['y']*self.xscale, X[i+1]['x']*self.yscale,
                                color='blue')
 
-        # Draw pal circle
+        # Draw pal rect
         x, y = self.from_evo_to_canvas(
             (self.monitor.pal['x']-150,
              self.monitor.pal['y']-150))
@@ -131,8 +130,6 @@ class EvolutekSimulator(pantograph.PantographHandler):
             height=300*self.yscale,
             fill_color='rgba(0, 0, 255, 0.5)',
         )
-        shape.rotate(float(self.monitor.pal['theta']))
-        shape.draw(self)
 
         # Draw pal orientation
         dir_poly = [
@@ -141,8 +138,10 @@ class EvolutekSimulator(pantograph.PantographHandler):
             (self.monitor.pal['x'], self.monitor.pal['y'] + 150)]
         dir_shape = pantograph.Polygon(
             [self.from_evo_to_canvas(p) for p in dir_poly], None, '#000')
-        dir_shape.rotate(float(self.monitor.pal['theta']))
-        dir_shape.draw(self)
+
+        compound = pantograph.CompoundShape([shape, dir_shape])
+        compound.rotate(math.pi/2 - float(self.monitor.pal['theta']))
+        compound.draw(self)
 
         # Draw pal text
         text = pantograph.Text(
