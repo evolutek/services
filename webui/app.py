@@ -32,7 +32,7 @@ class WebMonitor(Service):
     def __init__(self):
         super().__init__(identification=str(random.random()))
 
-        self.pal = {'x': 0, 'y': 0, 'theta': 0}
+        self.pal = {'x': 1000, 'y': 1000, 'theta': 0}
         self.pmi = {'x': 0, 'y': 0, 'theta': 0}
 
         self.pal_traj = []
@@ -91,6 +91,9 @@ class EvolutekSimulator(pantograph.PantographHandler):
         self.update_self_tracking()
         self.update_mouse()
 
+    def from_evo_to_canvas(self, point):
+        return (point[1]*self.xscale, point[0]*self.yscale)
+
     def update_self_tracking(self):
 
         # Draw pal traj
@@ -102,15 +105,26 @@ class EvolutekSimulator(pantograph.PantographHandler):
                                color='blue')
 
         # Draw pal circle
+        pal_rect = self.from_evo_to_canvas((self.monitor.pal['x']-75,
+            self.monitor.pal['y']-75))
         shape = pantograph.Rect(
-            x=(self.monitor.pal['y']-75)*self.xscale,
-            y=(self.monitor.pal['x']-75)*self.yscale,
-            width=150*self.yscale,
-            height=150*self.xscale,
+            x=pal_rect[0],
+            y=pal_rect[1],
+            width=150*self.xscale,
+            height=150*self.yscale,
             fill_color='rgba(0, 0, 255, 0.5)',
         )
         shape.rotate(float(self.monitor.pal['theta']))
         shape.draw(self)
+
+        # Draw pal orientation
+        dir_poly = [(self.monitor.pal['x'] + 75, self.monitor.pal['y']),
+            (self.monitor.pal['x'] - 75,self.monitor.pal['y']),
+            (self.monitor.pal['x'], self.monitor.pal['y'] + 75)]
+        dir_shape = pantograph.Polygon(
+                [self.from_evo_to_canvas(p) for p in dir_poly], None, '#000')
+        dir_shape.rotate(float(self.monitor.pal['theta']))
+        dir_shape.draw(self)
 
         # Draw pal text
         text = pantograph.Text('pal ({},{})'.format(int(self.monitor.pal['x']),
@@ -134,8 +148,8 @@ class EvolutekSimulator(pantograph.PantographHandler):
     def update_hokuyo(self):
         for robot in self.cs.hokuyo['1'].robots()['robots']:
             shape = pantograph.Circle(
-                x=int(robot['x']*self.xscale),
-                y=int(robot['y']*self.yscale),
+                x=int(robot['y']*self.xscale),
+                y=int(robot['x']*self.yscale),
                 radius=int(robot['g']) * 10,
                 fill_color=random.choice(COLORS))
 
@@ -155,16 +169,16 @@ class EvolutekSimulator(pantograph.PantographHandler):
             if robot['name'] not in self.robots:
                 # New robot
                 shape = pantograph.Circle(
-                    x=int(robot['x']*self.xscale),
-                    y=int(robot['y']*self.yscale),
+                    x=int(robot['y']*self.xscale),
+                    y=int(robot['x']*self.yscale),
                     radius=10,
                     fill_color=random.choice(COLORS))
                 self.robots[robot['name']] = shape
             else:
                 shape = self.robots[robot['name']]
                 # Update position
-                shape.x = int(robot['x']*self.xscale)
-                shape.y = int(robot['y']*self.yscale)
+                shape.x = int(robot['y']*self.xscale)
+                shape.y = int(robot['x']*self.yscale)
 
             shape.draw(self)
 
