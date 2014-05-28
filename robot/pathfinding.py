@@ -39,6 +39,9 @@ class Point:
     def __str__(self):
         return str(self.x) + ", " + str(self.y)
 
+class AvoidException(Exception):
+    pass
+
 class Obstacle:
     def __init__(self, x1, y1, x2, y2, tag):
         self.x1 = x1
@@ -71,6 +74,7 @@ class Map:
 
     # Returns a point of the map
     def GetPoint(self, x, y):
+        print("RETURNING X Y", x, y)
         return self.map[x][y]
 
     # Indicates if the robot can access a cell

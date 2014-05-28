@@ -5,13 +5,16 @@ from time import sleep
 
 from math import pi, cos, sin, sqrt
 
+DST_STDFR = 300
+
 class Objective(metaclass=ABCMeta):
 
-    def __init__(self, points, x, y, direction=0):
+    def __init__(self, points, x, y, direction=0, tag=None):
         self.x = x
         self.y = y
         self.direction = direction
         self.points = points
+        self.tag = tag
 
     def get_cost(self, x, y, status):
         return sqrt((x - self.x) ** 2 + (y - self.y) ** 2) / self.points
@@ -22,6 +25,9 @@ class Objective(metaclass=ABCMeta):
     @abstractmethod
     def execute(self, robot, cs, status):
         pass
+
+    def get_tag(self):
+        return self.tag
 
     def execute_requirements(self, robot, cs, status):
         """ Function supposed to be called while going to the place of the
@@ -94,14 +100,15 @@ class StandingFire(Objective):
 
     def execute(self, robot, cs, status):
         robot.goto_theta_block(self.direction)
-        robot.goto_xy_block(self.x + 300 * cos(self.direction),
-                            self.y + 300 * sin(self.direction))
+        robot.goto_xy_block(self.x + (DST_STDFR + 100) * cos(self.direction),
+                            self.y + (DST_STDFR + 100) * sin(self.direction))
         cs.actuators.collector_open()
-        robot.goto_xy_block(self.x + 200 * cos(self.direction),
-                            self.y + 200 * sin(self.direction))
+        robot.goto_xy_block(self.x + DST_STDFR * cos(self.direction),
+                            self.y + DST_STDFR * sin(self.direction))
         cs.actuators.collector_down()
-        robot.goto_xy_block(self.x + 350 * cos(self.direction),
-                            self.y + 350 * sin(self.direction))
+        sleep(1)
+        robot.goto_xy_block(self.x + (DST_STDFR + 150) * cos(self.direction),
+                            self.y + (DST_STDFR + 150) * sin(self.direction))
         cs.actuators.collector_close()
         sleep(.5)
         cs.actuators.collector_hold()
@@ -110,12 +117,12 @@ class StandingFire(Objective):
         sleep(1)
         if not cs.actuators.collector_has_fire():
             cs.actuators.collector_open()
-            robot.goto_xy_block(self.x + 250 * cos(self.direction),
-                                self.y + 250 * sin(self.direction))
+            robot.goto_xy_block(self.x + (DST_STDFR + 50) * cos(self.direction),
+                                self.y + (DST_STDFR + 50) * sin(self.direction))
             cs.actuators.collector_down()
-            sleep(.5)
-            robot.goto_xy_block(self.x + 450 * cos(self.direction),
-                                self.y + 450 * sin(self.direction))
+            sleep(1)
+            robot.goto_xy_block(self.x + (DST_STDFR + 250) * cos(self.direction),
+                                self.y + (DST_STDFR + 250) * sin(self.direction))
             cs.actuators.collector_close()
             sleep(.5)
             cs.actuators.collector_hold()
@@ -163,7 +170,7 @@ class DefaultObjectives():
         dy = 1500 - y
         return (x, 1500 + color * dy, theta * -color)
 
-    def generate_default_objectives(color):
+    def generate_default_objectives(color, pathfinding):
         """ Objectives should be declared using position for the red player
         The color_pos function will convert the given position to the correct
         one depending on the robot's color"""
@@ -171,13 +178,13 @@ class DefaultObjectives():
         defobj = ObjectiveList()
 
         # Objective needed to exit the startup zone
-        defobj.append(FedexObjective(1, *DefaultObjectives.color_pos(color,
-            437, 232, 0)))
+        #defobj.append(FedexObjective(1, *DefaultObjectives.color_pos(color,
+        #    437, 232, 0)))
 
         # Both corner fireplace
         positions = [
                 [1650, 350, -pi / 4],
-                [1650, 2650, pi / 4],
+                #[1650, 2650, pi / 4],
         ]
         for pos in positions:
             defobj.append(FirePlaceDrop(2, *DefaultObjectives.color_pos(color,
@@ -186,16 +193,28 @@ class DefaultObjectives():
         # Standing fire. all 6 of them are declared because of the change
         # needed depending on which color you are
         positions = [
-                [800, 400, 0],
-                [1300, 2600, pi],
-                [600, 700, pi / 2],
-                [600, 1900, pi / 2],
-                [1600, 1100, -pi / 2],
-                [1600, 2300, -pi / 2],
+                [1100, 400, 0],
+                #[1100, 2600, pi],
+                [600, 900, pi / 2],
+                #[600, 2100, pi / 2],
+                [1600, 900, -pi / 2],
+                #[1600, 2100, -pi / 2],
         ]
+        i = 0
         for pos in positions:
-            defobj.append(StandingFire(1, *DefaultObjectives.color_pos(color,
-                pos[0], pos[1], pos[2])))
+            tag = "fire" + str(i)
+            i += 1
+            pathfinding.AddSquareObstacle(
+                    pos[0],
+                    pos[1],
+                    50,
+                    tag)
+            defobj.append(StandingFire(1,
+                *DefaultObjectives.color_pos(color,
+                pos[0] - cos(color * pos[2]) * DST_STDFR,
+                pos[1] - sin(color * pos[2]) * DST_STDFR,
+                pos[2]),
+                tag=tag))
 
 
         # Center fire. Is defined as multiple position to prevent stacking
