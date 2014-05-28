@@ -14,7 +14,16 @@ Point = namedtuple('Point', ['x', 'y'])
 def distance(point_a, point_b):
     return math.sqrt((point_b.x - point_a.x) ** 2 + (point_b.y - point_a.y) ** 2)
 
+class Obstacle:
 
+    def __init__(self, x, y, width, height):
+        self.x = x;
+        self.y = y;
+        self.width = width
+        self.height = height
+
+    def intersect(self, x, y):
+        return (x >= self.x) and (x <= self.x + self.width) and (y >= self.y) and (y <= self.y + self.height)
 
 class Tracked:
 
@@ -68,6 +77,12 @@ class Tracking(Service):
             option='hokuyo_scan_pal', coerc=eval)
     hokuyo_scan_pmi = ConfigVariable(section='tracking',
             option='hokuyo_scan_pmi', coerc=eval)
+    sharp_map_margin = ConfigVariable(section='tracking',
+            option='sharp_map_margin',
+            coerc=int)
+
+    sharp_threshold = ConfigVariable(section='sharp', option='threshold',
+            coerc=float)
 
     def __init__(self):
         super().__init__()
@@ -76,20 +91,31 @@ class Tracking(Service):
         self.robots_lock = threading.Lock()
 
         # Default robots
-        pal = Tracked(Point(0, 0))
-        pal.name = 'pal'
-        pal.is_evolutek = True
-        pmi = Tracked(Point(0, 0))
-        pmi.name = 'pmi'
-        pmi.is_evolutek = True
-        self.robots = [pal, pmi]
+        self.pal = Tracked(Point(0, 0))
+        self.pal.theta = 0
+        self.pal.name = 'pal'
+        self.pal.is_evolutek = True
+        self.pmi = Tracked (Point(0, 0))
+        self.pmi.theta = 0
+        self.pmi.name = 'pmi'
+        self.pmi.is_evolutek = True
+        self.robots = [self.pal, self.pmi]
 
         # Enable dynamic updates
-        self.hokuyo_scan_pal.add_update_cb(pal.is_scanned_set)
-        self.hokuyo_scan_pmi.add_update_cb(pmi.is_scanned_set)
+        self.hokuyo_scan_pal.add_update_cb(self.pal.is_scanned_set)
+        self.hokuyo_scan_pmi.add_update_cb(self.pmi.is_scanned_set)
+
+    def setup(self):
+        super().setup()
+        
+        # Define safe zones
+        self.sharp_safe_zone = [Obstacle(0,0,2000,self.sharp_map_margin()), 
+                Obstacle(0,0,self.sharp_map_margin(), 3000),
+                Obstacle(0,3000-self.sharp_map_margin(),2000,self.sharp_map_margin()),
+                Obstacle(2000-self.sharp_map_margin(),0,self.sharp_map_margin(),3000)]
+
 
     # Actions
-
     @Service.action
     def get_robots(self):
         ret = []
@@ -111,11 +137,12 @@ class Tracking(Service):
 
     @Service.event('log.monitor.robot_position')
     def update_odometry_position(self, robot, x, y, theta):
-        point = Point(x=x, y=y)
+        location = Point(x=x, y=y)
 
         for obj in self.robots:
             if obj.name == robot:
-                obj.point = point
+                obj.location = location
+                obj.theta = theta
                 obj.seen()
                 return
 
@@ -184,17 +211,45 @@ class Tracking(Service):
 
     @Service.event
     def sharp_avoid(self, n):
-        robot_moving_side = self.cs.tm['pal'].get_vector_trsl()
+        robot_moving_side = self.cs.trajman['pal'].get_vector_trsl()
         # For now only pal has sharps
         pal_front_sharps = [0, 1]
         pal_back_sharps = [2, 3]
-        if n in front_sharps:
-            pass
-        elif n in back_sharps:
-            pass
-        else:
-            self.log('Unknown sharp: %s'.format(n))
+        
+        sharp_robot_x = self.pal.location.x + (-150 if n in pal_back_sharps else
+                150)
+        sharp_robot_y = self.pal.location.y + (-140 if n in [2, 0] else 140)
+
+        obj_x = sharp_robot_x
+        obj_y = sharp_robot_y + (self.sharp_threshold()*10,
+                -self.sharp_threshold()*10)[n in 
+                pal_back_sharps]
+
+        print("oX="+str(obj_x)+";oY="+str(obj_y))
+        # apply rotation to object's position
+        theta = self.pal.theta
+        real_obj_x = obj_x*math.cos(theta) - obj_y*math.sin(theta)
+        real_obj_y = obj_x*math.sin(theta) + obj_y*math.cos(theta)
+
+        # Ignore if it's on the opposite side of its movement
+        if ((n in pal_front_sharps) and (robot_moving_side['trsl_vector'] < 0)) or ((n in
+            pal_back_sharps) and (robot_moving_side['trsl_vector'] > 0)):
             return
+
+        # Check if inside any of safe zones
+        if(any([x.intersect(real_obj_x, real_obj_y) for x in 
+            self.sharp_safe_zone])):
+            return
+
+        # Check if it's the PMI
+        if(Obstacle(self.pmi.location.x-100,
+            self.pmi.location.y-75,200,150)
+            .intersect(real_obj_x, real_obj_y)):
+            return
+
+        print("X="+str(real_obj_x)+";Y="+str(real_obj_y))
+
+        self('robot_near')
 
     @Service.event
     def sharp_pmi_avoid(self, m):
