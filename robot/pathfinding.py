@@ -191,11 +191,16 @@ class Pathfinding:
 
     # Remove an obstacle that has a specific tag
     def RemoveObstacleByTag(self, tag):
-        self.obstacles = filter(lambda o: o.tag != tag, self.obstacles)
+        self.obstacles = [o for o in self.obstacles if o.tag != tag]
 
     # Clear all the obstacles in the map
     def ClearObstacles(self):
         self.obstacles.clear()
+
+    # Display list of obstacles
+    def PrintObstacles(self):
+        for o in self.obstacles:
+            print(str(o))
 
     # Compute the shortest path between (rx, ry) and (dx, dy).
     # Includes the initial position of the robot (first point) and the destination (last point).
@@ -305,7 +310,6 @@ class Pathfinding:
 
     # Update the cost of n from s
     def ComputeCost(self, s, n):
-        los = self.map.LineOfSight(s.parent, n)
         if self.map.LineOfSight(s.parent, n):
             cost = s.parent.g + n.cost * s.parent.distance(n)
             if n.g == None or cost < n.g:
