@@ -226,6 +226,19 @@ class EvolutekSimulator(pantograph.PantographHandler):
         print(data)
         self.cs.trajman['pal'].goto_xy(**data)
 
+    def on_key_down(self, event):
+        print(event)
+        if event.key_code == 82:  # reset
+            self.monitor.pal_traj.clear()
+        elif event.key_code == 49:  # 1
+            self.cs('beep_ok')
+        elif event.key_code == 50:  # 2
+            self.cs('beep_ready')
+        elif event.key_code == 51:  # 3
+            self.cs('beep_ko')
+        elif event.key_code == 52:  # 4
+            self.cs('beep_down')
+
 def main():
     app = pantograph.SimplePantographApplication(EvolutekSimulator)
     app.run(ADDR, PORT)
