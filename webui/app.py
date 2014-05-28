@@ -104,7 +104,8 @@ class EvolutekSimulator(pantograph.PantographHandler):
 
         self.mouse_pos = {'x': 0, 'y': 0}
 
-        self.cs = CellaservProxy()
+        # robots tracked by tracking
+        self.robots = {}
 
     def get_xscale(self):
         return self.width / 3000
@@ -115,10 +116,6 @@ class EvolutekSimulator(pantograph.PantographHandler):
     xscale = property(get_xscale)
     yscale = property(get_yscale)
 
-    def setup(self):
-        self.cs = CellaservProxy()
-        self.robots = {}
-
     def update(self):
         """Update canvas."""
         self.clear_rect(0, 0, self.width, self.height)
@@ -126,8 +123,9 @@ class EvolutekSimulator(pantograph.PantographHandler):
         # Draw table
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
-        self.update_self_tracking()
+        #self.update_self_tracking()
         self.update_hokuyo_robots()
+        self.update_tracking()
 
         self.update_mouse()
 
@@ -255,21 +253,26 @@ class EvolutekSimulator(pantograph.PantographHandler):
 
     def update_tracking(self):
         for robot in self.cs.tracking.get_robots():
+            x, y = self.from_evo_to_canvas(
+                (int(robot['x']),
+                 int(robot['y'])))
+
             if robot['name'] not in self.robots:
                 # New robot
                 shape = pantograph.Circle(
-                    x=int(robot['y']*self.xscale),
-                    y=int(robot['x']*self.yscale),
+                    x=x,
+                    y=y,
                     radius=10,
                     fill_color=random.choice(COLORS))
                 self.robots[robot['name']] = shape
             else:
                 shape = self.robots[robot['name']]
                 # Update position
-                shape.x = int(robot['y']*self.xscale)
-                shape.y = int(robot['x']*self.yscale)
+                shape.x = x
+                shape.y = y
 
             shape.draw(self)
+            self.draw_text(robot['name'], x, y)
 
     def on_mouse_move(self, event):
         #self.cs('log.monitor.robot_position',
