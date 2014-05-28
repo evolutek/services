@@ -5,6 +5,7 @@ from itertools import zip_longest
 import math
 import random
 import threading
+import time
 
 import pantograph
 
@@ -32,10 +33,14 @@ class WebMonitor(Service):
 
     def __init__(self):
         super().__init__(identification=str(random.random()))
+        self.cs = CellaservProxy()
 
         self.pal = {'x': 1000, 'y': 1000, 'theta': 0}
         self.pmi = {'x': 0, 'y': 0, 'theta': 0}
         self.pal_traj = []
+
+        self.pal_sharps = [0 for _ in range(4)]
+        self.pal_sharps_dist = [0 for _ in range(4)]
 
         self.hokuyo_robots = {}
         self.hokuyo_robots_persist_lock = threading.Lock()
@@ -67,11 +72,31 @@ class WebMonitor(Service):
                 self.hokuyo_robots_persist.popleft()
             self.hokuyo_robots_persist.append(robots)
 
+    @Service.event
+    def sharp_avoid(self, n):
+        self.pal_sharps[n] = time.time()
+
+    @Service.thread
+    def sharp_poll(self):
+        # Clean sharps
+        while not time.sleep(.30):
+            for i in range(4):
+                if self.pal_sharps[i] == 0:
+                    continue
+                if time.time() - self.pal_sharps[i] > 1:
+                    self.pal_sharps[i] = 0  # reset sharp, not activated
+
+        # Poll sharps
+        #while not time.sleep(.2):
+        #    for i in range(4):
+        #        self.pal_sharps_dist[i] = self.cs.sharp[str(i)].read()['sharp']
+
 
 class EvolutekSimulator(pantograph.PantographHandler):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.cs = CellaservProxy()
 
         self.monitor = WebMonitor()
         self.monitor_thread = threading.Thread(target=self.monitor.run)
@@ -119,10 +144,12 @@ class EvolutekSimulator(pantograph.PantographHandler):
                                X[i+1]['y']*self.xscale, X[i+1]['x']*self.yscale,
                                color='blue')
 
+        pal = self.monitor.pal
+
         # Draw pal rect
         x, y = self.from_evo_to_canvas(
-            (self.monitor.pal['x']-150,
-             self.monitor.pal['y']-150))
+            (pal['x']-150,
+             pal['y']-150))
         shape = pantograph.Rect(
             x=x,
             y=y,
@@ -131,15 +158,53 @@ class EvolutekSimulator(pantograph.PantographHandler):
             fill_color='rgba(0, 0, 255, 0.5)',
         )
 
+        # Draw pal sharps
+        x, y = self.from_evo_to_canvas(
+            (pal['x']+130,
+             pal['y']+130))
+        sharp0 = pantograph.Circle(
+            x=x,
+            y=y,
+            radius=5,
+            fill_color='red' if self.monitor.pal_sharps[0] != 0 else 'black')
+
+        x, y = self.from_evo_to_canvas(
+            (pal['x']-130,
+             pal['y']+130))
+        sharp1 = pantograph.Circle(
+            x=x,
+            y=y,
+            radius=5,
+            fill_color='red' if self.monitor.pal_sharps[1] != 0 else 'black')
+
+        x, y = self.from_evo_to_canvas(
+            (pal['x']+130,
+             pal['y']-130))
+        sharp2 = pantograph.Circle(
+            x=x,
+            y=y,
+            radius=5,
+            fill_color='red' if self.monitor.pal_sharps[2] != 0 else 'black')
+
+        x, y = self.from_evo_to_canvas(
+            (pal['x']-130,
+             pal['y']-130))
+        sharp3 = pantograph.Circle(
+            x=x,
+            y=y,
+            radius=5,
+            fill_color='red' if self.monitor.pal_sharps[3] != 0 else 'black')
+
         # Draw pal orientation
         dir_poly = [
-            (self.monitor.pal['x'] + 150, self.monitor.pal['y']),
-            (self.monitor.pal['x'] - 150, self.monitor.pal['y']),
-            (self.monitor.pal['x'], self.monitor.pal['y'] + 150)]
+            (pal['x'] + 150, pal['y']),
+            (pal['x'] - 150, pal['y']),
+            (pal['x'], pal['y'] + 150)]
         dir_shape = pantograph.Polygon(
             [self.from_evo_to_canvas(p) for p in dir_poly], None, '#000')
 
-        compound = pantograph.CompoundShape([shape, dir_shape])
+        compound = pantograph.CompoundShape([shape, dir_shape, sharp0, sharp1,
+            sharp2, sharp3])
         compound.rotate(math.pi/2 - float(self.monitor.pal['theta']))
         compound.draw(self)
 
