@@ -36,6 +36,8 @@ MOVE_ROT                = 103
 CURVE                   = 104
 FREE                    = 109
 RECALAGE                = 110
+SET_PWM                 = 111
+STOP_ASAP               = 112
 SET_PID_TRSL            = 150
 SET_PID_ROT             = 151
 SET_TRSL_ACC            = 152
@@ -73,6 +75,22 @@ class TrajMan(Service):
     It can be disabled in order to stop processing commands and make sure that
     the robot will not move.
     """
+    section = cellaserv.settings.ROBOT
+    w1 = ConfigVariable(section=self.section, option="wheel_diam1", coerc=float)
+    w2 = ConfigVariable(section=self.section, option="wheel_diam2", coerc=float)
+    spacing = ConfigVariable(section=self.section, option="wheels_spacing", coerc=float)
+    pidtp = ConfigVariable(section=self.section, option="pidtrsl_p", coerc=float)
+    pidti = ConfigVariable(section=self.section, option="pidtrsl_i", coerc=float)
+    pidtd = ConfigVariable(section=self.section, option="pidtrsl_d", coerc=float)
+    pidrp = ConfigVariable(section=self.section, option="pidrot_p", coerc=float)
+    pidri = ConfigVariable(section=self.section, option="pidrot_i", coerc=float)
+    pidrd = ConfigVariable(section=self.section, option="pidrot_d", coerc=float)
+    trslacc = ConfigVariable(section=self.section, option="trsl_acc", coerc=float)
+    trsldec = ConfigVariable(section=self.section, option="trsl_dec", coerc=float)
+    trslmax = ConfigVariable(section=self.section, option="trsl_max", coerc=float)
+    rotacc = ConfigVariable(section=self.section, option="rot_acc", coerc=float)
+    rotdec = ConfigVariable(section=self.section, option="rot_dec", coerc=float)
+    rotmax = ConfigVariable(section=self.section, option="rot_max", coerc=float)
 
     def __init__(self, identification=None):
         super().__init__(identification)
@@ -100,18 +118,18 @@ class TrajMan(Service):
         self.init_sequence()
         self.log_debug("Init ended correctly")
 
-        self.set_wheels_diameter(w1=53.7196, w2=53.7196)
-        self.set_wheels_spacing(spacing=302.59)
+        self.set_wheels_diameter(w1=self.w1(), w2=self.w2())
+        self.set_wheels_spacing(spacing=self.spacing())
 
-        self.set_pid_trsl(220 , 1000000, 8)
-        self.set_trsl_acc(1500)
-        self.set_trsl_dec(900)
-        self.set_trsl_max_speed(900)
+        self.set_pid_trsl(self.pidtp(), self.pidti(), self.pidtd())
+        self.set_trsl_acc(self.tracc())
+        self.set_trsl_dec(self.trdec())
+        self.set_trsl_max_speed(self.trmax())
 
-        self.set_pid_rot(60000, 1000, 10)
-        self.set_rot_acc(21)
-        self.set_rot_dec(15)
-        self.set_rot_max_speed(21)
+        self.set_pid_rot(self.pidrp(), self.pidri(), self.pidrd())
+        self.set_rot_acc(self.rotacc())
+        self.set_rot_dec(self.rotdec())
+        self.set_rot_max_speed(self.rotmax())
 
     def log_debug(self, *args, **kwargs):
         """Send log to cellaserv"""
@@ -369,6 +387,13 @@ class TrajMan(Service):
         tab = pack('B', 10)
         tab += pack('B', SET_PWM)
         tab += pack('ff', float(left), float(right))
+        self.command(bytes(tab))
+
+    @Service.action
+    def stop_asap(self, trsldec, rotdec):
+        tab = pack('B', 10)
+        tab += pack('B', STOP_ASAP)
+        tab += pack('ff', float(trsldec), float(rotdec))
         self.command(bytes(tab))
 
     #######
