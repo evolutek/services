@@ -8,7 +8,7 @@ import serial
 import time
 
 from cellaserv.proxy import CellaservProxy
-from cellaserv.service import Service
+from cellaserv.service import Service, ConfigVariable
 import cellaserv.settings
 
 #######################
@@ -75,22 +75,21 @@ class TrajMan(Service):
     It can be disabled in order to stop processing commands and make sure that
     the robot will not move.
     """
-    section = cellaserv.settings.ROBOT
-    w1 = ConfigVariable(section=self.section, option="wheel_diam1", coerc=float)
-    w2 = ConfigVariable(section=self.section, option="wheel_diam2", coerc=float)
-    spacing = ConfigVariable(section=self.section, option="wheels_spacing", coerc=float)
-    pidtp = ConfigVariable(section=self.section, option="pidtrsl_p", coerc=float)
-    pidti = ConfigVariable(section=self.section, option="pidtrsl_i", coerc=float)
-    pidtd = ConfigVariable(section=self.section, option="pidtrsl_d", coerc=float)
-    pidrp = ConfigVariable(section=self.section, option="pidrot_p", coerc=float)
-    pidri = ConfigVariable(section=self.section, option="pidrot_i", coerc=float)
-    pidrd = ConfigVariable(section=self.section, option="pidrot_d", coerc=float)
-    trslacc = ConfigVariable(section=self.section, option="trsl_acc", coerc=float)
-    trsldec = ConfigVariable(section=self.section, option="trsl_dec", coerc=float)
-    trslmax = ConfigVariable(section=self.section, option="trsl_max", coerc=float)
-    rotacc = ConfigVariable(section=self.section, option="rot_acc", coerc=float)
-    rotdec = ConfigVariable(section=self.section, option="rot_dec", coerc=float)
-    rotmax = ConfigVariable(section=self.section, option="rot_max", coerc=float)
+    w1 = ConfigVariable(section=cellaserv.settings.ROBOT, option="wheel_diam1", coerc=float)
+    w2 = ConfigVariable(section=cellaserv.settings.ROBOT, option="wheel_diam2", coerc=float)
+    spacing = ConfigVariable(section=cellaserv.settings.ROBOT, option="wheels_spacing", coerc=float)
+    pidtp = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidtrsl_p", coerc=float)
+    pidti = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidtrsl_i", coerc=float)
+    pidtd = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidtrsl_d", coerc=float)
+    pidrp = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidrot_p", coerc=float)
+    pidri = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidrot_i", coerc=float)
+    pidrd = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidrot_d", coerc=float)
+    trslacc = ConfigVariable(section=cellaserv.settings.ROBOT, option="trsl_acc", coerc=float)
+    trsldec = ConfigVariable(section=cellaserv.settings.ROBOT, option="trsl_dec", coerc=float)
+    trslmax = ConfigVariable(section=cellaserv.settings.ROBOT, option="trsl_max", coerc=float)
+    rotacc = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_acc", coerc=float)
+    rotdec = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_dec", coerc=float)
+    rotmax = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_max", coerc=float)
 
     def __init__(self, identification=None):
         super().__init__(identification)
@@ -122,9 +121,9 @@ class TrajMan(Service):
         self.set_wheels_spacing(spacing=self.spacing())
 
         self.set_pid_trsl(self.pidtp(), self.pidti(), self.pidtd())
-        self.set_trsl_acc(self.tracc())
-        self.set_trsl_dec(self.trdec())
-        self.set_trsl_max_speed(self.trmax())
+        self.set_trsl_acc(self.trslacc())
+        self.set_trsl_dec(self.trsldec())
+        self.set_trsl_max_speed(self.trslmax())
 
         self.set_pid_rot(self.pidrp(), self.pidri(), self.pidrd())
         self.set_rot_acc(self.rotacc())
