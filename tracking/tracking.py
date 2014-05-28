@@ -111,7 +111,7 @@ class Tracking(Service):
 
     @Service.event('log.monitor.robot_position')
     def update_odometry_position(self, robot, x, y, theta):
-        point = Point(x=x, y=y, theta=theta)
+        point = Point(x=x, y=y)
 
         for obj in self.robots:
             if obj.name == robot:
