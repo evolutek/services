@@ -36,8 +36,9 @@ class WebMonitor(Service):
         self.cs = CellaservProxy()
 
         self.pal = {'x': 1000, 'y': 1000, 'theta': 0}
-        self.pmi = {'x': 0, 'y': 0, 'theta': 0}
         self.pal_traj = []
+        self.pmi = {'x': 1000, 'y': 1000, 'theta': 0}
+        self.pmi_traj = []
 
         self.pal_sharps = [0 for _ in range(4)]
         self.pal_sharps_dist = [0 for _ in range(4)]
@@ -64,6 +65,13 @@ class WebMonitor(Service):
             self.pmi['y'] = y
             self.pmi['theta'] = theta
 
+            if not self.pmi_traj:
+                self.pmi_traj = [self.pmi.copy()]
+            else:
+                dist = distance(self.pmi, self.pmi_traj[-1])
+                if dist > 1:
+                    self.pmi_traj.append(self.pmi.copy())
+
     @Service.event('hokuyo.robots')
     def update_hokuyo(self, robots):
         self.hokuyo_robots = robots
@@ -85,11 +93,6 @@ class WebMonitor(Service):
                     continue
                 if time.time() - self.pal_sharps[i] > 1:
                     self.pal_sharps[i] = 0  # reset sharp, not activated
-
-        # Poll sharps
-        #while not time.sleep(.2):
-        #    for i in range(4):
-        #        self.pal_sharps_dist[i] = self.cs.sharp[str(i)].read()['sharp']
 
 
 class EvolutekSimulator(pantograph.PantographHandler):
@@ -123,9 +126,9 @@ class EvolutekSimulator(pantograph.PantographHandler):
         # Draw table
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
-        #self.update_self_tracking()
-        self.update_hokuyo_robots()
-        self.update_tracking()
+        self.update_self_tracking()
+        #self.update_hokuyo_robots()
+        #self.update_tracking()
 
         self.update_mouse()
 
@@ -141,6 +144,14 @@ class EvolutekSimulator(pantograph.PantographHandler):
                 self.draw_line(X[i]['y']*self.xscale, X[i]['x']*self.yscale,
                                X[i+1]['y']*self.xscale, X[i+1]['x']*self.yscale,
                                color='blue')
+
+        # Draw pmi traj
+        if len(self.monitor.pmi_traj) > 2:
+            X = self.monitor.pmi_traj
+            for i in range(len(self.monitor.pmi_traj)-1):
+                self.draw_line(X[i]['y']*self.xscale, X[i]['x']*self.yscale,
+                               X[i+1]['y']*self.xscale, X[i+1]['x']*self.yscale,
+                               color='orange')
 
         pal = self.monitor.pal
 
@@ -211,6 +222,15 @@ class EvolutekSimulator(pantograph.PantographHandler):
             'pal ({r[x]:.0f},{r[y]:.0f},{r[theta]:.1f})'.format(r=self.monitor.pal),
             self.monitor.pal['y']*self.xscale,
             self.monitor.pal['x']*self.yscale,
+            text_align='center')
+        text.fill_color = 'black'
+        text.draw(self)
+
+        # Draw pmi text
+        text = pantograph.Text(
+            'pmi ({r[x]:.0f},{r[y]:.0f},{r[theta]:.1f})'.format(r=self.monitor.pmi),
+            self.monitor.pmi['y']*self.xscale,
+            self.monitor.pmi['x']*self.yscale,
             text_align='center')
         text.fill_color = 'black'
         text.draw(self)
