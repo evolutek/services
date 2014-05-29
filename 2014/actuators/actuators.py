@@ -44,8 +44,8 @@ class Actuators(Service):
 
     def setup(self):
         super().setup()
-        self.cs.ax[AX_ID_FRUITS].mode_joint()
-        self.cs.ax[AX_COLLECT].mode_joint()
+        #self.cs.ax[AX_ID_FRUITS].mode_joint()
+        self.cs.ax[AX_ID_COLLECT].mode_joint()
         self.cs.ax[AX_ID_COLLECT_ELEVATOR].mode_joint()
         self.cs.ax[AX_ID_COLLECT_ROTATION].mode_joint()
 
