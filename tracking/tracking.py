@@ -339,12 +339,11 @@ class Tracking(Service):
                 if self.is_alive(obj) or obj.is_evolutek:
                     robots_alive.append(obj)
                 else:
-                    self.log(msg='Dropping dead robot', robot=str(obj))
-
+                    self.robots.remove(obj)
 
     @Service.thread
     def backgroup_loop(self):
-        while not time.sleep(.1):
+        while not time.sleep(.01):
             self.prune_dead_robots()
 
 
