@@ -39,7 +39,9 @@ class RobotsMonitor(Service):
 
     def position_pal(self):
         log_name = 'log.monitor.robot_position'
-        self(log_name, robot="pal", **self.pal.get_position())
+        pos = self.pal.get_position()
+        if pos is not None:
+            self(log_name, robot="pal", **pos)
 
     def position_pmi(self):
         log_name = 'log.monitor.robot_position'
