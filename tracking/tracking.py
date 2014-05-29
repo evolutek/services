@@ -240,13 +240,12 @@ class Tracking(Service):
         real_obj_x += self.pal.location.x
         real_obj_y += self.pal.location.y
 
-        print("[DETECTED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        self.log(msg="[PAL|DETECTED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
         
         if(real_obj_x < 0 or real_obj_x > 2000 or real_obj_y < 0 or real_obj_y >
                 3000):
             return
 
-        print(robot_moving_side)
         # Ignore if it's on the opposite side of its movement
         if ((n in pal_front_sharps) and (robot_moving_side['trsl_vector'] < 0)) or ((n in
             pal_back_sharps) and (robot_moving_side['trsl_vector'] > 0)):
@@ -263,14 +262,14 @@ class Tracking(Service):
             .intersect(real_obj_x, real_obj_y)):
             return
 
-        print("[CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        self.log(msg="[PAL|CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
 
         self('robot_near', x=real_obj_x, y=real_obj_y)
 
     @Service.event
-    def sharp_pmi_avoid(self, m):
+    def sharp_pmi_avoid(self, n):
         robot_moving_side = self.cs.trajman['pmi'].get_vector_trsl()
-
+            
         # trajman dead ....
         if robot_moving_side['trsl_vector'] == None: 
             return
@@ -278,7 +277,7 @@ class Tracking(Service):
         front_sharp = [0]  # 80cm
         back_sharp = [1]  # 30cm
 
-        sharp_robot_x = (-75 if n in pal_back_sharps else 75)
+        sharp_robot_x = (-75 if n in back_sharp else 75)
         sharp_robot_y = 0
         
         obj_x = sharp_robot_x + (self.sharp_threshold()*10,
@@ -296,7 +295,7 @@ class Tracking(Service):
         real_obj_x += self.pmi.location.x
         real_obj_y += self.pmi.location.y
 
-        print("[DETECTED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        self.log(msg="[PMI|DETECTED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
         
         if(real_obj_x < 0 or real_obj_x > 2000 or real_obj_y < 0 or real_obj_y >
                 3000):
@@ -318,8 +317,9 @@ class Tracking(Service):
             .intersect(real_obj_x, real_obj_y)):
             return
 
-        print("[CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
-
+        self.log(msg="[PMI|CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
+        
+        self('beep_ko')
         self('robot_near_pmi', x=real_obj_x, y=real_obj_y)
 
 

@@ -311,9 +311,8 @@ class Robot(Service):
         except RequestTimeout: # Recalibration will timeout
             pass
 
-    def find_position(self, c):
-        """ c = -1 (red) or c = 1 (yellow) """
-        color = int(c)
+    def find_position(self):
+        color = self.color
         self.free()
         speeds = self.get_speeds()
         self.set_theta(0)
