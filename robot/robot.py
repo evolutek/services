@@ -316,7 +316,6 @@ class Robot(Service):
     def auto_find_position(self):
         self.find_position(self.color)
 
-    @Service.action("find_pos")
     def find_position(self, c):
         color = int(c)
         self.free()
