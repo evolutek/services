@@ -109,10 +109,10 @@ class Tracking(Service):
         super().setup()
         
         # Define safe zones
-        self.sharp_safe_zone = [Obstacle(0,0,2000,self.sharp_map_margin()), 
-                Obstacle(0,0,self.sharp_map_margin(), 3000),
-                Obstacle(0,3000-self.sharp_map_margin(),2000,self.sharp_map_margin()),
-                Obstacle(2000-self.sharp_map_margin(),0,self.sharp_map_margin(),3000)]
+        #self.sharp_safe_zone = [Obstacle(0,0,2000,self.sharp_map_margin()), 
+        #        Obstacle(0,0,self.sharp_map_margin(), 3000),
+        #        Obstacle(0,3000-self.sharp_map_margin(),2000,self.sharp_map_margin()),
+        #        Obstacle(2000-self.sharp_map_margin(),0,self.sharp_map_margin(),3000)]
 
 
     # Actions
@@ -252,9 +252,9 @@ class Tracking(Service):
             return
 
         # Check if inside any of safe zones
-        if(any([x.intersect(real_obj_x, real_obj_y) for x in 
-            self.sharp_safe_zone])):
-            return
+        #if(any([x.intersect(real_obj_x, real_obj_y) for x in 
+        #    self.sharp_safe_zone])):
+        #    return
 
         # Check if it's the PMI
         if(Obstacle(self.pmi.location.x-75,
@@ -274,8 +274,8 @@ class Tracking(Service):
         if robot_moving_side['trsl_vector'] == None: 
             return
 
-        front_sharp = [0]  # 80cm
-        back_sharp = [1]  # 30cm
+        front_sharp = [1]  # 80cm
+        back_sharp = [0]  # 30cm
 
         sharp_robot_x = (-75 if n in back_sharp else 75)
         sharp_robot_y = 0
@@ -296,7 +296,8 @@ class Tracking(Service):
         real_obj_y += self.pmi.location.y
 
         self.log(msg="[PMI|DETECTED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
-        
+       
+        # Ignore if outside of the map
         if(real_obj_x < 0 or real_obj_x > 2000 or real_obj_y < 0 or real_obj_y >
                 3000):
             return
@@ -307,9 +308,9 @@ class Tracking(Service):
             return
 
         # Check if inside any of safe zones
-        if(any([x.intersect(real_obj_x, real_obj_y) for x in 
-            self.sharp_safe_zone])):
-            return
+        #if(any([x.intersect(real_obj_x, real_obj_y) for x in 
+        #    self.sharp_safe_zone])):
+        #    return
 
         # Check if it's the PAL
         if(Obstacle(self.pal.location.x-150,
