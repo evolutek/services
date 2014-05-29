@@ -40,6 +40,7 @@ __doc__ = """     ##########################
          disable                                 //Alias : d
 
          fp side -- Find initial position, side is 1 or -1
+         afp -- Find initial position from the config
          recal direction -- Low level recalibration, direction is 0 or 1
          debug on/off
 
@@ -124,6 +125,7 @@ class Robot(Service):
             "recal": self.recalibration,
             "find_pos": self.find_position,
             "fp": self.find_position,
+            "afp": self.auto_find_position,
 
             "-1": self.side_minus_one,
             "1": self.side_plus_one,
@@ -311,8 +313,11 @@ class Robot(Service):
         except RequestTimeout: # Recalibration will timeout
             pass
 
+    def auto_find_position(self):
+        self.find_position(self.color)
+
+    @Service.action("find_pos")
     def find_position(self, c):
-        """ c = -1 (red) or c = 1 (yellow) """
         color = int(c)
         self.free()
         speeds = self.get_speeds()
