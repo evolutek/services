@@ -126,9 +126,9 @@ class EvolutekSimulator(pantograph.PantographHandler):
         # Draw table
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
-        self.update_self_tracking()
-        #self.update_hokuyo_robots()
-        #self.update_tracking()
+        #self.update_self_tracking()
+        self.update_hokuyo_robots()
+        self.update_tracking()
 
         self.update_mouse()
 
@@ -217,6 +217,21 @@ class EvolutekSimulator(pantograph.PantographHandler):
         compound.rotate(math.pi/2 - float(self.monitor.pal['theta']))
         compound.draw(self)
 
+        pmi = self.monitor.pmi
+        # Draw pmi rect
+        x, y = self.from_evo_to_canvas(
+            (pmi['x']-100,
+             pmi['y']-75))
+        shape = pantograph.Rect(
+            x=x,
+            y=y,
+            width=200*self.xscale,
+            height=150*self.yscale,
+            fill_color='rgba(0, 0, 255, 0.5)',
+        )
+        shape.rotate(math.pi/2 - float(self.monitor.pmi['theta']))
+        shape.draw(self)
+
         # Draw pal text
         text = pantograph.Text(
             'pal ({r[x]:.0f},{r[y]:.0f},{r[theta]:.1f})'.format(r=self.monitor.pal),
@@ -249,17 +264,19 @@ class EvolutekSimulator(pantograph.PantographHandler):
         with self.monitor.hokuyo_robots_persist_lock:
             for i, robot_trace in enumerate(self.monitor.hokuyo_robots_persist):
                 for robot in robot_trace:
+                    x, y = self.from_evo_to_canvas((int(robot['x']),
+                                                    int(robot['y'])))
                     shape = pantograph.Circle(
-                        x=int(robot['y']*self.xscale),
-                        y=int(robot['x']*self.yscale),
+                        x=x,
+                        y=y,
                         radius=int(robot['g']) * 5,
                         fill_color='hsla({}, 60%, 70%, 0.5)'.format(i * 10),
                         line_color='black')
                     shape.draw(self)
 
                     self.draw_text('({r[x]}, {r[y]})'.format(r=robot),
-                                   x=robot['y']*self.yscale,
-                                   y=robot['x']*self.xscale)
+                                   x=x,
+                                   y=y+20)
 
     def update_hokuyo_scan(self):
         for x, y in grouper(self.cs.hokuyo['1'].scan()['points'], 2):
