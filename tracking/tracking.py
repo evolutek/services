@@ -217,6 +217,7 @@ class Tracking(Service):
         if robot_moving_side['trsl_vector'] == None: 
             return
 
+        print(robot_moving_side['trsl_vector'])
         # For now only pal has sharps
         pal_front_sharps = [0, 1]
         pal_back_sharps = [2, 3]
@@ -264,7 +265,7 @@ class Tracking(Service):
 
         print("[CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
 
-        self('robot_near')
+        self('robot_near', x=real_obj_x, y=real_obj_y)
 
     @Service.event
     def sharp_pmi_avoid(self, m):
@@ -319,7 +320,7 @@ class Tracking(Service):
 
         print("[CONFIRMED] X="+str(real_obj_x)+";Y="+str(real_obj_y))
 
-        self('robot_near_pmi')
+        self('robot_near_pmi', x=real_obj_x, y=real_obj_y)
 
 
     # Threads
