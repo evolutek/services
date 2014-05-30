@@ -109,10 +109,10 @@ class Tracking(Service):
         super().setup()
         
         # Define safe zones
-        #self.sharp_safe_zone = [Obstacle(0,0,2000,self.sharp_map_margin()), 
-        #        Obstacle(0,0,self.sharp_map_margin(), 3000),
-        #        Obstacle(0,3000-self.sharp_map_margin(),2000,self.sharp_map_margin()),
-        #        Obstacle(2000-self.sharp_map_margin(),0,self.sharp_map_margin(),3000)]
+        self.sharp_safe_zone = [Obstacle(0,0,2000,self.sharp_map_margin()), 
+                Obstacle(0,0,self.sharp_map_margin(), 3000),
+                Obstacle(0,3000-self.sharp_map_margin(),2000,self.sharp_map_margin()),
+                Obstacle(2000-self.sharp_map_margin(),0,self.sharp_map_margin(),3000)]
 
 
     # Actions
@@ -252,9 +252,9 @@ class Tracking(Service):
             return
 
         # Check if inside any of safe zones
-        #if(any([x.intersect(real_obj_x, real_obj_y) for x in 
-        #    self.sharp_safe_zone])):
-        #    return
+        if(any([x.intersect(real_obj_x, real_obj_y) for x in 
+            self.sharp_safe_zone])):
+            return
 
         # Check if it's the PMI
         if(Obstacle(self.pmi.location.x-75,
@@ -308,9 +308,9 @@ class Tracking(Service):
             return
 
         # Check if inside any of safe zones
-        #if(any([x.intersect(real_obj_x, real_obj_y) for x in 
-        #    self.sharp_safe_zone])):
-        #    return
+        if(any([x.intersect(real_obj_x, real_obj_y) for x in 
+            self.sharp_safe_zone])):
+            return
 
         # Check if it's the PAL
         if(Obstacle(self.pal.location.x-150,
