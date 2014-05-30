@@ -8,4 +8,7 @@ build::
 run::
 	$(PYTHON3) actuators.py
 
+upload::
+	scp actuators.py root@$(HOST_ROBOT):$(PREFIX)
+
 include ../../common.mk

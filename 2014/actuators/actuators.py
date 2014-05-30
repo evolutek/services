@@ -8,6 +8,7 @@ from cellaserv.service import Service
 AX_ID_COLLECT_ROTATION = "10"
 AX_ID_COLLECT = "11"
 AX_ID_COLLECT_ELEVATOR = "12"
+AX_ID_LAUNCHER = "4"
 
 AX_ELEVATOR_UP = 1000
 AX_ELEVATOR_PUSH_FIRE = 600
@@ -18,13 +19,6 @@ AX_COLLECTOR_CLOSE = 650
 AX_COLLECTOR_PUSH_FIRE = 350
 AX_ROTATION_START = 500
 AX_ROTATION_END = 138
-
-# pmi axs
-AX_ID_FRUITS = "3"
-
-AX_FRUITS_CLOSE = 500
-AX_FRUITS_GET = 800
-AX_FRUITS_FLUSH = 960
 
 # others to come
 
@@ -44,10 +38,10 @@ class Actuators(Service):
 
     def setup(self):
         super().setup()
-        #self.cs.ax[AX_ID_FRUITS].mode_joint()
         self.cs.ax[AX_ID_COLLECT].mode_joint()
         self.cs.ax[AX_ID_COLLECT_ELEVATOR].mode_joint()
         self.cs.ax[AX_ID_COLLECT_ROTATION].mode_joint()
+        self.cs.ax[AX_ID_LAUNCHER].mode_wheel()
 
     @Service.action
     def free(self):
@@ -134,31 +128,16 @@ class Actuators(Service):
         return 570 < self.cs.ax[AX_ID_COLLECT].get_present_position()
 
     @Service.action
-    def fruits_get(self):
-        self.cs.ax[AX_ID_FRUITS].move(goal=AX_FRUITS_GET)
+    def launcher_fire(self):
+        self.cs.ax[AX_ID_LAUNCHER].turn(side=1, speed=512)
+        sleep(.3)
+        self.cs.ax[AX_ID_LAUNCHER].turn(side=1, speed=0)
 
     @Service.action
-    def fruits_close(self):
-        self.cs.ax[AX_ID_FRUITS].move(goal=AX_FRUITS_CLOSE)
-
-    @Service.action
-    def fruits_flush(self):
-        for i in range(0, 8):
-            self.cs.ax[AX_ID_FRUITS].move(goal=AX_FRUITS_FLUSH)
-            sleep(.3)
-            self.cs.ax[AX_ID_FRUITS].move(goal=AX_FRUITS_GET)
-            sleep(.3)
-
-    @Service.action
-    def test(self):
-        self.collector_open()
-        self.collector_down()
-        self.collector_close()
-        self.collector_hold()
-        self.collector_up() # facultatif
-        self.collector_rotate()
-        self.collector_fireplace()
-        self.collector_open()
+    def launcher_reload(self):
+        self.cs.ax[AX_ID_LAUNCHER].turn(side=-1, speed=512)
+        sleep(1)
+        self.cs.ax[AX_ID_LAUNCHER].turn(side=1, speed=0)
 
 def main():
     actuators = Actuators()
