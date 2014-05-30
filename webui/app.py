@@ -343,6 +343,8 @@ class EvolutekSimulator(pantograph.PantographHandler):
             self.cs('beep_ko')
         elif event.key_code == 52:  # 4
             self.cs('beep_down')
+        elif 97 <= event.key_code <= 105:  # keypad
+            self.cs.trajman['pal'].free()
 
 def main():
     app = pantograph.SimplePantographApplication(EvolutekSimulator)
