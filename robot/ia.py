@@ -14,6 +14,7 @@ from pathfinding import AvoidException
 import robot_status
 
 
+@Service.require("trajman.pal")
 class ia(Service):
 
     match_start = Variable('start')
@@ -48,10 +49,10 @@ class ia(Service):
                 self.pathfinding)
         self.status = robot_status.RobotStatus()
         self.pathfinding.AddSquareObstacle(1050, 1500, 150, "fireplacecenter")
-        self.pathfinding.AddSquareObstacle(1300, 0, 15, "tree")
-        self.pathfinding.AddSquareObstacle(1300, 3000, 15, "tree")
-        self.pathfinding.AddSquareObstacle(2000, 700, 15, "tree")
-        self.pathfinding.AddSquareObstacle(2000, 2300, 15, "tree")
+        self.pathfinding.AddRectangleObstacle(1200, 0, 1400, 100, "tree")
+        self.pathfinding.AddRectangleObstacle(1200, 2900, 1400, 0, "tree")
+        self.pathfinding.AddRectangleObstacle(1900, 600, 2000, 800, "tree")
+        self.pathfinding.AddRectangleObstacle(1900, 2200, 2000, 2400, "tree")
         self.pathfinding.AddRectangleObstacle(0, 400, 300, 1100, "bacj")
         self.pathfinding.AddRectangleObstacle(0, 1900, 300, 2600, "bacr")
 
@@ -77,9 +78,9 @@ class ia(Service):
         pos = self.get_position()
         path = self.pathfinding.GetPath(pos['x'], pos['y'], x, y)
         for i in range(1, len(path) - 1):
-            print("Waypoint : ", path[i].x, path[i].y)
+            self.log(msg="Waypoint : " + str(path[i].x) + " " + str(path[i].y))
             self.goto_xy_block(path[i].x, path[i].y)
-        print("Final waypoint : ", x, y)
+        self.log(msg="Final waypoint : " + str(x) + " " + str(y))
         self.goto_xy_block(x, y)
 
     def get_position(self):
@@ -104,14 +105,17 @@ class ia(Service):
         #self.match_stop_timer.start()
 
         self.robot.goto_xy_block(600, 1500 + self.color() * (1500 - 400))
+        self.robot.goto_xy_block(600, 1500)
+        self.robot.goto_theta_block(0)
         tmpobj = None
         while self.objectives:
             pos = self.get_position()
-            print(pos)
+            self.log(msg="Selecting objective to do")
             obj = self.objectives.get_best(pos['x'], pos['y'], self.status,
                     self.pathfinding)
             self.log(msg="Obj " + str(obj) + " selected while being at "+
                     str(pos))
+            #self('ia_new_target', **(obj.get_position()), name=str(obj))
             self.pathfinding.RemoveObstacleByTag('opponent')
             if tmpobj:
                 self.log(msg="Re-adding obj " + str(tmpobj))
@@ -122,7 +126,7 @@ class ia(Service):
                 break
             obj.execute_requirements(self.robot, self.cs, self.status)
             try:
-                self.log(msg="Going to " + str(obj.get_position) + " using pathfinding")
+                self.log(msg="Going to " + str(obj.get_position()) + " using pathfinding")
                 self.goto_with_pathfinding(*(obj.get_position()))
                 self.log(msg="Executing the objective")
                 obj.execute(self.robot, self.cs, self.status, self)
