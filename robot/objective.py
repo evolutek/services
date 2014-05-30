@@ -160,6 +160,27 @@ class WallFire(Objective):
     def __str__(self):
         return "Wall fire " + super().__str__()
 
+class Fresque(Objective):
+
+    def execute(self, robot, cs, status, ia):
+        robot.goto_theta_block(self.direction)
+        pos = robot.get_position()
+        speeds = robot.get_speeds()
+        robot.set_trsl_max_speed(100)
+        ia.goto_xy_block(200, pos['y'])
+        ia.goto_xy_block(141, pos['y'])
+        ia.goto_xy_block(300, pos['y'])
+        ia.goto_xy_block(141, pos['y'])
+        robot.set_trsl_max_speed((speeds['trmax']))
+        ia.goto_xy_block(500, pos['y'])
+
+class Balls(Objective):
+    """ We have balls """
+
+    def execute(self, robot, cs, status, ia):
+        robot.goto_theta_block(0)
+        cs.actuators.launcher_fire()
+
 class Torch(Objective):
 
     def execute(self, robot, cs, status, ia):
@@ -181,6 +202,9 @@ class DefaultObjectives():
         one depending on the robot's color"""
 
         defobj = ObjectiveList()
+        defobj.append(Fresque(1000, 400, 1500, 0))
+        defobj.append(Balls(500,
+                            *DefaultObjectives.color_pos(color, 600, 700)))
 
         # Objective needed to exit the startup zone
         #defobj.append(FedexObjective(1, *DefaultObjectives.color_pos(color,
@@ -199,11 +223,11 @@ class DefaultObjectives():
         # needed depending on which color you are
         positions = [
                 [1100, 400, 0],
-                #[1100, 2600, pi],
+                [1100, 2600, pi],
                 [600, 900, pi / 2],
-                #[600, 2100, pi / 2],
+                [600, 2100, pi / 2],
                 [1600, 900, -pi / 2],
-                #[1600, 2100, -pi / 2],
+                [1600, 2100, -pi / 2],
         ]
         i = 0
         for pos in positions:
