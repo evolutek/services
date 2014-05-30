@@ -1,0 +1,10 @@
+[Unit]
+Description=PMI
+After=ax.service
+
+[Service]
+ExecStart=$PREFIX/usr/lib/cs_services/actionneurs
+User=evolutek
+
+[Install]
+WantedBy=evolutek.target
