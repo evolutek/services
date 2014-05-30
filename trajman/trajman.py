@@ -90,6 +90,9 @@ class TrajMan(Service):
     rotacc = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_acc", coerc=float)
     rotdec = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_dec", coerc=float)
     rotmax = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_max", coerc=float)
+    deltatrsl = ConfigVariable(section=cellaserv.settings.ROBOT, option="delta_trsl", coerc=float)
+    deltarot = ConfigVariable(section=cellaserv.settings.ROBOT, option="delta_rot", coerc=float)
+
 
     def __init__(self, identification=None):
         super().__init__(identification)
@@ -129,6 +132,8 @@ class TrajMan(Service):
         self.set_rot_acc(self.rotacc())
         self.set_rot_dec(self.rotdec())
         self.set_rot_max_speed(self.rotmax())
+        self.set_delta_max_rot(self.deltarot())
+        self.set_delta_max_trsl(self.deltatrsl())
 
     def log_debug(self, *args, **kwargs):
         """Send log to cellaserv"""

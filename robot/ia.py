@@ -32,6 +32,7 @@ class ia(Service):
 
         self.robot = Robot('pal')
         self.robot.setup()
+
         self.stopped = False
 
 
@@ -47,6 +48,10 @@ class ia(Service):
                 self.pathfinding)
         self.status = robot_status.RobotStatus()
         self.pathfinding.AddSquareObstacle(1050, 1500, 150, "fireplacecenter")
+        self.pathfinding.AddSquareObstacle(1300, 0, 15, "tree")
+        self.pathfinding.AddSquareObstacle(1300, 3000, 15, "tree")
+        self.pathfinding.AddSquareObstacle(2000, 700, 15, "tree")
+        self.pathfinding.AddSquareObstacle(2000, 2300, 15, "tree")
         self.pathfinding.AddRectangleObstacle(0, 400, 300, 1100, "bacj")
         self.pathfinding.AddRectangleObstacle(0, 1900, 300, 2600, "bacr")
 
@@ -58,11 +63,11 @@ class ia(Service):
 
 
 
-    #TODO: Check this function as a color wrapper
     def goto_xy_block(self, x, y):
         self.stopped = False
         self.robot.goto_xy_block(x, y)
         if self.stopped:
+            print("Raising exception")
             raise AvoidException
 
     # Makes the robot go to a point avoiding obstacles.
@@ -92,44 +97,53 @@ class ia(Service):
         self.log(msg='Waiting')
         self.match_start.wait()
         print("Start!")
-        self.cs('log.ia', msg="Match started")
+        self.log(msg="Match started")
 
 
         # TODO: UNCOMMENT BEFORE GOING TO THE COUPE DE FRANCE
         #self.match_stop_timer.start()
 
-        self.robot.goto_xy_block(437, 1500 + self.color() * (1500 - 232))
+        self.robot.goto_xy_block(600, 1500 + self.color() * (1500 - 400))
         tmpobj = None
-        while len(self.objectives):
+        while self.objectives:
             pos = self.get_position()
             print(pos)
-            obj = self.objectives.get_best(pos['x'], pos['y'], self.status)
+            obj = self.objectives.get_best(pos['x'], pos['y'], self.status,
+                    self.pathfinding)
+            self.log(msg="Obj " + str(obj) + " selected while being at "+
+                    str(pos))
+            self.pathfinding.RemoveObstacleByTag('opponent')
             if tmpobj:
+                self.log(msg="Re-adding obj " + str(tmpobj))
                 self.objectives.append(tmpobj)
                 tmpobg = None
-            if obj.get_cost(pos['x'], pos['y'], self.status) > 10000:
+            if obj.get_cost(pos['x'], pos['y'], self.status, self.pathfinding) > 10000:
+                self.log(msg="Remaining objectives are not possible, leaving.")
                 break
             obj.execute_requirements(self.robot, self.cs, self.status)
-            print("going to obj " +  str(obj))
-            print("At pos " +  str(obj.x) + " " + str(obj.y))
             try:
+                self.log(msg="Going to " + str(obj.get_position) + " using pathfinding")
                 self.goto_with_pathfinding(*(obj.get_position()))
+                self.log(msg="Executing the objective")
                 obj.execute(self.robot, self.cs, self.status, self)
             except AvoidException:
+                self.log(msg="We avoided a collision")
                 tmpobj = obj
+                self.log(msg="Temporary removing obj " + str(obj) + " from the current objectives list")
                 self.objectives.remove(obj)
                 pos = self.get_position()
+                self.log(msg="Avoiding manoeuver")
                 self.robot.goto_theta_block(pos['theta'] + math.pi / 2)
                 continue
             if obj.get_tag():
                 self.pathfinding.RemoveObstacleByTag(obj.get_tag())
-            for obs in self.pathfinding.obstacles:
-                print(str(obs))
+            current_list = "Current list of obstacles is : \n"
+            self.log(msg=current_list, list=str(list(map(str,
+                self.pathfinding.obstacles))))
+            self.log(msg="Objective " + str(obj) + " is done, removing it")
             self.objectives.remove(obj)
-            print("--------------------")
         self.robot.free()
-        print("DONE")
-
+        self.log(msg="Nothing more to do here")
         return
 
     # Called by a timer thread
@@ -137,14 +151,19 @@ class ia(Service):
         self.cs('log.ia', msg='Stopping robot')
         self.cs.trajman['pal'].free()
         self.cs.trajman['pal'].disable()
+        self.cs.trajman['pmi'].free()
+        self.cs.trajman['pmi'].disable()
+        self.cs.actuators.collector_open()
 
     @Service.event
-    def robot_near(self):
+    def robot_near(self, x, y):
         print("Robot near, robot should be avoiding")
         if not self.stopped:
+            print("Avoiding")
             self.robot.stop_asap(trsldec=1500, rotdec=3.1)
             self.stopped = True
             call(['aplay', '/root/horn.wav'])
+            self.pathfinding.AddSquareObstacle(x, y, 15, "opponent")
         #if self.match_start.is_set():
         #    self.cs('log.ia', msg='Detected robot near')
         #    self.match_stop()

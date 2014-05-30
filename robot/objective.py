@@ -16,7 +16,9 @@ class Objective(metaclass=ABCMeta):
         self.points = points
         self.tag = tag
 
-    def get_cost(self, x, y, status):
+    def get_cost(self, x, y, status, pathfinding):
+        #return (pathfinding.PathLen(pathfinding.GetPath(x, y, self.x, self.y))
+        #        / self.points)
         return sqrt((x - self.x) ** 2 + (y - self.y) ** 2) / self.points
 
     def get_position(self):
@@ -34,10 +36,13 @@ class Objective(metaclass=ABCMeta):
         current objective. Do *NOT* make blocking calls in this method"""
         pass
 
+    def __str__(self):
+        return str(self.x) + " " + str(self.y) + " " + str(self.direction)
+
 class ObjectiveList(list):
 
-    def get_best(self, x, y, status):
-        self.sort(key=lambda k: k.get_cost(x, y, status))
+    def get_best(self, x, y, status, pathfinding):
+        self.sort(key=lambda k: k.get_cost(x, y, status, pathfinding))
         return self[0]
 
 class FedexObjective(Objective):
@@ -47,10 +52,10 @@ class FedexObjective(Objective):
 
 class FirePlaceDrop(Objective):
 
-    def get_cost(self, x, y, status):
+    def get_cost(self, x, y, status, pathfinding):
         if not status.has_fire:
             return 10**9
-        return super(FirePlaceDrop, self).get_cost(x, y, status)
+        return super().get_cost(x, y, status, pathfinding)
 
     def execute_requirements(self, robot, cs, status):
         cs.actuators.collector_up()
@@ -71,6 +76,9 @@ class FirePlaceDrop(Objective):
         ia.goto_xy_block(self.x, self.y)
         status.has_fire = False
 
+    def __str__(self):
+        return "FirePlaceDrop " + super().__str__()
+
 class FirePlaceDropCenter(FirePlaceDrop):
     def execute(self, robot, cs, status, ia):
         robot.goto_theta_block(self.direction)
@@ -88,12 +96,15 @@ class FirePlaceDropCenter(FirePlaceDrop):
         ia.goto_xy_block(self.x, self.y)
         status.has_fire = False
 
+    def __str__(self):
+        return "FirePlaceDropCenter " + super().__str__()
+
 class StandingFire(Objective):
 
-    def get_cost(self, x, y, status):
+    def get_cost(self, x, y, status, pathfinding):
         if status.has_fire:
             return 10**9
-        return super(StandingFire, self).get_cost(x, y, status)
+        return super().get_cost(x, y, status, pathfinding)
 
     def execute_requirements(self, robot, cs, status):
         cs.actuators.collector_push_fire()
@@ -135,9 +146,7 @@ class StandingFire(Objective):
 
 
     def __str__(self):
-        return "Standing fire " +\
-                str(self.x + 200 * cos(self.direction)) +\
-                " " + str(self.y + 200 * sin(self.direction))
+        return "StandingFire " + super().__str__()
 
 class WallFire(Objective):
 
@@ -149,9 +158,7 @@ class WallFire(Objective):
         robot.goto_theta_block(2 * pi - self.direction)
 
     def __str__(self):
-        return "Wall fire " +\
-                str( self.x + 100 * cos(self.direction)) +\
-                " " + str(self.y + 100 * sin(self.direction))
+        return "Wall fire " + super().__str__()
 
 class Torch(Objective):
 
@@ -160,9 +167,7 @@ class Torch(Objective):
         robot.goto_theta_block(pi / 2)
 
     def __str__(self):
-        return "Torche fire " +\
-               str( self.x + 200 * cos(self.direction)) +\
-                " " + str(self.y + 200 * sin(self.direction))
+        return "Torche fire " + super().__str__()
 
 class DefaultObjectives():
 
@@ -184,7 +189,7 @@ class DefaultObjectives():
         # Both corner fireplace
         positions = [
                 [1650, 350, -pi / 4],
-                #[1650, 2650, pi / 4],
+                [1650, 2650, pi / 4],
         ]
         for pos in positions:
             defobj.append(FirePlaceDrop(2, *DefaultObjectives.color_pos(color,
@@ -204,15 +209,16 @@ class DefaultObjectives():
         for pos in positions:
             tag = "fire" + str(i)
             i += 1
-            pathfinding.AddSquareObstacle(
-                    pos[0],
-                    pos[1],
-                    50,
-                    tag)
+            if pathfinding != None:
+                pathfinding.AddSquareObstacle(
+                        pos[0],
+                        pos[1],
+                        50,
+                        tag)
             defobj.append(StandingFire(1,
                 *DefaultObjectives.color_pos(color,
-                pos[0] - cos(color * pos[2]) * DST_STDFR,
-                pos[1] - sin(color * pos[2]) * DST_STDFR,
+                pos[0] - cos(pos[2]) * DST_STDFR,
+                pos[1] - sin(pos[2]) * DST_STDFR,
                 pos[2]),
                 tag=tag))
 
@@ -258,5 +264,18 @@ class DefaultObjectives():
 
 
 
+
+if __name__ == "__main__":
+    objs = DefaultObjectives.generate_default_objectives(1, None)
+    print("Yellow objectives :")
+    for obj in objs:
+        print(str(obj))
+    objs = DefaultObjectives.generate_default_objectives(-1, None)
+    print()
+    print()
+    print()
+    print("Red objectives :")
+    for obj in objs:
+        print(str(obj))
 
 
