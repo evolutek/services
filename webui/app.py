@@ -47,6 +47,12 @@ class WebMonitor(Service):
         self.hokuyo_robots_persist_lock = threading.Lock()
         self.hokuyo_robots_persist = deque()
 
+        self.pal_robot_near = []
+        self.pal_robot_near_lock = threading.Lock()
+
+        self.targets = []
+        self.targets_lock = threading.Lock()
+
     @Service.event('log.monitor.robot_position')
     def update_robot_position(self, robot, x, y, theta):
         if robot == 'pal':
@@ -84,6 +90,11 @@ class WebMonitor(Service):
     def sharp_avoid(self, n):
         self.pal_sharps[n] = time.time()
 
+    @Service.event
+    def robot_near(self, x, y):
+        with self.pal_robot_near_lock:
+            self.pal_robot_near.append((float(x), float(y)))
+
     @Service.thread
     def sharp_poll(self):
         # Clean sharps
@@ -93,6 +104,13 @@ class WebMonitor(Service):
                     continue
                 if time.time() - self.pal_sharps[i] > 1:
                     self.pal_sharps[i] = 0  # reset sharp, not activated
+
+    @Service.event
+    def ia_new_target(self, pos, name):
+        with self.targets_lock:
+            self.targets.append((pos, name))
+        with self.pal_robot_near_lock:
+            self.pal_robot_near = []
 
 
 class EvolutekSimulator(pantograph.PantographHandler):
@@ -126,9 +144,11 @@ class EvolutekSimulator(pantograph.PantographHandler):
         # Draw table
         self.draw_image('table.png', 0, 0, self.width, self.height)
 
-        #self.update_self_tracking()
-        self.update_hokuyo_robots()
-        self.update_tracking()
+        self.update_self_tracking()
+        #self.update_hokuyo_robots()
+        #self.update_tracking()
+        self.update_robot_near()
+        self.update_ia()
 
         self.update_mouse()
 
@@ -212,8 +232,8 @@ class EvolutekSimulator(pantograph.PantographHandler):
         dir_shape = pantograph.Polygon(
             [self.from_evo_to_canvas(p) for p in dir_poly], None, '#000')
 
-        compound = pantograph.CompoundShape([shape, dir_shape, sharp0, sharp1,
-            sharp2, sharp3])
+        compound = pantograph.CompoundShape(
+            [shape, dir_shape, sharp0, sharp1, sharp2, sharp3])
         compound.rotate(math.pi/2 - float(self.monitor.pal['theta']))
         compound.draw(self)
 
@@ -311,15 +331,28 @@ class EvolutekSimulator(pantograph.PantographHandler):
             shape.draw(self)
             self.draw_text(robot['name'], x, y)
 
+    def update_robot_near(self):
+        with self.monitor.pal_robot_near_lock:
+            for i, blob in enumerate(self.monitor.pal_robot_near):
+                x, y = self.from_evo_to_canvas(blob)
+                shape = pantograph.Circle(
+                    x, y, radius=5,
+                    fill_color='rgba(123, 0, 0, 0.7)',
+                    line_color='red')
+                shape.draw(self)
+
+    def update_ia(self):
+        with self.monitor.targets_lock:
+            for (x, y), name in self.monitor.targets:
+                x, y = self.from_evo_to_canvas((x, y))
+                shape = pantograph.Circle(
+                    x, y, radius=5,
+                    fill_color='green',
+                    line_color='black')
+                shape.draw(self)
+                self.draw_text(name, x=x+7, y=y+7)
+
     def on_mouse_move(self, event):
-        #self.cs('log.monitor.robot_position',
-        #        robot='pal',
-        #        y=event.x/self.xscale,
-        #        x=event.y/self.yscale,
-        #        theta=0)
-        #self.cs.trajman.gotoxy(
-        #    x=int(event.x/self.xscale),
-        #    y=int(event.y/self.yscale))
         self.mouse_pos['x'] = event.x
         self.mouse_pos['y'] = event.y
 
@@ -328,7 +361,6 @@ class EvolutekSimulator(pantograph.PantographHandler):
             'x': int(self.mouse_pos['y']/self.yscale),
             'y': int(self.mouse_pos['x']/self.xscale),
             }
-        print(data)
         self.cs.trajman['pal'].goto_xy(**data)
 
     def on_key_down(self, event):
