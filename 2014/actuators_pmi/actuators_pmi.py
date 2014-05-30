@@ -6,19 +6,19 @@ from cellaserv.service import Service
 
 AX_ID_COLLECT = "3"
 
-AX_ROTATION_CLOSE = 500
-AX_ROTATION_GET = 800
-AX_ROTATION_DROP = 960
+AX_COLLECTOR_CLOSE = 500
+AX_COLLECTOR_GET = 800
+AX_COLLECTOR_FLUSH = 960
 
+@Service.require("ax.3")
 class ActuatorsPMI(Service):
 
-    flush_retries = ConfigVariable(section='pmi', option='flush_retries')
+    #flush_retries = ConfigVariable(section='pmi', option='flush_retries')
 
     def __init__(self):
         super().__init__()
 
         self.cs = CellaservProxy()
-        
 
     def setup(self):
         super().setup()
@@ -39,8 +39,9 @@ class ActuatorsPMI(Service):
 
     @Service.action
     def collector_flush(self):
-        for i in range(0, self.flush_retries()):
-            self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_DROP)
+        #for i in range(0, self.flush_retries()):
+        for i in range(0, 8):
+            self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_FLUSH)
             sleep(.2)
             self.cs.ax[AX_ID_COLLECT].move(goal=AX_COLLECTOR_GET)
             sleep(.2)

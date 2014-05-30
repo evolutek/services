@@ -28,6 +28,10 @@ AX_ROTATION_END = 138
 #  - make it stateful
 #  - sleep when it's needed
 
+@Service.require("ax.4")
+@Service.require("ax.10")
+@Service.require("ax.11")
+@Service.require("ax.12")
 class Actuators(Service):
 
     def __init__(self):
@@ -49,7 +53,7 @@ class Actuators(Service):
                 AX_ID_COLLECT,
                 AX_ID_COLLECT_ELEVATOR,
                 AX_ID_COLLECT_ROTATION,
-                AX_ID_FRUITS
+                AX_ID_LAUNCHER,
                 ]:
             self.cs.ax[ax].free()
 
@@ -91,7 +95,7 @@ class Actuators(Service):
     def collector_hold(self):
         self.cs.ax[AX_ID_COLLECT].mode_wheel()
         # increase if too weak
-        self.cs.ax[AX_ID_COLLECT].turn(side=-1, speed=650)
+        self.cs.ax[AX_ID_COLLECT].turn(side=1, speed=650)
 
     @Service.action
     def collector_up(self):
@@ -130,13 +134,13 @@ class Actuators(Service):
     @Service.action
     def launcher_fire(self):
         self.cs.ax[AX_ID_LAUNCHER].turn(side=1, speed=512)
-        sleep(.3)
+        sleep(1)
         self.cs.ax[AX_ID_LAUNCHER].turn(side=1, speed=0)
 
     @Service.action
     def launcher_reload(self):
-        self.cs.ax[AX_ID_LAUNCHER].turn(side=-1, speed=512)
-        sleep(1)
+        self.cs.ax[AX_ID_LAUNCHER].turn(side=0, speed=512)
+        sleep(1.5)
         self.cs.ax[AX_ID_LAUNCHER].turn(side=1, speed=0)
 
 def main():
