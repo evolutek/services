@@ -15,6 +15,7 @@ class Objective(metaclass=ABCMeta):
         self.direction = direction
         self.points = points
         self.tag = tag
+        self.done = False
 
     def get_cost(self, x, y, status, pathfinding):
         #return (pathfinding.PathLen(pathfinding.GetPath(x, y, self.x, self.y))
@@ -36,12 +37,15 @@ class Objective(metaclass=ABCMeta):
         current objective. Do *NOT* make blocking calls in this method"""
         pass
 
+    def is_done(self):
+        return self.done
+
     def __str__(self):
         return str(self.x) + " " + str(self.y) + " " + str(self.direction)
 
 class ObjectiveList(list):
 
-    def get_best(self, x, y, status, pathfinding):
+    def get_best(self, x, y, status, pathfinding, ia):
         self.sort(key=lambda k: k.get_cost(x, y, status, pathfinding))
         return self[0]
 
@@ -148,6 +152,13 @@ class StandingFire(Objective):
     def __str__(self):
         return "StandingFire " + super().__str__()
 
+class OponnentStandingFire(Objective):
+
+    def execute(self, robot, cs, status, ia):
+        super().execute(robot, cs, status, ia)
+        sleep(1)
+        cs.actuators.collector_rotate()
+
 class WallFire(Objective):
 
     def execute(self, robot, cs, status, ia):
@@ -171,11 +182,12 @@ class Fresque(Objective):
         ia.goto_xy_block(141, pos['y'])
         ia.goto_xy_block(300, pos['y'])
         ia.goto_xy_block(141, pos['y'])
+        self.is_done = True
         robot.set_trsl_max_speed((speeds['trmax']))
         ia.goto_xy_block(500, pos['y'])
 
 class Balls(Objective):
-    """ We have balls """
+    """ We have balls. """
 
     def execute(self, robot, cs, status, ia):
         robot.goto_theta_block(0)
@@ -202,9 +214,6 @@ class DefaultObjectives():
         one depending on the robot's color"""
 
         defobj = ObjectiveList()
-        defobj.append(Fresque(1000, 400, 1500, 0))
-        defobj.append(Balls(500,
-                            *DefaultObjectives.color_pos(color, 600, 700)))
 
         # Objective needed to exit the startup zone
         #defobj.append(FedexObjective(1, *DefaultObjectives.color_pos(color,
@@ -224,7 +233,7 @@ class DefaultObjectives():
         positions = [
                 [1100, 400, 0],
                 [1100, 2600, pi],
-                [600, 900, pi / 2],
+                #[600, 900, pi / 2],
                 [600, 2100, pi / 2],
                 [1600, 900, -pi / 2],
                 [1600, 2100, -pi / 2],
@@ -234,6 +243,7 @@ class DefaultObjectives():
             tag = "fire" + str(i)
             i += 1
             if pathfinding != None:
+                # Adding the correspongind obstacle
                 pathfinding.AddSquareObstacle(
                         pos[0],
                         pos[1],
@@ -245,7 +255,6 @@ class DefaultObjectives():
                 pos[1] - sin(pos[2]) * DST_STDFR,
                 pos[2]),
                 tag=tag))
-
 
         # Center fire. Is defined as multiple position to prevent stacking
         # fires

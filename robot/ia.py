@@ -100,27 +100,44 @@ class ia(Service):
         print("Start!")
         self.log(msg="Match started")
 
-
+        fresque = Fresque(1000, 400, 1500, 0)
+        balls = Balls(500,
+                            *DefaultObjectives.color_pos(self.color(), 600, 700))
         # TODO: UNCOMMENT BEFORE GOING TO THE COUPE DE FRANCE
-        #self.match_stop_timer.start()
+        self.match_stop_timer.start()
 
         self.robot.goto_xy_block(600, 1500 + self.color() * (1500 - 400))
         self.robot.goto_xy_block(600, 1500)
         self.robot.goto_theta_block(0)
+        try:
+            self.log(msg="Going to " + str(fresque.get_position()) + " using pathfinding")
+            self.goto_with_pathfinding(*(fresque.get_position()))
+            self.log(msg="Executing the objective")
+            fresque.execute(self.robot, self.cs, self.status, self)
+        except:
+            if not fresque.is_done():
+                self.objectives.append(fresque)
+        try:
+            self.log(msg="Going to " + str(balls.get_position()) + " using pathfinding")
+            self.goto_with_pathfinding(*(balls.get_position()))
+            self.log(msg="Executing the objective")
+            balls.execute()
+        except:
+            self.objectives.append(balls)
         tmpobj = None
         while self.objectives:
             pos = self.get_position()
             self.log(msg="Selecting objective to do")
             obj = self.objectives.get_best(pos['x'], pos['y'], self.status,
-                    self.pathfinding)
+                    self.pathfinding, self)
             self.log(msg="Obj " + str(obj) + " selected while being at "+
                     str(pos))
-            #self('ia_new_target', **(obj.get_position()), name=str(obj))
+            self('ia_new_target', pos=obj.get_position(), name=str(obj))
             self.pathfinding.RemoveObstacleByTag('opponent')
             if tmpobj:
                 self.log(msg="Re-adding obj " + str(tmpobj))
                 self.objectives.append(tmpobj)
-                tmpobg = None
+                tmpobj = None
             if obj.get_cost(pos['x'], pos['y'], self.status, self.pathfinding) > 10000:
                 self.log(msg="Remaining objectives are not possible, leaving.")
                 break
@@ -132,7 +149,8 @@ class ia(Service):
                 obj.execute(self.robot, self.cs, self.status, self)
             except AvoidException:
                 self.log(msg="We avoided a collision")
-                tmpobj = obj
+                if not obj.is_done():
+                    tmpobj = obj
                 self.log(msg="Temporary removing obj " + str(obj) + " from the current objectives list")
                 self.objectives.remove(obj)
                 pos = self.get_position()
