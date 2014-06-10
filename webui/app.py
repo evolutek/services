@@ -48,7 +48,9 @@ class WebMonitor(Service):
         self.hokuyo_robots_persist = deque()
 
         self.pal_robot_near = []
+        self.pal_all_robot_near = []
         self.pal_robot_near_lock = threading.Lock()
+        self.pal_all_robot_near_lock = threading.Lock()
 
         self.targets = []
         self.targets_lock = threading.Lock()
@@ -110,7 +112,9 @@ class WebMonitor(Service):
         with self.targets_lock:
             self.targets.append((pos, name))
         with self.pal_robot_near_lock:
-            self.pal_robot_near = []
+            with self.pal_all_robot_near_lock:
+                self.pal_all_robot_near.extend(self.pal_robot_near)
+                self.pal_robot_near.clear()
 
 
 class EvolutekSimulator(pantograph.PantographHandler):
@@ -339,6 +343,15 @@ class EvolutekSimulator(pantograph.PantographHandler):
                     x, y, radius=5,
                     fill_color='rgba(123, 0, 0, 0.7)',
                     line_color='red')
+                shape.draw(self)
+
+        with self.monitor.pal_all_robot_near_lock:
+            for i, blob in enumerate(self.monitor.pal_all_robot_near):
+                x, y = self.from_evo_to_canvas(blob)
+                shape = pantograph.Circle(
+                    x, y, radius=5,
+                    fill_color='rgba(123, 0, 0, 0.7)',
+                    line_color='blue')
                 shape.draw(self)
 
     def update_ia(self):
