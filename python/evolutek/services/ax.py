@@ -26,6 +26,7 @@ AX_PRESENT_TEMPERATURE = 43
 AX_CW_ANGLE_LIMIT_L    = 6
 AX_CCW_ANGLE_LIMIT_L   = 8
 
+
 class AXService(Service):
 
     service_name = "ax"
@@ -104,13 +105,14 @@ class AXService(Service):
         return self.dxl.dxl_write_word(self.ax, AX_MOVING_SPEED_L, int(speed))
 
     @Service.action
-    def turn(self, side, speed):
+    def turn(self, side: "1 or -1", speed):
         self.dxl.dxl_write_word(self.ax, AX_MOVING_SPEED_L,
-                (2**10 if side else 0) | int(speed))
+                                (2**10 if int(side) == 1 else 0) | int(speed))
 
     @Service.action
     def free(self):
         self.dxl.dxl_write_byte(self.ax, AX_TORQUE_ENABLE_B, 0)
+
 
 def main():
     #axs = [AXService(ax=i) for i in [1, 2, 3, 5, 6]] # PMI
