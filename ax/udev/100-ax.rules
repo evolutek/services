@@ -1,3 +1,0 @@
-# usb2dynamixel usb-serial, used with ax12 servos
-
-SUBSYSTEMS=="usb", ATTRS{idProduct}=="0002", ATTRS{idVendor}=="1d6b", TAG+="systemd", ENV{SYSTEMD_WANTS}+="ax.service", ENV{SYSTEMD_ALIAS}="/sys/subsystem/usb/devices/usb2dynamixel"

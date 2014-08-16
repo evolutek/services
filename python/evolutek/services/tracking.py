@@ -323,7 +323,6 @@ class Tracking(Service):
         self('beep_ko')
         self('robot_near_pmi', x=real_obj_x, y=real_obj_y)
 
-
     # Threads
 
     def prune_dead_robots(self):
@@ -347,6 +346,9 @@ class Tracking(Service):
             self.prune_dead_robots()
 
 
-if __name__ == '__main__':
+def main():
     tracking = Tracking()
     tracking.run()
+
+if __name__ == '__main__':
+    main()

@@ -3,13 +3,11 @@
 from queue import Queue
 from struct import *
 from threading import Thread, Event
-import os
 import serial
-import time
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
-import cellaserv.settings
+import evolutek.lib.settings
 
 #######################
 # All the commands ID #
@@ -75,27 +73,29 @@ class TrajMan(Service):
     It can be disabled in order to stop processing commands and make sure that
     the robot will not move.
     """
-    w1 = ConfigVariable(section=cellaserv.settings.ROBOT, option="wheel_diam1", coerc=float)
-    w2 = ConfigVariable(section=cellaserv.settings.ROBOT, option="wheel_diam2", coerc=float)
-    spacing = ConfigVariable(section=cellaserv.settings.ROBOT, option="wheels_spacing", coerc=float)
-    pidtp = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidtrsl_p", coerc=float)
-    pidti = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidtrsl_i", coerc=float)
-    pidtd = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidtrsl_d", coerc=float)
-    pidrp = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidrot_p", coerc=float)
-    pidri = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidrot_i", coerc=float)
-    pidrd = ConfigVariable(section=cellaserv.settings.ROBOT, option="pidrot_d", coerc=float)
-    trslacc = ConfigVariable(section=cellaserv.settings.ROBOT, option="trsl_acc", coerc=float)
-    trsldec = ConfigVariable(section=cellaserv.settings.ROBOT, option="trsl_dec", coerc=float)
-    trslmax = ConfigVariable(section=cellaserv.settings.ROBOT, option="trsl_max", coerc=float)
-    rotacc = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_acc", coerc=float)
-    rotdec = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_dec", coerc=float)
-    rotmax = ConfigVariable(section=cellaserv.settings.ROBOT, option="rot_max", coerc=float)
-    deltatrsl = ConfigVariable(section=cellaserv.settings.ROBOT, option="delta_trsl", coerc=float)
-    deltarot = ConfigVariable(section=cellaserv.settings.ROBOT, option="delta_rot", coerc=float)
+    robot = evolutek.lib.settings.ROBOT
+
+    w1 = ConfigVariable(section=robot, option="wheel_diam1", coerc=float)
+    w2 = ConfigVariable(section=robot, option="wheel_diam2", coerc=float)
+    spacing = ConfigVariable(section=robot, option="wheels_spacing", coerc=float)
+    pidtp = ConfigVariable(section=robot, option="pidtrsl_p", coerc=float)
+    pidti = ConfigVariable(section=robot, option="pidtrsl_i", coerc=float)
+    pidtd = ConfigVariable(section=robot, option="pidtrsl_d", coerc=float)
+    pidrp = ConfigVariable(section=robot, option="pidrot_p", coerc=float)
+    pidri = ConfigVariable(section=robot, option="pidrot_i", coerc=float)
+    pidrd = ConfigVariable(section=robot, option="pidrot_d", coerc=float)
+    trslacc = ConfigVariable(section=robot, option="trsl_acc", coerc=float)
+    trsldec = ConfigVariable(section=robot, option="trsl_dec", coerc=float)
+    trslmax = ConfigVariable(section=robot, option="trsl_max", coerc=float)
+    rotacc = ConfigVariable(section=robot, option="rot_acc", coerc=float)
+    rotdec = ConfigVariable(section=robot, option="rot_dec", coerc=float)
+    rotmax = ConfigVariable(section=robot, option="rot_max", coerc=float)
+    deltatrsl = ConfigVariable(section=robot, option="delta_trsl", coerc=float)
+    deltarot = ConfigVariable(section=robot, option="delta_rot", coerc=float)
 
 
-    def __init__(self, identification=None):
-        super().__init__(identification)
+    def __init__(self):
+        super().__init__(self.robot)
 
         self.cs = CellaservProxy()
 
@@ -487,7 +487,7 @@ class TrajMan(Service):
 
     @Service.action
     def recalibration(self, sens):
-        tab = pack('B', 3);
+        tab = pack('B', 3)
         tab += pack('B', RECALAGE)
         tab += pack('B', int(sens))
         return self.command(bytes(tab))
@@ -645,8 +645,7 @@ class TrajMan(Service):
                     self.log_debug("Message not recognised")
 
 def main():
-    robot = cellaserv.settings.ROBOT
-    trajman = TrajMan(robot)
+    trajman = TrajMan()
     trajman.run()
 
 if __name__ == '__main__':

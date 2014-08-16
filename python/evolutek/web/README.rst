@@ -1,5 +1,5 @@
 ========================
-Evolutek simualtor webui
+Evolutek simulator webui
 ========================
 
 Build with the pantograph library.
