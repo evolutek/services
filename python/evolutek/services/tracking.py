@@ -101,9 +101,6 @@ class Tracking(Service):
         self.hokuyo_scan_pal.add_update_cb(self.pal.is_scanned_set)
         self.hokuyo_scan_pmi.add_update_cb(self.pmi.is_scanned_set)
 
-    def setup(self):
-        super().setup()
-
         # Define safe zones
         self.sharp_safe_zone = [
             Obstacle(0, 0, 2000, self.sharp_map_margin()),
@@ -115,6 +112,7 @@ class Tracking(Service):
         ]
 
     # Actions
+
     @Service.action
     def get_robots(self):
         ret = []

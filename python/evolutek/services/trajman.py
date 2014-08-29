@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from queue import Queue
-from struct import *
+from struct import pack, unpack
 from threading import Thread, Event
 import serial
 
@@ -93,7 +93,6 @@ class TrajMan(Service):
     deltatrsl = ConfigVariable(section=robot, option="delta_trsl", coerc=float)
     deltarot = ConfigVariable(section=robot, option="delta_rot", coerc=float)
 
-
     def __init__(self):
         super().__init__(self.robot)
 
@@ -108,10 +107,6 @@ class TrajMan(Service):
         self.disabled = False
 
         self.serial = serial.Serial('/dev/ttySAC0', 38400)
-
-    def setup(self):
-        """Setup the service."""
-        super().setup()
 
         self.thread = Thread(target=self.async_read)
         self.thread.start()
@@ -643,6 +638,7 @@ class TrajMan(Service):
 
                 else:
                     self.log_debug("Message not recognised")
+
 
 def main():
     trajman = TrajMan()

@@ -6,6 +6,7 @@ from cellaserv.service import Service
 
 
 class Date(Service):
+    """The most useful service."""
 
     @Service.action
     def time(self):
@@ -13,6 +14,7 @@ class Date(Service):
 
     @Service.event
     def kill(self):
+        """Kill the service"""
         import sys
         sys.exit(0)
 

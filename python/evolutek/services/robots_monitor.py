@@ -15,9 +15,6 @@ class RobotsMonitor(Service):
         self.cs = CellaservProxy()
         self.tm = self.cs.trajman[self.robot_name]
 
-    def setup(self):
-        super().setup()
-
     def position(self):
         log_name = 'log.monitor.robot_position'
         pos = self.tm.get_position()
@@ -30,7 +27,7 @@ class RobotsMonitor(Service):
             self.position()
 
 
-@Service.require('trajman.pal')
+@Service.require('trajman', 'pal')
 class MonitorPal(RobotsMonitor):
 
     def __init__(self):
@@ -38,7 +35,7 @@ class MonitorPal(RobotsMonitor):
         super().__init__('pal')
 
 
-@Service.require('trajman.pmi')
+@Service.require('trajman', 'pmi')
 class MonitorPmi(RobotsMonitor):
 
     def __init__(self):
@@ -48,9 +45,9 @@ class MonitorPmi(RobotsMonitor):
 
 def main():
     pal = MonitorPal()
-    pal.setup()
+    pal._setup()
     pmi = MonitorPmi()
-    pmi.setup()
+    pmi._setup()
     Service.loop()
 
 if __name__ == '__main__':

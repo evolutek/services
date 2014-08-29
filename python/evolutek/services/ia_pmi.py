@@ -5,10 +5,11 @@ import math
 
 from cellaserv.service import Service, Variable, ConfigVariable
 from cellaserv.proxy import CellaservProxy
-from robot import Robot
-from objective import *
 
-@Service.require("trajman.pmi")
+from evolutek.lib.robot import Robot
+
+
+@Service.require("trajman", "pmi")
 @Service.require("actuatorspmi")
 @Service.require("tracking")
 class IaPMI(Service):
@@ -29,43 +30,37 @@ class IaPMI(Service):
         self.start_event = Event()
 
         self.pmi = Robot('pmi')
-        self.pmi.setup()
         self.pmi_stopped = False
 
-
-    def setup(self):
-        super().setup()
-
-        self.cs('log.ia', msg="Setup pmi done")
-
-        #pmi
-        self.pmi.free()
+        # pmi
+        self.pmi.tm.free()
         # 7 cm of the table edge
-        self.pmi.set_x(60)
+        self.pmi.tm.set_x(60)
         # 3 cm of the fruit deposit box
-        self.pmi.set_y(self.get_y(270))
+        self.pmi.tm.set_y(self.get_y(270))
         # make the collector in the fruit axes
-        self.pmi.set_theta(self.get_theta(0))
-        self.pmi.unfree()
+        self.pmi.tm.set_theta(self.get_theta(0))
+        self.pmi.tm.unfree()
         self.cs.actuatorspmi.collector_close()
+
+        self.log("Setup pmi done")
 
     @Service.action
     def status(self):
         return {'started': self.match_start.is_set()}
 
-
     def get_position(self):
         pos = None
         while not pos:
             try:
-                pos = self.pmi.get_position()
+                pos = self.pmi.tm.get_position()
             except:
                 pass
         return pos
 
     @Service.thread
     def start(self):
-        return;
+        return
         print("Waiting...")
         self.log(msg='Waiting')
         self.match_start.wait()
@@ -98,7 +93,7 @@ class IaPMI(Service):
 
     def pmi_goto_xy_block_retry(self, x, y, retries=-1):
         self.pmi_goto_xy_block(x, y)
-        while self.pmi_stopped == True and retries != 0:
+        while self.pmi_stopped and retries != 0:
             sleep(0.5)
             self.pmi_stopped = False
             self.pmi_goto_xy_block(x, y)
@@ -122,14 +117,14 @@ class IaPMI(Service):
 
         # fetch fruits from 1st tree
         self.pmi_goto_xy_block_retry(1100, 270)
-        self.pmi.set_trsl_max_speed(200)
+        self.pmi.tm.set_trsl_max_speed(200)
         self.pmi_goto_xy_block_retry(1700, 270)
-        self.pmi.set_trsl_max_speed(400)
+        self.pmi.tm.set_trsl_max_speed(400)
         self.cs.actuatorspmi.collector_close()
 
         # go to drop zone
         self.pmi_goto_xy_block_retry(410, 270)
-        self.pmi.goto_theta(math.pi / 2)
+        self.pmi.tm.goto_theta(math.pi / 2)
         self.pmi_goto_xy_block_retry(410, 1750)
 
         self.cs.actuatorspmi.collector_flush()
@@ -140,29 +135,30 @@ class IaPMI(Service):
         # go to 2nd tree
         # near start zone
         self.pmi_goto_xy_block_retry(410, 270)
-        self.pmi.goto_theta(self.get_theta(-math.pi / 2))
+        self.pmi.tm.goto_theta(self.get_theta(-math.pi / 2))
         # opposite cornet
         self.pmi_goto_xy_block_retry(1730, 400)
         # get fruits
         self.cs.actuatorspmi.collector_get()
-        self.pmi.goto_theta(-math.pi / 2)
-        self.pmi.set_trsl_max_speed(200)
+        self.pmi.tm.goto_theta(-math.pi / 2)
+        self.pmi.tm.set_trsl_max_speed(200)
         self.pmi_goto_xy_block_retry(1730, 1100)
         self.cs.actuatorspmi.collector_close()
         # come back
-        self.pmi.set_trsl_max_speed(400)
+        self.pmi.tm.set_trsl_max_speed(400)
         self.pmi_goto_xy_block_retry(1730, 400)
-        self.pmi.goto_theta(self.get_theta(-math.pi / 2))
+        self.pmi.tm.goto_theta(self.get_theta(-math.pi / 2))
 
         # go to drop zone
         self.pmi_goto_xy_block_retry(410, 270)
-        self.pmi.goto_theta(math.pi / 2)
+        self.pmi.tm.goto_theta(math.pi / 2)
         self.pmi_goto_xy_block_retry(410, 1750)
 
         self.cs.actuatorspmi.collector_flush()
         self.cs("beep_ok")
         self.cs.actuatorspmi.collector_close()
         sleep(1)
+
 
 def main():
     service = IaPMI()

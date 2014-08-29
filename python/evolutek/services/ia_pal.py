@@ -11,13 +11,14 @@ import evolutek.lib.pathfinding as pathfinding
 
 from .objective import DefaultObjectives, Balls, Fresque
 
+
 class RobotStatus:
 
     def __init__(self):
         self.has_fire = False
 
 
-@Service.require("trajman.pal")
+@Service.require("trajman", "pal")
 class IaPal(Service):
 
     match_start = Variable('start')
@@ -78,7 +79,7 @@ class IaPal(Service):
         self.pathfinding.AddRectangleObstacle(0, 400, 300, 1100, "bacj")
         self.pathfinding.AddRectangleObstacle(0, 1900, 300, 2600, "bacr")
 
-        self.robot.unfree()
+        self.robot.tm.unfree()
 
         print("Waiting...")
         self.log(msg='Waiting')
