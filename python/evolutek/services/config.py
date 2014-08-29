@@ -7,6 +7,7 @@ from cellaserv.service import Service
 
 CONFIG_FILE = os.getenv('CS_CONFIG') or "config.ini"
 
+
 class Config(Service):
 
     def __init__(self):
@@ -14,14 +15,10 @@ class Config(Service):
 
         self.config_file = ConfigParser()
         self.temporary_config = {}
-
-    def setup(self):
-        super().setup()
-
-        self.config_file.read([CONFIG_FILE,])
+        self.config_file.read([CONFIG_FILE, ])
 
     @Service.action
-    def get(self, section:str, option:str) -> str:
+    def get(self, section: str, option: str) -> str:
         """
         Return value from config file. If the section does not exists, a
         KeyError is raised.
@@ -35,7 +32,7 @@ class Config(Service):
             raise KeyError("Unknown config: {0}.{1}".format(section, option)) from exc
 
     @Service.action
-    def set(self, section:str, option:str, value:str) -> None:
+    def set(self, section: str, option: str, value: str) -> None:
         """Write config value."""
 
         # Flush temporary value
@@ -58,7 +55,7 @@ class Config(Service):
             self.config_file.write(f)
 
     @Service.action
-    def set_tmp(self, section:str, option:str, value:str) -> None:
+    def set_tmp(self, section: str, option: str, value: str) -> None:
         """Set a temporary value."""
         self.temporary_config[section + '.' + option] = value
 
@@ -87,6 +84,7 @@ class Config(Service):
             for k, v in self.config_file.items(section):
                 ret[section][k] = v
         return ret
+
 
 def main():
     config = Config()
