@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-import os
-
 from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from cellaserv.service import Service
-
-CONFIG_FILE = os.getenv('CS_CONFIG') or "config.ini"
+from cellaserv.settings import make_setting
+make_setting('CONFIG_FILE', 'config.ini', 'config', 'file', 'CONFIG_FILE')
+from cellaserv.settings import CONFIG_FILE
 
 
 class Config(Service):
-
     def __init__(self):
-        super().__init__()
-
         self.config_file = ConfigParser()
         self.temporary_config = {}
         self.config_file.read([CONFIG_FILE, ])
+
+        # Start the service
+        super().__init__()
 
     @Service.action
     def get(self, section: str, option: str) -> str:
@@ -46,7 +45,7 @@ class Config(Service):
             self.config_file.set(section, option, value)
 
         # Publish update event
-        self('config.{0}.{1}'.format(section, option), value=value)
+        self.publish('config.{0}.{1}'.format(section, option), value=value)
 
         self.write_config()
 
