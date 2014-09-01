@@ -114,9 +114,6 @@ class Ax(Service):
 def main():
     # axs = [Ax(ax=i) for i in [1, 2, 3, 5, 6]]  # PMI
     axs = [Ax(ax=i) for i in [10, 11, 12]]  # MAIN
-    for ax in axs:
-        ax._setup()
-
     Service.loop()
 
 if __name__ == "__main__":

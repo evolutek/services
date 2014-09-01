@@ -45,9 +45,7 @@ class MonitorPmi(RobotsMonitor):
 
 def main():
     pal = MonitorPal()
-    pal._setup()
     pmi = MonitorPmi()
-    pmi._setup()
     Service.loop()
 
 if __name__ == '__main__':
