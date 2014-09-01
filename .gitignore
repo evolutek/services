@@ -2,3 +2,5 @@ __pycache__
 local_settings.py
 *.o
 *.so
+.ropeproject
+*.egg-info
