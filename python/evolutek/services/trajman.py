@@ -71,6 +71,12 @@ DESTINATION_UNREACHABLE = 2
 BAD_ORDER               = 3
 
 
+class AckTimeout(Exception):
+    """Raised when a ACK message is not received in time."""
+    def __init__(self):
+        super().__init__("AckTimeout")
+
+
 def if_enabled(method):
     """
     A method can be disabled so that it cannot be used in any circumstances.
@@ -167,7 +173,9 @@ class TrajMan(Service):
 
         self.ack_recieved.clear()
         self.write(data)
-        self.ack_recieved.wait()
+        if not self.ack_recieved.wait(timeout=1):
+            # If no ACK is received within 1s
+            raise AckTimeout
 
     def get_command(self, data):
         """Handle commands that waits for an answer from the motors."""
