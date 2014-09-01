@@ -1,29 +1,11 @@
 #!/usr/bin/env python3
 
-import configparser
-import os
+from cellaserv.settings import make_setting
 
-config = configparser.ConfigParser()
-config.read(['/etc/conf.d/evolutek'])
+make_setting('ROBOT', 'pal', 'evolutek', 'robot', 'ROBOT')
 
-ROBOT = "pal"
-try:
-    ROBOT = config.get("evolutek", "robot")
-except:
-    pass
-ROBOT = os.environ.get("EVO_ROBOT", ROBOT)
+from cellaserv.settings import make_logger
+from cellaserv.settings import ROBOT
 
-USE_CONFIG = False
-try:
-    USE_CONFIG = bool(config.get("evolutek", "use_config"))
-except:
-    pass
-USE_CONFIG = bool(os.environ.get("EVO_USE_CONFIG", USE_CONFIG))
-
-
-def main():
-    print("ROBOT: " + ROBOT)
-    print("USE_CONFIG: " + str(USE_CONFIG))
-
-if __name__ == "__main__":
-    main()
+logger = make_logger(__name__)
+logger.debug('ROBOT: %s', ROBOT)
