@@ -1,58 +1,66 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
+from functools import wraps
 from queue import Queue
-from struct import pack, unpack
+from struct import pack, unpack, calcsize
 from threading import Thread, Event
 import serial
 
-from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
-import evolutek.lib.settings
+from cellaserv.settings import make_setting
+
+make_setting('TRAJMAN_PORT', '/dev/ttySAC0', 'trajman', 'port', 'TRAJMAN_PORT')
+make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
+             'TRAJMAN_BAUDRATE', int)
+from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
+
+from evolutek.lib.settings import ROBOT
 
 #######################
 # All the commands ID #
 #######################
 
-DEBUG_MESSAGE           = 127
-DEBUG                   = 126
-ACKNOWLEDGE             = 200
-MOVE_BEGIN              = 128
-MOVE_END                = 129
+#  FIXME: Use an IntEnum: https://docs.python.org/3/library/enum.html
+DEBUG_MESSAGE      = 127
+DEBUG              = 126
+ACKNOWLEDGE        = 200
+MOVE_BEGIN         = 128
+MOVE_END           = 129
 
-GET_PID_TRSL            = 10
-GET_PID_ROT             = 11
-GET_POSITION            = 12
-GET_SPEEDS              = 13
-GET_WHEELS              = 14
-GET_DELTA_MAX           = 15
-GET_VECTOR_TRSL         = 16
-GET_VECTOR_ROT          = 17
-GOTO_XY                 = 100
-GOTO_THETA              = 101
-MOVE_TRSL               = 102
-MOVE_ROT                = 103
-CURVE                   = 104
-FREE                    = 109
-RECALAGE                = 110
-SET_PWM                 = 111
-STOP_ASAP               = 112
-SET_PID_TRSL            = 150
-SET_PID_ROT             = 151
-SET_TRSL_ACC            = 152
-SET_TRSL_DEC            = 153
-SET_TRSL_MAXSPEED       = 154
-SET_ROT_ACC             = 155
-SET_ROT_DEC             = 156
-SET_ROT_MAXSPEED        = 157
-SET_X                   = 158
-SET_Y                   = 159
-SET_THETA               = 160
-SET_DIAM_WHEELS         = 161
-SET_WHEELS_SPACING      = 162
-SET_DELTA_MAX_ROT       = 163
-SET_DELTA_MAX_TRSL      = 164
-SET_DEBUG               = 200
-ERROR                   = 255
+GET_PID_TRSL       = 10
+GET_PID_ROT        = 11
+GET_POSITION       = 12
+GET_SPEEDS         = 13
+GET_WHEELS         = 14
+GET_DELTA_MAX      = 15
+GET_VECTOR_TRSL    = 16
+GET_VECTOR_ROT     = 17
+GOTO_XY            = 100
+GOTO_THETA         = 101
+MOVE_TRSL          = 102
+MOVE_ROT           = 103
+CURVE              = 104
+FREE               = 109
+RECALAGE           = 110
+SET_PWM            = 111
+STOP_ASAP          = 112
+SET_PID_TRSL       = 150
+SET_PID_ROT        = 151
+SET_TRSL_ACC       = 152
+SET_TRSL_DEC       = 153
+SET_TRSL_MAXSPEED  = 154
+SET_ROT_ACC        = 155
+SET_ROT_DEC        = 156
+SET_ROT_MAXSPEED   = 157
+SET_X              = 158
+SET_Y              = 159
+SET_THETA          = 160
+SET_WHEELS_DIAM    = 161
+SET_WHEELS_SPACING = 162
+SET_DELTA_MAX_ROT  = 163
+SET_DELTA_MAX_TRSL = 164
+SET_DEBUG          = 200
+ERROR              = 255
 
 #################
 # The errors ID #
@@ -61,6 +69,22 @@ ERROR                   = 255
 COULD_NOT_READ          = 1
 DESTINATION_UNREACHABLE = 2
 BAD_ORDER               = 3
+
+
+def if_enabled(method):
+    """
+    A method can be disabled so that it cannot be used in any circumstances.
+    """
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        if self.disabled:
+            self.log(what='disabled',
+                     msg="Usage of {} is disabled".format(method))
+            return
+        return method(self, *args, **kwargs)
+
+    return wrapped
+
 
 class TrajMan(Service):
     """
@@ -73,98 +97,83 @@ class TrajMan(Service):
     It can be disabled in order to stop processing commands and make sure that
     the robot will not move.
     """
-    robot = evolutek.lib.settings.ROBOT
 
-    w1 = ConfigVariable(section=robot, option="wheel_diam1", coerc=float)
-    w2 = ConfigVariable(section=robot, option="wheel_diam2", coerc=float)
-    spacing = ConfigVariable(section=robot, option="wheels_spacing", coerc=float)
-    pidtp = ConfigVariable(section=robot, option="pidtrsl_p", coerc=float)
-    pidti = ConfigVariable(section=robot, option="pidtrsl_i", coerc=float)
-    pidtd = ConfigVariable(section=robot, option="pidtrsl_d", coerc=float)
-    pidrp = ConfigVariable(section=robot, option="pidrot_p", coerc=float)
-    pidri = ConfigVariable(section=robot, option="pidrot_i", coerc=float)
-    pidrd = ConfigVariable(section=robot, option="pidrot_d", coerc=float)
-    trslacc = ConfigVariable(section=robot, option="trsl_acc", coerc=float)
-    trsldec = ConfigVariable(section=robot, option="trsl_dec", coerc=float)
-    trslmax = ConfigVariable(section=robot, option="trsl_max", coerc=float)
-    rotacc = ConfigVariable(section=robot, option="rot_acc", coerc=float)
-    rotdec = ConfigVariable(section=robot, option="rot_dec", coerc=float)
-    rotmax = ConfigVariable(section=robot, option="rot_max", coerc=float)
-    deltatrsl = ConfigVariable(section=robot, option="delta_trsl", coerc=float)
-    deltarot = ConfigVariable(section=robot, option="delta_rot", coerc=float)
+    identification = ROBOT
+
+    w1 = ConfigVariable(section=ROBOT, option="wheel_diam1", coerc=float)
+    w2 = ConfigVariable(section=ROBOT, option="wheel_diam2", coerc=float)
+    spacing = ConfigVariable(section=ROBOT, option="wheels_spacing",
+                             coerc=float)
+    pidtp = ConfigVariable(section=ROBOT, option="pidtrsl_p", coerc=float)
+    pidti = ConfigVariable(section=ROBOT, option="pidtrsl_i", coerc=float)
+    pidtd = ConfigVariable(section=ROBOT, option="pidtrsl_d", coerc=float)
+    pidrp = ConfigVariable(section=ROBOT, option="pidrot_p", coerc=float)
+    pidri = ConfigVariable(section=ROBOT, option="pidrot_i", coerc=float)
+    pidrd = ConfigVariable(section=ROBOT, option="pidrot_d", coerc=float)
+    trslacc = ConfigVariable(section=ROBOT, option="trsl_acc", coerc=float)
+    trsldec = ConfigVariable(section=ROBOT, option="trsl_dec", coerc=float)
+    trslmax = ConfigVariable(section=ROBOT, option="trsl_max", coerc=float)
+    rotacc = ConfigVariable(section=ROBOT, option="rot_acc", coerc=float)
+    rotdec = ConfigVariable(section=ROBOT, option="rot_dec", coerc=float)
+    rotmax = ConfigVariable(section=ROBOT, option="rot_max", coerc=float)
+    deltatrsl = ConfigVariable(section=ROBOT, option="delta_trsl", coerc=float)
+    deltarot = ConfigVariable(section=ROBOT, option="delta_rot", coerc=float)
 
     def __init__(self):
-        super().__init__(self.robot)
+        super().__init__()
 
-        self.cs = CellaservProxy()
-
+        # Messages comming from the motor card
         self.queue = Queue()
         self.ack_recieved = Event()
+
         self.has_stopped = Event()
 
         # Used to generate debug
         self.debug_file = None
         self.disabled = False
 
-        self.serial = serial.Serial('/dev/ttySAC0', 38400)
+        self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
 
-        self.thread = Thread(target=self.async_read)
+        self.thread = Thread(target=self.async_read, daemon=True)
         self.thread.start()
 
-        self.log_debug("Init starting")
         self.init_sequence()
-        self.log_debug("Init ended correctly")
 
         self.set_wheels_diameter(w1=self.w1(), w2=self.w2())
         self.set_wheels_spacing(spacing=self.spacing())
 
         self.set_pid_trsl(self.pidtp(), self.pidti(), self.pidtd())
+        self.set_pid_rot(self.pidrp(), self.pidri(), self.pidrd())
+
         self.set_trsl_acc(self.trslacc())
         self.set_trsl_dec(self.trsldec())
         self.set_trsl_max_speed(self.trslmax())
 
-        self.set_pid_rot(self.pidrp(), self.pidri(), self.pidrd())
         self.set_rot_acc(self.rotacc())
         self.set_rot_dec(self.rotdec())
         self.set_rot_max_speed(self.rotmax())
+
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
-    def log_debug(self, *args, **kwargs):
-        """Send log to cellaserv"""
-        self.log(msg=' '.join(map(str, args)), **kwargs)
-
     def write(self, data):
         """Write data to serial and flush."""
+
         self.serial.write(data)
         self.serial.flush()
 
     def command(self, data):
-        """
-        Handle commands sent to the card and wait for ack.
-
-        If trajman is disabled (ie. does not process commands anymore) then
-        this function does not send the command.
-        """
-        if self.disabled:
-            return
+        """Handle commands sent to the card and wait for ack."""
 
         self.ack_recieved.clear()
         self.write(data)
         self.ack_recieved.wait()
 
     def get_command(self, data):
-        """
-        Handle commands that waits for an answer from the motors.
-
-        If trajman is disabled (ie. does not process commands anymore) then
-        this function does not send the command and returns None.
-        """
-
-        if self.disabled:
-            return None
+        """Handle commands that waits for an answer from the motors."""
 
         self.write(data)
+        # If no data is received within 1s, raises the Empty exception
         return self.queue.get(timeout=1)
 
     ########
@@ -181,52 +190,53 @@ class TrajMan(Service):
     ###########
 
     @Service.action
+    @if_enabled
     def goto_xy(self, x, y):
-        self.log_debug("GOING TO", x, y)
-
-        tab = (pack('B', 2 + calcsize('ff')))
-        tab += (pack('B', GOTO_XY))
-        tab += (pack('ff', float(x), float(y)))
+        tab = pack('B', 2 + calcsize('ff'))
+        tab += pack('B', GOTO_XY)
+        tab += pack('ff', float(x), float(y))
         self.command(bytes(tab))
 
     @Service.action
+    @if_enabled
     def goto_theta(self, theta):
-        self.log_debug("GOING TO THETA", theta)
-
         tab = pack('B', 6)
         tab += pack('B', GOTO_THETA)
         tab += pack('f', float(theta))
         self.command(bytes(tab))
 
     @Service.action
+    @if_enabled
     def move_trsl(self, dest, acc, dec, maxspeed, sens):
         tab = pack('B', 19)
         tab += pack('B', MOVE_TRSL)
         tab += pack('ffffb', float(dest), float(acc), float(dec),
-                float(maxspeed), int(sens))
+                    float(maxspeed), int(sens))
         self.command(bytes(tab))
 
     @Service.action
+    @if_enabled
     def move_rot(self, dest, acc, dec, maxspeed, sens):
         tab = pack('B', 19)
         tab += pack('B', MOVE_ROT)
         tab += pack('ffffb', float(dest), float(acc), float(dec),
-                float(maxspeed), int(sens))
+                    float(maxspeed), int(sens))
         self.command(bytes(tab))
 
     @Service.action
+    @if_enabled
     def curve(self, dt, at, det, mt, st, dr, ar, der, mr, sr, delayed):
         tab = pack('B', 35)
         tab += pack('B', CURVE)
         tab += pack('ffffffff', float(dt), float(at), float(det), float(mt),
-                float(dr), float(ar), float(der), float(mt))
+                    float(dr), float(ar), float(der), float(mt))
 
         s = 0
         s += 1 if int(st) == 1 else 0
         s += 2 if int(sr) == 1 else 0
         s += 4 if int(delayed) == 1 else 0
 
-        self.log_debug(s)
+        self.log_serial(s)
         tab += pack('B', s)
         self.write(bytes(tab))
 
@@ -237,6 +247,7 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
+    @if_enabled
     def unfree(self):
         self.move_trsl(0, 1, 1, 1, 1)
 
@@ -267,8 +278,7 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
-    def set_debug(self, state):
-
+    def set_debug(self, state: "on or off"):
         tab = pack('B', 3)
         tab += pack('B', SET_DEBUG)
         if state == "on":
@@ -356,7 +366,7 @@ class TrajMan(Service):
     @Service.action
     def set_wheels_diameter(self, w1, w2):
         tab = pack('B', 10)
-        tab += pack('B', SET_DIAM_WHEELS)
+        tab += pack('B', SET_WHEELS_DIAM)
         tab += pack('ff', float(w1), float(w2))
         self.command(bytes(tab))
 
@@ -413,7 +423,7 @@ class TrajMan(Service):
 
     @Service.action
     def get_position(self):
-        self.log_debug("get_position")
+        self.log_serial("get_position")
         tab = pack('B', 2)
         tab += pack('B', GET_POSITION)
         return self.get_command(bytes(tab))
@@ -450,12 +460,12 @@ class TrajMan(Service):
 
     @Service.action
     def flush_serial(self):
-        self.log_debug("Clearing CM buffer")
+        self.log_serial("Clearing CM buffer")
         self.write(bytes(128))
 
     @Service.action
     def init_sequence(self):
-        self.log_debug("Sending init sequence")
+        self.log_serial("Sending init sequence")
         self.write(bytes([5]))
         self.write(bytes([254]))
         self.write(bytes([0xAA]))
@@ -468,7 +478,7 @@ class TrajMan(Service):
         If the serial spits out more messages than expected it will be
         necessary to clean the message buffer.
         """
-        self.log_debug("Clearing queue")
+        self.log_serial("Clearing queue")
         ret = []
         while not self.queue.empty():
             ret.append(self.queue.get())
@@ -481,6 +491,7 @@ class TrajMan(Service):
     # Calibrate
 
     @Service.action
+    @if_enabled
     def recalibration(self, sens):
         tab = pack('B', 3)
         tab += pack('B', RECALAGE)
@@ -489,42 +500,45 @@ class TrajMan(Service):
 
     # Thread 2
 
+    def log_serial(self, *args):
+        print(*args)
+
     def async_read(self):
         """Read events from serial and add them to the queue."""
         while True:
             length = unpack('b', self.serial.read())[0]
             tab = [length]
-            #self.log_debug("Message length expected:", length)
-            for i in range(length - 1): # Fixme: use read(lenght)?
+            # self.log_debug("Message length expected:", length)
+            for i in range(length - 1):  # FIXME: use read(lenght)
                 tab += self.serial.read()
-            #self.log_debug("Received message with length:", len(tab))
+            # self.log_debug("Received message with length:", len(tab))
 
             if len(tab) > 1:
                 if tab[1] == ACKNOWLEDGE:
-                    self.log_debug("Robot acknowledged!")
+                    self.log_serial("Robot acknowledged!")
                     self.ack_recieved.set()
 
                 elif tab[1] == GET_PID_TRSL:
-                    self.log_debug("Received the robot's translation pid!")
+                    self.log_serial("Received the robot's translation pid!")
 
                     _, _, kp, ki, kd = unpack("=bbfff", bytes(tab))
-                    self.log_debug("P =", kp, "I =", ki, "D =", kd)
+                    self.log("P =", kp, "I =", ki, "D =", kd)
 
                     self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
 
                 elif tab[1] == GET_PID_ROT:
-                    self.log_debug("Received the robot's rotation pid!")
+                    self.log_serial("Received the robot's rotation pid!")
 
                     _, _, kp, ki, kd = unpack("=bbfff", bytes(tab))
-                    self.log_debug("P =", kp, "I =", ki, "D =", kd)
+                    self.log("P =", kp, "I =", ki, "D =", kd)
 
                     self.queue.put({'kp': kp, 'ki': ki, 'kd': kd})
 
                 elif tab[1] == GET_POSITION:
-                    self.log_debug("Received the robot's position!")
+                    self.log_serial("Received the robot's position!")
 
                     _, _, x, y, theta = unpack('=bbfff', bytes(tab))
-                    self.log_debug("Position is x:", x, "y:", y, "th:", theta)
+                    self.log_serial("Position is x:", x, "y:", y, "th:", theta)
 
                     self.queue.put({
                         'x': x,
@@ -533,13 +547,13 @@ class TrajMan(Service):
                     })
 
                 elif tab[1] == MOVE_BEGIN:
-                    self.log_debug("Robot started to move!")
+                    self.log_serial("Robot started to move!")
                     self.has_stopped.clear()
 
                 elif tab[1] == MOVE_END:
-                    self.log_debug("Robot stopped moving!")
+                    self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.cs('robot_stopped')
+                    self.publish('robot_stopped')
 
                 elif tab[1] == GET_SPEEDS:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
@@ -551,12 +565,10 @@ class TrajMan(Service):
                         'rtacc': rtacc,
                         'rtdec': rtdec,
                         'rtmax': rtmax,
-                        })
+                    })
 
-                    self.log_debug("Translation:    Acc:", tracc, "\tDec:", trdec, "\tMax :", trmax,
-                    " (mm/(s*s) mm/(s*s) mm/s)")
-                    self.log_debug("Rotation:       Acc: {0:.3f}\tDec: {1:.3f}\tMax:"
-                            " {2:.3f} (rad/(s*s) rad/(s*s) rad/s)".format(rtacc, rtdec, rtmax))
+                    self.log_serial("Translation: Acc:", tracc, "\tDec:", trdec, "\tMax :", trmax, " (mm/(s*s) mm/(s*s) mm/s)")
+                    self.log_serial("Rotation:    Acc: {0:.3f}\tDec: {1:.3f}\tMax: {2:.3f} (rad/(s*s) rad/(s*s) rad/s)".format(rtacc, rtdec, rtmax))
 
                 elif tab[1] == GET_WHEELS:
                     a, b, spacing, left_diameter, right_diameter = unpack('=bbfff', bytes(tab))
@@ -565,9 +577,9 @@ class TrajMan(Service):
                         'spacing': spacing,
                         'left_diameter': left_diameter,
                         'right_diameter': right_diameter,
-                        })
+                    })
 
-                    self.log_debug("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
+                    self.log_serial("Spacing: ", spacing, " Left: ", left_diameter, " Right: ", right_diameter)
 
                 elif tab[1] == GET_DELTA_MAX:
                     a, b, translation, rotation = unpack('=bbff', bytes(tab))
@@ -575,28 +587,27 @@ class TrajMan(Service):
                     self.queue.put({
                         'delta_rot_max': rotation,
                         'delta_trsl_max': translation,
-                        })
+                    })
 
-                    self.log_debug("delta_rot_max : ", rotation,
-                    "delta_trsl_max", translation)
+                    self.log_serial("delta_rot_max : ", rotation, "delta_trsl_max", translation)
 
                 elif tab[1] == GET_VECTOR_TRSL:
                     a, b, speed = unpack('=bbf', bytes(tab))
 
                     self.queue.put({
                         'trsl_vector': speed,
-                        })
+                    })
 
-                    self.log_debug("Translation vector: ", speed)
+                    self.log_serial("Translation vector: ", speed)
 
                 elif tab[1] == GET_VECTOR_ROT:
                     a, b, speed = unpack('=bbf', bytes(tab))
 
                     self.queue.put({
                         'rot_vector': speed,
-                        })
+                    })
 
-                    self.log_debug("Rotation vector: ", speed)
+                    self.log_serial("Rotation vector: ", speed)
 
                 elif tab[1] == RECALAGE:
                     a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
@@ -605,7 +616,7 @@ class TrajMan(Service):
                         'recal_xpos': recal_xpos,
                         'recal_ypos': recal_ypos,
                         'recal_theta': recal_theta,
-                        })
+                    })
 
                 elif tab[1] == DEBUG_MESSAGE:
                     counter, commandid, time, xpos, wpx, ypos, wpy, theta, wpth, trspeed, rotspeed, trp, tri, trd, rtp, rti, rtd = unpack("=bbfffffffffffffff", bytes(tab))
@@ -624,20 +635,20 @@ class TrajMan(Service):
                         pass
 
                 elif tab[1] == ERROR:
-                    self.log_debug("CM returned an error")
-                    if tab[2] == 1:
-                        self.log_debug("Error was : COULD_NOT_READ")
-                    elif tab[2] == 2:
-                        self.log_debug("Error was : DESTINATION_UNREACHABLE")
-                    elif tab[2] == 3:
-                        self.log_debug("Error was : BAD_ORDER")
+                    self.log("CM returned an error")
+                    if tab[2] == COULD_NOT_READ:
+                        self.log("Error was: COULD_NOT_READ")
+                    elif tab[2] == DESTINATION_UNREACHABLE:
+                        self.log("Error was: DESTINATION_UNREACHABLE")
+                    elif tab[2] == BAD_ORDER:
+                        self.log("Error was: BAD_ORDER")
 
                 elif tab[1] == DEBUG:
                     message = bytes(tab)[2:]
                     print(message)
 
                 else:
-                    self.log_debug("Message not recognised")
+                    self.log("Message not recognised")
 
 
 def main():
