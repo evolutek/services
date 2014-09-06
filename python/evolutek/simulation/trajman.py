@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 
 from enum import IntEnum
+from struct import pack, unpack
 import os
 import pty
 
+from cellaserv.service import Service
 from cellaserv.settings import DEBUG
+
+from evolutek.lib.map import Vector3
 
 
 class SerialCommand(IntEnum):
+    get_position = 12
+
+    goto_xy = 100
 
     set_pid_trsl = 150
     set_pid_rot = 151
@@ -53,10 +60,14 @@ COMMANDS_ACK = [
 ]
 
 
-class MockMotorCard:
+class MockMotorCard(Service):
     def __init__(self, pty_fd):
         self.pty_fd = pty_fd
         self.i = 0
+
+        self.pos = Vector3(1500, 1000, 0)  # Center of the map
+
+        super().__init__()
 
     def print(self, *args):
         print(*args, sep='\t')
@@ -64,11 +75,6 @@ class MockMotorCard:
     def debug(self, *args):
         if DEBUG >= 1:
             self.print(args)
-
-    def loop(self):
-        while True:
-            self.read_message()
-            self.i += 1
 
     def read(self, length=1):
         ret = bytes()
@@ -80,6 +86,12 @@ class MockMotorCard:
 
     def write(self, data):
         os.write(self.pty_fd, data)
+
+    @Service.thread
+    def loop(self):
+        while True:
+            self.read_message()
+            self.i += 1
 
     def read_message(self):
         pkt_len = self.read()[0]
@@ -95,6 +107,8 @@ class MockMotorCard:
 
         getattr(self, 'do_' + pkt_cmd.name)(pkt_id, pkt_data)
 
+    # Protocol implementation
+
     def ack(self):
         self.write(bytes([2, SerialCommand.ack]))
 
@@ -104,6 +118,20 @@ def do_{name}(self, pkt_id, data):
     self.print("{name:20}", data)
     self.ack()
 """.format(name=cmd.name))
+
+    def do_goto_xy(self, pkt_id, data):
+        x, y = unpack('ff', data)
+        self.pos = self.pos._replace(x=x, y=y)
+        self.publish('log.pal.position',
+                     x=self.pos.x,
+                     y=self.pos.y,
+                     theta=self.pos.theta)
+        self.ack()
+
+    def do_get_position(self, pkt_id, data):
+        data = pack('=bfff', pkt_id, self.pos.x, self.pos.y, self.pos.theta)
+        self.write(pack('b', 1 + len(data)))
+        self.write(data)
 
     def do_init(self, pkt_id, data):
         self.print("INIT")
@@ -117,7 +145,7 @@ def main():
     print("Start trajman.py using serial port: ", os.ttyname(slave))
 
     motor_card = MockMotorCard(master)
-    motor_card.loop()
+    motor_card.run()
 
 if __name__ == '__main__':
     main()
