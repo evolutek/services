@@ -15,6 +15,7 @@ class SerialCommand(IntEnum):
     get_position = 12
 
     goto_xy = 100
+    goto_theta = 101
 
     set_pid_trsl = 150
     set_pid_rot = 151
@@ -115,13 +116,22 @@ class MockMotorCard(Service):
     for cmd in COMMANDS_ACK:
         exec("""
 def do_{name}(self, pkt_id, data):
-    self.print("{name:20}", data)
+    self.print("STUB: {name:20}", data)
     self.ack()
 """.format(name=cmd.name))
 
     def do_goto_xy(self, pkt_id, data):
         x, y = unpack('ff', data)
         self.pos = self.pos._replace(x=x, y=y)
+        self.publish('log.pal.position',
+                     x=self.pos.x,
+                     y=self.pos.y,
+                     theta=self.pos.theta)
+        self.ack()
+
+    def do_goto_theta(self, pkt_id, data):
+        [theta] = unpack('f', data)
+        self.pos = self.pos._replace(theta=theta)
         self.publish('log.pal.position',
                      x=self.pos.x,
                      y=self.pos.y,
