@@ -25,10 +25,6 @@ class Vector2(namedtuple('Vector2', ('x', 'y'))):
         return type(self)(x=self.x*cos(-theta) - self.y*sin(-theta),
                           y=self.x*sin(-theta) + self.y*cos(-theta))
 
-    @classmethod
-    def from_polar(cls, r, theta):
-        return cls(x=r*cos(theta), y=r*sin(theta))
-
 
 class Vector3(namedtuple('Vector3', ('x', 'y', 'theta'))):
 
