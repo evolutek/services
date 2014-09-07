@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 from subprocess import call
-from threading import Timer, Event
+from threading import Timer
 import math
 
 from cellaserv.proxy import CellaservProxy
-from cellaserv.service import Service, Variable, ConfigVariable
+from cellaserv.service import Service, Event, ConfigVariable
 from evolutek.lib.pathfinding import AvoidException
 from evolutek.lib.robot import default_robot
 import evolutek.lib.pathfinding as pathfinding
@@ -21,23 +21,22 @@ class RobotStatus:
 @Service.require("trajman", "pal")
 class IaPal(Service):
 
-    match_start = Variable('start')
+    match_start = Event('start')
     color = ConfigVariable(section='match', option='color',
                            coerc=lambda v: {'red': -1, 'yellow': 1}[v])
 
     def __init__(self):
-        super().__init__()
-
         self.cs = CellaservProxy()
 
         self.match_stop_timer = Timer(85, self.match_stop)
 
-        self.start_event = Event()
         self.pathfinding = pathfinding.Pathfinding(2000, 3000, 200)
 
         self.robot = default_robot
 
         self.stopped = False
+
+        super().__init__()
 
     @Service.action
     def status(self):
