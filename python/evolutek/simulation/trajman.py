@@ -15,6 +15,8 @@ from evolutek.lib.settings import ROBOT
 class SerialCommand(IntEnum):
     get_position = 12
 
+    get_vector_trsl = 16
+
     goto_xy = 100
     goto_theta = 101
 
@@ -68,6 +70,7 @@ class MockMotorCard(Service):
         self.i = 0
 
         self.pos = Vector3(1500, 1000, 0)  # Center of the map
+        self.vector_trsl = 1.0
 
         super().__init__()
 
@@ -141,6 +144,11 @@ def do_{name}(self, pkt_id, data):
 
     def do_get_position(self, pkt_id, data):
         data = pack('=bfff', pkt_id, self.pos.x, self.pos.y, self.pos.theta)
+        self.write(pack('b', 1 + len(data)))
+        self.write(data)
+
+    def do_get_vector_trsl(self, pkt_id, data):
+        data = pack('=bf', pkt_id, self.vector_trsl)
         self.write(pack('b', 1 + len(data)))
         self.write(data)
 
