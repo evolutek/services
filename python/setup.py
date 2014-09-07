@@ -17,6 +17,7 @@ setup(
             'buzzer = evolutek.services.buzzer:main',
             'config = evolutek.services.config:main',
             'cs_date = evolutek.services.cs_date:main',
+            'echo = evolutek.services.echo:main',
             'homologation_pal = evolutek.services.homologation_pal:main',
             'ia_pal = evolutek.services.ia_pal:main',
             'ia_pmi = evolutek.services.ia_pmi:main',
