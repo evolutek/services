@@ -9,6 +9,7 @@ from cellaserv.service import Service
 from cellaserv.settings import DEBUG
 
 from evolutek.lib.map import Vector3
+from evolutek.lib.settings import ROBOT
 
 
 class SerialCommand(IntEnum):
@@ -123,7 +124,7 @@ def do_{name}(self, pkt_id, data):
     def do_goto_xy(self, pkt_id, data):
         x, y = unpack('ff', data)
         self.pos = self.pos._replace(x=x, y=y)
-        self.publish('log.pal.position',
+        self.publish('log.{}.position'.format(ROBOT),
                      x=self.pos.x,
                      y=self.pos.y,
                      theta=self.pos.theta)
@@ -132,7 +133,7 @@ def do_{name}(self, pkt_id, data):
     def do_goto_theta(self, pkt_id, data):
         [theta] = unpack('f', data)
         self.pos = self.pos._replace(theta=theta)
-        self.publish('log.pal.position',
+        self.publish('log.{}.position'.format(ROBOT),
                      x=self.pos.x,
                      y=self.pos.y,
                      theta=self.pos.theta)
