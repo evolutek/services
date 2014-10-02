@@ -59,6 +59,7 @@ class Robot:
         """
 
         self.robot = robot
+        self.color = -1
 
         self.cs = CellaservProxy()
         self.tm = self.cs.trajman[robot]
@@ -115,7 +116,7 @@ class Robot:
 
     def recalibration(self, sens):
         try:
-            self.print(self.tm.recalibration(sens=sens))
+            self.tm.recalibration(sens=sens)
         except RequestTimeout: # Recalibration will timeout
             pass
 
