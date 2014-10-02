@@ -59,7 +59,8 @@ class Robot:
         """
 
         self.robot = robot
-        self.color = -1
+        # TODO(halfr): make this listen to config and update at runtime
+        self.color = -1 if robot == "yellow" else 1
 
         self.cs = CellaservProxy()
         self.tm = self.cs.trajman[robot]
@@ -114,54 +115,15 @@ class Robot:
         self.robot_near_event.clear()
         self.robot_must_stop.clear()
 
-    def recalibration(self, sens):
-        try:
-            self.tm.recalibration(sens=sens)
-        except RequestTimeout: # Recalibration will timeout
-            pass
-
     #########
     # Moves #
     #########
 
-    def find_position(self, side: int):
-        """
-        find_position(1 or -1) make the robot find it position by touching
-        the walls.
-        """
-        self.tm.free()
-        speeds = self.tm.get_speeds()
-        self.tm.set_theta(theta=0)
-        self.tm.set_trsl_max_speed(maxspeed=200)
-        self.tm.set_trsl_acc(acc=200)
-        self.tm.set_trsl_dec(dec=200)
-        self.tm.set_x(x=1000)
-        self.tm.set_y(y=1000)
+    def recalibration(self, sens):
+        try:
+            self.tm.recalibration(sens=sens)
+        except RequestTimeout:  # Recalibration will timeout
+            pass
 
-        print("Recalibration X")
-        self.recalibration_block(0)
-        print("X pos found!")
-        self.cs('beep_ok')
-        sleep(1)
-
-        self.goto_xy_block(x=470, y=1000)
-        self.goto_theta_block(theta=math.pi / 2 * -side)
-
-        print("Recalibration Y")
-        self.recalibration_block(0)
-        print("Y pos found!")
-        self.cs('beep_ok')
-        sleep(1)
-
-        self.goto_xy_block(x=470, y=1500 + 1200*side)
-        sleep(.5)
-        self.goto_xy_block(x=410, y=1500 + 1310*side)
-
-        self.tm.set_trsl_max_speed(maxspeed=speeds['trmax'])
-        self.tm.set_trsl_acc(acc=speeds['tracc'])
-        self.tm.set_trsl_dec(dec=speeds['trdec'])
-
-        print("Setup done")
-        self.cs('beep_ready')
 
 default_robot = Robot(evolutek.lib.settings.ROBOT)
