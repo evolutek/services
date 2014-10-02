@@ -125,5 +125,7 @@ class Robot:
         except RequestTimeout:  # Recalibration will timeout
             pass
 
+    def goto_xy_color(self, x, y):
+        return self.goto_xy_block(x, 1500 + (1500 - y) * self.color)
 
 default_robot = Robot(evolutek.lib.settings.ROBOT)
