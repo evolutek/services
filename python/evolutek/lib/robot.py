@@ -11,6 +11,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 import evolutek.lib.settings
+from evolutek.lib.match import get_side
 
 
 class Robot:
@@ -60,19 +61,17 @@ class Robot:
                     f(*args, **kwargs)
         return _f
 
-    def __init__(self, robot):
+    def __init__(self, robot=None, proxy=None):
         """
         Create a new robot object.
 
         :param str robot: The name of the robot you want to control
         """
 
-        self.robot = robot
-        # TODO(halfr): make this listen to config and update at runtime
-        self.color = -1 if robot == "yellow" else 1
-
-        self.cs = CellaservProxy()
-        self.tm = self.cs.trajman[robot]
+        self.robot = robot if robot is not None else evolutek.lib.settings.ROBOT
+        self.cs = proxy if proxy is not None else CellaservProxy()
+        self.tm = self.cs.trajman[self.robot]
+        self.side = get_side(proxy=self.cs)
 
         # Events
 
@@ -82,9 +81,9 @@ class Robot:
         self.robot_must_stop = Event()
 
         self.client = AsynClient(get_socket())
-        self.client.add_subscribe_cb(robot + '_stopped', self.robot_stopped)
-        self.client.add_subscribe_cb(robot + '_near', self.robot_near)
-        self.client.add_subscribe_cb(robot + '_far', self.robot_far)
+        self.client.add_subscribe_cb(self.robot + '_stopped', self.robot_stopped)
+        self.client.add_subscribe_cb(self.robot + '_near', self.robot_near)
+        self.client.add_subscribe_cb(self.robot + '_far', self.robot_far)
 
         # Blocking wrappers
 
@@ -137,3 +136,5 @@ class Robot:
     def goto(self, x, y):
         return self.goto_xy_block(x, 1500 + (1500 - y) * self.side)
 
+    def goth(self, th):
+        return self.goto_theta_block(th * self.side)
