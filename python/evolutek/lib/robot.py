@@ -15,6 +15,15 @@ import evolutek.lib.settings
 
 class Robot:
 
+    # Holds the singleton of Robot
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = Robot()
+        return cls._instance
+
     # Wrappers
 
     def wrap_block(self, f):
@@ -125,7 +134,6 @@ class Robot:
         except RequestTimeout:  # Recalibration will timeout
             pass
 
-    def goto_xy_color(self, x, y):
-        return self.goto_xy_block(x, 1500 + (1500 - y) * self.color)
+    def goto(self, x, y):
+        return self.goto_xy_block(x, 1500 + (1500 - y) * self.side)
 
-default_robot = Robot(evolutek.lib.settings.ROBOT)
