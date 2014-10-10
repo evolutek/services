@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+__doc__ = """Add evolutek's specific configuration to cellaserv.settings."""
+
 from cellaserv.settings import make_setting
 
 make_setting('ROBOT', 'pal', 'evolutek', 'robot', 'ROBOT')
