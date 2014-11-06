@@ -1,0 +1,10 @@
+[Unit]
+Description=homologation_pal service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/homologation_pal
+
+[Install]
+WantedBy=multi-user.target
+

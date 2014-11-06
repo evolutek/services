@@ -1,0 +1,10 @@
+[Unit]
+Description=robot_monitor service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/robots_monitor
+
+[Install]
+WantedBy=multi-user.target
+

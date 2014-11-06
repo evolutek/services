@@ -1,0 +1,10 @@
+[Unit]
+Description=Config service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/config
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,10 @@
+[Unit]
+Description=ia_pal service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ia_pal
+
+[Install]
+WantedBy=multi-user.target
+

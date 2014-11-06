@@ -1,0 +1,10 @@
+[Unit]
+Description=ia_pmi service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ia_pmi
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,10 @@
+[Unit]
+Description=Buzzer service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/buzzer
+
+[Install]
+WantedBy=multi-user.target
+

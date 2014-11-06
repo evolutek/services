@@ -1,0 +1,10 @@
+[Unit]
+Description=AX-12 controller
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ax
+
+[Install]
+WantedBy=multi-user.target
+

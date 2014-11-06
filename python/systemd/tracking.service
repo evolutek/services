@@ -1,0 +1,10 @@
+[Unit]
+Description=tracking service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tracking
+
+[Install]
+WantedBy=multi-user.target
+

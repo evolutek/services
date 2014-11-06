@@ -1,0 +1,10 @@
+[Unit]
+Description=cs_date service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/cs_date
+
+[Install]
+WantedBy=multi-user.target
+

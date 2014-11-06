@@ -1,0 +1,10 @@
+[Unit]
+Description=leds service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/leds
+
+[Install]
+WantedBy=multi-user.target
+
