@@ -1,6 +1,6 @@
 # Maintainer: Vincent Gatine <nurelin@nurelin.eu>
 pkgname=services
-pkgver=r458.1cdacec
+pkgver=
 pkgrel=1
 pkgdesc="services - Evolutek services"
 arch=('any')
@@ -21,7 +21,8 @@ package() {
   cd "$srcdir/$pkgname/python"
   python3 setup.py install --root="$pkgdir/" --optimize=1
 
-  cp systemd/* /etc/systemd/system/
+  install -d $pkgdir/etc/systemd/system
+  install systemd/* $pkgdir/etc/systemd/system/
 }
 
 # vim:set ts=2 sw=2 et:
