@@ -22,6 +22,7 @@ from evolutek.lib.settings import ROBOT
 
 #  FIXME: Use an IntEnum: https://docs.python.org/3/library/enum.html
 DEBUG_MESSAGE      = 127
+TELEMETRY_MESSAGE  = 202
 DEBUG              = 126
 ACKNOWLEDGE        = 200
 MOVE_BEGIN         = 128
@@ -642,6 +643,17 @@ class TrajMan(Service):
                             self.debug_file.write("\n")
                     except:
                         pass
+
+                elif tab[1] == TELEMETRY_MESSAGE:
+                    counter, cammandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
+                    try:
+                        self.publish('telemetry:')
+                        self.publish('xpos:{0}'.format(xpos))
+                        self.publish('ypos:{0}'.format(ypos))
+                        self.publish('theta:{0}'.format(theta))
+                        self.publish('speed:{0}'.format(speed))
+                    except:
+                        self.publish('telemetry failed')
 
                 elif tab[1] == ERROR:
                     self.log("CM returned an error")
