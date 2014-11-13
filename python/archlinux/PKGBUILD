@@ -21,6 +21,7 @@ package() {
   cd "$srcdir/$pkgname/python"
   python3 setup.py install --root="$pkgdir/" --optimize=1
 
+  install evolutek/services/config.ini /etc/conf.d/
   install -d $pkgdir/lib/systemd/system
   install systemd/* $pkgdir/lib/systemd/system/
 }

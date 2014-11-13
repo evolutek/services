@@ -3,7 +3,7 @@ Description=Config service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/config
+ExecStart=CONFIG_FILE=/etc/conf.d/config.ini /usr/bin/config
 
 [Install]
 WantedBy=multi-user.target
