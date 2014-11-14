@@ -45,6 +45,7 @@ FREE               = 109
 RECALAGE           = 110
 SET_PWM            = 111
 STOP_ASAP          = 112
+SET_TELEMETRY      = 201
 SET_PID_TRSL       = 150
 SET_PID_ROT        = 151
 SET_TRSL_ACC       = 152
@@ -164,6 +165,8 @@ class TrajMan(Service):
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
+        self.set_telemetry()
+
     def write(self, data):
         """Write data to serial and flush."""
 
@@ -272,6 +275,12 @@ class TrajMan(Service):
     #######
     # Set #
     #######
+
+    @Service.action
+    def set_telemetry(self):
+        tab = pack('B', 2)
+        tab += pack('B', SET_TELEMETRY)
+        self.command(bytes(tab))
 
     @Service.action
     def set_pid_trsl(self, P, I, D):
