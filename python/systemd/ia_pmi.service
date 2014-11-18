@@ -1,8 +1,10 @@
 [Unit]
 Description=ia_pmi service
+PartOf=evolutek.target
+Requires=cellaserv2.service
+After=cellaserv2.service
 
 [Service]
-Type=simple
 ExecStart=/usr/bin/ia_pmi
 
 [Install]

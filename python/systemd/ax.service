@@ -1,8 +1,10 @@
 [Unit]
 Description=AX-12 controller
+PartOf=evolutek.target
+Requires=cellaserv2.service
+After=cellaserv2.service
 
 [Service]
-Type=simple
 ExecStart=/usr/bin/ax
 
 [Install]

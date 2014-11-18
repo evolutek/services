@@ -1,8 +1,10 @@
 [Unit]
 Description=Config service
+PartOf=evolutek.target
+Requires=cellaserv2.service
+After=cellaserv2.service
 
 [Service]
-Type=simple
 Environment=CONFIG_FILE=/etc/conf.d/config.ini
 ExecStart=/usr/bin/config
 
