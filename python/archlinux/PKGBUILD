@@ -23,8 +23,8 @@ package() {
 
   install -d $pkgdir/etc/conf.d
   install evolutek/services/config.ini $pkgdir/etc/conf.d/
-  install -d $pkgdir/lib/systemd/system
-  install systemd/* $pkgdir/lib/systemd/system/
+  install -d $pkgdir/usr/lib/systemd/system
+  install systemd/* $pkgdir/usr/lib/systemd/system/
 }
 
 # vim:set ts=2 sw=2 et:
