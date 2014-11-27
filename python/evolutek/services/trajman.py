@@ -45,6 +45,7 @@ FREE               = 109
 RECALAGE           = 110
 SET_PWM            = 111
 STOP_ASAP          = 112
+SET_TELEMETRY      = 201
 SET_PID_TRSL       = 150
 SET_PID_ROT        = 151
 SET_TRSL_ACC       = 152
@@ -164,6 +165,8 @@ class TrajMan(Service):
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
+        self.set_telemetry(50) # rate
+
     def write(self, data):
         """Write data to serial and flush."""
 
@@ -272,6 +275,13 @@ class TrajMan(Service):
     #######
     # Set #
     #######
+
+    @Service.Actions
+    def set_telemetry(self, inter):
+        tab = pack('B', 4)
+        tab += pack('B', SET_TELEMETRY)
+        tab += pack('H', inter)
+        self.command(bytes(tab))
 
     @Service.action
     def set_pid_trsl(self, P, I, D):
@@ -655,6 +665,17 @@ class TrajMan(Service):
                     except:
                         self.publish('telemetry failed')
 
+
+                elif tab[1] == TELEMETRY_MESSAGE:
+                    counter, cammandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
+                    try:
+                        self.publish('telemetry:')
+                        self.publish('xpos:{0}'.format(xpos))
+                        self.publish('ypos:{0}'.format(ypos))
+                        self.publish('theta:{0}'.format(theta))
+                        self.publish('speed:{0}'.format(speed))
+                    except:
+                        self.publish('telemetry failed')
 
                 elif tab[1] == ERROR:
                     self.log("CM returned an error")
