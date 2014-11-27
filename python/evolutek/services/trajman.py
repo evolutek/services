@@ -9,7 +9,7 @@ import serial
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
 
-make_setting('TRAJMAN_PORT', '/dev/ttySAC0', 'trajman', 'port', 'TRAJMAN_PORT')
+make_setting('TRAJMAN_PORT', '/dev/ttyMFD1', 'trajman', 'port', 'TRAJMAN_PORT')
 make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
@@ -563,7 +563,7 @@ class TrajMan(Service):
                 elif tab[1] == MOVE_END:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish('robot_stopped')
+                    self.publish(ROBOT + '_stopped')
 
                 elif tab[1] == GET_SPEEDS:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))

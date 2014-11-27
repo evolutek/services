@@ -1,0 +1,12 @@
+[Unit]
+Description=Trajman service
+PartOf=evolutek.target
+Requires=cellaserv2.service
+After=cellaserv2.service gpio.service
+
+[Service]
+ExecStart=/usr/bin/trajman
+
+[Install]
+WantedBy=multi-user.target
+

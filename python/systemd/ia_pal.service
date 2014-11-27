@@ -1,0 +1,12 @@
+[Unit]
+Description=ia_pal service
+PartOf=evolutek.target
+Requires=cellaserv2.service
+After=cellaserv2.service
+
+[Service]
+ExecStart=/usr/bin/ia_pal
+
+[Install]
+WantedBy=multi-user.target
+
