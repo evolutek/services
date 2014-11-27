@@ -9,7 +9,7 @@ import serial
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
 
-make_setting('TRAJMAN_PORT', '/dev/ttyMFD1', 'trajman', 'port', 'TRAJMAN_PORT')
+make_setting('TRAJMAN_PORT', '/dev/ttySAC0', 'trajman', 'port', 'TRAJMAN_PORT')
 make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
@@ -276,7 +276,7 @@ class TrajMan(Service):
     # Set #
     #######
 
-    @Service.Actions
+    @Service.action
     def set_telemetry(self, inter):
         tab = pack('B', 4)
         tab += pack('B', SET_TELEMETRY)
@@ -573,7 +573,7 @@ class TrajMan(Service):
                 elif tab[1] == MOVE_END:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish(ROBOT + '_stopped')
+                    self.publish('robot_stopped')
 
                 elif tab[1] == GET_SPEEDS:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
@@ -652,19 +652,7 @@ class TrajMan(Service):
                             self.debug_file.write(str(rtd) + " ")
                             self.debug_file.write("\n")
                     except:
-                       pass
-
-                elif tab[1] == TELEMETRY_MESSAGE:
-                    counter, commandid, xpos, ypos, theta, speed = unpack("=bbffff", bytes(tab))
-                    try:
-                        self.publish('TELEMETRY:')
-                        self.publish('xpos:{0}'.format(xpos))
-                        self.publish('ypos:{0}'.format(ypos))
-                        self.publish('theta{0}'.format(theta))
-                        self.publish('speed{0}'.format(speed))
-                    except:
-                        self.publish('telemetry failed')
-
+                        pass
 
                 elif tab[1] == TELEMETRY_MESSAGE:
                     counter, cammandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
