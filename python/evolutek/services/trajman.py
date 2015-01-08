@@ -165,7 +165,7 @@ class TrajMan(Service):
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
-        #self.set_telemetry(50) # rate
+        self.set_telemetry(50) # rate
 
     def write(self, data):
         """Write data to serial and flush."""
