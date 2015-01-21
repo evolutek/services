@@ -573,7 +573,7 @@ class TrajMan(Service):
                 elif tab[1] == MOVE_END:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish('robot_stopped')
+                    self.publish(ROBOT + '_stopped')
 
                 elif tab[1] == GET_SPEEDS:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
