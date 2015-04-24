@@ -25,6 +25,7 @@ setup(
             'robots_monitor = evolutek.services.robots_monitor:main',
             'tracking = evolutek.services.tracking:main',
             'trajman = evolutek.services.trajman:main',
+            'sharp = evolutek.services.sharp:main',
         ],
     },
 )
