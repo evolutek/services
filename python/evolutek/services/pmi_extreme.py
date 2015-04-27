@@ -3,6 +3,15 @@ import time
 import thread
 import smbus
 import math
+from cellaserv.proxy import CellaservProxy
+
+cs = CellaservProxy()
+cs.ax["1"].mode_wheel()
+cs.ax["2"].mode_wheel()
+cs.ax["3"].mode_wheel()
+cs.ax["4"].mode_wheel()
+cs.ax["5"].mode_joint()
+
 #http://blog.bitify.co.uk/2013/11/reading-data-from-mpu-6050-on-raspberry.html
 
 LIBDXL_PATH = [".", "/usr/lib"]
@@ -135,6 +144,12 @@ def rotation_droite(float(x)):
     time.sleep(x)
     print("Rotation droite : done")
 
+def depose_tapis():
+    cs.ax["5"].move(goal=0)
+    time.sleep(500)
+    cs.ax["5"].move(goal=1024)
+    print("Depose tapis : done")
+
 #this thread manage when you have to dodge   
 def dodge ( threadName,ping,pind, is_activated):
     while(True):
@@ -151,15 +166,15 @@ def tirette (threadName,pin):
 
 #IA part
 def move_to_stairs(self):
-    while timer != 4250:
-        if need_to_stop:
+    while timer != 6000:
+        while need_to_stop:
             arret(1); # if sharps those not work test acquisition time
         marche_avant(1)
         timer = timer + 2;
 
     arret(1000)
     timer = 0
-    while timer != 1000:
+    while timer != 1300:
         while need_to_stop:
             arret(1)
         if is_yellow:
@@ -176,7 +191,13 @@ def move_to_stairs(self):
         timer = timer + 2
         marche_avant(1)
         timer = timer + 2
+    timer = 0
     while(get_z_rotation(accel_xout_scaled,accel_yout_scaled,accel_zout_scaled) > -120):
+        if timer == 1500:
+            arret(1)
+            depose_tapis()
+        else:
+            timer = timer + 10
         marche_avant(10)
         
 #Load all library    
@@ -198,22 +219,27 @@ power_mgmt_1 = 0x6b
 power_mgmt_2 = 0x6c
 bus = smbus.SMBus(0) # or bus = smbus.SMBus(1) for Revision 2 boards
 address = 0x68       # This is the address value read via the i2cdetect command
-# Now wake the 6050 up as it starts in sleep mode
-bus.write_byte_data(address, power_mgmt_1, 0)
-gyro_xout = read_word_2c(0x43)
-gyro_yout = read_word_2c(0x45)
-gyro_zout = read_word_2c(0x47)
-accel_xout_scaled = accel_xout / 16384.0
-accel_yout_scaled = accel_yout / 16384.0
-accel_zout_scaled = accel_zout / 16384.0
-thread.start_new_thread(dodge,("ThreadScharp",10,11))
-thread.start_new_thread(tirette,("ThreadTirette",15))
-#test if the cord is connected
-while(need_to_stop):
-    time.sleep(10)
-print("PMI : start")
-move_to_stairs()
 
+def main():
+    # Now wake the 6050 up as it starts in sleep mode
+    bus.write_byte_data(address, power_mgmt_1, 0)
+    gyro_xout = read_word_2c(0x43)
+    gyro_yout = read_word_2c(0x45)
+    gyro_zout = read_word_2c(0x47)
+    accel_xout_scaled = accel_xout / 16384.0
+    accel_yout_scaled = accel_yout / 16384.0
+    accel_zout_scaled = accel_zout / 16384.0
+    thread.start_new_thread(dodge,("ThreadScharp",10,11))
+    thread.start_new_thread(tirette,("ThreadTirette",15))
+    #test if the cord is connected
+    while(need_to_stop):
+    time.sleep(10)
+    print("PMI : start")
+    move_to_stairs()
+    print("PMI : finish")
+
+if __name__ == '__main__':
+    main()
 
 
     
