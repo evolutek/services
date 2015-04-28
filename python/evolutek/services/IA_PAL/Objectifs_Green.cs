@@ -246,7 +246,7 @@ class Objectif
 	public int y;
 	public int teta;
 	public bool possible;
-	public bool _finished;
+	public bool finished;
 
 	public void Objectif(sting _name, int _x, int _y, int _teta, bool _possible, bool _finished)
 	{
