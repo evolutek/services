@@ -1,8 +1,8 @@
 ﻿#include <ascenceur_gauche.py>
 #include <ascenceur_droite.py>
 #include <tirette.py>
-#include <Objectifs_Yellow.py>
-#include <Objectifs_Green.py>
+#include <Objectifs_Yellow.cs>
+#include <Objectifs_Green.cs>
 
 const float pi = 3,141 592 653 589 793;
 string color = "yellow"; // call cellaserv

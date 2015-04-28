@@ -1,3 +1,5 @@
+#include <Objectif.cs>
+
 class Objectifs_Yellow
 {
 	public List<Objectif> objectifs = new List<Objectif>;

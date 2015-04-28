@@ -1,3 +1,5 @@
+#include <Objectif.cs>
+
 class Objectifs_Green
 {
 	public List<Objectif> objectifs = new List<Objectif>;
@@ -235,25 +237,5 @@ class Objectifs_Green
 		foreach(Objectif objectif in objectifs)
 			if(objectif.finish == false)
 				finish = false;
-	}
-}
-
-/* objectif class*/
-class Objectif
-{
-	public string name;
-	public int x;
-	public int y;
-	public int teta;
-	public bool possible;
-	public bool finished;
-
-	public void Objectif(sting _name, int _x, int _y, int _teta, bool _possible, bool _finished)
-	{
-		name = _name;
-		x = _x;
-		y = _y;
-		teta = _teta;
-		possible = _possible;
 	}
 }
