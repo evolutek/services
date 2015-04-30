@@ -33,13 +33,15 @@ class  ElevatorRight(Service):
 	time.sleep(minimal_delay)
 	robot.ax["3"].move(goal = 1020)
 	time.sleep(minimal_delay)
-	
+	count = count + 1
 	
     @Service.action
     def pop(self):
+        if count = 0:
+            return ("error : cant pop an empty stack")
 	
     @Service.action
-	def init(self)
+    def init(self)
 	robot.ax["1"].move(goal = 260)
 	time.sleep(minimal_delay)
 	robot.ax["2"].move(goal = 0)
@@ -47,8 +49,9 @@ class  ElevatorRight(Service):
 	robot.ax["3"].move(goal = 1020)
 	time.sleep(minimal_delay)
 	
-	@Service.action
+    @Service.action
     def count(self):
+        return count
 
 def main():
     count= 0;
