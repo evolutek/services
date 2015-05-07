@@ -28,42 +28,41 @@ dist_table = [
         0.35    #80
 ]
 
+
 def volt_to_cm(volt):
     for i in range(1, 16):
         if volt > dist_table[i]:
             return i * 5
     return 80
 
-class Sharp(Service):
+
+class Sharp():
     def __init__(self, sharp):
-        super().__init__(identification=str(sharp))
         self.sharp = sharp
         self.adc = mraa.Aio(sharp)
+        self.adc = 20
         self.sharp_value = 0
         self.begin = clock()
 
-    @Service.action
-    def read(self) -> float:
-        """
-        Return the sharp value
-        """
+    def read(self):
         return self.sharp_value
 
     def refresh(self):
-        tmp = volt_to_cm(self.adc.readFloat() * 3.3)
-        tmp2 = volt_to_cm(self.adc.readFloat() * 3.3)
+        tmp = volt_to_cm(self.adc.readFloat() * 5)
+        tmp2 = volt_to_cm(self.adc.readFloat() * 5)
         sharp_value = tmp if tmp > tmp2 else tmp2
         return sharp_value
 
     def init_clock(self):
-        begin = clock()
+        self.begin = clock()
 
     def get_time(self):
         cur = clock()
-        return cur - begin
+        return cur - self.begin
 
     def get_sharp(self):
         return str(self.sharp)
+
 
 class SharpManager(Service):
 
@@ -72,9 +71,16 @@ class SharpManager(Service):
 
     def __init__(self, sharps, *args, **kwargs):
         super().__init__()
+        self.sharps = sharps
         self.looping(sharps)
 
-    def looping(self, sharps = [], *args, **kwargs):
+    @Service.action
+    def read(self, id_: str) -> float:
+        id__ = int(id_)
+        return self.sharps[id__].read()
+
+    @Service.thread
+    def looping(self, sharps=[], *args, **kwargs):
         while True:
             thres = False
             for sharp in sharps:
@@ -84,6 +90,7 @@ class SharpManager(Service):
                         self.publish("sharp_avoid", "n:" + sharp.get_sharp())
                         sharp.init_clock()
                     break
+
 
 def main():
     sharps = [Sharp(sharp=i) for i in [0, 1, 2, 3]]
