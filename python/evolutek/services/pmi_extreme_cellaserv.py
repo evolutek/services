@@ -24,12 +24,12 @@ class IaPMI(Service):
         cs.ax["2"].turn(False, self.speed)
         cs.ax["3"].turn(True, self.speed)
         cs.ax["4"].turn(False, self.speed)
-        sleep(1)
+        sleep(0.01)
         cs.ax["1"].turn(True, self.speed)
         cs.ax["2"].turn(False, self.speed)
         cs.ax["3"].turn(True, self.speed)
         cs.ax["4"].turn(False, self.speed)
-        sleep(x)
+        sleep(x-0.01)
         print("Marche avant : done")
 
     def marche_arriere(self, x, cs):
@@ -37,12 +37,12 @@ class IaPMI(Service):
         cs.ax["2"].turn(True, self.speed)
         cs.ax["3"].turn(False, self.speed)
         cs.ax["4"].turn(True, self.speed)
-        sleep(1)
+        sleep(0.01)
         cs.ax["1"].turn(False, self.speed)
         cs.ax["2"].turn(True, self.speed)
         cs.ax["3"].turn(False, self.speed)
         cs.ax["4"].turn(True, self.speed)
-        sleep(x)
+        sleep(x-0.01)
         print("Marche arriere : done")
 
     def arret(self, x, cs):
@@ -50,12 +50,12 @@ class IaPMI(Service):
         cs.ax["2"].turn(True, 0)
         cs.ax["3"].turn(True, 0)
         cs.ax["4"].turn(True, 0)
-        sleep(1)
+        sleep(0.01)
         cs.ax["1"].turn(True, 0)
         cs.ax["2"].turn(True, 0)
         cs.ax["3"].turn(True, 0)
         cs.ax["4"].turn(True, 0)
-        sleep(x)
+        sleep(x-0.01)
         print("Arret : done")
 
     def rotation_gauche(self, x, cs):
@@ -63,12 +63,12 @@ class IaPMI(Service):
         cs.ax["2"].turn(True, self.speed)
         cs.ax["3"].turn(True, self.speed)
         cs.ax["4"].turn(True, self.speed)
-        sleep(0.1)
+        sleep(0.01)
         cs.ax["1"].turn(True, self.speed)
         cs.ax["2"].turn(True, self.speed)
         cs.ax["3"].turn(True, self.speed)
         cs.ax["4"].turn(True, self.speed)
-        sleep(x)
+        sleep(x-0.01)
         print("Rotation gauche : done")
 
     def rotation_droite(self, x, cs):
@@ -76,12 +76,12 @@ class IaPMI(Service):
         cs.ax["2"].turn(False, self.speed)
         cs.ax["3"].turn(False, self.speed)
         cs.ax["4"].turn(False, self.speed)
-        sleep(0.1)
+        sleep(0.01)
         cs.ax["1"].turn(False, self.speed)
         cs.ax["2"].turn(False, self.speed)
         cs.ax["3"].turn(False, self.speed)
         cs.ax["4"].turn(False, self.speed)
-        sleep(x)
+        sleep(x-0.01)
         print("Rotation droite : done")
 
     def depose_tapis(self, cs):
@@ -94,19 +94,18 @@ class IaPMI(Service):
     def move_to_stairs(self, cs):
         while self.timer != 6:
             self.marche_avant(1, cs)
-            self.timer = self.timer + 2
-
+            self.timer = self.timer + 1
         self.arret(1, cs)
         self.timer = 0
-        while self.timer != 0.8:
+        while self.timer != 0.6:
             if self.color == -1:
                 self.rotation_gauche(0.1, cs)
             else:
                 self.rotation_droite(0.1, cs)
-            self.timer = self.timer+0.2
+            self.timer = self.timer+0.1
         self.arret(1, cs)
         self.marche_avant(6.5, cs)
-        self.arret(0, cs)
+        self.arret(1, cs)
 
 
 def main():
