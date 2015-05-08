@@ -1,5 +1,5 @@
 from time import sleep
-from cellaserv.service import Service, Event, Variable, ConfigVariable
+from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
 
