@@ -1,5 +1,5 @@
 from time import sleep
-from cellaserv.service import Service, Event
+from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 
 
@@ -15,9 +15,6 @@ class IaPMI(Service):
         cs.ax["3"].mode_wheel()
         cs.ax["4"].mode_wheel()
         cs.ax["5"].mode_joint()
-        print("PMI : Wait")
-        match_start = Event('start')
-        match_start.wait()
         print("PMI : start")
         self.move_to_stairs()
         print("PMI : finish")
