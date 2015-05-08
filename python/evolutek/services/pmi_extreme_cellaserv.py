@@ -93,32 +93,32 @@ class IaPMI(Service):
 
     def move_to_stairs(self, cs):
         while self.timer != 6000:
-            self.marche_avant(1, cs)
+            self.marche_avant(0.001, cs)
             self.timer = self.timer + 2
 
-        self.arret(1000, cs)
+        self.arret(1, cs)
         self.timer = 0
         while self.timer != 1300:
             if self.color == -1:
-                self.rotation_gauche(1, cs)
+                self.rotation_gauche(0.001, cs)
             else:
-                self.rotation_droite(1, cs)
+                self.rotation_droite(0.001, cs)
             self.timer = self.timer+2
-        self.arret(1000, cs)
+        self.arret(1, cs)
         self.timer = 0
         while self.timer != 100:
-            self.marche_avant(1, cs)
+            self.marche_avant(0.001, cs)
             self.timer = self.timer + 2
             self.marche_avant(1, cs)
             self.timer = self.timer + 2
         self.timer = 0
         while self.timer != 6500:
             if self.timer == 1500:
-                self.arret(1, cs)
+                self.arret(0.001, cs)
                 self.depose_tapis(cs)
             else:
                 self.timer = self.timer + 10
-            self.marche_avant(10, cs)
+            self.marche_avant(0.01, cs)
 
 
 def main():
