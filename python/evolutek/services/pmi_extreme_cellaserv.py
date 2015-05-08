@@ -63,7 +63,7 @@ class IaPMI(Service):
         cs.ax["2"].turn(True, self.speed)
         cs.ax["3"].turn(True, self.speed)
         cs.ax["4"].turn(True, self.speed)
-        sleep(1)
+        sleep(0.1)
         cs.ax["1"].turn(True, self.speed)
         cs.ax["2"].turn(True, self.speed)
         cs.ax["3"].turn(True, self.speed)
@@ -76,7 +76,7 @@ class IaPMI(Service):
         cs.ax["2"].turn(False, self.speed)
         cs.ax["3"].turn(False, self.speed)
         cs.ax["4"].turn(False, self.speed)
-        sleep(1)
+        sleep(0.1)
         cs.ax["1"].turn(False, self.speed)
         cs.ax["2"].turn(False, self.speed)
         cs.ax["3"].turn(False, self.speed)
@@ -92,33 +92,33 @@ class IaPMI(Service):
         print("Depose tapis : done")
 
     def move_to_stairs(self, cs):
-        while self.timer != 6000:
-            self.marche_avant(0.001, cs)
+        while self.timer != 6:
+            self.marche_avant(1, cs)
             self.timer = self.timer + 2
 
         self.arret(1, cs)
         self.timer = 0
-        while self.timer != 1300:
+        while self.timer != 1.2:
             if self.color == -1:
-                self.rotation_gauche(0.001, cs)
+                self.rotation_gauche(0.1, cs)
             else:
-                self.rotation_droite(0.001, cs)
-            self.timer = self.timer+2
+                self.rotation_droite(0.1, cs)
+            self.timer = self.timer+0.2
         self.arret(1, cs)
         self.timer = 0
-        while self.timer != 100:
-            self.marche_avant(0.001, cs)
+        while self.timer != 2:
+            self.marche_avant(1, cs)
             self.timer = self.timer + 2
             self.marche_avant(1, cs)
             self.timer = self.timer + 2
         self.timer = 0
-        while self.timer != 6500:
-            if self.timer == 1500:
-                self.arret(0.001, cs)
+        while self.timer != 6.5:
+            if self.timer == 1.5:
+                self.arret(0.5, cs)
                 self.depose_tapis(cs)
             else:
-                self.timer = self.timer + 10
-            self.marche_avant(0.01, cs)
+                self.timer = self.timer + 1
+            self.marche_avant(0.5, cs)
 
 
 def main():
