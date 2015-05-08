@@ -97,7 +97,7 @@ class IaPMI(Service):
             self.timer = self.timer + 1
         self.arret(1, cs)
         self.timer = 0
-        while self.timer != 0.6:
+        while self.timer != 0.5:
             if self.color == -1:
                 self.rotation_gauche(0.1, cs)
             else:
