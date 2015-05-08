@@ -104,7 +104,14 @@ class IaPMI(Service):
                 self.rotation_droite(0.1, cs)
             self.timer = self.timer+0.1
         self.arret(1, cs)
-        self.marche_avant(6.5, cs)
+        self.time = 0
+        while self.timer != 6.5:
+            if self.timer == 1.5:
+                self.arret(1, cs)
+                self.depose_tapis(cs)
+                self.arret(1, cs)
+            self.marche_avant(0.5, cs)
+            self.timer = self.timer + 0.5
         self.arret(1, cs)
 
 
