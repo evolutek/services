@@ -20,7 +20,7 @@ setup(
             'cs_echo = evolutek.services.echo:main',
             'homologation_pal = evolutek.services.homologation_pal:main',
             'ia_pal = evolutek.services.ia_pal:main',
-            'ia_pmi = evolutek.services.ia_pmi:main',
+            'ia_pmi = evolutek.services.pmi_extreme_cellaserv:main',
             'leds = evolutek.services.leds:main',
             'robots_monitor = evolutek.services.robots_monitor:main',
             'tracking = evolutek.services.tracking:main',
