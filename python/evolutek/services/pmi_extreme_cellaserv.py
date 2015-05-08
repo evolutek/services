@@ -16,7 +16,7 @@ class IaPMI(Service):
         cs.ax["4"].mode_wheel()
         cs.ax["5"].mode_joint()
         print("PMI : start")
-        self.move_to_stairs()
+        self.move_to_stairs(cs)
         print("PMI : finish")
 
     def marche_avant(self, x, cs):
@@ -93,32 +93,32 @@ class IaPMI(Service):
 
     def move_to_stairs(self, cs):
         while self.timer != 6000:
-            self.marche_avant(1)
+            self.marche_avant(1, cs)
             self.timer = self.timer + 2
 
-        self.arret(1000)
+        self.arret(1000, cs)
         self.timer = 0
         while self.timer != 1300:
             if self.color == -1:
-                self.rotation_gauche(1)
+                self.rotation_gauche(1, cs)
             else:
-                self.rotation_droite(1)
+                self.rotation_droite(1, cs)
             self.timer = self.timer+2
-        self.arret(1000)
+        self.arret(1000, cs)
         self.timer = 0
         while self.timer != 100:
-            self.marche_avant(1)
+            self.marche_avant(1, cs)
             self.timer = self.timer + 2
-            self.marche_avant(1)
+            self.marche_avant(1, cs)
             self.timer = self.timer + 2
         self.timer = 0
         while self.timer != 6500:
             if self.timer == 1500:
-                self.arret(1)
-                self.depose_tapis()
+                self.arret(1, cs)
+                self.depose_tapis(cs)
             else:
                 self.timer = self.timer + 10
-            self.marche_avant(10)
+            self.marche_avant(10, cs)
 
 
 def main():
