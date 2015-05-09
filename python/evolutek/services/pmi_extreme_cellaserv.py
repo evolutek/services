@@ -10,7 +10,6 @@ class IaPMI(Service):
     timer = 0
 
     def __init__(self):
-        super.__init__()
         self.cs = CellaservProxy()
         self.cs.ax["1"].mode_wheel()
         self.cs.ax["2"].mode_wheel()
