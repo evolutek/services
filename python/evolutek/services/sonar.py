@@ -3,29 +3,15 @@
 import ctypes
 import os
 import time
+import mraa
 
 from cellaserv.service import Service
-
-MRAA_PATH = [".", "/usr/lib"]   #choose the correct path you must
-MRAA_PATH_ENV = os.environ.get("MRAA_PATH", None)
-if MRAA_PATH_ENV:
-    MRAA_PATH.insert(1, MRAA_PATH_ENV)
-
     
 class Sonar (Service):
     def __init__(self, trigger):
         super().__init__(identification=str(trigger))
         self.trigger = trigger
-
-        mraa = None
-        for path MRAA_PATH:
-            try:
-                mraa = ctypes.CDLL(path + "/mraa.so") #choose the correct path you must
-                except:
-                    pass
-                if not mraa:
-                    raise RuntimeError("Cannot load mraa.so, chech MRAA_PATH")
-                self.mraa = mraa
+        self.mraa = mraa
 
     @Service.action
     def get_distance(self):
