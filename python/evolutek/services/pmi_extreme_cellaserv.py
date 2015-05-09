@@ -97,8 +97,8 @@ class IaPMI(Service):
         print(self.match_stop_timer)
         self.cs.ax["5"].move(goal=256)
         sleep(1)
+        self.cs.ax["5"].move(goal=1024)
         self.cs.ax["5"].move(goal=768)
-        self.cs.ax["5"].move(goal=512)
         print("Depose tapis : done")
 
     def move_to_stairs(self):
@@ -108,7 +108,7 @@ class IaPMI(Service):
             self.timer = self.timer + 1
         self.arret(1)
         self.timer = 0
-        while self.timer <= 0.55:
+        while self.timer <= 0.5:
             if self.color == -1:
                 self.rotation_gauche(0.1)
             else:
@@ -116,7 +116,7 @@ class IaPMI(Service):
             self.timer = self.timer+0.1
         self.arret(1)
         self.timer = 0
-        while self.timer != 7.5:
+        while self.timer != 7:
             if self.timer == 4.5:
                 self.arret(1)
                 self.depose_tapis()
