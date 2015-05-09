@@ -8,9 +8,10 @@ class IaPMI(Service):
     speed = 700
     color = -1
     timer = 0
-    cs = CellaservProxy()
 
     def __init__(self):
+        super.__init__()
+        self.cs = CellaservProxy()
         self.cs.ax["1"].mode_wheel()
         self.cs.ax["2"].mode_wheel()
         self.cs.ax["3"].mode_wheel()
