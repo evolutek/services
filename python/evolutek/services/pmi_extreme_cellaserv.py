@@ -115,7 +115,7 @@ class IaPMI(Service):
                 self.rotation_droite(0.1)
             self.timer = self.timer+0.1
         self.arret(1)
-        self.time = 0
+        self.timer = 0
         while self.timer != 7.5:
             if self.timer == 4.5:
                 self.arret(1)
