@@ -1,6 +1,6 @@
 from time import sleep
 from threading import Timer
-from cellaserv.service import Service
+from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
 
@@ -17,6 +17,10 @@ class IaPMI(Service):
         self.cs.ax["4"].mode_wheel()
         self.cs.ax["5"].mode_joint()
         print("PMI : Wait")
+        start = Event('start')
+        while not start.is_set():
+            pass
+
         self.match_stop_timer = Timer(85, self.match_stop)
         print("PMI : start")
         self.move_to_stairs()
