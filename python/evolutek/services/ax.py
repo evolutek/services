@@ -113,7 +113,7 @@ class Ax(Service):
 
 def main():
     # axs = [Ax(ax=i) for i in [1, 2, 3, 5, 6]]  # PMI
-    axs = [Ax(ax=i) for i in [1, 2, 3, 4, 5]]  # MAIN
+    axs = [Ax(ax=i) for i in [10, 11, 12, 13, 14, 15, 16]]  # MAIN
     Service.loop()
 
 if __name__ == "__main__":

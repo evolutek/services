@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+from time import sleep
+
+from cellaserv.proxy import CellaservProxy
+from cellaserv.service import Service
+
+# main axs
+AX_ID_STAND_ELEVATOR = "10"
+AX_ID_STAND_CLAW_1 = "11"
+AX_ID_STAND_CLAW_2 = "12"
+AX_ID_STAND_GRIPPER_1 = "13"
+AX_ID_STAND_GRIPPER_2 = "14"
+AX_ID_ARM_RIGHT = "16"
+AX_ID_ARM_LEFT = "15"
+
+AX_ELEVATOR_UP = 1000
+AX_ELEVATOR_DOWN = 200
+AX_CLAW_OPEN = 1000
+AX_CLAW_CLOSE = 650
+AX_GRIPPER_OPEN = 100
+AX_GRIPPER_CLOSE = 100
+
+AX_ARM_RIGHT_OPEN = 80
+AX_ARM_RIGHT_CLOSE = 690
+AX_ARM_LEFT_OPEN = 950
+AX_ARM_LEFT_CLOSE = 330
+
+ARM_LEFT = 0
+ARM_RIGHT = 1
+
+@Service.require("ax", "10")
+@Service.require("ax", "11")
+@Service.require("ax", "12")
+@Service.require("ax", "13")
+@Service.require("ax", "14")
+@Service.require("ax", "15")
+@Service.require("ax", "16")
+class Actuators(Service):
+
+    def __init__(self):
+        super().__init__()
+
+        self.cs = CellaservProxy()
+
+    def setup(self):
+        super().setup()
+        self.cs.ax[AX_ID_RIGHT_STAND_ELEVATOR].mode_joint()
+        self.cs.ax[AX_ID_RIGHT_STAND_CLAW_1].mode_joint()
+        self.cs.ax[AX_ID_RIGHT_STAND_CLAW_2].mode_joint()
+        self.cs.ax[AX_ID_RIGHT_STAND_GRIPPER_1].mode_wheel()
+        self.cs.ax[AX_ID_RIGHT_STAND_GRIPPER_2].mode_wheel()
+        self.cs.ax[AX_ID_ARM_LEFT].mode_joint()
+        self.cs.ax[AX_ID_ARM_RIGHT].mode_joint()
+
+    @Service.action
+    def free(self):
+        for ax in [
+                AX_ID_RIGHT_STAND_ELEVATOR,
+                AX_ID_RIGHT_STAND_CLAW_1,
+                AX_ID_RIGHT_STAND_CLAW_2,
+                AX_ID_RIGHT_STAND_GRIPPER_1,
+                AX_ID_RIGHT_STAND_GRIPPER_2,
+                AX_ID_ARM_LEFT,
+                AX_ID_ARM_RIGHT,
+                ]:
+            self.cs.ax[ax].free()
+
+    @Service.action("reset")
+    def actuators_reset(self):
+        self.setup()
+        self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_CLOSE)
+        self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
+
+    @Service.action
+    def arm_open(self, side: int) -> None:
+        if side == ARM_LEFT:
+            self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_OPEN)
+        else:
+            self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_OPEN)
+
+    @Service.action
+    def arm_close(self, side: int) -> None:
+        if side == ARM_LEFT:
+            self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_CLOSE)
+        else:
+            self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
+
+
+def main():
+    actuators = Actuators()
+    actuators.run()
+
+if __name__ == '__main__':
+    main()
