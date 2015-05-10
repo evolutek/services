@@ -26,7 +26,7 @@ setup(
             'tracking = evolutek.services.tracking:main',
             'trajman = evolutek.services.trajman:main',
             'sharp = evolutek.services.sharp:main',
-            'actuators = evolutek.services.sharp:main',
+            'actuators = evolutek.services.actuators:main',
         ],
     },
 )
