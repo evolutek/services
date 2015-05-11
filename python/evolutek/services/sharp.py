@@ -49,8 +49,8 @@ class Sharp():
     def refresh(self):
         tmp = volt_to_cm(self.adc.readFloat() * 5)
         tmp2 = volt_to_cm(self.adc.readFloat() * 5)
-        sharp_value = tmp if tmp > tmp2 else tmp2
-        return sharp_value
+        self.sharp_value = tmp if tmp > tmp2 else tmp2
+        return self.sharp_value
 
     def init_clock(self):
         self.begin = clock()
