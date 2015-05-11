@@ -33,6 +33,7 @@ class IaPMI(Service):
 
     @Service.event
     def sharp_avoid(self):
+        print('sharp')
         self.sharp_timer.cancel()
         self.sharp_timer.start()
         self.set_move.set()
@@ -114,7 +115,8 @@ class IaPMI(Service):
         print("PMI : start")
         while self.timer <= 1.6:
             while self.set_move.is_set():
-                sleep(0.5)
+                print('stop')
+                self.arret(0.5)
             self.marche_avant(0.05)
             self.timer = self.timer + 0.05
         self.arret(1)
