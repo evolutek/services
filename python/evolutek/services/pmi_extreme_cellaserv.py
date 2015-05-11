@@ -23,7 +23,7 @@ class IaPMI(Service):
 
     @Service.event
     def match_start(self):
-        self.match_timer = Timer(85, self.atch_stop())
+        self.match_timer = Timer(85, self.match_stop())
         self.match_timer.start()
         print('wait for pal')
 
