@@ -1,13 +1,13 @@
 from time import sleep
-from threading import Timer
-from cellaserv.service import Service, Variable
+from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 
 
 class IaPMI(Service):
     speed = 700
-    color = -1
+    color = 1
     timer = 0
+    move_unpossible = True
 
     def __init__(self):
         super().__init__()
@@ -17,17 +17,25 @@ class IaPMI(Service):
         self.cs.ax["3"].mode_wheel()
         self.cs.ax["4"].mode_wheel()
         self.cs.ax["5"].mode_joint()
-        print("PMI : Wait")
-        start = Variable('start')
-        start.wait()
-        self.match_stop_timer = Timer(85, self.match_stop)
-        print("PMI : start")
+        print('wait')
+
+    @Service.event
+    def match_start(self):
+        print('wait for pal')
+
+    @Service.event
+    def pmi_start(self):
         self.move_to_stairs()
-        print(self.match_stop_timer)
-        print("PMI : finish")
+
+    @Service.event
+    def sharp_avoid(self):
+        self.move_unpossible = True
+
+    @Service.event
+    def sharp_unavoid(self):
+        self.move_unpossible = False
 
     def marche_avant(self, x):
-        print(self.match_stop_timer)
         self.cs.ax["1"].turn(True, self.speed)
         self.cs.ax["2"].turn(False, self.speed)
         self.cs.ax["3"].turn(True, self.speed)
@@ -41,7 +49,6 @@ class IaPMI(Service):
         print("Marche avant : done")
 
     def marche_arriere(self, x):
-        print(self.match_stop_timer)
         self.cs.ax["1"].turn(False, self.speed)
         self.cs.ax["2"].turn(True, self.speed)
         self.cs.ax["3"].turn(False, self.speed)
@@ -55,7 +62,6 @@ class IaPMI(Service):
         print("Marche arriere : done")
 
     def arret(self, x):
-        print(self.match_stop_timer)
         self.cs.ax["1"].turn(True, 0)
         self.cs.ax["2"].turn(True, 0)
         self.cs.ax["3"].turn(True, 0)
@@ -69,7 +75,6 @@ class IaPMI(Service):
         print("Arret : done")
 
     def rotation_gauche(self, x):
-        print(self.match_stop_timer)
         self.cs.ax["1"].turn(True, self.speed)
         self.cs.ax["2"].turn(True, self.speed)
         self.cs.ax["3"].turn(True, self.speed)
@@ -83,7 +88,6 @@ class IaPMI(Service):
         print("Rotation gauche : done")
 
     def rotation_droite(self, x):
-        print(self.match_stop_timer)
         self.cs.ax["1"].turn(False, self.speed)
         self.cs.ax["2"].turn(False, self.speed)
         self.cs.ax["3"].turn(False, self.speed)
@@ -97,29 +101,31 @@ class IaPMI(Service):
         print("Rotation droite : done")
 
     def depose_tapis(self):
-        print(self.match_stop_timer)
-        self.cs.ax["5"].move(goal=256)
-        sleep(1)
-        self.cs.ax["5"].move(goal=1024)
-        self.cs.ax["5"].move(goal=768)
+        self.cs.ax["5"].move(goal=375)
+        sleep(2)
+        self.cs.ax["5"].move(goal=1000)
+        sleep(2)
+        self.cs.ax["5"].move(goal=700)
         print("Depose tapis : done")
 
     def move_to_stairs(self):
-        print(self.match_stop_timer)
-        while self.timer != 6:
-            self.marche_avant(1)
-            self.timer = self.timer + 1
+        print("PMI : start")
+        while self.timer <= 1.6:
+            while self.move_unpossible:
+                sleep(0.5)
+            self.marche_avant(0.05)
+            self.timer = self.timer + 0.05
         self.arret(1)
         self.timer = 0
-        while self.timer <= 0.4:
+        while self.timer <= 0.2:
             if self.color == -1:
-                self.rotation_gauche(0.1)
+                self.rotation_gauche(0.05)
             else:
-                self.rotation_droite(0.1)
-            self.timer = self.timer+0.1
+                self.rotation_droite(0.05)
+            self.timer = self.timer+0.05
         self.arret(1)
         self.timer = 0
-        while self.timer != 7:
+        while self.timer <= 5:
             if self.timer == 4.5:
                 self.arret(1)
                 self.depose_tapis()
@@ -127,9 +133,13 @@ class IaPMI(Service):
             self.marche_avant(0.5)
             self.timer = self.timer + 0.5
         self.arret(1)
+        while True:
+            print('Roger is bored')
+            sleep(1)
 
     def match_stop(self):
         self.arret(1)
+        self.cs.ax["5"].move(goal=700)
         self.cs.ax["1"].free()
         self.cs.ax["2"].free()
         self.cs.ax["3"].free()
@@ -140,7 +150,8 @@ class IaPMI(Service):
 
 
 def main():
-    IaPMI()
+    Roger = IaPMI()
+    Roger.run()
     print("Roger is Succesful !")
 
 if __name__ == '__main__':
