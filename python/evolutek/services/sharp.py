@@ -87,7 +87,7 @@ class SharpManager(Service):
                 if thres:
                     if sharp.get_time() > 0.3:
                         self.publish("sharp_avoid", "n:" + sharp.get_sharp(),
-                                "v:" + sharp.read())
+                                "v:" + str(sharp.read()))
                         sharp.init_clock()
                     else:
                         self.publish("sharp_unavoid", "n:" + sharp.get_sharp())
