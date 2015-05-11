@@ -1,5 +1,6 @@
 from time import sleep
 from cellaserv.service import Service
+from threading import Timer, Event
 from cellaserv.proxy import CellaservProxy
 
 
@@ -7,7 +8,8 @@ class IaPMI(Service):
     speed = 700
     color = 1
     timer = 0
-    move_unpossible = True
+    set_move = Event()
+    sharp_timer = Timer(1, set_move.clear())
 
     def __init__(self):
         super().__init__()
@@ -21,6 +23,8 @@ class IaPMI(Service):
 
     @Service.event
     def match_start(self):
+        self.match_timer = Timer(85, self.atch_stop())
+        self.match_timer.start()
         print('wait for pal')
 
     @Service.event
@@ -29,11 +33,9 @@ class IaPMI(Service):
 
     @Service.event
     def sharp_avoid(self):
-        self.move_unpossible = True
-
-    @Service.event
-    def sharp_unavoid(self):
-        self.move_unpossible = False
+        self.sharp_timer.cancel()
+        self.sharp_timer.start()
+        self.set_move.set()
 
     def marche_avant(self, x):
         self.cs.ax["1"].turn(True, self.speed)
@@ -111,7 +113,7 @@ class IaPMI(Service):
     def move_to_stairs(self):
         print("PMI : start")
         while self.timer <= 1.6:
-            while self.move_unpossible:
+            while self.set_move.is_set():
                 sleep(0.5)
             self.marche_avant(0.05)
             self.timer = self.timer + 0.05
