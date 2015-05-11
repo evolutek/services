@@ -95,7 +95,7 @@ class SharpManager(Service):
 
 
 def main():
-    sharps = [Sharp(sharp=i) for i in [1,2]]
+    sharps = [Sharp(sharp=i) for i in [0,1,2,3]]
     sharpManager = SharpManager(sharps)
     Service.loop()
 
