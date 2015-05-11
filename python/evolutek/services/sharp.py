@@ -83,7 +83,7 @@ class SharpManager(Service):
         while True:
             thres = False
             for sharp in sharps:
-                thres |= sharp.refresh() < float(self.threshold())
+                thres |= sharp.refresh() <= float(self.threshold())
                 if thres:
                     if sharp.get_time() > 0.3:
                         self.publish("sharp_avoid", "n:" + sharp.get_sharp(),
