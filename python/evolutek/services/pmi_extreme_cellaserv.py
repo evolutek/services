@@ -34,7 +34,10 @@ class IaPMI(Service):
     @Service.event
     def sharp_avoid(self):
         print('sharp')
-        self.sharp_timer.cancel()
+        try:
+            self.sharp_timer.cancel()
+        except:
+            print('no timer')
         self.sharp_timer.start()
         self.set_move.set()
 
