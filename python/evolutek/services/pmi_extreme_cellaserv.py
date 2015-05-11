@@ -8,11 +8,11 @@ class IaPMI(Service):
     speed = 700
     color = 1
     timer = 0
-    set_move = Event()
-    sharp_timer = Timer(1, set_move.clear())
 
     def __init__(self):
         super().__init__()
+        self.set_move = Event()
+        self.sharp_timer = Timer(1.0, self.set_move.clear())
         self.cs = CellaservProxy()
         self.cs.ax["1"].mode_wheel()
         self.cs.ax["2"].mode_wheel()
@@ -23,7 +23,7 @@ class IaPMI(Service):
 
     @Service.event
     def match_start(self):
-        self.match_timer = Timer(85, self.match_stop())
+        self.match_timer = Timer(85.0, self.match_stop())
         self.match_timer.start()
         print('wait for pal')
 
