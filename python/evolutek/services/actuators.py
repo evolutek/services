@@ -6,17 +6,19 @@ from cellaserv.service import Service
 
 # main axs
 AX_ID_STAND_ELEVATOR = "10"
-AX_ID_STAND_CLAW_1 = "11"
-AX_ID_STAND_CLAW_2 = "12"
+AX_ID_STAND_LEFT_CLAW = "12"
+AX_ID_STAND_RIGHT_CLAW = "11"
 AX_ID_STAND_GRIPPER_1 = "13"
 AX_ID_STAND_GRIPPER_2 = "14"
 AX_ID_ARM_RIGHT = "16"
 AX_ID_ARM_LEFT = "15"
 
-AX_ELEVATOR_UP = 1000
-AX_ELEVATOR_DOWN = 200
-AX_CLAW_OPEN = 1000
-AX_CLAW_CLOSE = 650
+AX_ELEVATOR_UP = 100
+AX_ELEVATOR_DOWN = 1023
+AX_CLAW_LEFT_OPEN = 800
+AX_CLAW_LEFT_CLOSE = 540
+AX_CLAW_RIGHT_OPEN = 100
+AX_CLAW_RIGHT_CLOSE = 500
 AX_GRIPPER_OPEN = 100
 AX_GRIPPER_CLOSE = 100
 
@@ -45,8 +47,8 @@ class Actuators(Service):
     def setup(self):
         super().setup()
         self.cs.ax[AX_ID_RIGHT_STAND_ELEVATOR].mode_joint()
-        self.cs.ax[AX_ID_RIGHT_STAND_CLAW_1].mode_joint()
-        self.cs.ax[AX_ID_RIGHT_STAND_CLAW_2].mode_joint()
+        self.cs.ax[AX_ID_RIGHT_STAND_LEFT_CLAW].mode_joint()
+        self.cs.ax[AX_ID_RIGHT_STAND_RIGHT_CLAW].mode_joint()
         self.cs.ax[AX_ID_RIGHT_STAND_GRIPPER_1].mode_wheel()
         self.cs.ax[AX_ID_RIGHT_STAND_GRIPPER_2].mode_wheel()
         self.cs.ax[AX_ID_ARM_LEFT].mode_joint()
@@ -56,8 +58,8 @@ class Actuators(Service):
     def free(self):
         for ax in [
                 AX_ID_RIGHT_STAND_ELEVATOR,
-                AX_ID_RIGHT_STAND_CLAW_1,
-                AX_ID_RIGHT_STAND_CLAW_2,
+                AX_ID_RIGHT_STAND_LEFT_CLAW,
+                AX_ID_RIGHT_STAND_RIGHT_CLAW,
                 AX_ID_RIGHT_STAND_GRIPPER_1,
                 AX_ID_RIGHT_STAND_GRIPPER_2,
                 AX_ID_ARM_LEFT,
@@ -70,6 +72,9 @@ class Actuators(Service):
         self.setup()
         self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_CLOSE)
         self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
+        self.cs.ax[AX_ID_STAND_ELEVATOR].move(goal=AX_ELEVATOR_DOWN)
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].move(goal=AX_CLAW_LEFT_OPEN)
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].move(goal=AX_CLAW_RIGHT_OPEN)
 
     @Service.action
     def arm_open(self, side: int) -> None:
@@ -85,6 +90,39 @@ class Actuators(Service):
         else:
             self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
 
+    @Service.action
+    def elevator_up(self):
+        self.cs.ax[AX_ID_STAND_ELEVATOR].move(goal=AX_ELEVATOR_UP)
+
+    @Service.action
+    def elevator_down(self):
+        self.cs.ax[AX_ID_STAND_ELEVATOR].move(goal=AX_ELEVATOR_DOWN)
+
+    @Service.action
+    def claw_open(self):
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_joint()
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_joint()
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].move(goal=AX_CLAW_LEFT_OPEN)
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].move(goal=AX_CLAW_RIGHT_OPEN)
+
+    @Service.action
+    def claw_close(self):
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_joint()
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_joint()
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].move(goal=AX_CLAW_LEFT_CLOSE)
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].move(goal=AX_CLAW_RIGHT_CLOSE)
+
+    @Service.action
+    def claw_grip(self):
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_wheel()
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_wheel()
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].turn(side=1, speed=500)
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].turn(side=-1, speed=500)
+
+    @Service.action
+    def claw_ungrip(self):
+        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_joint()
+        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_joint()
 
 def main():
     actuators = Actuators()
