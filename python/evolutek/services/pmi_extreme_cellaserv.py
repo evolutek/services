@@ -6,13 +6,14 @@ from cellaserv.proxy import CellaservProxy
 
 class IaPMI(Service):
     speed = 700
-    color = 1
+    color = 1 # 1 vert -1 jaune
     timer = 0
 
     def __init__(self):
         super().__init__()
+        self.color = 1
         self.set_move = Event()
-        self.sharp_timer = Timer(1.0, self.set_move.clear())
+        self.sharp_timer = Timer(1.0, self.set_move.clear)
         self.cs = CellaservProxy()
         self.cs.ax["1"].mode_wheel()
         self.cs.ax["2"].mode_wheel()
@@ -22,9 +23,10 @@ class IaPMI(Service):
         print('wait')
 
     @Service.event
-    def match_start(self):
-        self.match_timer = Timer(85.0, self.match_stop())
+    def match_start(self, color_):
+        self.match_timer = Timer(85.0, self.match_stop)
         self.match_timer.start()
+        self.color = int(color_)
         print('wait for pal')
 
     @Service.event
@@ -37,9 +39,10 @@ class IaPMI(Service):
         try:
             self.sharp_timer.cancel()
         except:
-            print('no timer')
-        self.sharp_timer.start()
+            print('no timer started')
         self.set_move.set()
+        self.sharp_timer = Timer(1.0, self.set_move.clear)
+        self.sharp_timer.start()
 
     def marche_avant(self, x):
         self.cs.ax["1"].turn(True, self.speed)
@@ -118,8 +121,8 @@ class IaPMI(Service):
         print("PMI : start")
         while self.timer <= 1.6:
             while self.set_move.is_set():
-                print('stop')
                 self.arret(0.5)
+                print('stop')
             self.marche_avant(0.05)
             self.timer = self.timer + 0.05
         self.arret(1)
