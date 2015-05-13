@@ -78,14 +78,14 @@ class Actuators(Service):
 
     @Service.action
     def arm_open(self, side: int) -> None:
-        if side == ARM_LEFT:
+        if int(side) == ARM_LEFT:
             self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_OPEN)
         else:
             self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_OPEN)
 
     @Service.action
     def arm_close(self, side: int) -> None:
-        if side == ARM_LEFT:
+        if int(side) == ARM_LEFT:
             self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_CLOSE)
         else:
             self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
