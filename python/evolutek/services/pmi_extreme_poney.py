@@ -55,7 +55,7 @@ class IaPMI(Service):
         time_start = time.time()
         while time < x :
             while need_to_dodge :
-                arret(self,0)
+                arret(0)
                 need_to_dodge = False
             for i in [0,1]:
                 for n in [1,2,3,4]:
