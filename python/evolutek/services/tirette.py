@@ -1,26 +1,35 @@
 #!/usr/bin/env python3
 
-
-
 import mraa
 from cellaserv.proxy import CellaservProxy
 from cellaserv.protobuf.cellaserv_pb2 import Message
 from cellaserv.service import Service
 
+def test(args):
+    print("foo")
 
 class Tirette(Service):
-    
-    def ready_to_go(self, go_button): 
+    def ready_to_go(self, go_button):
         go = mraa.Gpio(go_button)
         go.dir(mraa.DIR_IN)
 
         print("Ready to go, awaiting...")
-        go.isr(mraa.EDGE_BOTH, say_go)
 
-    def say_go(self):
-        self.publish('start')
-        print("For the king, for the order !")
-    
+        value = go.read()
+
+        while True:
+            new_value = go.read()
+            if (value != new_value):
+                value = new_value
+                if (value == 1):
+                    self.publish("tirette_up")
+                    print("tirette_up")
+                else:
+                    self.publish("tirette_down")
+                    print("tirette_down")
+
+
+
     def set_color(self, color_button):
         color = mraa.Gpio(color_button)
         color.dir(mraa.DIR_IN)
@@ -30,8 +39,7 @@ class Tirette(Service):
 def main():
     tirette = Tirette()
     tirette.set_color(0)
-    tirette.ready_to_go(1)
+    tirette.ready_to_go(2)
 
-if __name__ == "__main__:
+if __name__ == "__main__":
     main()
-    
