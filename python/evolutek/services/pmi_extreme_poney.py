@@ -42,19 +42,21 @@ class IaPMI(Service):
         moove(self,x,[False,True]*2,self.speed)
         print("Marche arriere : done")
 
-    def arret(self):
+    def arret(self,x):
         for n in [1,2]:
             for i in [1,2,3,4] :
                 self.cs.ax[str(i)].turn(True, 0)
             sleep(0.01)
+        sleep(x-0.01)
         print("Arret : done")
 
     def moove(self, x, direction,speed):
         time = 0
         time_start = time.time()
         while time < x :
-            while dodge :
-                arret()
+            while need_to_dodge :
+                arret(self,0)
+                need_to_dodge = False
             for i in [0,1]:
                 for n in [1,2,3,4]:
                     self.cs.ax[str(n)].turn(direction[n-1],speed)
@@ -81,9 +83,6 @@ class IaPMI(Service):
     def move_to_stairs(self):
         print("PMI : start")
         while self.timer <= 1.6:
-            while self.set_move.is_set():
-                print('stop')
-                self.arret(0.5)
             self.marche_avant(0.05)
             self.timer = self.timer + 0.05
         self.arret(1)
@@ -94,6 +93,7 @@ class IaPMI(Service):
             else:
                 self.rotation_droite(0.05)
             self.timer = self.timer+0.05
+        should_avoid = False
         self.arret(1)
         self.timer = 0
         while self.timer <= 5:
