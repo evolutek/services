@@ -15,10 +15,10 @@ AX_ID_ARM_LEFT = "15"
 
 AX_ELEVATOR_UP = 100
 AX_ELEVATOR_DOWN = 1023
-AX_CLAW_LEFT_OPEN = 700
-AX_CLAW_LEFT_CLOSE = 540
-AX_CLAW_RIGHT_OPEN =250
-AX_CLAW_RIGHT_CLOSE = 500
+AX_CLAW_LEFT_OPEN = 1023
+AX_CLAW_LEFT_CLOSE = 815
+AX_CLAW_RIGHT_OPEN = 0
+AX_CLAW_RIGHT_CLOSE = 214
 AX_GRIPPER_OPEN = 100
 AX_GRIPPER_CLOSE = 100
 
@@ -78,14 +78,14 @@ class Actuators(Service):
 
     @Service.action
     def arm_open(self, side: int) -> None:
-        if side == ARM_LEFT:
+        if int(side) == ARM_LEFT:
             self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_OPEN)
         else:
             self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_OPEN)
 
     @Service.action
     def arm_close(self, side: int) -> None:
-        if side == ARM_LEFT:
+        if int(side) == ARM_LEFT:
             self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_CLOSE)
         else:
             self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
