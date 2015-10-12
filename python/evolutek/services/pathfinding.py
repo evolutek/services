@@ -16,12 +16,12 @@ class Point:
 		return str(self.x) + ", " + str(self.y)
 
 class Robot:
-	
+
 	def __init__(self, x, y, robot_radius):
 		self.x = x
 		self.y = y
 		self.robot_radius = robot_radius
-	
+
 	def SetPosition(self, x, y):
 		self.x = x
 		self.y = y
@@ -32,16 +32,16 @@ class Robot:
 class Obstacle:
 
 	def __init__(self, x1, y1, x2, y2, tag):
-		self.x = (x1 + x2)/2
-		self.y = (y1 + y2)/2
+		self.x = round((x1 + x2)/2)
+		self.y = round((y1 + y2)/2)
 		self.x1 = x1
 		self.x2 = x2
 		self.y1 = y1
 		self.y2 = y2
 		self.tag = tag
-	
+
 	def __str__(self):
-        return self.tag + " (" + str(self.x1) + ", " + str(self.y1) + "), (" + str(self.x2) + ", " + str(self.y2) + ")"
+		return self.tag + " (" + str(self.x1) + ", " + str(self.y1) + "), (" + str(self.x2) + ", " + str(self.y2) + ")"
 
 # Class for create the map:
 # w and h are the width and the hight
@@ -54,16 +54,15 @@ class Map:
 		self.ObstacleCost = obstaclecost
 		self.EmptyCost = emptycost
 		self.BorderCost = bordercost
-		self.map = [][]
+		self.map = []
 		for x in range (w+1):
 			self.map.append([])
 			for y in range(h+1):
 				if(x == 0 or x == w+1 or y == 0 or y == h+1):
-					self.map[x].append(
-						if(x == 0 or x == w+1 or y == 0 or y == h+1):
-							Point(x, y, BorderCost)
-						else:
-							Point(x, y, EmptyCost)
+					if(x == 0 or x == w+1 or y == 0 or y == h+1):
+						self.map[x].append(Point(x, y, BorderCost))
+					else:
+						self.map[x].append(Point(x, y, EmptyCost))
 		self.robot_radius = robot_radius
 
 	def SetObstacle(self, x, y):
@@ -77,24 +76,24 @@ class Map:
 
 	# Return a point if it is in the map else return None
 	def GetPointFromMap(self, x, y):
-        valid = (x >= self.robot_radius
-                and x <= self.w - self.robot_radius
-                and y >= self.robot_radius
-                and y <= self.h - self.robot_radius)
-        return self.map[x][y] if valid else None
-	
+		valid = (x >= self.robot_radius
+			and x <= self.w - self.robot_radius
+			and y >= self.robot_radius
+			and y <= self.h - self.robot_radius)
+		return self.map[x][y] if valid else None
+
 	# Return a list of the neighborhoods of a point of the map
 	def GetNghbrs(self, x, y):
 		N = []
-		N.append(self.GetPointFormMap(x - 1, y)
-		N.append(self.GetPointFormMap(x + 1, y)
-		N.append(self.GetPointFormMap(x, y - 1)
-		N.append(self.GetPointFormMap(x, y + 1)
-		N.append(self.GetPointFormMap(x - 1, y - 1) 
-		N.append(self.GetPointFormMap(x - 1, y + 1)
-		N.append(self.GetPointFormMap(x + 1, y - 1)
-		N.append(self.GetPointFormMap(x - 1, y + 1)
-		return [x for x in N if is not None]
+		N.append(self.GetPointFormMap(x - 1, y))
+		N.append(self.GetPointFormMap(x + 1, y))
+		N.append(self.GetPointFormMap(x, y - 1))
+		N.append(self.GetPointFormMap(x, y + 1))
+		N.append(self.GetPointFormMap(x - 1, y - 1)) 
+		N.append(self.GetPointFormMap(x - 1, y + 1))
+		N.append(self.GetPointFormMap(x + 1, y - 1))
+		N.append(self.GetPointFormMap(x - 1, y + 1))
+		return [x for x in N if x is not None]
 	
 	# Return if the robot can access to a point
 	def IsBlocked(self, x, y):
@@ -108,9 +107,9 @@ class Map:
     # Debug Part
 
 	# Print all the map
-    def PrintMap(self):
-    	for x in range(w+1):
-    		for y in range(h+1):
+	def PrintMap(self):
+		for x in range(w+1):
+			for y in range(h+1):
 				if map[x][y].cost == EmptyCost:
 					print(' ')
 				elif map[x][y].cost == ObstacleCost:
@@ -156,7 +155,7 @@ class Pathfinding:
 	def DistancePointToPoint(self, p1, p2):
 		return self.DistancePositionToPosition(p1.x, p1.y, p2.x, p2.y)
 
-	def DistancePointToRobot(sel, p)
+	def DistancePointToRobot(sel, p):
 		return self.DistancePositionToPosition(robot.x, robot.y, p.x, p.y)
 
 	def AddRectangleObstacle(self, x, y, L, l, tag = "no tag"):
@@ -173,7 +172,7 @@ class Pathfinding:
 
 	def RemoveObstacle(self, Obstacle):
 		for i in range(x1, x2):
-			for j range(x1, x2):
+			for j in range(x1, x2):
 				self.map.RemoveObstacle(i, j)
 
 	def RemoveObstacleTag(self, tag):
@@ -185,12 +184,12 @@ class Pathfinding:
 	def RemoveObstaclePosition(self, x, y, a = -1, b = -1):
 		if a == -1 and b == -1:
 			for obstacle in self.obstacles:
-				if obstacle.x = x and obstacle.y = y:
+				if obstacle.x == x and obstacle.y == y:
 					self.RemoveObstacle(obstacle)
 					self.obstacles.remove(obstacle)
 		else:
 			for obstacle in self.obstacles:
-				if obstacle.x1 = x and obstacle.y1 = y and obstacle.x2 == a and obstacle.y2 == b:
+				if obstacle.x1 == x and obstacle.y1 == y and obstacle.x2 == a and obstacle.y2 == b:
 					self.RemoveObstacle(obstacle)
 					self.obstacles.remove(obstacle)
 
@@ -198,10 +197,9 @@ class Pathfinding:
 		self.obstacles.clear()
 
 	def NoObstacleOnTheLineOsSight(self, p1, p2):
-		# FIXME
-		
+		pass
 
 	# Debug Part
 	def PrintObstacles(self):
-    	for obstacle in self.obstacles:
-    		print(str(obstacle))
+		for obstacle in self.obstacles:
+			print(str(obstacle))
