@@ -67,13 +67,14 @@ class Map:
 		for x in range(0, self.h+1):
 			self.map.append([])
 			for y in range(0, self.w+1):
-				if(x == 0 or x == w+1 or y == 0 or y == h+1):
+				if(x == 0 or x == h or y == 0 or y == w):
 					self.map[x].append(Point(x, y, self.BorderCost))
 				else:
 					self.map[x].append(Point(x, y, self.EmptyCost))
 		self.robot_radius = robot_radius
 
 	def SetObstacle(self, x, y):
+		print("set obstacle at point (" + str(x+1) + ", " + str(y+1) + ")")
 		self.map[x][y].cost = self.ObstacleCost
 
 	def RemoveObstacle(self, x, y):
@@ -116,8 +117,8 @@ class Map:
 
 	# Print all the map
 	def PrintMap(self):
-		for x in range(self.w+1):
-			for y in range(self.h+1):
+		for x in range(self.h+1):
+			for y in range(self.w+1):
 				if self.map[x][y].cost == self.EmptyCost:
 					print(' ')
 				elif self.map[x][y].cost == self.ObstacleCost:
@@ -131,21 +132,14 @@ class Map:
 		fimap = open('map.txt', 'w')
 		print("file create")
 		for x in range(0,self.h+1):
-			print("1")
 			for y in range(0,self.w+1):
-				print("2")
 				if self.map[x][y].cost == self.EmptyCost:
-					print("3")
 					fimap.write(' ')
 				elif self.map[x][y].cost == self.ObstacleCost:
-					print("4")
 					fimap.write('X')
 				else:
-					print("5")
 					fimap.write('#')
-			print("6")
 			fimap.write('\n')
-		print("7")
 		fimap.close()
 
 class Pathfinding:
@@ -172,19 +166,19 @@ class Pathfinding:
 
 	def AddRectangleObstacle(self, x, y, L, l, tag = "no tag"):
 		self.obstacles.append(Obstacle(x - L, y - l, x + L, y - l, tag))
-		for i in range(x, L):
-			for j in range(y, l):
+		for i in range(x-1, x+L):
+			for j in range(y-1, y+l):
 				self.map.SetObstacle(i, j)
 
 	def AddSquareObstacle(self, x, y, height, tag = "no tag"):
-		self.AddSquareObstacle(x - height, y - height, x + height, y + height, tag)
+		self.AddRectangleObstacle(x - height, y - height, x + height, y + height, tag)
 
 	def AddCricleObstacle(self, x, y, radius, tag = "not tag"):
 		self.AddSquareObstacle(x, y, radius, tag)
 
 	def RemoveObstacle(self, Obstacle):
-		for i in range(x1, x2):
-			for j in range(x1, x2):
+		for i in range(x1-1, x2):
+			for j in range(x1-1, x2):
 				self.map.RemoveObstacle(i, j)
 
 	def RemoveObstacleTag(self, tag):
