@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# Example :
+# import pathfinding
+# pathf = Pathfinding(3000, 2000,100, 100, 100)
+# pathf.AddRectangleObstacle(200, 200, 100, 100)
+# pathf.map.ExportMap()
+
 from math import sqrt
 import sys
 
@@ -14,6 +20,9 @@ class Point:
 
 	def __str__(self):
 		return str(self.x) + ", " + str(self.y)
+
+	def __getitem__(self):
+		pass
 
 class Robot:
 
@@ -55,14 +64,13 @@ class Map:
 		self.EmptyCost = emptycost
 		self.BorderCost = bordercost
 		self.map = []
-		for x in range (w+1):
+		for x in range(0, self.h+1):
 			self.map.append([])
-			for y in range(h+1):
+			for y in range(0, self.w+1):
 				if(x == 0 or x == w+1 or y == 0 or y == h+1):
-					if(x == 0 or x == w+1 or y == 0 or y == h+1):
-						self.map[x].append(Point(x, y, BorderCost))
-					else:
-						self.map[x].append(Point(x, y, EmptyCost))
+					self.map[x].append(Point(x, y, self.BorderCost))
+				else:
+					self.map[x].append(Point(x, y, self.EmptyCost))
 		self.robot_radius = robot_radius
 
 	def SetObstacle(self, x, y):
@@ -108,11 +116,11 @@ class Map:
 
 	# Print all the map
 	def PrintMap(self):
-		for x in range(w+1):
-			for y in range(h+1):
-				if map[x][y].cost == EmptyCost:
+		for x in range(self.w+1):
+			for y in range(self.h+1):
+				if self.map[x][y].cost == self.EmptyCost:
 					print(' ')
-				elif map[x][y].cost == ObstacleCost:
+				elif self.map[x][y].cost == self.ObstacleCost:
 					print('X')
 				else:
 					print('#')
@@ -120,22 +128,26 @@ class Map:
 
 	# Create a .txt of the map
 	def ExportMap(self):
-		try:
-			file.open('map.txt', 'w')
-			for x in range(w+1):
-				for y in range(h+1):
-					if map[x][y].cost == EmptyCost:
-						file.write(' ')
-					elif map[x][y].cost == ObstacleCost:
-						file.write('X')
-					else:
-						file.write('#')
-				file.write('\n')
-			file.close()
-		except:
-			print('Fail creating map.txt')
-		
-		
+		fimap = open('map.txt', 'w')
+		print("file create")
+		for x in range(0,self.h+1):
+			print("1")
+			for y in range(0,self.w+1):
+				print("2")
+				if self.map[x][y].cost == self.EmptyCost:
+					print("3")
+					fimap.write(' ')
+				elif self.map[x][y].cost == self.ObstacleCost:
+					print("4")
+					fimap.write('X')
+				else:
+					print("5")
+					fimap.write('#')
+			print("6")
+			fimap.write('\n')
+		print("7")
+		fimap.close()
+
 class Pathfinding:
 
 	def __init__(self, mapw, maph, xrobot, yrobot, robot_radius):
@@ -143,7 +155,7 @@ class Pathfinding:
 		self.ObstacleCost = 10000
 		self.EmptyCost = 0
 		self.BorderCost = 99999
-		self.map = Map(mapw, maph, robot_radius, ObstacleCost, EmptyCost, BorderCost)
+		self.map = Map(mapw, maph, robot_radius, self.ObstacleCost, self.EmptyCost, self.BorderCost)
 		self.robot = Robot(xrobot, yrobot, robot_radius)
 
 	def SetRobot(self, x, y):
