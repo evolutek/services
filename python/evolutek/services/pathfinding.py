@@ -2,7 +2,7 @@
 
 # Example :
 # import pathfinding
-# pathf = Pathfinding(3000, 2000,100, 100, 100)
+# pathf = Pathfinding(3000, 2000, 100)
 # pathf.AddRectangleObstacle(200, 200, 100, 100)
 # pathf.map.ExportMap()
 
@@ -18,22 +18,9 @@ class Point:
 		self.y = y
 		self.cost = cost
 
+	# Permite to convert a point to string
 	def __str__(self):
 		return str(self.x) + ", " + str(self.y)
-
-	def __getitem__(self):
-		pass
-
-class Robot:
-
-	def __init__(self, x, y, robot_radius):
-		self.x = x
-		self.y = y
-		self.robot_radius = robot_radius
-
-	def SetPosition(self, x, y):
-		self.x = x
-		self.y = y
 
 # Class for create obstacle :
 # (x, y) is the center
@@ -49,6 +36,7 @@ class Obstacle:
 		self.y2 = y2
 		self.tag = tag
 
+	# Permite to convert an obstacle to string
 	def __str__(self):
 		return self.tag + " (" + str(self.x1) + ", " + str(self.y1) + "), (" + str(self.x2) + ", " + str(self.y2) + ")"
 
@@ -73,18 +61,21 @@ class Map:
 					self.map[x].append(Point(x, y, self.EmptyCost))
 		self.robot_radius = robot_radius
 
+	# Set the cost of a cell to obstacle
 	def SetObstacle(self, x, y):
-		print("set obstacle at point (" + str(x+1) + ", " + str(y+1) + ")")
+		# print("set obstacle at point (" + str(x + 1) + ", " + str(y + 1) + ")")
 		self.map[x][y].cost = self.ObstacleCost
-
+	
+	# Set the cost of a cell to empty
 	def RemoveObstacle(self, x, y):
 		self.map[x][y].cost = self.EmptyCost
 	
-	def GetPoint(self, x, y):
+	# Return a point of the map
+	def GetPoint(self, y, x):
 		return self.map[x][y]
 
 	# Return a point if it is in the map else return None
-	def GetPointFromMap(self, x, y):
+	def GetPointFromMap(self, y, x):
 		valid = (x >= self.robot_radius
 			and x <= self.w - self.robot_radius
 			and y >= self.robot_radius
@@ -105,7 +96,7 @@ class Map:
 		return [x for x in N if x is not None]
 	
 	# Return if the robot can access to a point
-	def IsBlocked(self, x, y):
+	def IsBlocked(self, y, x):
 		if(x < self.robot_radius or
 			x > (self.w - self.robot_radius) or
 			y < self.robot-radius or
@@ -142,51 +133,56 @@ class Map:
 			fimap.write('\n')
 		fimap.close()
 
+# Class to call to create an object pathfinding with a map with :
+# The map weidth
+# The map height
+# The robot radius
 class Pathfinding:
 
-	def __init__(self, mapw, maph, xrobot, yrobot, robot_radius):
+	def __init__(self, mapw, maph, robot_radius):
 		self.obstacles = []
 		self.ObstacleCost = 10000
 		self.EmptyCost = 0
 		self.BorderCost = 99999
 		self.map = Map(mapw, maph, robot_radius, self.ObstacleCost, self.EmptyCost, self.BorderCost)
-		self.robot = Robot(xrobot, yrobot, robot_radius)
 
-	def SetRobot(self, x, y):
-		self.robot.SetPosition(x, y)
-
+	# Compute the distance between two position
 	def DistancePositionToPosition(self, x1, y1, x2, y2):
 		return sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
+	# Compute the distance between two point
 	def DistancePointToPoint(self, p1, p2):
 		return self.DistancePositionToPosition(p1.x, p1.y, p2.x, p2.y)
 
-	def DistancePointToRobot(sel, p):
-		return self.DistancePositionToPosition(robot.x, robot.y, p.x, p.y)
-
-	def AddRectangleObstacle(self, x, y, L, l, tag = "no tag"):
-		self.obstacles.append(Obstacle(x - L, y - l, x + L, y - l, tag))
-		for i in range(x-1, x+L):
-			for j in range(y-1, y+l):
+	# Add a rectangular obstacle
+	def AddRectangleObstacle(self, x1, y1, x2, y2, tag = "no tag"):
+		self.obstacles.append(Obstacle(x1, y1, x2, y2, tag))
+		for i in range(y1-1, y2):
+			for j in range(x1-1, x2):
 				self.map.SetObstacle(i, j)
 
-	def AddSquareObstacle(self, x, y, height, tag = "no tag"):
-		self.AddRectangleObstacle(x - height, y - height, x + height, y + height, tag)
+	# Add a square obstacle
+	def AddSquareObstacle(self, x, y, radius, tag = "no tag"):
+		self.AddRectangleObstacle(x - (radius - 1), y - (radius - 1), x + (radius - 1), y + (radius - 1), tag)
 
-	def AddCricleObstacle(self, x, y, radius, tag = "not tag"):
+	# Add a circle obstacle
+	def AddCircleObstacle(self, x, y, radius, tag = "not tag"):
 		self.AddSquareObstacle(x, y, radius, tag)
 
+	# Remove an obstacle
 	def RemoveObstacle(self, Obstacle):
-		for i in range(x1-1, x2):
+		for i in range(y1-1, y2):
 			for j in range(x1-1, x2):
 				self.map.RemoveObstacle(i, j)
 
+	# Rmove an obstacle with the tag
 	def RemoveObstacleTag(self, tag):
 		for obstacle in self.obstacles:
 			if obstacle.tag == tag: 
 				self.RemoveObstacle(obstacle)
 				self.obstacles.remove(obstacle)
 
+	# Remove an obstacle with the position
 	def RemoveObstaclePosition(self, x, y, a = -1, b = -1):
 		if a == -1 and b == -1:
 			for obstacle in self.obstacles:
@@ -199,13 +195,18 @@ class Pathfinding:
 					self.RemoveObstacle(obstacle)
 					self.obstacles.remove(obstacle)
 
+	# Remove all the obstacles of the list of obstacles
 	def ClearObstacles(self):
 		self.obstacles.clear()
 
-	def NoObstacleOnTheLineOsSight(self, p1, p2):
+	# Test if there is nos obstacle on the line of sight between two point
+	def IfOnLineOfSight(self, p1, p2):
 		pass
 
 	# Debug Part
+
+	# Print all the obstacles
 	def PrintObstacles(self):
 		for obstacle in self.obstacles:
 			print(str(obstacle))
+
