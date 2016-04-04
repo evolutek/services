@@ -15,8 +15,8 @@ class Actuators_pal(Service):
         self.robot.ax["1"].move(goal = 200)
 		self.robot.ax["2"].move(goal = 700)
 		self.robot.ax["3"].move(goal = 500)
-		self.robot.ax["5"].move(goal = 800)
 		self.robot.ax["4"].move(goal = 640)
+		self.robot.ax["5"].move(goal = 200)
         print("Actuators : Init Done")
 
 
@@ -40,15 +40,17 @@ class Actuators_pal(Service):
 
 	@Service.action
 	def open_arm_left(self):
-		self.robot.ax["4"].move(goal = 40)
+		self.robot.ax["4"].move(goal = 340)
 		time.sleep(minimal_delay)
-		self.robot.ax["5"].move(goal = 200)
+		self.robot.ax["5"].move(goal = 800)
+		time.sleep(minimal_delay)
+		self.robot.ax["4"].move(goal = 40)
 
 	@Service.action
 	def open_arm_right(self):
 		self.robot.ax["4"].move(goal = 640)
 		time.sleep(self.minimal_delay)
-		self.robot.ax["5"].move(goal = 200)
+		self.robot.ax["5"].move(goal = 800)
 
 	@Service.action
 	def demi_open_arm(self):
