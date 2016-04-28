@@ -1,0 +1,30 @@
+# Maintainer: Vincent Gatine <nurelin@nurelin.eu>
+pkgname=evolutek-services
+pkgver=
+pkgrel=1
+pkgdesc="services - Evolutek services"
+arch=('any')
+url="http://code.evolutek.org/services"
+license=('beerware')
+depends=('python' 'python-cellaserv2' 'python-pyserial')
+makedepends=('git' 'python-setuptools')
+options=(!emptydirs)
+source=("$pkgname::git+https://bitbucket.org/evolutek/services.git")
+md5sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$pkgname"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+  cd "$srcdir/$pkgname/python"
+  python3 setup.py install --root="$pkgdir/" --optimize=1
+
+  install -d $pkgdir/etc/conf.d
+  install evolutek/services/config.ini $pkgdir/etc/conf.d/
+  install -d $pkgdir/usr/lib/systemd/system
+  install systemd/* $pkgdir/usr/lib/systemd/system/
+}
+
+# vim:set ts=2 sw=2 et:

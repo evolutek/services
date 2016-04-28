@@ -1,0 +1,12 @@
+[Unit]
+Description=homologation_pal service
+PartOf=evolutek.target
+Requires=cellaserv2.service
+After=cellaserv2.service
+
+[Service]
+ExecStart=/usr/bin/homologation_pal
+
+[Install]
+WantedBy=multi-user.target
+
