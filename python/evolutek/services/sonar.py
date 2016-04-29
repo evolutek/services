@@ -6,7 +6,7 @@ import time
 import mraa
 
 from cellaserv.service import Service
-    
+
 class Sonar (Service):
     def __init__(self, trigger):
         super().__init__(identification=str(trigger))
@@ -30,15 +30,8 @@ class Sonar (Service):
         return (distance)
 
 def main():
-    sonarss = [Sonar(trigger=i) for i in [1,3,5,7]] #Define trigger output and eco input and apply get_distance to each sharp   
+    sonarss = [Sonar(trigger=i) for i in [1,3,5,7]] #Define trigger output and eco input and apply get_distance to each sharp
     Service.loop()
 
 if __name__ == "__main__":
     main()
-    
-    
-        
-        
-        
-     
- 
