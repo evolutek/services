@@ -1,146 +1,75 @@
-#!/usr/bin/env python3
+import cellaserv.proxy
+
+import mraa
+
+from cellaserv.service import Service
 from time import sleep
 
-from cellaserv.proxy import CellaservProxy
-from cellaserv.service import Service
+class Actuators_pal(Service):
 
-# main axs
-AX_ID_STAND_ELEVATOR = "10"
-AX_ID_STAND_LEFT_CLAW = "12"
-AX_ID_STAND_RIGHT_CLAW = "11"
-AX_ID_STAND_RIGHT_GRIPPER = "13"
-AX_ID_STAND_LEFT_GRIPPER = "14"
-AX_ID_ARM_RIGHT = "16"
-AX_ID_ARM_LEFT = "15"
+	def __init__(self, act):
+		super().__init__(identification=str(act))
+		self.robot = cellaserv.proxy.CellaservProxy()
+		self.minimal_delay = 0.8
+		for n in [1,2,3,4,5]:
+			self.robot.ax[str(n)].mode_joint()
+		self.relais = mraa.Gpio(13)
+		self.relais.dir(mraa.DIR_OUT)
+		print("Actuators : Init Done")
 
-AX_ELEVATOR_UP = 100
-AX_ELEVATOR_DOWN = 1023
-AX_CLAW_LEFT_OPEN = 1023
-AX_CLAW_LEFT_CLOSE = 815
-AX_CLAW_RIGHT_OPEN = 0
-AX_CLAW_RIGHT_CLOSE = 214
-AX_GRIPPER_RIGHT_OPEN = 700
-AX_GRIPPER_RIGHT_CLOSE = 500
-AX_GRIPPER_LEFT_OPEN = 400
-AX_GRIPPER_LEFT_CLOSE = 700
+	@Service.action
+	def open_door(self):
+		self.robot.ax["1"].move(goal = 700)
+		self.robot.ax["2"].move(goal = 200)
 
-AX_ARM_RIGHT_OPEN = 80
-AX_ARM_RIGHT_CLOSE = 690
-AX_ARM_LEFT_OPEN = 950
-AX_ARM_LEFT_CLOSE = 400
+	@Service.action
+	def close_door(self):
+		self.robot.ax["1"].move(goal = 200)
+		self.robot.ax["2"].move(goal = 700)
 
-ARM_LEFT = 0
-ARM_RIGHT = 1
+	@Service.action
+	def open_umbrella(self):
+		self.robot.ax["3"].move(goal = 1000)
 
-@Service.require("ax", "10")
-@Service.require("ax", "11")
-@Service.require("ax", "12")
-@Service.require("ax", "13")
-@Service.require("ax", "14")
-@Service.require("ax", "15")
-@Service.require("ax", "16")
-class Actuators(Service):
+	@Service.action
+	def close_umbrella(self):
+		self.robot.ax["3"].move(goal = 500)
 
-    def __init__(self):
-        super().__init__()
+	@Service.action
+	def open_arm_left(self):
+		self.robot.ax["4"].move(goal = 400)
+		sleep(self.minimal_delay)
+		self.robot.ax["5"].move(goal = 800)
+		sleep(self.minimal_delay)
+		self.robot.ax["4"].move(goal = 800)
 
-        self.cs = CellaservProxy()
+	@Service.action
+	def open_arm_right(self):
+		self.robot.ax["4"].move(goal = 270)
+		sleep(self.minimal_delay)
+		self.robot.ax["5"].move(goal = 800)
 
-    def setup(self):
-        super().setup()
-        self.cs.ax[AX_ID_RIGHT_STAND_ELEVATOR].mode_joint()
-        self.cs.ax[AX_ID_RIGHT_STAND_LEFT_CLAW].mode_joint()
-        self.cs.ax[AX_ID_RIGHT_STAND_RIGHT_CLAW].mode_joint()
-        self.cs.ax[AX_ID_STAND_RIGHT_GRIPPER].mode_joint()
-        self.cs.ax[AX_ID_STAND_LEFT_GRIPPER].mode_joint()
-        self.cs.ax[AX_ID_ARM_LEFT].mode_joint()
-        self.cs.ax[AX_ID_ARM_RIGHT].mode_joint()
+	@Service.action
+	def demi_open_arm(self):
+		self.robot.ax["5"].move(goal = 700)
 
-    @Service.action
-    def free(self):
-        for ax in [
-                AX_ID_RIGHT_STAND_ELEVATOR,
-                AX_ID_RIGHT_STAND_LEFT_CLAW,
-                AX_ID_RIGHT_STAND_RIGHT_CLAW,
-                AX_ID_RIGHT_STAND_RIGHT_GRIPPER,
-                AX_ID_RIGHT_STAND_LEFT_GRIPPER,
-                AX_ID_ARM_LEFT,
-                AX_ID_ARM_RIGHT,
-                ]:
-            self.cs.ax[ax].free()
+	@Service.action
+	def close_arm(self):
+		self.robot.ax["4"].move(goal = 270)
+		sleep(self.minimal_delay)
+		self.robot.ax["5"].move(goal = 350)
 
-    @Service.action("reset")
-    def actuators_reset(self):
-        self.setup()
-        self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_CLOSE)
-        self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
-        self.cs.ax[AX_ID_STAND_ELEVATOR].move(goal=AX_ELEVATOR_DOWN)
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].move(goal=AX_CLAW_LEFT_OPEN)
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].move(goal=AX_CLAW_RIGHT_OPEN)
-        self.cs.ax[AX_ID_STAND_RIGHT_GRIPPER].move(goal=AX_GRIPPER_RIGHT_CLOSE)
-        self.cs.ax[AX_ID_STAND_LEFT_GRIPPER].move(goal=AX_GRIPPER_LEFT_CLOSE)
+	@Service.action
+	def activate_ea(self):
+		self.relais.write(1)
 
-    @Service.action
-    def arm_open(self, side: int) -> None:
-        if int(side) == ARM_LEFT:
-            self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_OPEN)
-        else:
-            self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_OPEN)
-
-    @Service.action
-    def arm_close(self, side: int) -> None:
-        if int(side) == ARM_LEFT:
-            self.cs.ax[AX_ID_ARM_LEFT].move(goal=AX_ARM_LEFT_CLOSE)
-        else:
-            self.cs.ax[AX_ID_ARM_RIGHT].move(goal=AX_ARM_RIGHT_CLOSE)
-
-    @Service.action
-    def elevator_up(self):
-        self.cs.ax[AX_ID_STAND_ELEVATOR].move(goal=AX_ELEVATOR_UP)
-
-    @Service.action
-    def elevator_down(self):
-        self.cs.ax[AX_ID_STAND_ELEVATOR].move(goal=AX_ELEVATOR_DOWN)
-
-    @Service.action
-    def claw_open(self):
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_joint()
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_joint()
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].move(goal=AX_CLAW_LEFT_OPEN)
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].move(goal=AX_CLAW_RIGHT_OPEN)
-
-    @Service.action
-    def claw_close(self):
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_joint()
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_joint()
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].move(goal=AX_CLAW_LEFT_CLOSE)
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].move(goal=AX_CLAW_RIGHT_CLOSE)
-
-    @Service.action
-    def claw_grip(self):
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_wheel()
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_wheel()
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].turn(side=1, speed=500)
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].turn(side=-1, speed=500)
-
-    @Service.action
-    def claw_ungrip(self):
-        self.cs.ax[AX_ID_STAND_LEFT_CLAW].mode_joint()
-        self.cs.ax[AX_ID_STAND_RIGHT_CLAW].mode_joint()
-
-    @Service.action
-    def gripper_open(self):
-        self.cs.ax[AX_ID_STAND_LEFT_GRIPPER].move(goal=AX_GRIPPER_LEFT_OPEN)
-        self.cs.ax[AX_ID_STAND_RIGHT_GRIPPER].move(goal=AX_GRIPPER_RIGHT_OPEN)
-
-    @Service.action
-    def gripper_close(self):
-        self.cs.ax[AX_ID_STAND_LEFT_GRIPPER].move(goal=AX_GRIPPER_LEFT_CLOSE)
-        self.cs.ax[AX_ID_STAND_RIGHT_GRIPPER].move(goal=AX_GRIPPER_RIGHT_CLOSE)
+	@Service.action
+	def disable_ea(self):
+		self.relais.write(0)
 
 def main():
-    actuators = Actuators()
-    actuators.run()
-
-if __name__ == '__main__':
-    main()
+	actuators_pal = Actuators_pal("act_pal")
+	Service.loop()
+	
+if __name__ == "__main__":
+	main()
