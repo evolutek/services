@@ -1,11 +1,11 @@
 [Unit]
-Description=Trajman service
+Description=Back Sharp service
 PartOf=evolutek.target
 Requires=cellaserv2.service
-After=cellaserv2.service gpio.service
+After=cellaserv2.service
 
 [Service]
-ExecStart=/usr/bin/trajman
+ExecStart=/usr/bin/sharp_back
 CPUSchedulingPolicy=rr
 
 [Install]

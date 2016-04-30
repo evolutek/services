@@ -7,6 +7,7 @@ After=cellaserv2.service
 [Service]
 Environment=CONFIG_FILE=/etc/conf.d/config.ini
 ExecStart=/usr/bin/config
+CPUSchedulingPolicy=rr
 
 [Install]
 WantedBy=multi-user.target
