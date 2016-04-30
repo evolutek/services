@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "services",
-    version = "2015",
+    version = "2016",
     packages = find_packages(),
     namespace_packages = ['evolutek'],
 
@@ -25,7 +25,8 @@ setup(
             'robots_monitor = evolutek.services.robots_monitor:main',
             'tracking = evolutek.services.tracking:main',
             'trajman = evolutek.services.trajman:main',
-            'sharp = evolutek.services.sharp:main',
+            'sharp_front = evolutek.services.sharp_front:main',
+            'sharp_back = evolutek.services.sharp_back:main',
             'sharp_pmi = evolutek.services.sharp_pmi:main',
             'actuators = evolutek.services.actuators:main',
             'tirette = evolutek.services.tirette:main',
