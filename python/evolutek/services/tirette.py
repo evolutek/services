@@ -13,6 +13,7 @@ class Tirette(Service):
         go.dir(mraa.DIR_IN)
         go_value = go.read()
         while(go_value != 1):
+            sleep(1)
             print("Put the tirette")
             sleep(1)
             new_value = go.read()
@@ -21,6 +22,7 @@ class Tirette(Service):
         print("Ready to go, awaiting...")
 
         while True:
+            sleep(1)
             new_value = go.read()
             if (go_value != new_value):
                 go_value = new_value
