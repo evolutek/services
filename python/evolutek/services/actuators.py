@@ -5,7 +5,7 @@ import mraa
 from cellaserv.service import Service
 from time import sleep
 
-class Actuators_pal(Service):
+class actuators(Service):
 
 	def __init__(self, act):
 		super().__init__(identification=str(act))
@@ -68,8 +68,8 @@ class Actuators_pal(Service):
 		self.relais.write(0)
 
 def main():
-	actuators_pal = Actuators_pal("act_pal")
+	actuators_pal = actuators()
 	Service.loop()
-	
+
 if __name__ == "__main__":
 	main()
