@@ -30,24 +30,6 @@ class Tirette(Service):
                     self.publish("match_start")
                     print("Match start")
 
-    def set_pattern(self, potentiometer):
-        poten = mraa.Aio(potentiometer)
-        poten_value = poten.readFloat()
-        pattern = 0
-        if poten_value < 0.2:
-            pattern = 1
-        elif poten_value < 0.4:
-            pattern = 2
-        elif poten_value < 0.6:
-            pattern = 3
-        elif poten_value < 0.8:
-            pattern = 4
-        else :
-            pattern = 5
-        print("Pattern = " + str(pattern))
-        self.publish('config.match.pattern', value = pattern)
-
-
     def set_color(self, color_button):
         color = mraa.Gpio(color_button)
         color.dir(mraa.DIR_IN)
@@ -58,7 +40,6 @@ class Tirette(Service):
 def main():
     tirette = Tirette()
     tirette.set_color(5)
-    tirette.set_pattern(0)
     tirette.ready_to_go(2)
 
 if __name__ == "__main__":

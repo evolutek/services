@@ -13,8 +13,6 @@ class actuators(Service):
 		self.minimal_delay = 0.8
 		for n in [1,2,3,4,5]:
 			self.robot.ax[str(n)].mode_joint()
-		self.relais = mraa.Gpio(13)
-		self.relais.dir(mraa.DIR_OUT)
 		print("Actuators : Init Done")
 
 	@Service.action
@@ -58,14 +56,6 @@ class actuators(Service):
 		self.robot.ax["4"].move(goal = 270)
 		sleep(self.minimal_delay)
 		self.robot.ax["5"].move(goal = 350)
-
-	@Service.action
-	def activate_ea(self):
-		self.relais.write(1)
-
-	@Service.action
-	def disable_ea(self):
-		self.relais.write(0)
 
 def main():
 	actuators_pal = actuators()
