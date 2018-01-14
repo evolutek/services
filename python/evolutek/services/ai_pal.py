@@ -1,123 +1,123 @@
 #!/usr/bin/env python3
 
+from cellaserv.service import Service, ConfigVariable
+from cellaserv.proxy import CellaservProxy
+from evolutek.services.objectives import Objectives
 import mraa
-from evolutek.services.watchdog import Watchdog
-from queue import *
 from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
-from cellaserv.service import Service, ConfigVariable
-from cellaserv.proxy import CellaservProxy
 
 @Service.require("trajman", "pal")
-class ia(Service):
+class ai(Service):
 
+    # Init of the PAL
     def __init__(self):
+        print("Init")
         super().__init__()
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pal']
-        #TODO: Timer set to 85
-        self.stop_time = Timer(91, self.match_stop)
-        self.thread = Thread(target=self.start)
-        self.thread.daemon = True
-        self.maxspeed = 100
-        self.minspeed = 100
+        self.color = self.cs,config.get(section='match', option='color')
+
         self.started = False
-        # self.color = "yellow"
-        # self.get_color()
-        self.color = "yellow"
+        self.stopped = False
+        # Set Timer
+        self.stop_timer = Timer(91, self.match_stop)
+        # Thread for the match
+        self.match_thread = Thread(target=self.start)
+        # Stopped event
+        self.current_move = None
+        # All objectives
+        self.objectives = Objectives(self.color)
         self.setup()
 
-    def get_color(self):
-        gpio_11 = mraa.Gpio(11)
-        gpio_11.dir(mraa.DIR_IN)
-        self.color = "yellow" if gpio_11.read() == 1 else "blue"
-
-    @Service.event
-    def match_start(self):
-        if (not self.started):
-            print("Go")
-            self.stop_time.start()
-            self.thread.start()
-    
-    @Service.event
-    def sharp_avoid(self):
-        print("avoid")
-        self.trajman['pal'].free()
-        self.trajman['pal'].stop_asap(100000, 100000)
-        self.stop_move.set()
-
-    def match_stop(self):
-        print("Stop")
-# Funny action here
-        self.cs.ax["1"].move(goal = 600)
-        sleep(1)
-        self.cs.ax["1"].move(goal = 500)
-        self.trajman['pal'].free()
-
+    # Setup PAL position
     def setup(self):
-        print("free !")
+        print("Setup");
         self.trajman['pal'].free()
-        if self.color == "yellow":
-            self.trajman.set_theta(3.141592)
-        else:
-            self.trajman.set_theta(0)
-        if self.color == "blue":
-            self.trajman.set_x(2000)
-        else:
-            self.trajman.set_x(0)
-        self.trajman.set_y(300)
-        print("Unfree !")
+        self.trajman.set_theta(0)
+        self.trajman.set_x(0)
+        self.trajman.set_y(0)
         self.trajman['pal'].unfree()
-
         print("Setup complete, waiting to receive match_start")
 
+    # Start Event
+    @Service.event
+    def match_start(self):
+        if not self.started:
+            print("Go")
+            self.started = True
+            self.stop_timer.start()
+            self.match_thread.start()
+
+    # Avoid the obstacle
+    def avoid(is_front)
+        if not self.stopped:
+            print("avoid")
+            self.trajman['pal'].free()
+            self.stopped.set()
+            objectives.push_objective(self.current_move)
+            # Put point in path map
+
+    # Bask Dectection Event
+    @Service.event
+    def back_avoid(self):
+        self.avoid(False)
+
+    # Front Dectection Event
+    @Service.event
+    def front_avoid(self):
+        self.avoid(True)
+
+    # End of the match
+    def match_stop(self):
+        print("Stop")
+        self.trajman['pal'].free()
+        selt.trajman['pal'].disable()
+
+    # Start of the match
     def start(self):
         print("Starting the match")
-        if self.color == "blue":
-            self.goto_xy(1400, 750)
-        else:
-            self.goto_xy(600, 750)
-        sleep(1)
-        if self.color == "blue":
-            self.goto_theta(2)
-        else:
-            self.goto_theta(1.141592)
-        sleep(1)
-        if self.color == "blue":
-            self.goto_xy(1500, 500)
-        else:
-            self.goto_xy(500, 500)
-        sleep(1)
-        if self.color == "blue":
-            self.goto_theta(2.5)
-        else:
-            self.goto_theta(0.64159)
-        sleep(1)
-        if self.color == "blue":
-            self.goto_xy(1900, 400)
-        else:
-            self.goto_xy(100, 400)
+        while not objectives.is_empty():
+            objective = objectives.pop_objective()
+            if objective.action:
+                # It's an action
+                objective.action()
+            else:
+                # It'a movement
+                if objective.speed:
+                    self.set_speed(objective.speed)
+                self.stopped = False
+                self.goto_xy(objective.x, objective.y)
+                if objective.theta:
+                    self.goto_theta(objective.theta)
+        print("Match finish")
 
-
+    # Go to x y position
     def goto_xy(self, x, y):
         self.trajman.goto_xy(x=x, y=y)
         while self.trajman.is_moving():
             continue
         sleep(1)
 
+    # Do a movement in tranlation
     def move_trsl(self, len):
         self.trajman.move_trsl(len, 10, 10, 10, 0)
         while self.trajman.is_moving():
             continue
 
+    # Go to theta
     def goto_theta(self, theta):
         self.trajman.goto_theta(theta=theta)
         while self.trajman.is_moving():
             continue
 
+    # Set max speed
+    def set_speed(self, speed):
+        self.trajman.set_trsl_max_speed(speed)
+
 def main():
-    ai = ia()
+    ai = ai()
     ai.run()
 
 if __name__  == '__main__':
