@@ -4,6 +4,7 @@ import time
 
 from cellaserv.service import Service, ConfigVariable
 from evolutek.lib.settings import ROBOT
+from cellaserv.proxy import CellaservProxy
 
 import mraa
 
@@ -34,6 +35,8 @@ def volt_to_cm(volt):
             return i * 5
     return 80
 
+@Service.require("config")
+@Service.require("trajman", "pal")
 class SharpBack(Service):
 
     identification = ROBOT
@@ -43,6 +46,7 @@ class SharpBack(Service):
     def __init__(self, sharps):
         super().__init__()
         self.sharps = sharps
+        self.cs = CellaservProxy()
 
     def sharp_read(self, id):
         return mraa.Aio(id).readFloat()
@@ -52,19 +56,22 @@ class SharpBack(Service):
         tmp2 = volt_to_cm(self.sharp_read(id) * 5)
         return tmp if tmp > tmp2 else tmp2
 
-    @Service.thread
     def looping(self, *args, **kwargs):
         while True:
-            time.sleep(period)
-            for sharp in sharps:
+            time.sleep(self.period())
+            for sharp in self.sharps:
                 if self.refresh(sharp) <= float(self.threshold()):
-                    self.publish("sharp_avoid")
-                    break
+                    robot_moving_side = self.cs.trajman['pal'].get_vector_trsl()
+                    robot_moving_side = robot_moving_side['trsl_vector']
+                    if robot_moving_side < 0:
+                        print("stop")
+                        self.cs.trajman[self.identification].stop_asap(trsldec=1500, rotdec=3.1)
+                        break
 
 def main():
-    sharps = [3, 4]
-    sharpfront = SharpBack(sharps)
-    Service.loop()
+    sharps = [5]
+    sharpback = SharpBack(sharps)
+    sharpback.looping()
 
 if __name__ == "__main__":
     main()

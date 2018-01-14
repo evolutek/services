@@ -5,17 +5,14 @@ import mraa
 from cellaserv.service import Service
 from time import sleep
 
-@Service.require("ax", "1")
 class actuators(Service):
 
 	def __init__(self, act):
 		super().__init__(identification=str(act))
 		self.robot = cellaserv.proxy.CellaservProxy()
-		self.minimal_delay = 2
+		self.minimal_delay = 0.8
 		for n in [1,2,3,4,5]:
 			self.robot.ax[str(n)].mode_joint()
-		self.relais = mraa.Gpio(13)
-		self.relais.dir(mraa.DIR_OUT)
 		print("Actuators : Init Done")
 
 	@Service.action
@@ -27,11 +24,6 @@ class actuators(Service):
 	def close_door(self):
 		self.robot.ax["1"].move(goal = 200)
 		self.robot.ax["2"].move(goal = 700)
-
-	@Service.action
-	def half_close_door(self):
-		self.robot.ax["1"].move(goal = 400)
-		self.robot.ax["2"].move(goal = 500)
 
 	@Service.action
 	def open_umbrella(self):
@@ -53,12 +45,10 @@ class actuators(Service):
 	def open_arm_right(self):
 		self.robot.ax["4"].move(goal = 270)
 		sleep(self.minimal_delay)
-		self.robot.ax["5"].move(goal = 820)
-		sleep(self.minimal_delay)
 		self.robot.ax["5"].move(goal = 800)
 
 	@Service.action
-	def half_open_arm(self):
+	def demi_open_arm(self):
 		self.robot.ax["5"].move(goal = 700)
 
 	@Service.action
@@ -67,16 +57,8 @@ class actuators(Service):
 		sleep(self.minimal_delay)
 		self.robot.ax["5"].move(goal = 350)
 
-	@Service.action
-	def activate_ea(self):
-		self.relais.write(1)
-
-	@Service.action
-	def disable_ea(self):
-		self.relais.write(0)
-
 def main():
-	actuators_pal = actuators("pal")
+	actuators_pal = actuators()
 	Service.loop()
 
 if __name__ == "__main__":
