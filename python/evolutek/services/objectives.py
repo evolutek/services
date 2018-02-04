@@ -45,7 +45,7 @@ class Objectives:
         return self.objectives == []
 
     def pop_objective(self):
-        return self.objectives.pop()
+        return self.objectives.pop(0)
 
     def push_objective(self, objective):
         self.objectives.insert(0, objective)

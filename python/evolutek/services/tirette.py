@@ -14,38 +14,35 @@ class Tirette(Service):
         self.cs = CellaservProxy()
 
     def ready_to_go(self, go_button):
-        go = mraa.Gpio(go_button)
-        go.dir(mraa.DIR_IN)
-        go_value = go.read()
-        while(go_value != 1):
-            sleep(1)
+        go = mraa.Aio(go_button)
+        go_value = go.readFloat()
+        while(go_value < 1.0):
+            sleep(0.5)
             print("Put the tirette")
-            sleep(1)
-            new_value = go.read()
-            if (go_value != new_value):
+            new_value = go.readFloat()
+            if (go_value < new_value):
                 go_value = new_value
         print("Ready to go, awaiting...")
 
         while True:
-            sleep(1)
-            new_value = go.read()
-            if (go_value != new_value):
+            sleep(0.5)
+            new_value = go.readFloat()
+            if (go_value > new_value):
                 go_value = new_value
-                if (go_value != 1):
+                if (go_value == 0.0):
                     self.publish("match_start")
                     print("Match start")
 
     def set_color(self, color_button):
-        color = mraa.Gpio(color_button)
-        color.dir(mraa.DIR_IN)
-        mycolor = 'green' if color.read() == 1 else 'orange'
+        color = mraa.Aio(color_button)
+        mycolor = 'green' if color.readFloat() < 1.0 else 'orange'
         print("Color = " + mycolor)
         self.cs.config.set(section="match", option="color", value=mycolor)
 
 def main():
     tirette = Tirette()
-    tirette.set_color(5)
-    tirette.ready_to_go(10)
+    tirette.set_color(1)
+    tirette.ready_to_go(0)
 
 if __name__ == "__main__":
     main()

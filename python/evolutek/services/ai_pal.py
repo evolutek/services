@@ -9,7 +9,7 @@ from time import sleep
 from threading import Thread, Timer, Event
 
 @Service.require("trajman", "pal")
-class ai(Service):
+class Ai(Service):
 
     # Init of the PAL
     def __init__(self):
@@ -17,8 +17,7 @@ class ai(Service):
         super().__init__()
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pal']
-        self.color = self.cs,config.get(section='match', option='color')
-
+        self.color = self.cs.config.get(section='match', option='color')
         self.started = False
         self.stopped = False
         # Set Timer
@@ -51,7 +50,7 @@ class ai(Service):
             self.match_thread.start()
 
     # Avoid the obstacle
-    def avoid(is_front)
+    def avoid(is_front):
         if not self.stopped:
             print("avoid")
             self.trajman['pal'].free()
@@ -117,7 +116,7 @@ class ai(Service):
         self.trajman.set_trsl_max_speed(speed)
 
 def main():
-    ai = ai()
+    ai = Ai()
     ai.run()
 
 if __name__  == '__main__':
