@@ -3,7 +3,7 @@
 from cellaserv.proxy import CellaservProxy
 
 side_map = {
-    "yellow": -1,
+    "orange": -1,
     "green": 1,
 }
 
