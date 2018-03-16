@@ -7,16 +7,16 @@ from time import sleep
 import mraa
 
 @Service.require("trajman", "pal")
-class GbtBack(Service):
+class Gbts(Service):
 
     identification = ROBOT
     #change section "sharp" to "gbt"
-
-    def __init__(self, gbts):
+    def __init__(self):
+        self.front = 2
+        self.back = 8
         super().__init__()
-        for gbt in gbts:
-            mraa.Gpio(gbt).dir(mraa.DIR_IN)
-        self.gbts = gbts
+        mraa.Gpio(front).dir(mraa.DIR_IN)
+        mraa.Gpio(back).dir(mraa.DIR_IN)
         self.cs = CellaservProxy()
 
     # Read the GBT value
@@ -30,16 +30,20 @@ class GbtBack(Service):
             time.sleep(0.1)
             trsl_vector = self.cs.trajman["pal"].get_vector_trsl()
             moving_side = trsl_vector["trsl_vector"]
-            if moving_side > 0:
-                for gbt in self.gbts:
-                    if(self.read(gbt) == 1):
-                        self.publish("back_avoid")
-                        print ('Back: avoid!')
-                        break
+            if moving_side > 0 and self.read(front) == 1:
+                print ('Front: avoid!')
+                while self.read(front) == 1:
+                    self.publish("avoid")
+                    sleep(0.5)
+            elif moving_side < 0 and self.read(back) == 1:
+                print ('Back: avoid!')
+                while self.read(back) == 1:
+                    self.publish("avoid")
+                    sleep(0.5)
+                
 
 def main():
-    gbts = [8, 9]
-    gbt_back = GbtBack(gbts)
+    gbts = Gbts()
     Service.loop()
 
 if __name__ == "__main__":
