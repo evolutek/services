@@ -32,15 +32,18 @@ class Gbts(Service):
             moving_side = trsl_vector["trsl_vector"]
             if moving_side > 0 and self.read(front) == 1:
                 print ('Front: avoid!')
+                self.publish("avoid")
                 while self.read(front) == 1:
-                    self.publish("avoid")
                     sleep(0.5)
+                self.publish("end_avoid")
+                print ('Front: end avoid!')
             elif moving_side < 0 and self.read(back) == 1:
                 print ('Back: avoid!')
+                self.publish("avoid")
                 while self.read(back) == 1:
-                    self.publish("avoid")
                     sleep(0.5)
-                
+                self.publish("end_avoid")
+                print ('Back: end avoid!')
 
 def main():
     gbts = Gbts()
