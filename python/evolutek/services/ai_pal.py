@@ -25,6 +25,9 @@ class Ai(Service):
         self.current_move = None
         self.stopped = Event()
         # All objectives
+        # FIXME objectives
+        # Current objective
+        self.curr = None
         self.setup()
 
     # Setup PAL position
@@ -47,10 +50,10 @@ class Ai(Service):
     # Avoid the obstacle
     @Service.event
     def avoid(self):
-        print("avoid")
-        self.trajman['pal'].free()
-        self.stopped.set()
-        # Put point in path map
+        if not self.curr.not_avoid:
+            print("avoid")
+            self.trajman['pal'].free()
+            self.stopped.set()
 
     @Service.event
     def end_avoid(self):
@@ -66,8 +69,24 @@ class Ai(Service):
     # Start of the match
     def start(self):
         print("Starting the match")
-        # FIXME
-        print("Match finish")
+        while not # FIXME objectives.is_empty() or not curr.finised:
+            if self.stopped.isSet():
+                continue
+            if not self.curr or self.curr.finished:
+                self.curr = # FIXME objective.pop()
+                if not self.curr:
+                    break
+                if self.curr.speed:
+                    self.set_speed(self.curr.speed)
+            self.goto_xy(self.curr.x, self.curr.y)
+            if self.stopped.isSet():
+                continue
+            if self.curr.theta:
+                self.goto_theta(self.curr.theta)
+            if self.curr.action:
+                self.curr.action()
+            self.curr.finished = True
+        print("Match is finished")
 
     # Go to x y position
     def goto_xy(self, x, y):
