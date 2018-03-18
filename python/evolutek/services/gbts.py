@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-from cellaserv.service import Service, ConfigVariable
-from evolutek.lib.settings import ROBOT
+from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 from time import sleep
 import mraa
@@ -9,8 +8,6 @@ import mraa
 @Service.require("trajman", "pal")
 class Gbts(Service):
 
-    identification = ROBOT
-    #change section "sharp" to "gbt"
     def __init__(self):
         self.front = 2
         self.back = 8
@@ -18,14 +15,14 @@ class Gbts(Service):
         mraa.Gpio(front).dir(mraa.DIR_IN)
         mraa.Gpio(back).dir(mraa.DIR_IN)
         self.cs = CellaservProxy()
+        main_loop()
 
     # Read the GBT value
     def read(self, id):
         return mraa.Gpio(id).read()
 
     # Loop of the Service
-    @Service.thread
-    def looping(self, *args, **kwargs):
+    def main_loop(self):
         while True:
             time.sleep(0.1)
             trsl_vector = self.cs.trajman["pal"].get_vector_trsl()
@@ -47,7 +44,7 @@ class Gbts(Service):
 
 def main():
     gbts = Gbts()
-    Service.loop()
+    Service.run()
 
 if __name__ == "__main__":
     main()
