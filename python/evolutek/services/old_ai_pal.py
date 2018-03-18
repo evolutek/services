@@ -7,10 +7,6 @@ from math import pi
 from time import sleep
 from threading import Thread, Timer, Event
 
-import task_maker
-
-src_file_strat = "strat_test"
-
 @Service.require("trajman", "pal")
 class Ai(Service):
 
@@ -20,29 +16,23 @@ class Ai(Service):
         super().__init__()
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pal']
-        self.color = self.cs.config.get(section='match', option='color')  #set a boolean instead ?
-        
+        self.color = self.cs.config.get(section='match', option='color')
         # Set Timer
         self.stop_timer = Timer(100, self.match_stop)
         # Thread for the match
         self.match_thread = Thread(target=self.start)
-
         # Stopped event
+        self.current_move = None
         self.stopped = Event()
-        self.enable_avoid = True        
-        
         # All objectives
-        self.tasks = get_strat_orange()#get_startegy(src_file_strat, self.color = 'green')
-
-        # Current objective, see if we can get rid of it : 
-#        self.current_move = None
-#        self.curr = None
-
+        # FIXME objectives
+        # Current objective
+        self.curr = None
         self.setup()
 
     # Setup PAL position
     def setup(self):
-        print("Setup")
+        print("Setup");
         self.trajman['pal'].free()
         self.trajman.set_theta(0)
         self.trajman.set_x(0)
@@ -74,25 +64,28 @@ class Ai(Service):
     def match_stop(self):
         print("Stop")
         self.trajman['pal'].free()
-        self.trajman['pal'].disable()
+        selt.trajman['pal'].disable()
 
     # Start of the match
     def start(self):
         print("Starting the match")
-
-        self.goto_xy(self.tasks[0][0], self.tasks[0][1])
-        while not self.tasks.is_empty():
-            if self.stopped.isSet(): # there's an obstacle
+        while not # FIXME objectives.is_empty() or not curr.finised:
+            if self.stopped.isSet():
                 continue
-
-            if not self.trajman.is_moving(): # robot arrived at destination
-                self.goto_theta(self.tasks[0][2])
-
-                if self.tasks[0][3]:
-                    self.tasks[0][3](self.tasks[0][4])
-                    
-                self.tasks.get()
-                
+            if not self.curr or self.curr.finished:
+                self.curr = # FIXME objective.pop()
+                if not self.curr:
+                    break
+                if self.curr.speed:
+                    self.set_speed(self.curr.speed)
+            self.goto_xy(self.curr.x, self.curr.y)
+            if self.stopped.isSet():
+                continue
+            if self.curr.theta:
+                self.goto_theta(self.curr.theta)
+            if self.curr.action:
+                self.curr.action()
+            self.curr.finished = True
         print("Match is finished")
 
     # Go to x y position
