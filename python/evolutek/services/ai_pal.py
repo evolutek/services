@@ -8,6 +8,7 @@ from threading import Thread, Timer, Event
 
 #from evolutek.services.task_maker import get_strat
 from task_maker import get_strat
+from wathcdog import Watchdog
 
 src_file_strat = "strat_test"
 
@@ -17,10 +18,11 @@ class Ai(Service):
     # Init of the PAL
     def __init__(self):
         print("Init")
-        super().__init__()
+        super().__init__('pal')
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman['pal']
-        self.color = self.cs.config.get(section='match', option='color')  #set a boolean instead ?
+        self.color = self.cs.config.get(section='match', option='color')
+
         # Set Timer
         self.stop_timer = Timer(100, self.match_stop)
         # Thread for the match
@@ -28,13 +30,14 @@ class Ai(Service):
 
         # Stopped event
         self.stopped = Event()
+        # Watch dog for avoiding
+        self.watchdog = Watchdog(0.5, self.end_avoid)
 
         # All objectives
         self.tasks = get_strat()
         self.curr = None
 
-       #get_startegy(src_file_strat, self.color = 'green')
-
+        # Setup Trajman
         self.setup()
 
     # Setup PAL position
@@ -47,60 +50,80 @@ class Ai(Service):
         self.trajman['pal'].unfree()
         print("Setup complete, waiting to receive match_start")
 
-    # Start Event
+    # Starting of the match
     @Service.event
     def match_start(self):
         print("Go")
         self.stop_timer.start()
         self.match_thread.start()
 
-    # Avoid the obstacle
+    # Ending of the match
+    def match_stop(self):
+        print("Stop")
+        self.trajman['pal'].free()
+        self.trajman['pal'].disable()
+        self.watchdog.stop()
+
+    # Avoid front obstacle
     @Service.event
+    def front_avoid(self):
+        if self.trajman.get_vector_trsl()['trsl_vector'] > 0.0:
+            avoid()
+
+    # Avoid back obstacle
+    @Service.event
+    def back_avoid(self):
+        if self.trajman.get_vector_trsl()['trsl_vector'] < 0.0:
+            avoid()
+
     def avoid(self):
         if not self.curr.not_avoid:
             print("avoid")
             self.trajman['pal'].free()
             self.stopped.set()
+            self.watchdog.reset()
 
-    @Service.event
     def end_avoid(self):
         print("end avoid")
         self.stopped.clear()
-
-    # End of the match
-    def match_stop(self):
-        print("Stop")
-        self.trajman['pal'].free()
-        self.trajman['pal'].disable()
 
     # Start of the match
     def start(self):
         print("Starting the match")
 
-        while not self.tasks.empty():
-            if self.stopped.isSet(): # there's an obstacle
+        while not self.tasks.empty() or self.curr:
+
+            # We are avoiding
+            if self.stopped.isSet():
                 continue
-            
-            if not self.curr:
+
+            # New task
+            if not self.curr and not self.tasks.empty():
                 self.curr = self.tasks.get()
                 if self.curr.speed:
                     self.set_speed(self.curr.speed)
 
             print("x: " + str(self.curr.x) + " y: " + str(self.curr.y))
             self.goto_xy(self.curr.x, self.curr.y)
-            
+
+            # We were stopped
             if self.stopped.isSet(): # there's an obstacle
                 continue
 
             print('yolo')
 
-            if self.curr.theta: # robot arrived at destination
+            # We can rotate
+            if self.curr.theta:
                 self.goto_theta(self.curr.theta)
 
+            # We can do an action
             if self.curr.action:
                 self.curr.action()
 
-            self.curr = self.tasks.get()
+            # Current task is finish
+            self.curr = None
+
+        # We have done all our tasks
         print("Match is finished")
 
     # Go to x y position
