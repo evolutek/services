@@ -195,7 +195,7 @@ def get_map(color):
 
     # Add nodes
     map.insert_node('start', 500, 2760, color)
-    map.insert_node('bee', 1600, 2600, color)
+    map.insert_node('bee', 1750, 2750, color)
     map.insert_node('construction', 350, 2390, color)
     map.insert_node('distrib1', 840, 2390, color)
     map.insert_node('distrib2', 1550, 2390, color)
@@ -209,7 +209,7 @@ def get_map(color):
     map.insert_node('distrib4', 1550, 610, color)
 
     # Add edges
-    map.insert_edges('start', ['construction', 'distrib1', 'distrib2', 'distrib4'])
+    map.insert_edges('start', ['construction', 'distrib1', 'distrib4'])
     map.insert_edges('bee', ['distrib2', 'inter_a', 'center_interrupter', 'center'])
     map.insert_edges('construction', ['distrib1', 'interrupteur', 'distrib2', 'center_interrupter'])
     map.insert_edges('distrib1', ['distrib2', 'inter_a', 'center', 'inter_b', 'distrib3'])
@@ -227,7 +227,7 @@ def get_map(color):
 def main():
   print('Test')
   map = get_map('orange')
-  curr_path = map.get_path('start', 'distrib3')
+  curr_path = map.get_path('start', 'bee')
   interface = Interface(map, curr_path)
 
 if __name__ == '__main__':
