@@ -74,7 +74,7 @@ class Interface:
         curr = self.graph.nodes[self.path[i - 1]][0]
         next = self.graph.nodes[self.path[i]][0]
         self.canvas.create_line(curr.y/2, curr.x/2, next.y/2, next.x/2,\
-          width=1, fill='orange')
+          width=3, fill='purple')
 
   def update(self):
     print('Updating window')

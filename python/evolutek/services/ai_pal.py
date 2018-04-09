@@ -107,12 +107,7 @@ class Ai(Service):
     def manage_tasks(self, tasks):
 
         while not tasks.empty():
-
             sleep(1)
-
-            # We are avoiding
-            if self.front_stopped.isSet() or self.back_stopped.isSet():
-                continue
 
             # New task
             curr_task = tasks.get()
@@ -161,7 +156,7 @@ class Ai(Service):
             print('Get a new objective')
             # New objective
             curr_objective = self.objectives.get()
-           # No new objective
+            # No new objective
             if not curr_objective:
                 break
 
