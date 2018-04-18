@@ -1,4 +1,4 @@
-from math import pow, sqrt, pi, cos, sin, atan2
+from math import pow, sqrt, pi, cos, sin, atan, atan2
 from tkinter import *
 
 cost_stop = 100
@@ -7,6 +7,8 @@ infinite = 100000
 
 radius_pal = 75
 radius_pmi = 53
+
+radius_robot = 150
 
 class Point:
 
@@ -27,9 +29,10 @@ theta_pmi = -pi/2
 
 class Interface:
 
-  def __init__(self, graph, path):
+  def __init__(self, graph, path, p):
     self.graph = graph
     self.path = path
+    self.p = p
     print('Init interface')
     self.window = Tk()
     self.close_button = Button(self.window, text='Close', command=self.window.quit)
@@ -76,8 +79,20 @@ class Interface:
         self.canvas.create_line(curr.y/2, curr.x/2, next.y/2, next.x/2,\
           width=3, fill='purple')
 
+  def print_line(self, p1, p2):
+    self.canvas.create_line(p1.y/2, p1.x/2, p2.y/2, p2.x/2, width=2, fill='pink')
+
+  def print_rectangle(self):
+    self.print_node(self.p[0], "test")
+    self.print_node(self.p[1], "test")
+    self.print_node(self.p[2], "test")
+    self.print_node(self.p[3], "test")
+    self.print_line(self.p[0], self.p[2])
+    self.print_line(self.p[2], self.p[3])
+    self.print_line(self.p[3], self.p[1])
+    self.print_line(self.p[1], self.p[0])
+
   def update(self):
-    print('Updating window')
     self.canvas.delete('all')
     self.canvas.create_image(750, 500, image=self.map)
 
@@ -95,6 +110,8 @@ class Interface:
     # Display robots
     self.print_pal()
     self.print_pmi()
+
+    self.print_rectangle()
 
     self.window.after(1000, self.update)
 
@@ -129,6 +146,30 @@ class Graph:
           weight = src_point.distance(dest_point)
           src_edges.append((dest_name, weight))
           dest_edges.append((src_name, weight))
+
+  def collision(self, robot, p1, p2):
+    coeff_x = (p2.y - p1.y) /  (1 if p1.x == p2.x else p2.x - p1.x)
+    ordo = p1.y - coeff_x * p1.x
+    angle = atan(coeff_x) - pi/2
+    if p1.x > p2.x:
+        x = p1.x - radius_robot * cos(angle)
+        p1 = Point(x, x * coeff_x + ordo)
+        x = p2.x + radius_robot * cos(angle)
+        p2 = Point(x, x * coeff_x + ordo)
+    else:
+        x = p1.x + radius_robot * cos(angle)
+        p1 = Point(x, x * coeff_x + ordo)
+        x = p2.x - radius_robot * cos(angle)
+        p2 = Point(x, x * coeff_x + ordo)
+    p11 = Point(p1.x + (radius_robot * cos(angle)),
+      p1.y + (radius_robot * sin(angle)))
+    p12 = Point(p1.x - (radius_robot * cos(angle)),
+      p1.y - (radius_robot * sin(angle)))
+    p21 = Point(p2.x + (radius_robot * cos(angle)),
+      p2.y + (radius_robot * sin(angle)))
+    p22 = Point(p2.x - (radius_robot * cos(angle)),
+      p2.y - (radius_robot * sin(angle)))
+    return (p11, p12, p21, p22)
 
   def cost(self, prec_name, curr_name, dest_name):
     if curr_name == dest_name:
@@ -228,7 +269,8 @@ def main():
   print('Test')
   map = get_map('orange')
   curr_path = map.get_path('start', 'bee')
-  interface = Interface(map, curr_path)
+  p = map.collision(None, map.nodes['start'][0], map.nodes['distrib1'][0])
+  interface = Interface(map, curr_path, p)
 
 if __name__ == '__main__':
     main()
