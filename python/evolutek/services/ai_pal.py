@@ -22,6 +22,8 @@ class Ai(Service):
         self.trajman = self.cs.trajman['pal']
         self.gbts = self.cs.gbts['pal']
         self.actuators = self.cs.actuators['pal']
+        self.map = self.cs.map['pal']
+
         self.gbts.set_avoiding(False)
         self.color = self.cs.config.get(section='match', option='color')
 
@@ -34,8 +36,6 @@ class Ai(Service):
         self.front_stopped = Event()
         self.back_stopped = Event()
 
-        # The map
-        self.map = get_map(self.color)
         # All objectives
         self.objectives = get_strat(self.color, self.actuators)
         self.position = 'start'
@@ -168,13 +168,13 @@ class Ai(Service):
             self.manage_tasks(curr_objectives.tasks)
 
             # go to the ending point on the map
-            ending = self.map.nodes[curr_objective.ending][0]
+            ending = self.curr_objectives.ending
             while True:
                 sleep(1)
                 self.goto_xy(ending.x, ending.y)
                 if not (self.front_stopped.isSet() or self.back_stopped.isSet()):
                     break
-            self.positon = curr_objective.ending
+            self.positon = ending
 
         # We have done all our tasks
         print("Match is finished")
@@ -192,6 +192,7 @@ class Ai(Service):
         while path == []:
             path = self.map.get_path(self.position, destination)
             sleep(1)
+        print("Path: " + str(path))
         for i in range(1, len(path)):
             next = self.map.nodes[path[i]][0]
             print('Going to move to the next point')
