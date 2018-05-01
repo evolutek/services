@@ -6,16 +6,27 @@ cost_stop = 100
 cost_turn = 200
 infinite = 100000
 
-radius_pal = 75
-radius_pmi = 53
+radius_pal = 215
+radius_pmi = 150
+radius_robot = 215
 
-radius_robot = 150
+class Point:
+  """
+    A pair of cartesian coordinates (x, y)
+  """
 
-pal = Point(500, 2760)
-pmi = Point(200, 2760)
-theta_pal = -pi/2
-theta_pmi = -pi/2
+  def __init__(self, _x, _y):
+    self.x = _x
+    self.y = _y
 
+  def __str__(self):
+    return str(self.x) + ', ' + str(self.y)
+
+  def distance(self, point):
+    """
+      Returns the disnace to the point passed in argument
+    """
+    return sqrt(pow(self.x - point.x, 2) + pow(self.y - point.y, 2))
 
 class Graph:
   """
@@ -33,10 +44,8 @@ class Graph:
 
   """
 
-
   def __init__(self):
     self.nodes = {}
-
 
   def __str__(self):
     s = ''
@@ -46,11 +55,9 @@ class Graph:
         s += '\t-> ' + node + ': ' + str(weight) + '\n'
     return s
 
-
   def insert_node(self, name, x, y, color='green'):
     p = Point(x, y if color == 'orange' else 3000 - y)
     self.nodes[name] = (p, [])
-
 
   def insert_edges(self, src_name, dests_names):
     if src_name in self.nodes:
@@ -63,30 +70,49 @@ class Graph:
           src_edges.append((dest_name, weight))
           dest_edges.append((src_name, weight))
 
+  def is_colliding(self, circle, p1, p2):
+  """
+    Returns true if the circle collides with the rectange determined by two
+    points which are the intersection between the rectangle and a meadian.
+    This function unrotate the rectangle and then detect a potential collision.
+    circle : center of the robot
+    p1 : starting point of the path
+    p2 : ending point of the path
+  """
+    width = pal_radius * 2
+    height = p1.distance(p2)
+    center = Point((p2.x + p1.x) / 2, (p2.y + p1.y) / 2)
 
-  def collision(self, robot, p1, p2):
-    coeff_x = (p2.y - p1.y) /  (1 if p1.x == p2.x else p2.x - p1.x)
-    ordo = p1.y - coeff_x * p1.x
-    angle = atan(coeff_x) - pi/2
-    if p1.x > p2.x:
-        x = p1.x - radius_robot * cos(angle)
-        p1 = Point(x, x * coeff_x + ordo)
-        x = p2.x + radius_robot * cos(angle)
-        p2 = Point(x, x * coeff_x + ordo)
-    else:
-        x = p1.x + radius_robot * cos(angle)
-        p1 = Point(x, x * coeff_x + ordo)
-        x = p2.x - radius_robot * cos(angle)
-        p2 = Point(x, x * coeff_x + ordo)
-    p11 = Point(p1.x + (radius_robot * cos(angle)),
-      p1.y + (radius_robot * sin(angle)))
-    p12 = Point(p1.x - (radius_robot * cos(angle)),
-      p1.y - (radius_robot * sin(angle)))
-    p21 = Point(p2.x + (radius_robot * cos(angle)),
-      p2.y + (radius_robot * sin(angle)))
-    p22 = Point(p2.x - (radius_robot * cos(angle)),
-      p2.y - (radius_robot * sin(angle)))
-    return (p11, p12, p21, p22)
+    # compute the rotation angle of the circle
+    coeff_x = (p2.y - p1.y) / (1 if p1.x == p2.x else p2.x - p1.x)
+
+    rotation = atan(-coeff_x) - pi / 2
+
+    # unrotated
+    refx = center.x - width / 2
+    refy = center.y - height / 2
+
+    # unrotated circle
+    unrotated_c = Point(cos(rotation) * (circle.x - center.x)   \
+        - sin(rotation) * (circle.y - center.y) + center.x,     \
+        sin(rotation) * (circle.x - center.x)                   \
+        + cos(rotation) * (circle.y - center.y) + center.y)
+
+    # closest unrotated point from center of unrotated circle
+    closest = Point(unrotated_c.x, unrotated_c.y)
+
+    if unrotated_c.x < refx:
+        closest.x = refx
+    elif unrotated_c.x > refx + width:
+        closest.x = refx + width
+
+    if unrotated_c.y < refy:
+        closest.y = refy
+    elif unrotated_c.y > refy + height:
+        closest.y = refy + height
+
+    # return if a collision occurs
+    return unrotated_c.distance(closest) < radius_robot
 
   def cost(self, prec_name, curr_name, dest_name):
     if curr_name == dest_name:
@@ -119,7 +145,6 @@ class Graph:
       precs[dst_name] = src_name
 
   def get_path(self, src_name, dest_name):
-
     # initialisation
     shortest_paths = {}
     precs = {}
@@ -146,4 +171,3 @@ class Graph:
       curr = precs[curr]
     res.append(curr)
     return list(reversed(res))
-

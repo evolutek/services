@@ -7,14 +7,23 @@ def collide_orectangle_circle(circle, radius, rect_p1, rect_p2, width):
     This function unrotate the rectangle and then detect a potential collision.
     circle, rect_p1 and rect_p2 are Point objects.
   """
-  rect_center = Point(abs(rect_p2.x - rect_p1.x), abs(rect_p2.y - rect_p1.y))
+  width *= 2
+  height = rect_p1.distance(rect_p2)
+  rect_center = Point((rect_p2.x + rect_p1.x) / 2, (rect_p2.y + rect_p1.y) / 2)
 
   # compute the rotation angle of the circle
-  coeff_x = (rect_p2.y - rect_p1.y) \
-            / (1 if rect_p1.x == rect_p2.x else rect_p2.x - rect_p1.x)
+  coeff_x = (rect_p2.y - rect_p1.y) / (1 if rect_p1.x == rect_p2.x else rect_p2.x - rect_p1.x)
+  rotation = atan(-coeff_x) - pi/2
 
-  rotation = atan(coeff_x) - pi / 2
+  """
+  if rect_p1.x == rect_p2.x:
+    coeff_x = 0
+    angle = 0
+  """
 
+  # unrotated
+  refx = rect_center.x - width / 2
+  refy = rect_center.y - height / 2
 
   # unrotated circle
   unrotated_c = Point(cos(rotation) * (circle.x - rect_center.x)   \
@@ -24,39 +33,22 @@ def collide_orectangle_circle(circle, radius, rect_p1, rect_p2, width):
                       + cos(rotation) * (circle.y - rect_center.y) \
                       + rect_center.y)
 
-  # closest unrotated point drom center od unrotated circle
+  # closest unrotated point from center of unrotated circle
   closest = Point(unrotated_c.x, unrotated_c.y)
 
-  if unrotated_c.x < rect_center.x:
-    closest.x = rect_center.x
+  if unrotated_c.x < refx:
+    closest.x = refx
 
-  elif unrotated_c.x > rect_center.x + width:
-    closest.x = rect_center.x + width
+  elif unrotated_c.x > refx + width:
+    closest.x = refx + width
 
-  height = rect_p1.distance(rect_p2)
-  if unrotated_c.y < rect_center.y:
-    closest.y = rect_center.y
+  if unrotated_c.y < refy:
+    closest.y = refy
 
-  elif unrotated_c.y > rect_center.y + height:
-    closest.y = rect_center.y + height
+  elif unrotated_c.y > refy + height:
+    closest.y = refy + height
+
 
   # determine collision
   return unrotated_c.distance(closest) < radius
 
-class Point:
-  """
-    A pair of cartesian coordinates (x, y)
-  """
-
-  def __init__(self, _x, _y):
-    self.x = _x
-    self.y = _y
-
-  def __str__(self):
-    return str(self.x) + ', ' + str(self.y)
-
-  def distance(self, point):
-    """
-      Returns the disnace to the point passed in argument
-    """
-    return sqrt(pow(self.x - point.x, 2) + pow(self.y - point.y, 2))
