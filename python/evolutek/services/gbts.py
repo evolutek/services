@@ -32,25 +32,26 @@ class Gbts(Service):
             front_value = self.front.read()
             back_value = self.back.read()
 
-            if self.front_avoid and front_value == 0:
-                self.front_avoid = False
-                print("Front end_avoid")
-                self.publish("front_end_avoid")
+            with lock:
+                if self.front_avoid and front_value == 0:
+                    self.front_avoid = False
+                    print("Front end_avoid")
+                    self.publish("front_end_avoid")
 
-            if self.back_avoid and back_value == 0:
-                self.back_avoid = False
-                print("Back end_avoid")
-                self.publish("back_end_avoid")
+                if self.back_avoid and back_value == 0:
+                    self.back_avoid = False
+                    print("Back end_avoid")
+                    self.publish("back_end_avoid")
 
-            if not self.front_avoid and front_value == 1:
-                self.front_avoid = True
-                print ('Front: avoid!')
-                self.publish("front_avoid")
+                if not self.front_avoid and front_value == 1:
+                    self.front_avoid = True
+                    print ('Front: avoid!')
+                    self.publish("front_avoid")
 
-            if not self.back_avoid and back_value == 1:
-                self.back_avoid = True
-                print ('Back: avoid!')
-                self.publish("back_avoid")
+                if not self.back_avoid and back_value == 1:
+                    self.back_avoid = True
+                    print ('Back: avoid!')
+                    self.publish("back_avoid")
 
     # Set avoiding status
     @Service.action
