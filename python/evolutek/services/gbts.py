@@ -2,14 +2,14 @@
 
 from cellaserv.service import Service
 from time import sleep
-from threading import Thread
+from threading import Thread, Lock
 import mraa
 
 from evolutek.lib.settings import ROBOT
 
 @Service.require("trajman", ROBOT)
 class Gbts(Service):
-    
+
     def __init__(self):
         super().__init__(ROBOT)
         self.front = mraa.Gpio(12)
@@ -19,6 +19,7 @@ class Gbts(Service):
         self.front_avoid = False
         self.back_avoid = False
         self.enabled_avoiding = False
+        self.lock = Lock()
         self.thread = Thread(target=self.main_loop)
         self.thread.start()
 
@@ -30,22 +31,22 @@ class Gbts(Service):
 
             front_value = self.front.read()
             back_value = self.back.read()
-            
+
             if self.front_avoid and front_value == 0:
                 self.front_avoid = False
                 print("Front end_avoid")
                 self.publish("front_end_avoid")
-            
+
             if self.back_avoid and back_value == 0:
                 self.back_avoid = False
                 print("Back end_avoid")
                 self.publish("back_end_avoid")
-            
+
             if not self.front_avoid and front_value == 1:
                 self.front_avoid = True
                 print ('Front: avoid!')
                 self.publish("front_avoid")
-            
+
             if not self.back_avoid and back_value == 1:
                 self.back_avoid = True
                 print ('Back: avoid!')
@@ -54,10 +55,11 @@ class Gbts(Service):
     # Set avoiding status
     @Service.action
     def set_avoiding(self, status=True):
-        self.enabled_avoiding = status
-        self.front_avoid = False
-        self.back_avoid = False
-        print('Avoing status: ' + str(status))
+        with lock:
+            self.enabled_avoiding = status
+            self.front_avoid = False
+            self.back_avoid = False
+            print('Avoing status: ' + str(status))
 
 def main():
     gbts = Gbts()
