@@ -32,7 +32,8 @@ class Ai(Service):
         # Stopped event
         self.front_stopped = Event()
         self.back_stopped = Event()
-        
+        self.moving_side = 0.0
+
         # All objectives
         self.tasks = get_strat(self.color, self.actuators)
         self.curr = None
@@ -72,25 +73,21 @@ class Ai(Service):
     @Service.event
     def front_avoid(self):
         print('Front detection')
-        #print('Check moving_side')
-        #moving_side = self.trajman.get_vector_trsl()
-        #print('moving_side: ' + str(moving_side))
-        #if moving_side['trsl_vector'] > 0.0:
-        print("Avoid")
-        self.trajman['pal'].stop_asap(1000, 30)
-        self.front_stopped.set()
+        print('moving_side: ' + str(self.moving_side))
+        if self.moving_side > 0.0:
+            print("Avoid")
+            self.trajman['pal'].stop_asap(1000, 30)
+            self.front_stopped.set()
 
     # Avoid back obstacle
     @Service.event
     def back_avoid(self):
         print('Back detection')
-        #print('Check moving_side')
-        #moving_side = self.trajman.get_vector_trsl()
-        #print('moving_side: ' + str(moving_side))
-        #if moving_side['trsl_vector'] < 0.0:
+        print('moving_side: ' + str(self.moving_side))
+        if self.moving_side < 0.0:
         print("Avoid")
-        self.trajman['pal'].stop_asap(1000, 30)
-        self.back_stopped.set()
+            self.trajman['pal'].stop_asap(1000, 30)
+            self.back_stopped.set()
 
     @Service.event
     def front_end_avoid(self):
@@ -154,7 +151,6 @@ class Ai(Service):
                     self.curr.action(self.curr.action_param)
                 else:
                     self.curr.action()
-                
             # Current task is finish
             self.curr = None
 
@@ -164,9 +160,11 @@ class Ai(Service):
     # Go to x y position
     def goto_xy(self, x, y):
         self.trajman.goto_xy(x=x, y=y)
+        self.moving_side = self.trajman.get_vector_trsl()['trsl_vector']
         while self.trajman.is_moving():
             print('Moving')
             sleep(0.5)
+        self.moving_side = 0.0
 
     # Do a movement in tranlation
     def move_trsl(self, len):
