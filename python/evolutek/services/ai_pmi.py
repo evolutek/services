@@ -12,7 +12,7 @@ from evolutek.lib.task_maker import *
 @Service.require("tirette")
 class Ai(Service):
 
-    # Init of the PAL
+    # Init of the PMI
     def __init__(self):
         print("Init")
         super().__init__('pmi')
@@ -32,9 +32,9 @@ class Ai(Service):
         # Stopped event
         self.front_stopped = Event()
         self.back_stopped = Event()
-        
+
         # All objectives
-        self.tasks = get_strat(self.color, self.actuators)
+        self.tasks = get_strat(self.color, self.actuators, 'pmi')
         self.curr = None
 
         # Setup Trajman
@@ -45,9 +45,9 @@ class Ai(Service):
         #TODO: do green
         print("Setup")
         self.trajman.free()
-        self.trajman.set_x(493 if self.color == 'green' else 483)
-        self.trajman.set_y(250 if self.color == 'green' else 2750)
-        self.trajman.set_theta(pi/2 if self.color == 'green' else -pi/2)
+        self.trajman.set_x(105 if self.color == 'green' else 105)
+        self.trajman.set_y(280 if self.color == 'green' else 2720)
+        self.trajman.set_theta(0)
         self.trajman.unfree()
         self.actuators.init_all()
         print("Setup complete, waiting to receive match_start")
@@ -96,7 +96,7 @@ class Ai(Service):
     def front_end_avoid(self):
         print("Front end avoid")
         self.front_stopped.clear()
-    
+
     @Service.event
     def back_end_avoid(self):
         print("Back end avoid")
@@ -107,7 +107,7 @@ class Ai(Service):
         print("Starting the match")
 
         while not self.tasks.empty() or self.curr:
-            
+
             sleep(1)
 
             # We are avoiding
@@ -124,7 +124,7 @@ class Ai(Service):
             if not self.curr:
                 print('No new task')
                 break
-            
+
             print(self.curr.not_avoid)
             if self.curr.not_avoid:
                 print('Not avoiding')
@@ -154,7 +154,7 @@ class Ai(Service):
                     self.curr.action(self.curr.action_param)
                 else:
                     self.curr.action()
-                
+
             # Current task is finish
             self.curr = None
 
