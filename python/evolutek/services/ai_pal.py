@@ -37,6 +37,7 @@ class Ai(Service):
         # Stopped event
         self.front_stopped = Event()
         self.back_stopped = Event()
+        self.moving_side = 0.0
 
         # All objectives
         self.objectives = get_strat(self.color, self.actuators)
@@ -88,13 +89,11 @@ class Ai(Service):
           Enters "avoiding" state
         """
         print('Front detection')
-        #print('Check moving_side')
-        #moving_side = self.trajman.get_vector_trsl()
-        #print('moving_side: ' + str(moving_side))
-        #if moving_side['trsl_vector'] > 0.0:
-        print("Avoid")
-        self.trajman['pal'].stop_asap(1000, 30)
-        self.front_stopped.set()
+        print('moving_side: ' + str(self.moving_side))
+        if self.moving_side > 0.0:
+            print("Avoid")
+            self.trajman['pal'].stop_asap(1000, 30)
+            self.front_stopped.set()
 
     # Avoid back obstacle
     @Service.event
@@ -103,13 +102,11 @@ class Ai(Service):
           Leaves "avoiding" state
         """
         print('Back detection')
-        #print('Check moving_side')
-        #moving_side = self.trajman.get_vector_trsl()
-        #print('moving_side: ' + str(moving_side))
-        #if moving_side['trsl_vector'] < 0.0:
-        print("Avoid")
-        self.trajman['pal'].stop_asap(1000, 30)
-        self.back_stopped.set()
+        print('moving_side: ' + str(self.moving_side))
+        if self.moving_side < 0.0:
+            print("Avoid")
+            self.trajman['pal'].stop_asap(1000, 30)
+            self.back_stopped.set()
 
     @Service.event
     def front_end_avoid(self):
@@ -195,11 +192,12 @@ class Ai(Service):
             # Manage tasks of the objective
             self.manage_tasks(curr_objectives.tasks)
 
-            # go to the ending point on the map
+            # go to the ending point
             ending = self.curr_objectives.ending
+            ending_point = self.map.get_coords(ending)
             while True:
                 sleep(1)
-                self.goto_xy(ending.x, ending.y)
+                self.goto_xy(ending_point['x'], ending_point['y'])
                 if not (self.front_stopped.isSet() or self.back_stopped.isSet()):
                     break
             self.positon = ending[0]
@@ -214,9 +212,11 @@ class Ai(Service):
         """
 
         self.trajman.goto_xy(x=x, y=y)
+        self.moving_side = self.trajman.get_vector_trsl()['trsl_vector']
         while self.trajman.is_moving():
             print('Moving')
             sleep(0.5)
+        self.moving_side = 0.0
 
     def goto_xy_with_pathfinding(self, destination):
         """
@@ -234,7 +234,7 @@ class Ai(Service):
             print('Going to move to the point: ' + path[i])
             while True:
                 sleep(1)
-                self.goto_xy(next.x, next.y)
+                self.goto_xy(next['x'], next['y'])
                 if not (self.front_stopped.isSet() or self.back_stopped.isSet()):
                     break
         print('Finish the path')

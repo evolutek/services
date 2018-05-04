@@ -53,15 +53,20 @@ class Map(Service):
         self.graph.insert_edges('distrib4', ['center'])
 
     def main_loop(self):
-        print("loop")
-        # get position
-        # give it to the beacon
+        while True:
+            sleep(0.5)
+            #position = self.cs.trajman['pal'].get_position()
+            # send position to the server
 
-    # Set avoiding status
     @Service.action
     def get_path(self, start, end):
         with self.lock:
             return self.graph.get_path(start, end)
+
+    @Service.action
+    def get_coords(self, point):
+        with self.lock:
+            return self.graph.nodes[point][0].to_dict()
 
 def main():
     map = Map()

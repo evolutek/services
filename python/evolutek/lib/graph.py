@@ -20,6 +20,9 @@ class Point:
   def __str__(self):
     return str(self.x) + ', ' + str(self.y)
 
+  def to_dict(self):
+      return {'x' : self.x, 'y' : self.y}
+
   def distance(self, point):
     """
       Returns the disnace to the point passed in argument
@@ -224,5 +227,5 @@ class Graph:
     while curr != src_name:
       res.append(curr)
       curr = precs[curr]
-    res.append((curr, self.nodes[curr][0]))
+    res.append((curr, self.nodes[curr][0].to_dict()))
     return list(reversed(res))
