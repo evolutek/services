@@ -9,6 +9,15 @@ from math import pi
 import queue
 
 class Task:
+    """
+    Class Task which represent a movement and the associated action:
+    x, y : coordinates
+    theta : rotation at the end
+    func_ptr : the action to do (pointeur on function)
+    func_param: list of parameters
+    speed: the speed
+    not_avoid: boolean which says if the shortrange detection is activated
+    """
     def __init__(self, x, y, theta = None, speed = None, func_ptr = None, func_param = None, not_avoid = False):
         self.x = x
         self.y = y
@@ -19,12 +28,18 @@ class Task:
         self.not_avoid = not_avoid
 
 def get_strat(color, actuators):
+    """
+    Returns a queue of Tasks according to the color of the team, orange or green
+    """
     if color == 'green':
         return get_strat_green(actuators)
     else:
         return get_strat_orange(actuators)
 
-def get_strat_orange(actuators):  
+def get_strat_orange(actuators):
+    """
+    Returns the queue of Tasks done by the orange team
+    """
     res = queue.Queue()
     res.put(Task(1200, 2240))
     res.put(Task(1650, 2700))#, func_ptr=actuators.open_bee_arm))
@@ -42,7 +57,10 @@ def get_strat_orange(actuators):
     res.put(Task(245,  1930, not_avoid=True, func_ptr=actuators.move_arm, func_param=0, speed=500))
     return res
 
-def get_strat_green(actuators):  
+def get_strat_green(actuators):
+    """
+    Returns the queue of Tasks done by the green team
+    """
     res = queue.Queue()
     res.put(Task(1200, 760))
     res.put(Task(1650, 400))#, not_avoid=True, func_ptr=actuators.open_bee_arm))

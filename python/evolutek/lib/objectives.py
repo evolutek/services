@@ -2,6 +2,15 @@ from math import pi
 import queue
 
 class Task:
+    """
+    Class Task which represent a movement and the associated action:
+    x, y : coordinates
+    theta : rotation at the end
+    action : the action to do (pointeur on function)
+    action_param: list of parameters
+    speed: the speed
+    not_avoid: boolean which says if the shortrange detection is activated
+    """
 
     def __init__(self, x, y, color, theta=None, speed=None, action=None, \
         action_param=None, not_avoid=False):
@@ -14,7 +23,9 @@ class Task:
         self.not_avoid = not_avoid
 
 class Objective:
-
+    """
+    Class representing a destination and a list of tasks
+    """
     def __init__(self, destination, tasks, ending=None):
         self.destination = destination
         self.tasks = tasks

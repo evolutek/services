@@ -13,7 +13,9 @@ from evolutek.lib.objectives import get_strat
 @Service.require("map", "pal")
 @Service.require("tirette")
 class Ai(Service):
-
+    """
+    Class representing the decision taking by the robot durint a match
+    """
     # Init of the PAL
     def __init__(self):
         print("Init")
@@ -45,6 +47,9 @@ class Ai(Service):
 
     # Setup PAL position
     def setup(self):
+        """
+          Sets up values before a match
+        """
         print("Setup")
         self.trajman.free()
         self.trajman.set_x(500)
@@ -55,8 +60,11 @@ class Ai(Service):
         print("Setup complete, waiting to receive match_start")
 
     # Starting of the match
-    @Service.event
+    @Service.eventi
     def match_start(self):
+        """
+          Starts a match
+         """
         print("Go")
         self.stop_timer.start()
         self.gbts.set_avoiding(True)
@@ -65,6 +73,9 @@ class Ai(Service):
 
     # Ending of the match
     def match_stop(self):
+        """
+          Ends a match
+         """
         print("Stop")
         self.trajman['pal'].free()
         self.trajman['pal'].disable()
@@ -73,6 +84,9 @@ class Ai(Service):
     # Avoid front obstacle
     @Service.event
     def front_avoid(self):
+        """
+          Enters "avoiding" state
+        """
         print('Front detection')
         #print('Check moving_side')
         #moving_side = self.trajman.get_vector_trsl()
@@ -85,6 +99,9 @@ class Ai(Service):
     # Avoid back obstacle
     @Service.event
     def back_avoid(self):
+        """
+          Leaves "avoiding" state
+        """
         print('Back detection')
         #print('Check moving_side')
         #moving_side = self.trajman.get_vector_trsl()
@@ -96,16 +113,24 @@ class Ai(Service):
 
     @Service.event
     def front_end_avoid(self):
+        """
+          Enters "avoiding" state
+        """
         print("Front end avoid")
         self.front_stopped.clear()
 
     @Service.event
     def back_end_avoid(self):
+        """
+          Leaves "avoiding" state
+        """
         print("Back end avoid")
         self.back_stopped.clear()
 
     def manage_tasks(self, tasks):
-
+        """
+          Executes one by one the tasks and deplete them.
+        """
         while not tasks.empty():
             sleep(1)
 
@@ -147,6 +172,9 @@ class Ai(Service):
 
     # Start of the match
     def start(self):
+        """
+          Start a match and executes tasks until all of them are finished
+        """
         print("Starting the match")
 
 
@@ -181,12 +209,20 @@ class Ai(Service):
 
     # Go to x y position
     def goto_xy(self, x, y):
+        """
+          Tells the robot to get a new position at x,y
+        """
+
         self.trajman.goto_xy(x=x, y=y)
         while self.trajman.is_moving():
             print('Moving')
             sleep(0.5)
 
     def goto_xy_with_pathfinding(self, destination):
+        """
+          Tells the robot to travel to the destination by taking the shortest
+          path on the map
+        """
         path = []
         print('Trying to search for a path')
         while path == []:
@@ -205,18 +241,27 @@ class Ai(Service):
 
     # Do a movement in tranlation
     def move_trsl(self, len):
+        """
+          Moves robot with a translation movement
+        """
         self.trajman.move_trsl(len, 10, 10, 10, 0)
         while self.trajman.is_moving():
             continue
 
     # Go to theta
     def goto_theta(self, theta):
+        """
+          Sets the rotation of the robot
+        """
         self.trajman.goto_theta(theta=theta)
         while self.trajman.is_moving():
             continue
 
     # Set max speed
     def set_speed(self, speed):
+        """
+          modifies de robot's speed
+        """
         self.trajman.set_trsl_max_speed(speed)
 
 def main():

@@ -32,7 +32,8 @@ class Graph:
 
     Implementation of non directed graph with linked lists (using Python dicts
     as lists).
-    Nodes are named (dict key) and edges are weighted.
+    Nodes are named (dict key) and edges are weighted by the distance they
+    represent.
 
     #Point is the node named node_name
     graph nodes = {node_name : (Point, edges)
@@ -54,10 +55,30 @@ class Graph:
     return s
 
   def insert_node(self, name, x, y, color='green'):
+  """
+    Parameters:
+      name : name of the inserted node, if the name is already the node is
+        overwritten.
+      x, y : two integers, cartesian coordinates of the node position
+      color: the color of the team, "green" (default) or "orange"
+
+    Creates and inserts a new node, given coordinates and a name
+  """
     p = Point(x, y if color == 'orange' else 3000 - y)
     self.nodes[name] = (p, [])
 
   def insert_edges(self, src_name, dests_names):
+  """
+    Parameters:
+      src_name : name of the node to which neighbors are given
+      dests_names : list of names of the nodes that connections are mades with
+                    src_name
+
+    Creates edges between the node src_name and the list of nodes dests_names
+    if those names exist. If a connection already exist it is not created.
+    The edges are weighted by the distance represented by de connection.
+  """
+
     if src_name in self.nodes:
       src_point, src_edges = self.nodes[src_name]
       for dest_name in dests_names:
@@ -113,6 +134,15 @@ class Graph:
     return unrotated_c.distance(closest) < radius_robot
 
   def cost(self, prec_name, curr_name, dest_name):
+  """
+    Parameters:
+      prec_name: node from which we come
+      curr_name: node through which we go
+      dest_name: node to which we go
+
+    This function computes and return the cost of a travel through the given
+    nodes. This method may be overriden to beter meet the user's needs.
+  """
     if curr_name == dest_name:
       return 0
 
@@ -127,6 +157,14 @@ class Graph:
            + cost_stop + (angle * cost_turn)
 
   def find_closest(self, shortest_paths, every_nodes):
+    """
+      Parameters:
+        shortest_paths: dict of node_name, weight
+        every_nodes: list of (node_name, node)
+
+      Method used in the get_path method. Returns the position of the closest
+      node from the set every_nodes.
+    """
     minimum = infinite
     res = -1
     for i in range(len(every_nodes)):
@@ -137,12 +175,31 @@ class Graph:
     return res
 
   def update_precs(self, src_name, dst_name, shortest_paths, precs):
+    """
+      Parameters:
+        src_name: node name
+        dst_name: node name
+        shortest_paths: dict of node_name, weight
+        precs: dict of node_name_1, node_name_2(predecessor of node_name_1)
+
+     Updates precs and shortest_paths as in Dijktra algorithm to select
+     the nearest path from src to dst.
+    """
+
     weight = self.cost(precs[src_name], src_name, dst_name)
     if shortest_paths[dst_name] > shortest_paths[src_name] + weight:
       shortest_paths[dst_name] = shortest_paths[src_name] + weight
       precs[dst_name] = src_name
 
   def get_path(self, src_name, dest_name):
+    """
+      Parameters:
+        src_name: source node
+        dest_name: destination node
+
+      Returns the list of nodes representing the shortest path between src_name
+      and dst_name. This method is based on dijkstra algorithm
+    """
     # initialisation
     shortest_paths = {}
     precs = {}
