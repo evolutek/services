@@ -5,14 +5,17 @@ from cellaserv.proxy import CellaservProxy
 from time import sleep
 from threading import Thread, Lock
 
+import urllib3
+
 from evolutek.lib.graph import Graph
 from evolutek.lib.settings import ROBOT
 
 @Service.require("trajman", ROBOT)
 class Map(Service):
 
-    def __init__(self):
+    def __init__(self, server):
         super().__init__(ROBOT)
+        self.server = server
         self.cs = CellaservProxy()
         self.create_graph()
         self.lock = Lock()
@@ -53,10 +56,14 @@ class Map(Service):
         self.graph.insert_edges('distrib4', ['center'])
 
     def main_loop(self):
+        http = urllib3.PoolManager()
         while True:
             sleep(0.5)
-            #position = self.cs.trajman['pal'].get_position()
-            # send position to the server
+            position = self.cs.trajman['pal'].get_position()
+            print('Sending request to the server')
+            r = http.request('POST', 'http://' + self.server + '/set_' + ROBOT,
+                fields={'x' : position['x'],  'y' : position['y']})
+            print(r.status)
 
     @Service.action
     def get_path(self, start, end):
@@ -69,7 +76,7 @@ class Map(Service):
             return self.graph.nodes[point][0].to_dict()
 
 def main():
-    map = Map()
+    map = Map('localhost:4242')
     map.run()
 
 if __name__ == "__main__":
