@@ -51,7 +51,7 @@ class Aio(Io):
 
 class Gpio(Io):
 
-    def __init__(self, id, name, dir, event=None):
+    def __init__(self, id, name, dir, event=None, interrupt=None):
         super().__init__(id, name, dir, event=event)
         self.port = mraa.Gpio(id)
         with self.lock:
@@ -59,6 +59,8 @@ class Gpio(Io):
                 self.port.dir(mraa.DIR_OUT)
             else:
                 self.port.dir(mraa.DIR_IN)
+        if not dir and interrupt is not None and func is not None:
+            self.port.isr(mraa.EDGE_BOTH, interrupt, self)
 
 class Pwm(Io):
 
@@ -94,11 +96,12 @@ class Gpios(Service):
         self.gpios = []
 
     @Service.action
-    def add_gpio(self, type, id, name, dir=False, event=None, period=None, enable=None, baud_rate=None):
+    def add_gpio(self, type, id, name, dir=False, event=None, interrupt=None,
+        period=None, enable=None, baud_rate=None):
         if type == Type.AIO:
             self.gpios.append(Aio(id, name, event=event))
         elif type == Type.GPIO:
-            self.gpios.append(Gpio(id, name, dir=dir, event=event))
+            self.gpios.append(Gpio(id, name, dir=dir, event=event, interrupt=interrupt))
         elif type == Type.PWM:
             self.gpios.append(Pwm(id, name, dir, period, enable), event=event)
         elif type == Type.SPI:
@@ -128,6 +131,12 @@ class Gpios(Service):
 
         return False
 
+    def publish_gpio(self, gpio):
+        if gpio.event is None:
+            self.publish(gpio.name, gpio.name, gpio.id, gpio.value)
+        else:
+            self.publish(gpio.event, gpio.name, gpio.id, gpio.value)
+
     def update(self, refresh):
         while True:
             print("lol")
@@ -136,10 +145,7 @@ class Gpios(Service):
                     tmp = gpio.value
                     new = gpio.read()
                     if tmp != new:
-                        if gpio.event is None:
-                            self.publish(gpio.name, gpio.name, gpio.id, gpio.value)
-                        else:
-                            self.publish(gpio.event, gpio.name, gpio.id, gpio.value)
+                        self.publish_gpio(gpio)
             sleep(float(refresh))
 
 def main():
@@ -147,11 +153,11 @@ def main():
 
     # example
     gpios.add_gpio(Type.GPIO, 9, "led", True)
-    gpios.add_gpio(Type.GPIO, 8, "test", False)
+    gpios.add_gpio(Type.GPIO, 8, "test", False, interrupt=gpios.publish_gpios)
 
     cs = CellaservProxy()
     auto = cs.config.get(section="gpios", option="auto")
-    
+
     if auto == 'True':
         refresh = cs.config.get(section="gpios", option="refresh")
         thread = Thread(target=gpios.update, args=[refresh])
