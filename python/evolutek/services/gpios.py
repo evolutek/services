@@ -140,7 +140,7 @@ class Gpios(Service):
     def update(self, refresh):
         while True:
             for gpio in self.gpios:
-                if not gpio.dir:
+                if not gpio.dir and not hasattr(gpio, 'interrupt')
                     tmp = gpio.value
                     new = gpio.read()
                     if tmp != new:
@@ -152,7 +152,7 @@ def main():
 
     # example
     gpios.add_gpio(Type.GPIO, 9, "led", True)
-    #gpios.add_gpio(Type.GPIO, 8, "test", False, interrupt=gpios.publish_gpio)
+    gpios.add_gpio(Type.GPIO, 8, "test", False, interrupt=gpios.publish_gpio)
 
     cs = CellaservProxy()
     auto = cs.config.get(section="gpios", option="auto")
