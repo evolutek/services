@@ -1,8 +1,10 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib import ROBOT
+from threading import Timer
 from time import sleep
 
+@Service.require('ai', ROBOT)
 @Service.require('config')
 @Service.require('gpios', ROBOT)
 @Service.require('trajman', ROBOT)
@@ -11,97 +13,127 @@ class Match(Service):
     def __init__(self):
 
         # Cellaserv services
+        self.ai = cs.ai[ROBOT]
         self.config = cs.config
         self.gpios = cs.gpios[ROBOT]
         self.trajman = cs.trajman[ROBOT]
 
         # Color params
-        self.color1 = self.config.get(section="match", option="color1")
-        self.color2 = self.config.get(section="match", option="color2")
+        self.color1 = self.config.get(section='match', option='color1')
+        self.color2 = self.config.get(section='match', option='color2')
+
+        # Match timer
+        self.match_time = self.config.get(section='match', option='time')
+        self.timer = Timer(int(self.match_time), self.match_end)
 
         # Beacon param
-        self.url = self.config.get(section="beacon", option="url")
-        self.refresh = self.config.get(section="beacon", option="refresh")
+        self.url = self.config.get(section='beacon', option='url')
+        self.refresh = float(self.config.get(section='beacon', option='refresh'))
+
+        # Tirette security
+        self.tirette_inserted = False
 
         # Match params
         self.color = None
         self.match_satus = 'unstarted'
-        self.pal_position = None
-        self.pmi_position = None
+        self.position = None
+        self.direction = None
         self.robots = []
-        self.front_detection = False
-        self.back_detection = False
         self.front_detected = 0
         self.back_detected = 0
         self.score = 0
         self.tirette = 0
 
+
+    # Pull robots positions
     @Service.thread
-    def get_robots(self):
+    def update_data(self):
         while True:
             # Get robots
-            self.publish('robots', self.pal_position, self.pmi_position, self.robots)
-            sleep(float(self.refresh))
+            self.publish('robots', self.robots)
 
-    @Service.thread
-    def get_position(self):
-        while True:
-            pos = self.trajman.get_position()
-            if ROBOT == 'pal':
-                self.pal_position = pos
+            # Update position
+            self.position = self.trajman.get_position()
+            self.publish('position', position)
+
+            # Update moving direction
+            vector = self.get_vector_trsl()
+            if vector['trsl_vector'] > 0.0:
+                self.direction = True
+            elif vector['trsl_vector'] < 0.0:
+                self.direction = False
             else:
-                self.pmi_position = pos
-            self.publish(pos)
-            sleep(float(self.refresh))
+                self.direction = None
+            self.publish('direction', self.direction)
 
-    @Service.event
+            sleep(self.refresh)
+
+    # Start match
     def match_start(self):
-        self.match_status = "started"
+        self.ai.start()
+        self.timer.start()
+        self.match_status = 'started'
 
-    @Service.event
+    # End match
     def match_end(self):
-        self.match_status = "ended"
+        self.ai.end()
+        self.match_status = 'ended'
 
+    # Update score
     @Service.event
     def score(self, value):
         self.score += value
 
+    # Update front detection
     @Service.event
     def front(self, name, id, value):
-        print("Front detection from: (%s, %s) with: %s" % (name, id, value))
+        print('Front detection from: (%s, %s) with: %s' % (name, id, value))
         if bool(value):
             if self.front_detected == 0:
-                self.publish("front_detection")
+                self.publish('front_detection')
             self.front_detected += 1
         else:
             if self.front_detected == 0:
                 return
             if self.front_detected == 1:
-                self.publish("front_end_detection")
+                self.publish('front_end_detection')
             self.front_detected -= 1
 
+    # Update back detection
     @Service.event
     def back(self, name, id, value):
-        print("Back detection from: (%s, %s) with: %s" % (name, id, value))
+        print('Back detection from: (%s, %s) with: %s' % (name, id, value))
         if bool(value):
             if self.back_detected == 0:
-                self.publish("back_detection")
+                self.publish('back_detection')
             self.back_detected += 1
         else:
             if self.back_detected == 0:
                 return
             if self.back_detected == 1:
-                self.publish("back_end_detection")
+                self.publish('back_end_detection')
             self.back_detected -= 1
 
+    # update Tirette
     @Service.event
     def tirette(self, name, id, value):
-        print("Tirette: %s" % value)
-        self.tirette = int(tirette)
-        if self.tirette == 0:
-            self.publish("match_start")
+        print('Tirette: %s' % value)
+        self.tirette = bool(tirette)
+        if self.tirette:
+            self.tirette_inserted =  True
+            print('Tirette is inserted')
+        elif self.match_status == 'unstarted' and self.tirette_inserted:
+            self.match_start()
         else:
-            self.publish("tirette_on")
+            print('Tirette was not inserted')
+
+    @Service.event
+    def reset(self):
+        self.color = self.color1 if int(self.gpios.read('color')) else self.color2
+        self.match_status = 'unstarted'
+        self.score = 0
+        self.tirette_inserted = False
+        self.ai.reset(self.color)
 
     @Service.action
     def get_match(self):
@@ -111,21 +143,13 @@ class Match(Service):
         match['pal'] = self.pal_position
         match['pmi'] = self.pmi_position
         match['robots'] = self.robots
-        match['front'] = self.front_detection
+        match['front'] = self.front_detect
         match['back'] = self.back_detection
         match['score'] = self.score
-        return match
-
-    @Service.action
-    def reset(self):
-        self.color = self.color1 if int(self.gpios.read("color")) else self.color2
-        self.match_status = 'unstarted'
-        self.score = 0
-        return self.color
 
 def main():
     match = Match()
     match.run()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
