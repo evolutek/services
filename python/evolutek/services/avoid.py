@@ -9,37 +9,35 @@ class Avoid(Service):
         super().__init__("pal")
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman["pal"]
-        self.direction = True
+
+        self.direction = 0
+        self.front_detected = False
+        self.back_detected = False
         self.is_stopped = False
 
-    #@Service.event
+    @Service.event
     def direction(self, value):
         self.direction = value
         print(self.direction)
 
-    @Service.event
-    def front_detection(self):
-        print(self.direction)
-        if self.direction == True:
+        if self.direction > 0 and self.front_detected:
             self.trajman.stop_asap(2000, 30)
             self.is_stopped = True
-
-    @Service.event
-    def back_detection(self):
-        print(self.direction)
-        if self.direction == False:
+            print("[AVOID] Front detection")
+        elif self.direction < 0 and self.back_detected:
             self.trajman.stop_asap(2000, 30)
             self.is_stopped = True
+            print("[AVOID] Back detection")
+        else:
+            self.is_stopped = False
 
     @Service.event
-    def back_end_detection(self):
-        self.is_stopped = False
-        print("Robot stopped being stopped")
+    def front_detection(self, value):
+        self.front_detected = bool(value)
 
     @Service.event
-    def front_end_detection(self):
-        self.is_stopped = False
-        print("Robot stopped being stopped")
+    def back_detection(self, value):
+        self.back_detected = bool(value)
 
 def main():
     avoid = Avoid()
