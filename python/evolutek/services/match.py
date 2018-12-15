@@ -6,7 +6,7 @@ from time import sleep
 
 #@Service.require('ai', ROBOT)
 @Service.require('config')
-#@Service.require('gpios', ROBOT)
+@Service.require('gpios', ROBOT)
 @Service.require('trajman', ROBOT)
 class Match(Service):
 
@@ -16,7 +16,7 @@ class Match(Service):
         # Cellaserv services
         #self.ai = self.cs.ai[ROBOT]
         self.config = self.cs.config
-        #self.gpios = self.cs.gpios[ROBOT]
+        self.gpios = self.cs.gpios[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
         # Color params
@@ -35,10 +35,10 @@ class Match(Service):
         self.tirette_inserted = False
 
         # Match params
-        self.color = None
+        self.color = self.config.get(section='match', option='color')
         self.match_status = 'unstarted'
         self.position = None
-        self.direction = None
+        self.direction = 0.0
         self.robots = []
         self.front_detected = 0
         self.back_detected = 0
@@ -63,12 +63,7 @@ class Match(Service):
 
             # Update moving direction
             vector = self.trajman.get_vector_trsl()
-            if vector['trsl_vector'] > 0.0:
-                self.direction = True
-            elif vector['trsl_vector'] < 0.0:
-                self.direction = False
-            else:
-                self.direction = None
+            self.direction = vector['trsl_vector']
             self.publish('direction', value=self.direction)
 
         sleep(1)
@@ -98,13 +93,13 @@ class Match(Service):
         print('Front detection from: (%s, %s) with: %s' % (name, id, value))
         if int(value):
             if self.front_detected == 0:
-                self.publish('front_detection')
+                self.publish('front_detection', value=True)
             self.front_detected += 1
         else:
             if self.front_detected == 0:
                 return
             if self.front_detected == 1:
-                self.publish('front_end_detection')
+                self.publish('front_detection', value=False)
             self.front_detected -= 1
 
     # Update back detection
@@ -112,13 +107,13 @@ class Match(Service):
     def back(self, name, id, value):
         if int(value):
             if self.back_detected == 0:
-                self.publish('back_detection')
+                self.publish('back_detection', value=True)
             self.back_detected += 1
         else:
             if self.back_detected == 0:
                 return
             if self.back_detected == 1:
-                self.publish('back_end_detection')
+                self.publish('back_detection', value=False)
             self.back_detected -= 1
 
     # update Tirette
@@ -137,7 +132,7 @@ class Match(Service):
     @Service.event
     def reset(self):
         print('reset')
-        #self.color = self.color1 if int(self.gpios.read('color')) else self.color2
+        self.color = self.color1 if int(self.gpios.read('color')) else self.color2
         self.match_status = 'unstarted'
         self.score = 0
         self.tirette_inserted = False
