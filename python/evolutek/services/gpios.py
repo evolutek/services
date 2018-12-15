@@ -153,6 +153,7 @@ def main():
     # example
     gpios.add_gpio(Type.GPIO, 10, "back", False)
     gpios.add_gpio(Type.GPIO, 11, "front", False)
+    gpios.add_aio(Type.AIO, 1, "color")
 
     cs = CellaservProxy()
     auto = cs.config.get(section="gpios", option="auto")

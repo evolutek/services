@@ -35,7 +35,8 @@ class Match(Service):
         self.tirette_inserted = False
 
         # Match params
-        self.color = None
+        self.color = self.color1 if self.gpios.read_gpio('color') else self.color2
+        self.config.set(section='match', option='color', value=self.color)
         self.match_status = 'unstarted'
         self.position = None
         self.direction = 0.0
