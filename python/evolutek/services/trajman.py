@@ -166,7 +166,7 @@ class TrajMan(Service):
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
-        #self.set_telemetry(50)
+        self.set_telemetry(50)
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -658,13 +658,9 @@ class TrajMan(Service):
                 elif tab[1] == TELEMETRY_MESSAGE:
                     counter, cammandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
                     try:
-                        self.publish('telemetry:')
-                        self.publish('xpos:{0}'.format(xpos))
-                        self.publish('ypos:{0}'.format(ypos))
-                        self.publish('theta:{0}'.format(theta))
-                        self.publish('speed:{0}'.format(speed))
+                        self.publish(ROBOT + '_telemetry', status='successful', x=xpos, y=ypos, theta=theta, speed=speed)
                     except:
-                        self.publish('telemetry failed')
+                        self.publish(ROBOT + '_telemetry', status='failed')
 
                 elif tab[1] == ERROR:
                     self.log("CM returned an error")
