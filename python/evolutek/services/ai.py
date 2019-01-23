@@ -97,7 +97,7 @@ class Ai(Service):
 
     def recalibrate(self):
         sens = self.color == self.color2
-        self.actuators.recalibrate(sens_y = sens, pos_y = 220 if not sens else 2780)
+        self.actuators.recalibrate(sens_y = sens, init=True)
         sleep(10)
         #self.recalibration_event.wait()
         #self.recalibration_event.clear()

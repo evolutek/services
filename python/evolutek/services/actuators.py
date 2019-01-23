@@ -10,18 +10,24 @@ from time import sleep
 
 @Service.require("trajman", ROBOT)
 class Actuators(Service):
+
+    robot_size_x = ConfigVariable(section=ROBOT, option="robot_size_x", coerc=float)
+    robot_size_y = ConfigVariable(section=ROBOT, option="robot_size_y", coerc=float)
+
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
         self.enabled = True
+        self.dist = (robot_size_x ** 2 + robot_size_y ** 2) ** 1/2.0
+
 
     @Service.action
-    def recalibrate(self, x=True, y=True, side=False, sens_x=False, sens_y=False, dist_x=80, dist_y=80, pos_x=220, pos_y=220, theta=0):
-        Thread(target=self.recalibration, args=[x, y, side, sens_x, sens_y, dist_x, dist_y, pos_x, pos_y, theta]).start()
+    def recalibrate(self, x=True, y=True, side=False, sens_x=False, sens_y=False, decal_x=0, decal_y=0, init=False):
+        Thread(target=self.recalibration, args=[x, y, side, sens_x, sens_y, decal_x, decal_y, init]).start()
         return 'Done'
 
-    def recalibration(self, x=True, y=True, side=False, sens_x=False, sens_y=False, dist_x=80, dist_y=80, pos_x=220, pos_y=220, theta=0):
+    def recalibration(self, x=True, y=True, side=False, sens_x=False, sens_y=False, decal_x=0, decal_y=0, init=False):
         if not self.enabled:
             return
 
@@ -50,10 +56,11 @@ class Actuators(Service):
         self.trajman.set_trsl_max_speed(200)
         self.trajman.set_trsl_acc(200)
         self.trajman.set_trsl_dec(200)
-            
-        self.trajman.set_theta(theta)
-        self.trajman.set_x(pos_x)
-        self.trajman.set_y(pos_y)
+
+        if init:
+            self.trajman.set_theta(0)
+            self.trajman.set_x(1000)
+            self.trajman.set_y(1000)
 
         # Recalibrate X
         if x:
@@ -67,7 +74,9 @@ class Actuators(Service):
             print('[ACTUATORS] X pos found')
             sleep(0.5)
             position = self.trajman.get_position()
-            new_x = position['x'] + dist_x if not sens_x else position['x'] - dist_x
+            pos_x = position['x'] + decal_x if not sens_x else position['x'] - decal_x
+            self.trajman.set_x(pos_x)
+            new_x = pos_x + self.dist if not sens_x else pos_x - self.dist
             self.trajman.goto_xy(x=new_x, y=position['y'])
             while self.trajman.is_moving():
                 sleep(0.1)
@@ -84,7 +93,9 @@ class Actuators(Service):
             print('[ACTUTATORS] Y pos found')
             sleep(0.5)
             position = self.trajman.get_position()
-            new_y = position['y'] + dist_y if not sens_y else position['y'] - dist_y
+            pos_y = position['y'] + decal_y if not sens_y else position['y'] - decal_y
+            self.trajman.set_y(pos_y)
+            new_y = pos_y + self.dist if not sens_y else pos_y - self.dist
             print(new_y)
             self.trajman.goto_xy(x=position['x'], y=new_y)
             while self.trajman.is_moving():
