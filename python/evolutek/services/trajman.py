@@ -61,6 +61,8 @@ SET_WHEELS_DIAM    = 161
 SET_WHEELS_SPACING = 162
 SET_DELTA_MAX_ROT  = 163
 SET_DELTA_MAX_TRSL = 164
+SET_ROBOT_SIZE_X   = 165
+SET_ROBOT_SIZE_Y   = 166
 SET_DEBUG          = 200
 ERROR              = 255
 
@@ -127,6 +129,8 @@ class TrajMan(Service):
     rotmax = ConfigVariable(section=ROBOT, option="rot_max", coerc=float)
     deltatrsl = ConfigVariable(section=ROBOT, option="delta_trsl", coerc=float)
     deltarot = ConfigVariable(section=ROBOT, option="delta_rot", coerc=float)
+    robot_size_x = ConfigVariable(section=ROBOT, option="robot_size_x", coerc=float)
+    robot_size_y = ConfigVariable(section=ROBOT, option="robot_size_y", coerc=float)
 
     def __init__(self):
         super().__init__()
@@ -418,6 +422,18 @@ class TrajMan(Service):
         tab += pack('B', SET_PWM)
         tab += pack('ff', float(left), float(right))
         self.command(bytes(tab))
+
+    @Service.action
+    def set_robot_size_x(self, size):
+        tab = pack('B', 6)
+        tab += pack('B', SET_ROBOT_SIZE_X)
+        tab += pack('f', float(robot_size_x))
+
+    @Service.action
+    def set_robot_size_y(self, size):
+        tab = pack('B', 6)
+        tab += pack('B', SET_ROBOT_SIZE_Y)
+        tab += pack('f', float(robot_size_y))
 
     @Service.action
     def stop_asap(self, trsldec, rotdec):
