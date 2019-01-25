@@ -3,7 +3,6 @@
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 from enum import Enum
-#from evolutek.lib.map import Map
 from evolutek.lib.goals import Goals
 from evolutek.lib.settings import ROBOT
 from threading import Event, Thread
@@ -21,6 +20,7 @@ class State(Enum):
 @Service.require('actuators', ROBOT)
 #@Service.require('avoid', ROBOT)
 #@Service.require('gpios', ROBOT)
+@Service.require('match')
 class Ai(Service):
 
     def __init__(self):
@@ -38,8 +38,9 @@ class Ai(Service):
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
-        self.color = self.color1  #@Andre : set color
-        self.cs.config.set(section = "match", option = "color", value = self.color)
+        self.color = self.cs.match.get_match()['color']
+        self.color = self.color1  #remove
+        self.refresh = float(self.cs.config.get(section='ai', option='refresh'))
 
         self.max_trsl_speed = self.cs.config.get(section=ROBOT, option='trsl_max')
         self.max_rot_speed = self.cs.config.get(section=ROBOT, option='rot_max')
@@ -47,10 +48,7 @@ class Ai(Service):
         # Parameters
         self.aborting = Event()
         self.current_action = None
-        self.position = None
-        self.robots = None
         self.tmp_robot = None
-        self.robots = []
 
         # Match config
         #self.map = Map(3000, 2000, 25)
@@ -58,6 +56,12 @@ class Ai(Service):
 
         print('[AI] Initial Setup')
         self.setup(recalibration=False)
+
+    @Service.thread
+    def status(self):
+        while True:
+            self.publish(seld.state)
+            sleep(self.refresh)
 
     @Service.action
     def setup(self, color=None, recalibration=True):
@@ -70,13 +74,21 @@ class Ai(Service):
 
         print('[AI] Setuping')
         self.trajman.enable()
-        self.actuators.enable()
-        #self.actuators.init_all()
+        self.actuators.reset()
+
+        self.match_thread = Thread(target=self.selecting)
+
         if color is not None:
             self.color = color
 
         if recalibration:
-            self.recalibrate()
+            sens = self.color == self.color2
+            self.actuators.recalibrate(sens_y = sens, init=True)
+            sleep(10)
+
+            #self.recalibration_event.wait()
+            #self.recalibration_event.clear()
+
             self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
             while self.trajman.is_moving():
                 sleep(0.1)
@@ -95,20 +107,13 @@ class Ai(Service):
         self.state = State.Waiting
         print('[AI] Waiting')
 
-    def recalibrate(self):
-        sens = self.color == self.color2
-        self.actuators.recalibrate(sens_y = sens, init=True)
-        sleep(10)
-        #self.recalibration_event.wait()
-        #self.recalibration_event.clear()
-
     @Service.action
     def start(self):
         if self.state != State.Waiting:
             return
 
         print('[AI] Starting')
-        self.selecting()
+        self.match_thread.start()
 
     @Service.action
     def end(self):
@@ -116,7 +121,7 @@ class Ai(Service):
         self.state = State.Ending
         self.trajman.free()
         self.trajman.disable()
-        self.actuators.disable_all()
+        self.actuators.free()
         self.actuators.disable()
 
     @Service.action
@@ -130,12 +135,7 @@ class Ai(Service):
         if robot is not None:
             self.tmp_robot = robot
 
-        #push back current action
-
-    @Service.thread
-    def debug(self):
-        print("[AI] Current state : " + str(self.state))
-        sleep(1)
+        # Give it to the map
 
     def selecting(self):
         if self.state != State.Wating or self.state != State.Making:
@@ -155,6 +155,9 @@ class Ai(Service):
         self.making(current_action, path)
 
     def making(self, current_acion, path):
+
+        # Need to rework
+
         if self.state != State.Selecting:
             return
 

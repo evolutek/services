@@ -3,12 +3,11 @@ from math import pi, sqrt
 
 class Node:
 
-    def __init__(self, goal, parents, children, done, score):
+    def __init__(self, goal, parents, children, done):
         self.goal = goal
         self.parents = parents
         self.children = children
         self.done = done
-        self.score = score
 
 class Action:
 
@@ -47,12 +46,12 @@ class Goals:
 
         # parse file
 
-    def add_node(self, name, parents=None, children=None, goal=None, done=False, score=0):
+    def add_node(self, name, parents=None, children=None, goal=None, done=False):
         if parents is None:
             parents = []
         if children is None:
             children = []
-        node = Node(goal, parents, children, done, score)
+        node = Node(goal, parents, children, done)
         self.graph[name] = node
         for parent in parents:
             self.graph[parent].children.append(name)
@@ -78,7 +77,7 @@ class Goals:
                         parents_done = False
                         break
                 if parents_done:
-                    l.append((name, node))
+                    l.append((name, node.goal))
         return l
 
 goals = Goals('test.json', 'green')
