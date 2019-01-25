@@ -1,84 +1,58 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-from evolutek.lib.settings import ROBOT
 from threading import Timer
 from time import sleep
 
 #@Service.require('ai', ROBOT)
 @Service.require('config')
-@Service.require('gpios', ROBOT)
 @Service.require('trajman', ROBOT)
 class Match(Service):
 
     def __init__(self):
 
         self.cs = CellaservProxy()
-        # Cellaserv services
-        #self.ai = self.cs.ai[ROBOT]
-        self.config = self.cs.config
-        self.gpios = self.cs.gpios[ROBOT]
-        self.trajman = self.cs.trajman[ROBOT]
 
-        # Color params
-        self.color1 = self.config.get(section='match', option='color1')
-        self.color2 = self.config.get(section='match', option='color2')
+        # Match Params
+        self.color1 = self.cs.config.get(section='match', option='color1')
+        self.color2 = self.cs.config.get(section='match', option='color2')
+        self.match_time = int(self.cs.config.get(section='match', option='time'))
+        self.timer = Timer(self.match_time - 5, self.match_end)
 
-        # Match timer
-        self.match_time = self.config.get(section='match', option='time')
-        self.timer = Timer(int(self.match_time) - 5, self.match_end)
-
-        # Beacon param
-        self.url = self.config.get(section='beacon', option='url')
-        self.refresh = float(self.config.get(section='beacon', option='refresh'))
-
-        # Tirette security
-        self.tirette_inserted = False
-
-        # Match params
-        self.color = self.config.get(section='match', option='color')
+        # Match Status
+        self.color = None
         self.match_status = 'unstarted'
-        self.position = None
-        self.direction = 0.0
-        self.robots = []
-        self.front_detected = 0
-        self.back_detected = 0
         self.score = 0
         self.tirette = False
 
-        super().__init__(identification=ROBOT)
+        # PAL status
+        self.pal_ai_status = None
+        self.pal_avoid_status = None
+        self.pal_telemetry = None
+        self.robots = []
 
+        super().__init__()
         print('Match ready')
 
 
-    # Pull robots positions
+    # Publish Match Status
     @Service.thread
     def update_data(self):
         while True:
-            # Get robots
-            #self.publish('robots', self.robots)
+            self.publish('match', self.get_match())
+            sleep(self.refresh)
 
-            # Update position
-            self.position = self.trajman.get_position()
-            self.publish('position', value=self.position)
-
-            # Update moving direction
-            vector = self.trajman.get_vector_trsl()
-            self.direction = vector['trsl_vector']
-            self.publish('direction', value=self.direction)
-
-        sleep(1)
-
-    # Start match
     def match_start(self):
-        print('match_start')
-        #self.ai.start()
-        self.timer.start()
+        if self.match_started != 'unstarted'
+            return
         self.match_status = 'started'
+        print('match_start')
+        #self.cs.ai['PAL'].start()
+        self.timer.start()
 
     # End match
     def match_end(self):
         print('match_end')
-        #self.ai.end()
+        #self.ai[]'PAL'].end()
         self.match_status = 'ended'
 
     # Update score
@@ -87,69 +61,44 @@ class Match(Service):
         self.score += int(value)
         print('score is now: %d' % self.score)
 
-    # Update front detection
-    @Service.event
-    def front(self, name, id, value):
-        print('Front detection from: (%s, %s) with: %s' % (name, id, value))
-        if int(value):
-            if self.front_detected == 0:
-                self.publish('front_detection', value=True)
-            self.front_detected += 1
-        else:
-            if self.front_detected == 0:
-                return
-            if self.front_detected == 1:
-                self.publish('front_detection', value=False)
-            self.front_detected -= 1
-
-    # Update back detection
-    @Service.event
-    def back(self, name, id, value):
-        if int(value):
-            if self.back_detected == 0:
-                self.publish('back_detection', value=True)
-            self.back_detected += 1
-        else:
-            if self.back_detected == 0:
-                return
-            if self.back_detected == 1:
-                self.publish('back_detection', value=False)
-            self.back_detected -= 1
-
     # update Tirette
     @Service.event
     def tirette(self, name, id, value):
         print('Tirette: %s' % value)
-        self.tirette = int(value)
-        if self.tirette:
-            self.tirette_inserted =  True
+        tirette = int(value)
+        if tirette:
             print('Tirette is inserted')
-        elif self.match_status == 'unstarted' and self.tirette_inserted:
+        elif self.match_status == 'unstarted' and self.tirette:
             self.match_start()
         else:
             print('Tirette was not inserted')
+        self.tirette = bool(tirette)
 
     @Service.event
-    def reset(self):
+    def reset(self, value):
         print('reset')
-        self.color = self.color1 if int(self.gpios.read('color')) else self.color2
         self.match_status = 'unstarted'
         self.score = 0
-        self.tirette_inserted = False
-        #self.ai.reset(self.color)
+        self.timer.cancel()
+        self.timer = Timer(self.match_time - 5, self.match_end)
+        if value == 'PAL'
+            #self.ai.reset(self.color)
+            pass
 
     @Service.action
     def get_match(self):
         match = {}
+
         match['status'] = self.match_status
         match['color'] = self.color
-        match['direction'] = self.direction
-        match['position'] = self.position
         match['robots'] = self.robots
-        match['front'] = self.front_detected
-        match['back'] = self.back_detected
         match['score'] = self.score
         match['tirette'] = self.tirette
+
+        match['pal_ai_status'] = self.pal_ai_status
+        match['pal_avoid_status'] = self.pal_avoid_status
+        match['pal_telemetry'] = self.pal_telemetry
+
         return match
 
 def main():
