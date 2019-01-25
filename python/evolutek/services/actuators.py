@@ -19,8 +19,17 @@ class Actuators(Service):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
         self.enabled = True
-        self.dist = (robot_size_x ** 2 + robot_size_y ** 2) ** 1/2.0
+        self.dist = ((robot_size_x ** 2 + robot_size_y ** 2) ** (1 / 2.0)) / 2 + 20
+        self.reset()
 
+    @Service.action
+    def reset(self):
+        # Init all ACTUATORS
+        self.enabled = True
+
+    @Service.action
+    def free(self):
+        pass
 
     @Service.action
     def recalibrate(self, x=True, y=True, side=False, sens_x=False, sens_y=False, decal_x=0, decal_y=0, init=False):
@@ -107,7 +116,7 @@ class Actuators(Service):
         self.trajman.set_trsl_dec(speeds['trdec'])
 
         print('[ACTUATORS] Recalibration done')
-        self.publish('recalibrated')
+        self.publish(ROBOT + '_recalibrated')
 
     @Service.action
     def enable(self):
