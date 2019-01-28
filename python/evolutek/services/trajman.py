@@ -675,11 +675,12 @@ class TrajMan(Service):
                         pass
 
                 elif tab[1] == TELEMETRY_MESSAGE:
-                    counter, cammandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
+                    counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
+                    telem = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
                     try:
-                        self.publish(ROBOT + '_telemetry', status='successful', x=xpos, y=ypos, theta=theta, speed=speed)
+                        self.publish(ROBOT + '_telemetry', status='successful', telemetry = telem)
                     except:
-                        self.publish(ROBOT + '_telemetry', status='failed')
+                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = telem)
 
                 elif tab[1] == ERROR:
                     self.log("CM returned an error")

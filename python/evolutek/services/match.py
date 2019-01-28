@@ -42,17 +42,17 @@ class Match(Service):
             sleep(self.refresh)
 
     def match_start(self):
-        if self.match_started != 'unstarted'
+        if self.match_started != 'unstarted':
             return
         self.match_status = 'started'
         print('match_start')
-        #self.cs.ai['PAL'].start()
+        self.cs.ai['PAL'].start()
         self.timer.start()
 
     # End match
     def match_end(self):
         print('match_end')
-        #self.ai[]'PAL'].end()
+        self.ai['PAL'].end()
         self.match_status = 'ended'
 
     # Update score
@@ -60,6 +60,14 @@ class Match(Service):
     def score(self, value):
         self.score += int(value)
         print('score is now: %d' % self.score)
+
+    @Service.event
+    def telemetry(self, status, telemetry):
+        if (status != failed):
+            self.pal_telemetry = telemetry
+        else:
+            print("Could not read telemetry")
+
 
     # update Tirette
     @Service.event
@@ -81,7 +89,7 @@ class Match(Service):
         self.score = 0
         self.timer.cancel()
         self.timer = Timer(self.match_time - 5, self.match_end)
-        if value == 'PAL'
+        if value == 'PAL':
             #self.ai.reset(self.color)
             pass
 
