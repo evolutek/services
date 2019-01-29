@@ -27,7 +27,7 @@ class Map(Service):
       'port' : int(cs.config.get(section='tim', option='port')),
       'pos_x' : int(cs.config.get(section='tim', option='pos_x')),
       'pos_y' : int(cs.config.get(section='tim', option='pos_y')),
-      'angle' : float(cs.config.get(section='tim', option='max_distance'))
+      'angle' : float(cs.config.get(section='tim', option='angle'))
     }
     
     self.lock = Lock()
