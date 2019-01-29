@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw
 from math import sqrt, cos, sin, radians
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
-from threading import Thread
+
 
 def parse_num(s):
     if '+' in s or '-' in s:
@@ -26,6 +26,9 @@ class Point:
   def distance(self, point):
     return sqrt((point.x - self.x) ** 2 + (point.y - self.y) ** 2)
 
+  def to_dict(self):
+    return {'x': self.x, 'y': self.y}
+
 # TIM Class
 # config: {pos_x : int, pos_y : int, angle : float, min_size : float, max_distance : float, ip : str, port : int}
 # pos is the position of the TIM: Point(x, y)
@@ -44,10 +47,11 @@ class Tim:
         self.connected = False
         try:
           print('Connecting to the TIM')
+          print(config)
           self.socket.connect((config['ip'], config['port']))
           self.connected = True
-        except:
-          print('Failed to connect to the TIM')
+        except Exception as e:
+          print('Failed to connect to the TIM: ' + str(e))
         print('Connected to the TIM')
 
     def convert_to_card(self, cyl_data, size_a):
@@ -70,8 +74,6 @@ class Tim:
         prev = data[0]
         shape = []
         building_shape = False
-
-        print(result)
 
         for i in range(1, len(data)):
             cur = data[i]
