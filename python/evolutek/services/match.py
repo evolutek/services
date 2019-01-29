@@ -36,7 +36,7 @@ class Match(Service):
         # PAL status
         self.pal_ai_s = None
         self.pal_avoid_s = None
-        self.pal_telem = None
+        self.pal_telem = {'x': 1000, 'y':1500}
         self.robots = []
 
         super().__init__()
@@ -79,12 +79,12 @@ class Match(Service):
         self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
         self.canvas.grid(row=3, column=2)
 
-    def print_robot(self, robot, size_x, size_y, color):
+    def print_robot(self, robot, size, color):
         self.canvas.create_rectangle(
-            (robot['y'] - size_y/2) * self.interface_ratio,
-            (robot['x'] - size_x/2) * self.interface_ratio,
-            (robot['y'] + size_y/2) * self.interface_ratio,
-            (robot['x'] + size_x/2) * self.interface_ratio,
+            (robot['y'] - size/2) * self.interface_ratio,
+            (robot['x'] - size/2) * self.interface_ratio,
+            (robot['y'] + size/2) * self.interface_ratio,
+            (robot['x'] + size/2) * self.interface_ratio,
             width=2, fill=color)
 
     def update_interface(self):
@@ -104,10 +104,10 @@ class Match(Service):
             self.canvas.delete('all')
             self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
             if self.pal_telem is not None:
-              self.print_robot(self.pal_telem, self.robot_size_x, self.robot_size_y, 'orange')
+              self.print_robot(self.pal_telem, self.robot_size_y, 'orange')
             for robot in self.robots:
               print(robot)
-              self.print_robot(robot, self.robot_size, self.robot_size, 'red')
+              self.print_robot(robot, self.robot_size, 'red')
 
         self.window.after(self.interface_refresh, self.update_interface)
     
