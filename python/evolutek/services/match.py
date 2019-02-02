@@ -204,7 +204,7 @@ class Match(Service):
             self.cs.ai['pal'].end()
             self.cs.ai['pmi'].end()
         except Exception as e:
-            print('Failed to stop robots: %s', str(e))
+            print('Failed to stop robots: %s' % str(e))
         self.match_status = 'ended'
         print('match_end')
 
