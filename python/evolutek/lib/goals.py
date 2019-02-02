@@ -28,7 +28,7 @@ class Goal:
         self.y = y
         self.theta = theta
         self.actions = [] if actions is None else actions
-        self.score = 0
+        self.score = score
         self.robot_proximity = robot_proximity
         self.done = False
         self.last_action = -1

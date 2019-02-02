@@ -38,7 +38,7 @@ class Map(Service):
     self.tim = Tim(self.tim_config)
 
     super().__init__()
-
+  
   @Service.event
   def pal_telemetry(self, status, telemetry):
     if status is not 'failed':
@@ -64,7 +64,18 @@ class Map(Service):
         self.publish('oppenents', robots=self.robots)
 
       sleep(self.refresh)
+"""
+    @Service.action
+    def get_optimal_goal(self, goals):
+      optimum = None
+      for goal in goals:
+        option = dijkstra_path(goal)
+        if optimum is None || option.cost < optimum.cost:
+          # optimum -> Cfeate dict here
 
+      return optimum
+        
+"""
 if __name__ == '__main__':
   map = Map()
   map.run()
