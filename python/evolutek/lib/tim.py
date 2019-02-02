@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw
 from math import sqrt, cos, sin, radians
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
-
+from evolutek.lib.shapes import is_circle
 
 def parse_num(s):
     if '+' in s or '-' in s:
@@ -74,7 +74,7 @@ class Tim:
         prev = data[0]
         shape = []
         building_shape = False
-
+        circle_counter = 0
         for i in range(1, len(data)):
             cur = data[i]
             prev_distance =  cur.distance(prev)
@@ -82,16 +82,26 @@ class Tim:
             #if two points are close enougth, we select them
                 shape.append(cur)
                 building_shape = True
+                shape = "square"
             else:
                 if building_shape and len(shape) >= self.min_size:
+                    if is_circle(shape):
+                        print("Circle found!")
+                        circle_counter = circle_counter + 1
+                        shape = "circle"
                     # we do the average between the first point selected and the last
-                    result.append(average(shape[0], shape[-1]))
+                    result.append((average(shape[0], shape[-1]), shape))
                 shape = []
                 building_shape = False
             prev = cur
 
         if building_shape and len(shape) >= self.min_size:
-            result.append(average(shape[0], shape[-1]))
+            if is_circle(shape):
+                print("Circle found!")
+                circle_counter = circle_counter + 1
+                shape = "circle"
+            result.append((average(shape[0], shape[-1]), shape))
+        print("circles: ", circle_counter, "/", len(result))
         return result
 
     def get_scan(self):
