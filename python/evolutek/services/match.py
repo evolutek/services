@@ -120,12 +120,21 @@ class Match(Service):
         score_label.grid(row=2, column=1, columnspan=3)
 
     def print_robot(self, robot, size, color):
+        if robot["shape"] == "circle":
+            self.canvas.create_oval(
+                (robot['y'] - size/2) * self.interface_ratio,
+                (robot['x'] - size/2) * self.interface_ratio,
+                (robot['y'] + size/2) * self.interface_ratio,
+                (robot['x'] + size/2) * self.interface_ratio,
+                width=2, fill=color)
+            return
         self.canvas.create_rectangle(
             (robot['y'] - size/2) * self.interface_ratio,
             (robot['x'] - size/2) * self.interface_ratio,
             (robot['y'] + size/2) * self.interface_ratio,
             (robot['x'] + size/2) * self.interface_ratio,
             width=2, fill=color)
+
 
     def update_interface(self):
         if self.match_reseted and self.color is None:
