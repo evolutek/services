@@ -17,6 +17,9 @@ class Map(Service):
 
     cs = CellaservProxy()
 
+    self.color1 = cs.config.get(section='match', option='color1')
+    self.color2 = cs.config.get(section='match', option='color2')
+
     self.delta_dist = float(cs.config.get(section='tim', option='delta_dist'))
     self.refresh = float(cs.config.get(section='tim', option='refresh'))
 
@@ -35,10 +38,30 @@ class Map(Service):
     self.robots = []
     self.pal_telem = None
 
-    self.tim = Tim(self.tim_config)
+    self.color = None
+    self.tim = None
+
+    try:
+      color = cs.match.get_color()
+      self.match_color(color)
+    except Exception as e:
+      print('Failed to get color: %s' % str(e))
 
     super().__init__()
   
+  @Service.event
+  def match_color(self, color):
+    if color != self.color:
+      self.color = color
+    if self.color is not None:
+      config = self.tim_config
+      if self.color != self.color1:
+        config['pos_y'] = 3000 - config['pos_y']
+        config['angle'] *= -1
+      self.tim = Tim(config)
+    else:
+      self.tim = None
+
   @Service.event
   def pal_telemetry(self, status, telemetry):
     if status is not 'failed':
@@ -46,10 +69,11 @@ class Map(Service):
 
   @Service.thread
   def loop_scan(self):
-    if not self.tim.connected:
-      print('TIM not connected')
-      return
     while True:
+      if self.tim is None:
+        print('TIM not connected')
+        sleep(self.refresh)
+        continue
       data = self.tim.get_scan()
       with self.lock:
 

@@ -68,6 +68,7 @@ class Match(Service):
             self.cs.ai['pmi'].setup(color=self.color, recalibration=False)
         except Exception as e:
             print('Failed to reset robots: %s' % str(e))
+        self.publish('match_color', color=self.color)
 
     def reset_match(self):
         if self.match_status == 'started':
@@ -120,7 +121,7 @@ class Match(Service):
         score_label.grid(row=2, column=1, columnspan=3)
 
     def print_robot(self, robot, size, color):
-        if robot["shape"] == "circle":
+        if "shape" in robot and robot["shape"] == "circle":
             self.canvas.create_oval(
                 (robot['y'] - size/2) * self.interface_ratio,
                 (robot['x'] - size/2) * self.interface_ratio,
@@ -325,10 +326,15 @@ class Match(Service):
 
         match['pmi_ai_status'] = self.pmi_ai_s
         match['pmi_avoid_status'] = self.pmi_avoid_s
-        match['pmi_telemetry'] = self.pmi_telem
+        match['pmi_t:elemetry'] = self.pmi_telem
 
         return match
 
+    #@Service.thread
+    def match_status(self):
+      while True:
+        self.publish('match_status', match=self.get_match())
+        sleep(self.refresh)
 
 def main():
     match = Match()

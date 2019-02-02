@@ -10,24 +10,25 @@ def parse_num(s):
     else:
         return int(s, 16)
 
-def average(a, b):
+def average(a, b, shape="sqare"):
     """ return the average between two points """
-    return Point((a.x + b.x) // 2, (a.y + b.y) // 2)
+    return Point((a.x + b.x) // 2, (a.y + b.y) // 2, shape)
 
 class Point:
 
-  def __init__(self, x_, y_):
+  def __init__(self, x_, y_, shape_ = "square"):
     self.x = x_
     self.y = y_
+    self.shape = shape_
 
   def __str__(self):
-    return str(x) + ', ' + str(y)
+    return "(" + str(self.x) + ', ' + str(self.y) + ")"
 
   def distance(self, point):
     return sqrt((point.x - self.x) ** 2 + (point.y - self.y) ** 2)
 
   def to_dict(self):
-    return {'x': self.x, 'y': self.y}
+    return {'x': self.x, 'y': self.y, 'shape' : self.shape}
 
 # TIM Class
 # config: {pos_x : int, pos_y : int, angle : float, min_size : float, max_distance : float, ip : str, port : int}
@@ -82,15 +83,15 @@ class Tim:
             #if two points are close enougth, we select them
                 shape.append(cur)
                 building_shape = True
-                shape = "square"
             else:
                 if building_shape and len(shape) >= self.min_size:
                     if is_circle(shape):
                         print("Circle found!")
                         circle_counter = circle_counter + 1
-                        shape = "circle"
-                    # we do the average between the first point selected and the last
-                    result.append((average(shape[0], shape[-1]), shape))
+                        result.append(average(shape[0], shape[-1], "circle"))
+                    else:
+                        # we do the average between the first point selected and the last
+                        result.append(average(shape[0], shape[-1]))
                 shape = []
                 building_shape = False
             prev = cur
@@ -99,8 +100,9 @@ class Tim:
             if is_circle(shape):
                 print("Circle found!")
                 circle_counter = circle_counter + 1
-                shape = "circle"
-            result.append((average(shape[0], shape[-1]), shape))
+                result.append(average(shape[0], shape[-1], "circle"))
+            else:
+                result.append(average(shape[0], shape[-1]))
         print("circles: ", circle_counter, "/", len(result))
         return result
 

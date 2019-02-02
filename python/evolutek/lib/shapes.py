@@ -2,43 +2,47 @@ from math import sqrt, cos, sin, atan, acos, degrees
 from statistics import pstdev, mean
 
 def angle(p0, p1, p2):
-    p01 = pow(p1.x - p0.x, 2) + pow(p1.y - p0.y, 2)
-    p02 = pow(p2.x - p0.x, 2) + pow(p2.y - p0.y, 2)
-    p12 = pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2)
-    return degrees(acos((p01 + p12 - p02) / sqrt(4 * p01 * p12)))
+    a = pow(p1.x - p0.x, 2) + pow(p1.y - p0.y, 2)
+    b = pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2)
+    c = pow(p2.x - p0.x, 2) + pow(p2.y - p0.y, 2)
+    return degrees(acos((a + b - c) / sqrt(4 * a * b)))
 
 def dist(a, b):
     return sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2))
+
 
 def seg_dist(a, b, c): #distance from point c to segment ab
     sx = b.x - a.x
     sy = b.y - a.y
     dsq = sx * sx + sy * sy
-    u = ((x3 - x1) * sx + (y3 - y1) * sy) / float(dsq)
+    u = ((c.x - a.x) * sx + (c.y - a.y) * sy) / float(dsq)
     if u > 1 :
         u = 1
     elif u < 0 :
         u = 0
-    x = x1 + u * sx
-    y = y1 + u * sy
-    dx = x - x3
-    dy = y - y3
-    return math.sqrt(dx * dx + dy * dy)
+    x = a.x + u * sx
+    y = a.y + u * sy
+    dx = x - c.x
+    dy = y - c.y
+    return sqrt(dx * dx + dy * dy)
 
 def is_circle(data):
     d1 = data[0]
     d2 = data[len(data) // 2]
     d3 = data[-1]
-    t = atan((d3.x - d1.x) / (d3.y - d1.y))
-    x2 = -(d2.x * cos(t) - d2.y * sin(t))
-    d = dist(d1, d3)
-    if x2 < 0.2 * d or x2 > 0.7 * d:
+    d = dist(d1, d2)
+    x = seg_dist(d1, d3, d2)
+    print("d: %d, x: %d" % (d, x))
+    if x < 0.2 * d or x > 0.7 * d:
         return False
     print("\033[1;31mshape is a potential circle!\033[1;m")
     angles = [None] * (len(data) - 3)
+    print(d1)
     for p in range(1, len(data) - 2):
+        print(data[p])
         angles[p - 1] = angle(d1, data[p], d3)
     m = mean(angles)
+    print(d3)
     print(angles)
     print("mean: ", m, "stdev: ", pstdev(angles))
     return  90 < m and 135 > m and pstdev(angles) < 8
