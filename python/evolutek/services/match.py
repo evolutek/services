@@ -1,5 +1,6 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
+from evolutek.lib.watchdog import Watchdog
 from threading import Timer
 from tkinter import *
 from time import sleep
@@ -18,6 +19,7 @@ class Match(Service):
         self.refresh = float(self.cs.config.get(section='match', option='refresh'))
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
         self.interface_enabled = self.cs.config.get(section='match', option='interface_enabled') == 'True'
+        self.timeout_robot = float(self.cs.config.get(section='match', option='timeout_robot'))
         self.interface_refresh = int(self.cs.config.get(section='match', option='interface_refresh'))
         self.interface_ratio = float(self.cs.config.get(section='match', option='interface_ratio'))
         self.pal_size_x = int(self.cs.config.get(section='pal', option='robot_size_x'))
@@ -38,11 +40,13 @@ class Match(Service):
         self.pal_ai_s = None
         self.pal_avoid_s = None
         self.pal_telem = None
+        self.pal_watchdog = Watchdog(self.timeout_robot, self.reset_pal_status)
 
         # PMI status
         #self.pmi_ai_s = None
         #self.pmi_avoid_s = None
         #self.pmi_telem = None
+        # self.pmi_watchdog = Watchdog(self.timeout_robot, self.reset_pmi_status)
 
         # Oppenents positions
         self.robots = []
@@ -122,8 +126,8 @@ class Match(Service):
               print(robot)
               self.print_robot(robot, self.robot_size, 'red')
 
-            self.pal_ai_status_label.config(text=self.pal_ai_s)
-            #self.pmi_ai_status_label.config(text=self.pmi_ai_s)
+            self.pal_ai_status_label.config(text=self.pal_ai_s if self.pal_ai_s is not None else 'PAL not connected')
+            #self.pmi_ai_status_label.config(text=self.pmi_ai_s if self.pmi_ai_s is not None else 'PMI not connected')
 
             self.color_label.config(text=self.color)
             self.score_label.config(text=str(self.score))
@@ -171,6 +175,18 @@ class Match(Service):
         self.match_status = 'ended'
         print('match_end')
 
+    def reset_pal_status(self):
+        self.pal_ai_s = None
+        self.pal_telem = None
+        self.pal_avoid_s = None
+
+    """
+    def reset_pmi_status(self):
+        self.pmi_ai_s = None
+        self.pmi_telem = None
+        self.pmi_avoid_s = None
+    """
+
     """ Event """
 
     # Update score
@@ -181,6 +197,7 @@ class Match(Service):
 
     @Service.event
     def pal_telemetry(self, status, telemetry):
+        self.pal_watchdog.reset()
         if status != failed:
             self.pal_telem = telemetry
         else:
@@ -189,15 +206,18 @@ class Match(Service):
 
     @Service.event
     def pal_ai_status(self, status):
+        self.pal_watchdog.reset()
         self.pal_ai_s = status
 
     @Service.event
     def pal_avoid_status(self, status):
+        self.pal_watchdog.reset()
         self.pal_avoid_s = status
 
     """
     @Service.event
     def pmi_telemetry(self, status, telemetry):
+        self.pmi_watchdog.reset()
         if status != failed:
             self.pmi_telem = telemetry
         else:
@@ -206,10 +226,12 @@ class Match(Service):
 
     @Service.event
     def pmi_ai_status(self, status):
+        self.pmi_watchdog.reset()
         self.pmi_ai_s = status
 
     @Service.event
     def pmi_avoid_status(self, status):
+        self.pmi_watchdog.reset()
         self.pmi_avoid_s = status
     """
 
