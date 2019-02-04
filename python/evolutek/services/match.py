@@ -112,10 +112,10 @@ class Match(Service):
             self.canvas.delete('all')
             self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
-            if self.pmi_telem is not None:
-                self.print_robot(self.pmi_telem, self.pal_size_y, 'orange')
+            if self.pal_telem is not None:
+                self.print_robot(self.pal_telem, self.pal_size_y, 'orange')
 
-            #if self.pal_telem is not None:
+            #if self.pmi_telem is not None:
             #    self.print_robot(self.pmi_telem, self.pmi_size_y, 'orange')
 
             for robot in self.robots:
