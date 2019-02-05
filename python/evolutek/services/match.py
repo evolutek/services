@@ -185,7 +185,7 @@ class Match(Service):
     """ Match utilities """
 
     def match_start(self):
-        if self.match_status != 'unstarted':
+        if self.match_status != 'unstarted' and self.color is None:
             return
 
         try:
