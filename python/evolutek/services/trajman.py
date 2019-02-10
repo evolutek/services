@@ -431,12 +431,14 @@ class TrajMan(Service):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_X)
         tab += pack('f', float(size))
+        self.command(bytes(tab))
 
     @Service.action
     def set_robot_size_y(self, size):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_Y)
         tab += pack('f', float(size))
+        self.command(bytes(tab))
 
     @Service.action
     def stop_asap(self, trsldec, rotdec):
