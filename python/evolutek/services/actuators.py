@@ -52,11 +52,11 @@ class Actuators(Service):
 
     @Service.action
     def close_clapet(self):
-        self.cs.ax['4'].move(goal=720)
+        self.cs.ax['4'].move(goal=490)
 
     @Service.action
     def open_clapet(self):
-        self.cs.ax['4'].move(goal=955)
+        self.cs.ax['4'].move(goal=710)
 
     @Service.action
     def free(self):
