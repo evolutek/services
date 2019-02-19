@@ -52,6 +52,7 @@ class Match(Service):
 
         # Oppenents positions
         self.robots = []
+        self.robots_watchdog = Watchdog(self.timeout_robot, self.reset_robots)
 
         super().__init__()
         print('Match ready')
@@ -59,10 +60,14 @@ class Match(Service):
 
     """ Interface """
 
+    """ Set color """
     def set_color(self, value):
         self.color_setted = True
-        self.color = value
-        self.reset()
+        self.reset(value)
+        sleep(self.refresh)
+        if self.color is None:
+            print ('Failed to set color')
+            return
         try:
             self.cs.ai['pal'].setup(color=self.color, recalibration=False)
             self.cs.ai['pmi'].setup(color=self.color, recalibration=False)
@@ -70,11 +75,12 @@ class Match(Service):
             print('Failed to reset robots: %s' % str(e))
         self.publish('match_color', color=self.color)
 
+    """ reset match """
     def reset_match(self):
         if self.match_status == 'started':
             return
         self.match_reseted = True
-        self.match_ended = False
+        self.ended = False
         self.color = None
 
     def close(self):
@@ -178,19 +184,6 @@ class Match(Service):
 
         self.window.after(self.interface_refresh, self.update_interface)
 
-    @Service.thread
-    def launch_interface(self):
-        if not self.interface_enabled:
-          return
-        self.window = Tk()
-        self.window.title('Match interface')
-
-        self.map = PhotoImage(file='map.png')
-
-        print('Window created')
-        self.window.after(self.interface_refresh, self.update_interface)
-        self.window.mainloop()
-
 
     """ Match utilities """
 
@@ -208,16 +201,6 @@ class Match(Service):
         self.match_status = 'started'
         print('match_start')
 
-    # End match
-    def match_end(self):
-        try:
-            self.cs.ai['pal'].end()
-            self.cs.ai['pmi'].end()
-        except Exception as e:
-            print('Failed to stop robots: %s' % str(e))
-        self.match_status = 'ended'
-        print('match_end')
-
     def reset_pal_status(self):
         self.pal_ai_s = None
         self.pal_telem = None
@@ -228,10 +211,12 @@ class Match(Service):
         self.pmi_telem = None
         self.pmi_avoid_s = None
 
+    def reset_robots(self):
+        self.robots = []
 
     """ Event """
 
-    # Update score
+    """ Update score """
     @Service.event
     def score(self, value):
         if self.match_status != 'started':
@@ -239,6 +224,8 @@ class Match(Service):
         self.score += int(value)
         print('score is now: %d' % self.score)
 
+
+    """ PAL """
     @Service.event
     def pal_telemetry(self, status, telemetry):
         self.pal_watchdog.reset()
@@ -267,6 +254,8 @@ class Match(Service):
             self.pmi_telem = None
             print("Could not read telemetry")
 
+
+    """ PMI """
     @Service.event
     def pmi_ai_status(self, status):
         self.pmi_watchdog.reset()
@@ -277,11 +266,14 @@ class Match(Service):
         self.pmi_watchdog.reset()
         self.pmi_avoid_s = status
 
+
+    """ oppenents """
     @Service.event
     def oppenents(self, robots):
       self.robots = robots
+      self.robots_watchdog.reset()
 
-    # update Tirette
+    """ Tirette """
     @Service.event
     def tirette(self, value, _=None):
         print('Tirette: %s' % value)
@@ -294,22 +286,27 @@ class Match(Service):
             print('Tirette is not inserted')
         self.tirette = bool(tirette)
 
-    @Service.event
-    def reset(self, _=None):
+
+    """ Action """
+
+    """ Reset match """
+    @Service.action
+    def reset(self, color=None):
         if self.match_status == 'started':
             return
         print('reset')
         self.match_status = 'unstarted'
         self.score = 0
         self.timer = Timer(self.match_time - 5, self.match_end)
+        if color is not None and color == self.color1 or color == self.color2:
+            self.color = color
 
-
-    """ Action """
-
+    """ Get color """
     @Service.action
     def get_color(self):
         return self.color
 
+    """ Get match """
     @Service.action
     def get_match(self):
         match = {}
@@ -330,11 +327,37 @@ class Match(Service):
 
         return match
 
-    #@Service.thread
+    """ End match """
+    @Service.action
+    def match_end(self):
+        try:
+            self.cs.ai['pal'].end()
+            self.cs.ai['pmi'].end()
+        except Exception as e:
+            print('Failed to stop robots: %s' % str(e))
+        self.match_status = 'ended'
+        print('match_end')
+
+    """ Match status thread """
+    @Service.thread
     def match_status(self):
       while True:
         self.publish('match_status', match=self.get_match())
         sleep(self.refresh)
+
+    """ Interface thread """
+    @Service.thread
+    def launch_interface(self):
+        if not self.interface_enabled:
+          return
+        self.window = Tk()
+        self.window.title('Match interface')
+
+        self.map = PhotoImage(file='map.png')
+
+        print('Window created')
+        self.window.after(self.interface_refresh, self.update_interface)
+        self.window.mainloop()
 
 def main():
     match = Match()
