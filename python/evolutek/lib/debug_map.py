@@ -2,6 +2,8 @@
 
 from tkinter import *
 from evolutek.lib.map import wall
+from math import cos, sin, pi, atan
+
 
 radius_pal = 75
 radius_mi = 52.5
@@ -57,24 +59,41 @@ class Interface:
     def print_pal(self, pal):
         if not pal:
             return
-        self.canvas.create_rectangle((pal['y'] * unit) - radius_pal, (pal['x'] * unit) - radius_pal,
-            (pal['y'] * unit) + radius_pal, (pal['x'] * unit) + radius_pal, width=2, fill='orange')
+
+        x = pal['y'] * unit
+        y = pal['x'] * unit
+
+        points = []
+        points.append((x - radius_pal, y - radius_pal))
+        points.append((x + radius_pal, y - radius_pal))
+        points.append((x + radius_pal, y + radius_pal))
+        points.append((x - radius_pal, y + radius_pal))
+
+        cos_val = cos(pal['theta'])
+        sin_val = sin(pal['theta'])
+
+        new_points = []
+        for point in points:
+            new_points.append((
+                (point[0] - x) * cos_val - (point[1] - y) * sin_val + x,
+                (point[0] - x) * sin_val + (point[1] - y) * cos_val + y
+            ))
+
+        self.canvas.create_polygon(new_points, fill='orange')
+
 
     def print_path(self, path):
         for i in range(1, len(path)):
             p1 = path[i - 1]
             p2 = path[i]
-            self.canvas.create_rectangle((p1['y'] - self.map.unit/2) * unit,
-                    (p1['x'] - self.map.unit/2) * unit, (p2['y'] + self.map.unit/2) * unit,
-                    (p2['x'] + self.map.unit/2) * unit, fill='yellow')
+
+            self.canvas.create_line(p1['y'] * unit, p1['x'] * unit,
+                p2['y'] * unit, p2['x'] * unit, width=5, fill='yellow')
 
     def update(self):
         self.canvas.delete('all')
         self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
         self.print_grid()
         self.print_obstacles()
-        if self.service.pal_path is not None:
-            self.print_path(self.service.pal_path)
-        if self.service.pal_telem is not None:
-            self.print_pal(self.service.pal_telem)
+        self.print_pal(self.service.pal_telem)
         self.window.after(refresh_interface, self.update)

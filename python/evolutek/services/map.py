@@ -60,16 +60,6 @@ class Map(Service):
 
         super().__init__()
 
-        self.map.add_circle_obstacle(1000, 1500, 150, 'circle')
-
-        self.pal_path = [{'x':1000, 'y':150}, {'x':1000, 'y':1500}]
-
-        for i in range (150, 1500):
-            self.pal_telem = {'x': 1000, 'y' : i}
-            sleep(0.025)
-
-        print(self.map.remove_obstacle('circle'))
-
     @Service.thread
     def start_debug_interface(self):
         self.interface = Interface(self.map, self)
@@ -91,8 +81,6 @@ class Map(Service):
     def pal_telemetry(self, status, telemetry):
         if status is not 'failed':
             self.pal_telem = telemetry
-
-
 
     @Service.thread
     def loop_scan(self):
@@ -120,7 +108,7 @@ class Map(Service):
                     self.robots.append(p)
 
             for robot in self.robots:
-                self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
+                self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size/2, tag=robot['tag'])
             self.publish('oppenents', robots=self.robots)
 
             sleep(self.refresh)
