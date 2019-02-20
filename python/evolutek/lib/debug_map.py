@@ -3,6 +3,7 @@
 from tkinter import *
 from evolutek.lib.map import wall
 from math import cos, sin, pi, atan
+from os import _exit
 
 
 radius_pal = 75
@@ -23,7 +24,7 @@ class Interface:
         self.service = service
         self.width = map.real_width * unit
         self.height = map.real_height * unit
-        self.close_button = Button(self.window, text='Close', command=self.window.quit)
+        self.close_button = Button(self.window, text='Close', command=self.close)
         self.close_button.pack()
         self.canvas = Canvas(self.window, width=self.width, height=self.height)
         self.image = PhotoImage(file='/home/kmikaz/Evolutek/services/python/evolutek/lib/map.png')
@@ -33,6 +34,10 @@ class Interface:
         print('Window created')
         self.window.after(refresh_interface, self.update)
         self.window.mainloop()
+
+    def close(self):
+        self.window.destroy()
+        _exit(0)
 
     def print_grid(self):
         for x in range(self.map.width):
@@ -49,7 +54,7 @@ class Interface:
     def print_obstacles(self):
         for y in range(self.map.width + 1):
             for x in range(self.map.height + 1):
-                if self.map.map[x][y] == wall:
+                if self.map.map[x][y] > 0:
                     x1 = (y * self.map.unit - self.map.unit/2) * unit
                     x2 = (y * self.map.unit + self.map.unit/2) * unit
                     y1 = (x * self.map.unit - self.map.unit/2) * unit

@@ -39,16 +39,18 @@ class Map(Service):
         width = int(cs.config.get(section='map', option='width'))
         height = int(cs.config.get(section='map', option='height'))
         map_unit = int(cs.config.get(section='map', option='map_unit'))
-        self.map = evolutek.lib.map.Map(width, height, map_unit)
+        self.pal_size = int(cs.config.get(section='pal', option='robot_size_y'))
+        self.map = evolutek.lib.map.Map(width, height, map_unit, self.pal_size)
 
         """ Add obstacles """
-        self.map.add_boundaries(self.robot_size / 2)
+        self.map.add_rectangle_obstacle(1622, 2000, 450, 2550)
+        self.map.add_rectangle_obstacle(1422, 1622, 1480, 1520)
+        self.map.add_rectangle_obstacle(0, 50, 500, 2500)
+
 
         self.lock = Lock()
-
         self.robots = []
         self.pal_telem = None
-
         self.color = None
         self.tim = None
 
@@ -66,16 +68,23 @@ class Map(Service):
 
     @Service.event
     def match_color(self, color):
+        print(color)
         if color != self.color:
             self.color = color
         if self.color is not None:
+            self.map.remove_obstacle('zone')
+            if self.color != self.color1:
+                print(self.map.add_rectangle_obstacle(300, 1200, 0, 450, tag='zone'))
+            else:
+                print(self.map.add_rectangle_obstacle(300, 1200, 2550, 3000, tag='zone'))
             config = self.tim_config
-        if self.color != self.color1:
-            config['pos_y'] = 3000 - config['pos_y']
-            config['angle'] *= -1
+            if self.color != self.color1:
+                config['pos_y'] = 3000 - config['pos_y']
+                config['angle'] *= -1
             self.tim = Tim(config)
         else:
-          self.tim = None
+            self.map.remove_obstacle('zone')
+            self.tim = None
 
     @Service.event
     def pal_telemetry(self, status, telemetry):
@@ -108,7 +117,7 @@ class Map(Service):
                     self.robots.append(p)
 
             for robot in self.robots:
-                self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size/2, tag=robot['tag'])
+                self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
             self.publish('oppenents', robots=self.robots)
 
             sleep(self.refresh)

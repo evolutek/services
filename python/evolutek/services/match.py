@@ -129,17 +129,17 @@ class Match(Service):
     def print_robot(self, robot, size, color):
         if "shape" in robot and robot["shape"] == "circle":
             self.canvas.create_oval(
-                (robot['y'] - size/2) * self.interface_ratio,
-                (robot['x'] - size/2) * self.interface_ratio,
-                (robot['y'] + size/2) * self.interface_ratio,
-                (robot['x'] + size/2) * self.interface_ratio,
+                (robot['y'] - size) * self.interface_ratio,
+                (robot['x'] - size) * self.interface_ratio,
+                (robot['y'] + size) * self.interface_ratio,
+                (robot['x'] + size) * self.interface_ratio,
                 width=2, fill=color)
             return
         self.canvas.create_rectangle(
-            (robot['y'] - size/2) * self.interface_ratio,
-            (robot['x'] - size/2) * self.interface_ratio,
-            (robot['y'] + size/2) * self.interface_ratio,
-            (robot['x'] + size/2) * self.interface_ratio,
+            (robot['y'] - size) * self.interface_ratio,
+            (robot['x'] - size) * self.interface_ratio,
+            (robot['y'] + size) * self.interface_ratio,
+            (robot['x'] + size) * self.interface_ratio,
             width=2, fill=color)
 
 

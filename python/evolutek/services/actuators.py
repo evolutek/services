@@ -22,7 +22,7 @@ class Actuators(Service):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
         self.enabled = True
-        self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) / 2 + 50
+        self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) + 50
 
         for n in [1, 2, 3, 4]:
             self.cs.ax[str(n)].mode_joint()
@@ -116,7 +116,7 @@ class Actuators(Service):
             position = self.trajman.get_position()
             pos_x = position['x'] + decal_x if not sens_x else position['x'] - decal_x
             self.trajman.set_x(pos_x)
-            new_x = pos_x + self.dist - self.robot_size_x()/2 if not sens_x else pos_x - self.dist + self.robot_size_x()/2
+            new_x = pos_x + self.dist - self.robot_size_x() if not sens_x else pos_x - self.dist + self.robot_size_x()
             self.trajman.goto_xy(x=new_x, y=position['y'])
             while self.trajman.is_moving():
                 sleep(0.1)
@@ -135,7 +135,7 @@ class Actuators(Service):
             position = self.trajman.get_position()
             pos_y = position['y'] + decal_y if not sens_y else position['y'] - decal_y
             self.trajman.set_y(pos_y)
-            new_y = pos_y + self.dist - self.robot_size_y()/2 if not sens_y else pos_y - self.dist + self.robot_size_y()/2
+            new_y = pos_y + self.dist - self.robot_size_y() if not sens_y else pos_y - self.dist + self.robot_size_y()
             print(new_y)
             self.trajman.goto_xy(x=position['x'], y=new_y)
             while self.trajman.is_moving():
