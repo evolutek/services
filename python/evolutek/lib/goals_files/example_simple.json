@@ -1,0 +1,25 @@
+{
+  "start": {
+    "x": 600,
+    "y": 225,
+    "theta": 0
+  },
+  "actions": {
+    "open_arms": {
+      "fct": "actuators['pal'].open_arms"
+    },
+    "close_arms": {
+      "fct": "actuators['pal'].close_arms"
+    }
+  },
+  "goals": {
+    "goal1": {
+      "x": 600,
+      "y": 600,
+      "actions": [
+        "open_arms",
+        "close_arms"
+      ]
+    }
+  }
+}
