@@ -1,0 +1,2 @@
+KERNEL=="ttyUSB?", ATTRS{idVendor}=="067b", NAME="MotorCard", SYMLINK="MotorCard"
+KERNEL=="ttyUSB?", ATTRS{idVendor}=="0403", NAME="ttyUSB42", SYMLINK="ttyUSB42"

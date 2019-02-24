@@ -1,11 +1,11 @@
 [Unit]
 Description=AX-12 controller
 PartOf=evolutek.target
-Requires=cellaserv2.service
-After=cellaserv2.service
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service
 
 [Service]
-ExecStart=/usr/bin/ax
+ExecStart=/usr/local/bin/ax
 
 [Install]
 WantedBy=multi-user.target

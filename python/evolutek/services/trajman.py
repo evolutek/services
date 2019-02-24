@@ -9,7 +9,7 @@ import serial
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
 
-make_setting('TRAJMAN_PORT', '/dev/ttyUSB0', 'trajman', 'port', 'TRAJMAN_PORT')
+make_setting('TRAJMAN_PORT', '/dev/MotorCard', 'trajman', 'port', 'TRAJMAN_PORT')
 make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE

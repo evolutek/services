@@ -1,11 +1,11 @@
 [Unit]
 Description=actuators service
 PartOf=evolutek.target
-Requires=cellaserv2.service
-After=cellaserv2.service
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service
 
 [Service]
-ExecStart=/usr/bin/actuators
+ExecStart=/usr/local/bin/actuators
 
 [Install]
 WantedBy=multi-user.target

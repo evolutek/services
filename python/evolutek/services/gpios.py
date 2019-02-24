@@ -16,17 +16,15 @@ class Io():
     def __init__(self, id, name, dir=True, event=None):
         self.id = id
         self.name = name
-        self.value = None
         self.dir = dir
         self.event = event
-        self.lock = Lock()
 
-    def __equal__(self, ident):
+    def __eq__(self, ident):
         return self.id == int(ident[0]) or self.name == ident[1]
 
     def __str__(self):
-        return "id: %d\nname: %s\ndir: %s\nevent: %s\nvalue: %s"\
-            % (self.id, self.name, str(self.dir), self.event, str(self.value))
+        return "id: %d\nname: %s\ndir: %s\nevent: %s\n"\
+            % (self.id, self.name, str(self.dir), self.event)
 
     def __dict__(self):
         return {
@@ -34,7 +32,6 @@ class Io():
             'name': self.name,
             'dir': self.dir,
             'event': self.event,
-            'value': self.value
         }
 
 class Gpio(Io):
@@ -55,6 +52,7 @@ class Gpio(Io):
             if edge == Edge.RISING:
                 GPIO.add_event_detect(id, GPIO.RISING, callback=self.callback_fct)
             elif edge == Edge.FALLING:
+                print(self.id)
                 GPIO.add_event_detect(id, GPIO.FALLING, callback=self.callback_fct)
             else:
                 GPIO.add_event_detect(id, GPIO.BOTH, callback=self.callback_fct)
@@ -62,19 +60,16 @@ class Gpio(Io):
     def read(self):
         if self.dir:
             return None
-        with self.lock:
-            self.value = GPIO.input(self.id)
-        return self.value
+        return GPIO.input(self.id)
 
     def write(self, value):
         if not self.dir:
             return False
-        with self.lock:
-            if isinstance(value, str):
-                if value == "true":
-                    GPIO.output(self.id, GPIO.HIGH)
-                else:
-                    GPIO.output(self.id, GPIO.LOW)
+        if isinstance(value, str):
+            if value == "true":
+                GPIO.output(self.id, GPIO.HIGH)
+            else:
+                GPIO.output(self.id, GPIO.LOW)
         return True
 
 class Gpios(Service):
@@ -134,18 +129,17 @@ class Gpios(Service):
 
     def callback_gpio(self, id):
 
+        print(id)
+
         gpio = self.get_gpio(id)
         if gpio is None:
             return
 
-        tmp = gpio.value
-        new = gpio.read()
-
-        if new == tmp:
-            return
+        print(gpio)
+        value = gpio.read()
 
         self.publish(event=gpio.name if gpio.event is None else gpio.event,
-            name=gpio.name, id=gpio.id, value=gpio.value)
+            name=gpio.name, id=gpio.id, value=value)
 
 def main():
     gpios = Gpios()
@@ -162,6 +156,8 @@ def main():
     gpios.add_gpio(16, "gtb4", False, event='back_%s' % ROBOT)
     gpios.add_gpio(20, "gtb5", False, event='back_%s' % ROBOT)
     gpios.add_gpio(21, "gtb6", False, event='back_%s' % ROBOT)
+
+    gpios.print_gpios()
 
     gpios.run()
 

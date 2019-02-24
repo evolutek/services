@@ -1,11 +1,11 @@
 [Unit]
 Description=gpios service
 PartOf=evolutek.target
-Requires=cellaserv2.service
-After=cellaserv2.service
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service
 
 [Service]
-ExecStart=/usr/bin/gpios
+ExecStart=/usr/local/bin/gpios
 
 [Install]
 WantedBy=multi-user.target

@@ -2,7 +2,7 @@
 debug = 2
 port = 4200
 
-#[client]
-#debug = 2
-#host = kmikaz
-#port = 4200
+[client]
+debug = 2
+host = pi
+port = 4200
