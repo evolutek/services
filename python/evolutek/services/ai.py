@@ -20,7 +20,8 @@ class State(Enum):
 @Service.require('actuators', ROBOT)
 #@Service.require('avoid', ROBOT)
 #@Service.require('gpios', ROBOT)
-#@Service.require('match')
+@Service.require('match')
+#@Service.require('map')
 class Ai(Service):
 
     def __init__(self):
@@ -72,7 +73,7 @@ class Ai(Service):
         if isinstance(recalibration, str):
             recalibration = recalibration == "true"
 
-        print('[AI] Setuping')
+        print('[AI] Setup')
         self.trajman.enable()
         self.actuators.reset()
 
@@ -148,16 +149,21 @@ class Ai(Service):
         path = None
 
         # Select an action
+        optimum  = self.map.get_optimal_goal(self.goals.get_available_goals())
+        current_action = optimum[0]
+        path = optimum[1]
 
-        if current_acion is None:
+        if current_action is None:
             self.end()
+
+        if path is None:
+          self.state = State.Selecting
 
         self.making(current_action, path)
 
     def making(self, current_acion, path):
 
         # Need to rework
-
         if self.state != State.Selecting:
             return
 
@@ -169,7 +175,7 @@ class Ai(Service):
         for point in path:
             self.trajman.goto_xy(x=point.x, y=point.y)
             while self.trajman.is_moving():
-                sleep(0.5)
+                sleep(0.5) #Is this not too much?
             if self.aborting.isSet():
                 self.selecting()
 
@@ -191,7 +197,7 @@ class Ai(Service):
                 # memorize current action
                 self.selecting()
 
-        self.publish('score', self.current_acion.score)
+        self.publish('score', self.current_action.score) # Increment score variable in match
         self.trajman.set_trsl_max_speed(self.max_trsl_speed)
         self.trajman.set_trsl_rot_speed(self.max_rot_speed)
 

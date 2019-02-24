@@ -23,13 +23,17 @@ class Point:
 
 class Obstacle:
 
-    def __init__(self):
+    def __init__(self, tag=None):
         self.points = []
+        self.tag = tag
+
+    def __eq__(self, tag):
+        return self.tag == tag
 
 class CircleObstacle(Obstacle):
 
-    def __init__(self, center, radius):
-        super().__init__()
+    def __init__(self, center, radius, tag=None):
+        super().__init__(tag)
         self.center = center
         self.radius = radius
 
@@ -41,6 +45,23 @@ class CircleObstacle(Obstacle):
 
     def __str__(self):
         return "center: [%s], radius: %s" % (str(self.center), str(self.radius))
+
+class RectangleObstacle(Obstacle):
+
+    def __init__(self, x1, x2, y1, y2, tag=None):
+        super().__init__(tag)
+        self.x1 = x1
+        self.x2 = x2
+        self.y1 = y1
+        self.y2 = y2
+        for x in range(x1, x2 + 1):
+            self.points.append(Point(x, y1))
+        for y in range(y1 + 1, y2):
+            self.points.append(Point(x2, y))
+        for x in range(x2, x1 - 1, -1):
+            self.points.append(Point(x, y2))
+        for y in range(y2 - 1, y1, -1):
+            self.points.append(Point(x1, y))
 
 class Path:
 
@@ -60,87 +81,75 @@ class Path:
         s += "End: (%s)" % str(self.end)
         return s
 
-class RectangleObstacle(Obstacle):
-
-    def __init__(self, x1, x2, y1, y2):
-        super().__init__()
-        self.x1 = x1
-        self.x2 = x2
-        if x1 > x2:
-            x1, x2 = x2, x1
-        self.y1 = y1
-        self.y2 = y2
-        if y1 > y2:
-            y1, y2 = y2, y1
-
-
-        for x in range(x1, x2 + 1):
-            self.points.append(Point(x, y1))
-        for y in range(y1 + 1, y2):
-            self.points.append(Point(x2, y))
-        for x in range(x2, x1 - 1, -1):
-            self.points.append(Point(x, y2))
-        for y in range(y2 - 1, y1, -1):
-            self.points.append(Point(x1, y))
-
 class Map:
 
-    def __init__(self, width, height, unit):
+    def __init__(self, width, height, unit, robot_radius):
         self.real_width = width
         self.real_height = height
         self.width = int(width / unit)
         self.height = int(height / unit)
         self.unit = unit
+        self.robot_radius = robot_radius
+
         self.map = []
         self.obstacles = []
 
         for x in range(self.height + 1):
             self.map.append([])
             for y in range(self.width + 1):
-                self.map[x].append(ground)
+                self.map[x].append(0)
 
-    def add_circle_obstacle(self, x, y, radius):
-        if x - radius < 0 or y - radius < 0 or x + radius > self.real_height or y + radius > self.real_width:
+        self.add_boundaries()
+
+    def add_circle_obstacle(self, x, y, radius=0, tag=None):
+        if x < 0 or y < 0 or x > self.real_height or y > self.real_width:
             return False
-        obs = CircleObstacle(Point(int(x/self.unit), (y/self.unit)), int(radius/self.unit))
+        obs = CircleObstacle(Point(int(x/self.unit), (y/self.unit)), int((radius + self.robot_radius)/self.unit), tag=tag)
         for p in obs.points:
-            self.map[p.x][p.y] = wall
+            if p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width:
+                self.map[p.x][p.y] += 1
         self.obstacles.append(obs)
         return True
 
-    def add_rectangle_obstacle(self, x1, x2, y1, y2):
+    def add_rectangle_obstacle(self, x1, x2, y1, y2, tag=None):
         if x1 < 0 or x1 > self.real_height or x2 < 0 or x2 > self.real_height \
             or y1 < 0 or y1 > self.real_width or y2 < 0 or y2 > self.real_width:
             return False
-        x1 = int(x1/self.unit)
-        x2 = int(x2/self.unit)
-        y1 = int(y1/self.unit)
-        y2 = int(y2/self.unit)
-        obs = RectangleObstacle(x1, x2, y1, y2)
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+        x1 = int((x1 - self.robot_radius) /self.unit)
+        x2 = int((x2 + self.robot_radius) /self.unit)
+        y1 = int((y1 - self.robot_radius) /self.unit)
+        y2 = int((y2 + self.robot_radius) /self.unit)
+        obs = RectangleObstacle(x1, x2, y1, y2, tag=tag)
         for p in obs.points:
-            self.map[p.x][p.y] = wall
+            if p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width:
+                self.map[p.x][p.y] += 1
         self.obstacles.append(obs)
         return True
 
-    def add_boundaries(self, robot_radius):
-        radius = int(robot_radius / self.unit)
+    def add_boundaries(self):
+        radius = int(self.robot_radius / self.unit)
         for x in range(radius, self.height - radius + 1):
-            self.map[x][radius] = wall
-            self.map[x][self.width - radius] = wall
+            self.map[x][radius] += 1
+            self.map[x][self.width - radius] += 1
         for y in range(radius, self.width - radius):
-            self.map[radius][y] = wall
-            self.map[self.height - radius][y] = wall
+            self.map[radius][y] += 1
+            self.map[self.height - radius][y] += 1
 
-    def remove_obstacle(self, center, radius):
+    def remove_obstacle(self, tag):
         for obs in self.obstacles:
-            if obs.center == center and obs.center == center:
+            if obs == tag:
+                for point in obs.points:
+                    if point.x >= 0 and point.x <= self.height and point.y >= 0 and point.y <= self.width:
+                        self.map[point.x][point.y] -= 1
                 self.obstacles.remove(obs)
-                for p in obs.points:
-                    self.map[p.x][p.y] = ground
-            return True
+                return True
         return False
 
-    def print(self):
+    def print_map(self):
         print('-' * (self.width + 2))
         for x in range(self.height + 1):
             s = "|"
