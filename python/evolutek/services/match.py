@@ -339,7 +339,7 @@ class Match(Service):
         print('match_end')
 
     """ Match status thread """
-    @Service.thread
+    #@Service.thread
     def match_status(self):
       while True:
         self.publish('match_status', match=self.get_match())
@@ -353,7 +353,7 @@ class Match(Service):
         self.window = Tk()
         self.window.title('Match interface')
 
-        self.map = PhotoImage(file='map.png')
+        self.map = PhotoImage(file='/etc/conf.d/map.png')
 
         print('Window created')
         self.window.after(self.interface_refresh, self.update_interface)
