@@ -5,6 +5,7 @@ from subprocess import check_call
 class PostDevelopCommand(develop):
     def run(self):
         check_call("cp -r evolutek/ /usr/lib/python3.5/site-packages/".split())
+        check_call("cp -r conf.d /etc/".split())
         develop.run(self)
 
 setup(
