@@ -53,7 +53,6 @@ class Avoid(Service):
 
     @Service.event
     def front(self, name, id, value):
-        print('Front detection from: (%s, %s) with: %s' % (name, id, value))
         if int(value):
             self.front_detected += 1
         else if self.front_detected > 0:

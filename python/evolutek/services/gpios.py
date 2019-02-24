@@ -4,8 +4,7 @@ from enum import Enum
 from evolutek.lib.settings import ROBOT
 from threading import Lock, Thread
 from time import sleep
-
-import mraa
+import RPi.GPIO as GPIO
 
 class Type(Enum):
         AIO = 0
@@ -14,9 +13,14 @@ class Type(Enum):
         SPI = 3
         UART = 4
 
+class Edge(Enum):
+        RISING = 0
+        FALLING = 1
+        BOTH = 2
+
 class Io():
 
-    def __init__(self, id, name, dir=True, event=None, update=True):
+    def __init__(self, id, name, dir=True, event=None, update=True, callback=False, edge=None, publish=None):
         self.id = id
         self.name = name
         self.value = None
@@ -25,21 +29,46 @@ class Io():
         self.event = event
         self.lock = Lock()
         self.update = update
+        self.callback = callback
+        self.edge = edge
+        self.publish = publish
+        GPIO.setmode(GPIO.BCM)
+        if dir:
+            GPIO.setup(id,  GPIO.OUT, initial=GPIO.LOW)
+        else:
+            GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        if callback:
+            if edge == Edge.RISING:
+                GPIO.add_event_detect(id, GPIO.RISING, callback=self.callback_fct)
+            elif edge == Edge.FALLING:
+                GPIO.add_event_detect(id, GPIO.FALLING, callback=self.callback_fct)
+            else:
+                GPIO.add_event_detect(id, GPIO.BOTH, callback=self.callback_fct)
+
+    def callback_fct(self, _=None):
+        self.read()
+        if self.publish:
+            self.publish(self)
 
     def read(self):
         if self.dir:
             return None
         with self.lock:
-            self.value = self.port.read()
+            self.value = GPIO.input(self.id)
         return self.value
 
     def write(self, value):
         if not self.dir:
             return False
         with self.lock:
-            self.port.write(int(value))
+            if isinstance(value, str):
+                if value == "true":
+                    GPIO.output(self.id, GPIO.HIGH)
+                else:
+                    GPIO.output(self.id, GPIO.LOW)
         return True
 
+"""
 class Aio(Io):
 
     def __init__(self, id, name, event=None, update=True):
@@ -49,10 +78,12 @@ class Aio(Io):
     def read(self):
         with self.lock:
             return self.port.readFloat()
+"""
 
+"""
 class Gpio(Io):
 
-    def __init__(self, id, name, dir, event=None, interrupt=None, update=True):
+    def __init__(self, id, name, dir, event=None, callback=None, update=True):
         super().__init__(id, name, dir, event=event, update=update)
         self.port = mraa.Gpio(id)
         with self.lock:
@@ -73,9 +104,6 @@ class Pwm(Io):
         self.port.enable(enable)
         with self.lock:
             if dir:
-                self.port.dir(mraa.DIR_OUT)
-            else:
-                self.port.dir(mraa.DIR_IN)
 
 def Spi(Io):
 
@@ -89,26 +117,29 @@ class Uart(Io):
         super().__init__(id, name, False, update=update)
         self.port = mraa.Uart(id)
         self.port.setBaudRate(baud_rate)
+"""
 
 class Gpios(Service):
 
     def __init__(self):
-        super().__init__(ROBOT)
+        cs = CellaservProxy()
+        self.auto = cs.config.get(section="gpios", option="auto") == 'True'
+        self.refresh = float(cs.config.get(section="gpios", option="refresh"))
         self.gpios = []
+        
+        super().__init__(ROBOT)
 
     @Service.action
-    def add_gpio(self, type, id, name, dir=False, event=None, interrupt=None,
-        period=None, enable=None, baud_rate=None, update=True):
-        if type == Type.AIO:
-            self.gpios.append(Aio(id, name, event=event, update=update))
-        elif type == Type.GPIO:
-            self.gpios.append(Gpio(id, name, dir=dir, event=event, interrupt=interrupt, update=update))
-        elif type == Type.PWM:
-            self.gpios.append(Pwm(id, name, dir, period, enable), event=event, update=update)
-        elif type == Type.SPI:
-            self.gpios.append(Spi(id, name, event=event, update=update))
-        elif type == Type.UART:
-            self.gpios.append(Uart(id, name, baud_rate, update=update))
+    def add_gpio(self, type, id, name, dir=False, event=None, update=True, callback=False, edge=None):
+        self.gpios.append(Io(id, name, dir=dir, event=event, update=update, callback=callback, edge=edge, publish=self.publish_gpio))
+        #if type == Type.AIO:
+        #    self.gpios.append(Aio(id, name, event=event, update=update))
+        #elif type == Type.PWM:
+        #    self.gpios.append(Pwm(id, name, dir, period, enable), event=event, update=update)
+        #elif type == Type.SPI:
+        #    self.gpios.append(Spi(id, name, event=event, update=update))
+        #elif type == Type.UART:
+        #    self.gpios.append(Uart(id, name, baud_rate, update=update))
 
     @Service.action
     def read_gpio(self, name=None, id=None):
@@ -138,30 +169,35 @@ class Gpios(Service):
         else:
             self.publish(event=gpio.event, name=gpio.name, id=gpio.id, value=gpio.value)
 
-    def update(self, refresh):
+    @Service.thread
+    def update(self):
+        if not self.auto:
+            return
+
         while True:
             for gpio in self.gpios:
-                if not gpio.dir and not hasattr(gpio, 'interrupt') and gpio.update:
+                if not gpio.dir and not gpio.callback and gpio.update:
                     tmp = gpio.value
                     new = gpio.read()
                     if tmp != new:
                         self.publish_gpio(gpio)
-            sleep(float(refresh))
+            sleep(self.refresh)
 
 def main():
     gpios = Gpios()
 
-    gpios.add_gpio(Type.GPIO, 10, "back", False)
-    gpios.add_gpio(Type.GPIO, 11, "front", False)
-    gpios.add_gpio(Type.AIO, 1, "color", update=False)
-
-    cs = CellaservProxy()
-    auto = cs.config.get(section="gpios", option="auto")
-
-    if auto == 'True':
-        refresh = cs.config.get(section="gpios", option="refresh")
-        thread = Thread(target=gpios.update, args=[refresh])
-        thread.start()
+    gpios.add_gpio(Type.GPIO, 5, "tirette", False, callback=True, edge=Edge.RISING)
+    gpios.add_gpio(Type.GPIO, 6, "reset", False, callback=True, edge=Edge.FALLING)
+    
+    # Front gtb
+    gpios.add_gpio(Type.GPIO, 18, "gtb1", False, event='front')
+    gpios.add_gpio(Type.GPIO, 23, "gtb2", False, event='front')
+    gpios.add_gpio(Type.GPIO, 24, "gtb3", False, event='front')
+    
+    # Back gtb
+    gpios.add_gpio(Type.GPIO, 16, "gtb4", False, event='back')
+    gpios.add_gpio(Type.GPIO, 20, "gtb5", False, event='back')
+    gpios.add_gpio(Type.GPIO, 21, "gtb6", False, event='back')
 
     gpios.run()
 
