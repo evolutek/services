@@ -6,13 +6,6 @@ from threading import Lock, Thread
 from time import sleep
 import RPi.GPIO as GPIO
 
-class Type(Enum):
-        AIO = 0
-        GPIO = 1
-        PWM = 2
-        SPI = 3
-        UART = 4
-
 class Edge(Enum):
         RISING = 0
         FALLING = 1
@@ -20,18 +13,39 @@ class Edge(Enum):
 
 class Io():
 
-    def __init__(self, id, name, dir=True, event=None, update=True, callback=False, edge=None, publish=None):
+    def __init__(self, id, name, dir=True, event=None):
         self.id = id
         self.name = name
         self.value = None
         self.dir = dir
-        self.port = None
         self.event = event
         self.lock = Lock()
-        self.update = update
+
+    def __equal__(self, ident):
+        return self.id == int(ident[0]) or self.name == ident[1]
+
+    def __str__(self):
+        return "id: %d\nname: %s\ndir: %s\nevent: %s\nvalue: %s"\
+            % (self.id, self.name, str(self.dir), self.event, str(self.value))
+
+    def __dict__(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'dir': self.dir,
+            'event': self.event,
+            'value': self.value
+        }
+
+class Gpio(Io):
+
+    def __init__(self, id, name, dir=True, event=None, callback=False, edge=None, callback_fct=None):
+
+        super().__init__(id, name, dir, event)
         self.callback = callback
         self.edge = edge
-        self.publish = publish
+        self.callback_fct = callback_fct
+
         GPIO.setmode(GPIO.BCM)
         if dir:
             GPIO.setup(id,  GPIO.OUT, initial=GPIO.LOW)
@@ -44,11 +58,6 @@ class Io():
                 GPIO.add_event_detect(id, GPIO.FALLING, callback=self.callback_fct)
             else:
                 GPIO.add_event_detect(id, GPIO.BOTH, callback=self.callback_fct)
-
-    def callback_fct(self, _=None):
-        self.read()
-        if self.publish:
-            self.publish(self)
 
     def read(self):
         if self.dir:
@@ -68,136 +77,91 @@ class Io():
                     GPIO.output(self.id, GPIO.LOW)
         return True
 
-"""
-class Aio(Io):
-
-    def __init__(self, id, name, event=None, update=True):
-        super().__init__(id, name, False, event=event, update=update)
-        self.port = mraa.Aio(id)
-
-    def read(self):
-        with self.lock:
-            return self.port.readFloat()
-"""
-
-"""
-class Gpio(Io):
-
-    def __init__(self, id, name, dir, event=None, callback=None, update=True):
-        super().__init__(id, name, dir, event=event, update=update)
-        self.port = mraa.Gpio(id)
-        with self.lock:
-            if dir:
-                self.port.dir(mraa.DIR_OUT)
-            else:
-                self.port.dir(mraa.DIR_IN)
-        if not dir and interrupt is not None:
-            self.port.isr(mraa.EDGE_BOTH, interrupt, self)
-
-class Pwm(Io):
-
-    def __init__(self, id, name, dir, period, enable, event=None, update=True):
-        super().__init__(id, name, dir, event=event, update=update)
-        self.port = mraa.Pwm(id)
-        self.period = period
-        self.port.period_us(period)
-        self.port.enable(enable)
-        with self.lock:
-            if dir:
-
-def Spi(Io):
-
-    def __init__(self, id, name, event=None, update=True):
-        super().__init__(id, name, event=event, update=update)
-        self.port = mraa.Spi(id)
-
-class Uart(Io):
-
-    def __init__(self, id, name, baud_rate, update=True):
-        super().__init__(id, name, False, update=update)
-        self.port = mraa.Uart(id)
-        self.port.setBaudRate(baud_rate)
-"""
-
 class Gpios(Service):
 
     def __init__(self):
         cs = CellaservProxy()
-        self.auto = cs.config.get(section="gpios", option="auto") == 'True'
-        self.refresh = float(cs.config.get(section="gpios", option="refresh"))
         self.gpios = []
-        
         super().__init__(ROBOT)
 
-    @Service.action
-    def add_gpio(self, type, id, name, dir=False, event=None, update=True, callback=False, edge=None):
-        self.gpios.append(Io(id, name, dir=dir, event=event, update=update, callback=callback, edge=edge, publish=self.publish_gpio))
-        #if type == Type.AIO:
-        #    self.gpios.append(Aio(id, name, event=event, update=update))
-        #elif type == Type.PWM:
-        #    self.gpios.append(Pwm(id, name, dir, period, enable), event=event, update=update)
-        #elif type == Type.SPI:
-        #    self.gpios.append(Spi(id, name, event=event, update=update))
-        #elif type == Type.UART:
-        #    self.gpios.append(Uart(id, name, baud_rate, update=update))
+    """ Action """
 
     @Service.action
-    def read_gpio(self, name=None, id=None):
-        if name is None and id is None:
+    def add_gpio(self, id, name, dir=False, event=None, callback=False, edge=None):
+        self.gpios.append(Gpio(id, name, dir=dir, event=event,
+            callback=callback, edge=edge, callback_fct=self.callback_gpio))
+
+    @Service.action
+    def read_gpio(self, id=None, name=None):
+        gpio = self.get_gpio(id, name)
+        if gpio is None or not hasattr(gpio, read):
             return None
-
-        for gpio in self.gpios:
-            if (id != None and gpio.id == int(id)) or (name != None and gpio.name == name):
-                return gpio.read()
-
-        return None
+        return gpio.read()
 
     @Service.action
-    def write_gpio(self, value, name=None, id=None):
-        if name is None and id is None:
+    def write_gpio(self, value, id=None, name=None):
+        gpio = self.get_gpio(id, name)
+        if gpio is None:
             return False
+        if hasattr(gpio, write):
+            gpio.write(value)
+        return True
 
+    @Service.action
+    def print_gpios(self):
+        print('----------')
         for gpio in self.gpios:
-            if (id != None and gpio.id == int(id)) or (name != None and gpio.name == name):
-                return gpio.write(value)
+            print(gpio)
+            print('----------')
 
-        return False
+    @Service.action
+    def dump_gpios(self):
+        l = []
+        for gpio in self.gpios:
+            l.append(gpio.__dict__())
+        return l
 
-    def publish_gpio(self, gpio):
-        if gpio.event is None:
-            self.publish(event=gpio.name, name=gpio.name, id=gpio.id, value=gpio.value)
-        else:
-            self.publish(event=gpio.event, name=gpio.name, id=gpio.id, value=gpio.value)
+    """ Utils """
 
-    @Service.thread
-    def update(self):
-        if not self.auto:
+    def get_gpio(self, id=None, name=None):
+        if id is None and name is None:
+            return None
+        g = None
+        for gpio in self.gpios:
+            if gpio == (id, name):
+                g = gpio
+        return g
+
+    def callback_gpio(self, id):
+
+        gpio = self.get_gpio(id)
+        if gpio is None:
             return
 
-        while True:
-            for gpio in self.gpios:
-                if not gpio.dir and not gpio.callback and gpio.update:
-                    tmp = gpio.value
-                    new = gpio.read()
-                    if tmp != new:
-                        self.publish_gpio(gpio)
-            sleep(self.refresh)
+        tmp = gpio.value
+        new = gpio.read()
+
+        if new == tmp:
+            return
+
+        self.publish(event=gpio.name if gpio.event is None else gpio.event,
+            name=gpio.name, id=gpio.id, value=gpio.value)
 
 def main():
     gpios = Gpios()
 
-    gpios.add_gpio(Type.GPIO, 5, "tirette", False, callback=True, edge=Edge.RISING)
-    gpios.add_gpio(Type.GPIO, 6, "reset", False, callback=True, edge=Edge.FALLING)
-    
+    gpios.add_gpio(5, "tirette", False, callback=True, edge=Edge.RISING)
+    gpios.add_gpio(6, "reset", False, callback=True, edge=Edge.FALLING)
+
     # Front gtb
-    gpios.add_gpio(Type.GPIO, 18, "gtb1", False, event='front')
-    gpios.add_gpio(Type.GPIO, 23, "gtb2", False, event='front')
-    gpios.add_gpio(Type.GPIO, 24, "gtb3", False, event='front')
-    
+    gpios.add_gpio(18, "gtb1", False, event='front_%s' % ROBOT)
+    gpios.add_gpio(23, "gtb2", False, event='front_%s' % ROBOT)
+    gpios.add_gpio(24, "gtb3", False, event='front_%s' % ROBOT)
+
     # Back gtb
-    gpios.add_gpio(Type.GPIO, 16, "gtb4", False, event='back')
-    gpios.add_gpio(Type.GPIO, 20, "gtb5", False, event='back')
-    gpios.add_gpio(Type.GPIO, 21, "gtb6", False, event='back')
+    gpios.add_gpio(16, "gtb4", False, event='back_%s' % ROBOT)
+    gpios.add_gpio(20, "gtb5", False, event='back_%s' % ROBOT)
+    gpios.add_gpio(21, "gtb6", False, event='back_%s' % ROBOT)
 
     gpios.run()
 

@@ -27,7 +27,7 @@ class Interface:
         self.close_button = Button(self.window, text='Close', command=self.close)
         self.close_button.pack()
         self.canvas = Canvas(self.window, width=self.width, height=self.height)
-        self.image = PhotoImage(file='/home/kmikaz/Evolutek/services/python/evolutek/lib/map.png')
+        self.image = PhotoImage(file='/etc/conf.d/map.png')
         self.canvas.create_image(750, 500, image=self.image)
 
         self.canvas.pack()
