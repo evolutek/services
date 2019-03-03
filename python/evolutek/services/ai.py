@@ -52,6 +52,7 @@ class Ai(Service):
         self.aborting = Event()
         self.current_action = None
         self.tmp_robot = None
+        self.debug_count = 0
 
         # Match config
         self.goals = Goals(color = self.color, file = "keke.json")
@@ -152,23 +153,30 @@ class Ai(Service):
         print('[AI] Selecting')
         self.state = State.Selecting
 
+        self.debug_count += 1
+
+        print("[AI] Number of actions :%d" %debug_count)
+
+        if self.debug_count > 10:
+            self.end()
+
         current_action = None
         path = None
 
         # Select an action
-        optimum  = self.map.get_optimal_goal(self.goals.get_available_goals())
-        current_action = optimum[0]
-        path = optimum[1]
+        #optimum  = self.map.get_optimal_goal(self.goals.get_available_goals())
+        #current_action = optimum[0]
+        #path = optimum[1]
 
-        if current_action is None:
-            self.end()
+        #if current_action is None:
+        #    self.end()
 
-        if path is None:
-          self.state = State.Selecting
+        #if path is None:
+        #  self.state = State.Selecting
 
-        self.making(current_action, path)
+        self.making()
 
-    def making(self, current_acion, path):
+    def making(self, current_acion=None, path=None):
 
         # Need to rework
         if self.state != State.Selecting:
@@ -176,6 +184,16 @@ class Ai(Service):
 
         print('[AI] Making')
         self.state = Setup.making
+
+        if self.aborting.isSet():
+            print("[AI][MAKING] Aborted")
+            self.selecting()
+            
+        print("[AI][MAKING] Not aborted")
+        self.selecting()
+            
+
+        """
         if self.current_action.trsl_speed is not None:
             self.trajman.set_trsl_max_speed(current_action.trsl_speed)
 
@@ -187,7 +205,7 @@ class Ai(Service):
                 self.selecting()
 
         if self.current_action.rot_speed is not None:
-            self.trajman.set_rot_max_speed(self.current_action.trsl_speed)
+           self.trajman.set_rot_max_speed(self.current_action.trsl_speed)
 
         if self.current_action.theta is not None:
             self.trajman.goto_theta(self.current_action.theta)
@@ -207,7 +225,7 @@ class Ai(Service):
         self.publish('score', self.current_action.score) # Increment score variable in match
         self.trajman.set_trsl_max_speed(self.max_trsl_speed)
         self.trajman.set_trsl_rot_speed(self.max_rot_speed)
-
+        """
         self.selecting()
 
 def main():
