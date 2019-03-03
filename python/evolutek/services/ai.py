@@ -17,6 +17,7 @@ class State(Enum):
     Selecting = 3
     Making = 4
     Ending = 5
+    Error = 6
 
 @Service.require('trajman', ROBOT)
 @Service.require('actuators', ROBOT)
