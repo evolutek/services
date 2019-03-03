@@ -6,6 +6,8 @@ from evolutek.lib.settings import ROBOT
 
 from time import sleep
 
+ROBOT= "pal"
+
 @Service.require("config")
 @Service.require("trajman", ROBOT)
 @Service.require("gpios", ROBOT)
@@ -19,6 +21,7 @@ class Avoid(Service):
         self.front_detected = 0
         self.back_detected = 0
         self.avoid = False
+        self.enabled = True
 
         super().__init__(ROBOT)
 
@@ -38,6 +41,8 @@ class Avoid(Service):
         while True:
             if self.telemetry is None:
                 continue
+            if not self.enabled:
+                continue
 
             if self.telemetry['speed'] > 0.0 and self.front_detected > 0:
                 self.trajman.stop_asap(2000, 30)
@@ -50,6 +55,14 @@ class Avoid(Service):
             else:
                 self.avoid = False
             slee(self.refresh)
+    
+    @Service.action
+    def enable(self):
+        self.enabled = True
+
+    @Service.action
+    def disable(self):
+        self.enabled = False
 
     @Service.event
     def front(self, name, id, value):

@@ -36,6 +36,7 @@ class Ai(Service):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
         self.actuators = self.cs.actuators[ROBOT]
+        self.avoid = self.cs.avoid[ROBOT]
         # self.recalibration_event = Event(set='recalibrated')
 
         # Config
@@ -79,6 +80,7 @@ class Ai(Service):
         self.trajman.enable()
         self.actuators.reset()
 
+
         self.match_thread = Thread(target=self.selecting)
 
         if color is not None:
@@ -112,6 +114,7 @@ class Ai(Service):
 
         #self.goals.reset()
 
+        self.avoid.enable()
         self.state = State.Waiting
         print('[AI] Waiting')
 
@@ -186,6 +189,7 @@ class Ai(Service):
         print('[AI] Making')
         self.state = State.Making
 
+
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
             self.selecting()
@@ -206,10 +210,13 @@ class Ai(Service):
         sleep(1)
         for action in goal.actions:
             sleep(1)
+            if not goal.avoid:
+                self.avoid.disable()
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
             action.make()
+            self.avoid.enable()
 
         print("[AI] Finished goal")
         self.goals.finish_goal()
