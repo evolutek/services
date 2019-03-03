@@ -34,14 +34,22 @@ class Goal:
         self.done = False
         self.last_action = None
 
+def get_simple_strat():
+    l = []
+    l.append(Goal(1350, 225))
+    l.append(Goal(1350, 500, theta=pi))
+    l.append(Goal(750, 500, theta=-3 * pi / 4))
+    l.append(Goal(500, 300))
+    return l
+
 class Goals:
 
     def __init__(self, file, color, actuators, trajman):
 
         """Robot starting position"""
-        self.start_x = 0
-        self.start_y = 0 #if color == 'yellow' else 2725
-        self.theta = 0 #if color == 'yellow' else -pi/2
+        self.start_x = 600
+        self.start_y = 225
+        self.theta = 0
 
         self.goals = []
         self.current = 0
