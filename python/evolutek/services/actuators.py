@@ -11,6 +11,7 @@ from time import sleep
 @Service.require("ax", "2")
 @Service.require("ax", "3")
 @Service.require("ax", "4")
+@Service.require("gpios", ROBOT)
 @Service.require("trajman", ROBOT)
 class Actuators(Service):
 
@@ -20,6 +21,7 @@ class Actuators(Service):
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
+        self.gpios = self.cs.gpios[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
         self.enabled = True
         self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) + 50
@@ -31,9 +33,13 @@ class Actuators(Service):
     @Service.action
     def reset(self):
         self.enabled = True
+        self.disable_suction_arms()
+        self.disable_suction_goldenium()
         self.close_arms()
         self.close_clapet()
 
+
+    """ ARMS """
     @Service.action
     def close_arms(self):
         self.cs.ax['1'].move(goal=136)
@@ -47,9 +53,39 @@ class Actuators(Service):
         self.cs.ax['3'].move(goal=498)
 
     @Service.action
+    def enable_suction_arms(self):
+        self.gpios.write_gpio(value=False, name="relayArms")
+
+    @Service.action
+    def disable_suction_arms(self):
+        self.gpios.write_gpio(value=True, name="relayArms")
+
+    @Service.action
+    def get_palet(self):
+        self.open_arms()
+        sleep(1)
+        self.enable_suction_arms()
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
+        sleep(1)
+        self.close_arms()
+        sleep(1)
+        self.disable_suction_arms()
+        self.trajman.move_trsl(dest=25, acc=100, dec=100, maxspeed=500, sens=0)
+
+    """ GOLDENIUM """
+    @Service.action
     def open_arm_goldenium(self):
         self.cs.ax['2'].move(goal=220)
 
+    @Service.action
+    def enable_suction_goldenium(self):
+        self.gpios.write_gpio(value=False, name="relayGold")
+
+    @Service.action
+    def disable_suction_goldenium(self):
+        self.gpios.write_gpio(value=True, name="relayGold")
+
+    """ CLAPET """
     @Service.action
     def close_clapet(self):
         self.cs.ax['4'].move(goal=490)
@@ -60,6 +96,8 @@ class Actuators(Service):
 
     @Service.action
     def free(self):
+        self.disable_suction_arms()
+        self.disable_suction_goldenium()
         for n in [1, 2, 3, 4]:
             self.cs.ax[str(n)].free()
 

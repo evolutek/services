@@ -20,7 +20,7 @@ class Io():
         self.event = event
 
     def __eq__(self, ident):
-        return self.id == int(ident[0]) or self.name == ident[1]
+        return (ident[0] is not None and self.id == int(ident[0])) or self.name == ident[1]
 
     def __str__(self):
         return "id: %d\nname: %s\ndir: %s\nevent: %s\n"\
@@ -36,7 +36,7 @@ class Io():
 
 class Gpio(Io):
 
-    def __init__(self, id, name, dir=True, event=None, callback=False, edge=None, callback_fct=None):
+    def __init__(self, id, name, dir=True, event=None, callback=False, edge=None, callback_fct=None, default_value=False):
 
         super().__init__(id, name, dir, event)
         self.callback = callback
@@ -46,6 +46,7 @@ class Gpio(Io):
         GPIO.setmode(GPIO.BCM)
         if dir:
             GPIO.setup(id,  GPIO.OUT, initial=GPIO.LOW)
+            self.write(default_value)
         else:
             GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         if callback:
@@ -66,10 +67,11 @@ class Gpio(Io):
         if not self.dir:
             return False
         if isinstance(value, str):
-            if value == "true":
-                GPIO.output(self.id, GPIO.HIGH)
-            else:
-                GPIO.output(self.id, GPIO.LOW)
+            value == value == "true"
+        if value:
+            GPIO.output(self.id, GPIO.HIGH)
+        else:
+            GPIO.output(self.id, GPIO.LOW)
         return True
 
 class Gpios(Service):
@@ -82,14 +84,14 @@ class Gpios(Service):
     """ Action """
 
     @Service.action
-    def add_gpio(self, id, name, dir=False, event=None, callback=False, edge=None):
+    def add_gpio(self, id, name, dir=False, event=None, callback=False, edge=None, default_value=False):
         self.gpios.append(Gpio(id, name, dir=dir, event=event,
-            callback=callback, edge=edge, callback_fct=self.callback_gpio))
+            callback=callback, edge=edge, callback_fct=self.callback_gpio, default_value=default_value))
 
     @Service.action
     def read_gpio(self, id=None, name=None):
         gpio = self.get_gpio(id, name)
-        if gpio is None or not hasattr(gpio, read):
+        if gpio is None or not hasattr(gpio, 'read'):
             return None
         return gpio.read()
 
@@ -98,7 +100,7 @@ class Gpios(Service):
         gpio = self.get_gpio(id, name)
         if gpio is None:
             return False
-        if hasattr(gpio, write):
+        if hasattr(gpio, 'write'):
             gpio.write(value)
         return True
 
@@ -157,7 +159,10 @@ def main():
     gpios.add_gpio(20, "gtb5", False, event='back_%s' % ROBOT)
     gpios.add_gpio(21, "gtb6", False, event='back_%s' % ROBOT)
 
-    gpios.print_gpios()
+    gpios.add_gpio(17, "relayGold", True, default_value=True)
+    gpios.add_gpio(23, "relayArms", True, default_value=True)
+    
+    #gpios.print_gpios()
 
     gpios.run()
 
