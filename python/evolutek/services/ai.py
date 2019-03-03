@@ -61,7 +61,7 @@ class Ai(Service):
         super().__init__(ROBOT)
         self.setup(recalibration=False)
 
-    @Service.thread
+    #@Service.thread
     def status(self):
         while True:
             self.publish(ROBOT + '_ai_status', status=str(self.state))
@@ -134,7 +134,7 @@ class Ai(Service):
         self.actuators.disable()
 
     @Service.action
-    def abort(self, robot):
+    def abort(self, robot=None):
         if self.state != State.Making:
             return
 
@@ -152,12 +152,15 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
+        self.aborting.clear()
+
         print('[AI] Selecting')
         self.state = State.Selecting
 
         self.debug_count += 1
 
         print("[AI] Number of actions :%d" %self.debug_count)
+        sleep(3)
 
         if self.debug_count > 10:
             self.end()
@@ -185,8 +188,9 @@ class Ai(Service):
             return
 
         print('[AI] Making')
-        self.state = state.Making
+        self.state = State.Making
 
+        sleep(3)
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
             self.selecting()
