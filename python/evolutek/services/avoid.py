@@ -30,7 +30,7 @@ class Avoid(Service):
                 'back_detected' : self.back_detected,
                 'avoid' : self.avoid
             }
-            self.publish(ROBOT + '_avoid_status', s)]
+            self.publish(ROBOT + '_avoid_status', s)
             sleep(self.refresh)
 
     @Service.thread
@@ -55,7 +55,7 @@ class Avoid(Service):
     def front(self, name, id, value):
         if int(value):
             self.front_detected += 1
-        else if self.front_detected > 0:
+        elif self.front_detected > 0:
             self.front_detected -= 1
 
     # Update back detection
@@ -63,7 +63,7 @@ class Avoid(Service):
     def back(self, name, id, value):
         if int(value):
             self.back_detected += 1
-        elif self.back_detected > 0
+        elif self.back_detected > 0:
             self.back_detected -= 1
 
 def main():
