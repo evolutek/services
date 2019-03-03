@@ -210,6 +210,10 @@ class Ai(Service):
         sleep(1)
         for action in goal.actions:
             sleep(1)
+            if action.trsl_speed is not None:
+                self.trajman.set_trsl_max_speed(action.trsl_speed)
+            if action.rot_speed is not None:
+                self.trajman.set_rot_max_speed(action.rot_speed)
             if not goal.avoid:
                 self.avoid.disable()
             if self.aborting.isSet():
@@ -217,6 +221,8 @@ class Ai(Service):
                 self.selecting()
             action.make()
             self.avoid.enable()
+            self.trajman.set_trsl_max_speed(self.max_trsl_speed)
+            self.trajman.set_rot_max_speed(self.max_rot_speed)
 
         print("[AI] Finished goal")
         self.goals.finish_goal()
