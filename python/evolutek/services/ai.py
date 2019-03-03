@@ -8,6 +8,8 @@ from evolutek.lib.settings import ROBOT
 from threading import Event, Thread
 from time import sleep
 
+ROBOT = "pal"
+
 class State(Enum):
     Init = 0
     Setup = 1
@@ -36,10 +38,10 @@ class Ai(Service):
         # self.recalibration_event = Event(set='recalibrated')
 
         # Config
-        self.color1 = self.cs.config.get(section='match', option='color1')
-        self.color2 = self.cs.config.get(section='match', option='color2')
-        #self.color = self.cs.match.get_match()['color']
-        self.color = self.color1  #remove
+        #self.color1 = self.cs.config.get(section='match', option='color1')
+        #self.color2 = self.cs.config.get(section='match', option='color2')
+        self.color = self.cs.match.get_match()['color']
+        #self.color = self.color1  #remove
         self.refresh = float(self.cs.config.get(section='ai', option='refresh'))
 
         self.max_trsl_speed = self.cs.config.get(section=ROBOT, option='trsl_max')
@@ -51,7 +53,6 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Match config
-        #self.map = Map(3000, 2000, 25)
         self.goals = Goals(color = self.color, file = "keke.json")
 
         print('[AI] Initial Setup')
