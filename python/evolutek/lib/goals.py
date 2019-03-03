@@ -19,7 +19,7 @@ class Action:
         self.rot_speed = rot_speed
 
     def make(self):
-        self.fct(argsgoa)
+        self.fct(self.args)
 
 class Goal:
 
@@ -36,16 +36,24 @@ class Goal:
 
 class Goals:
 
-    def __init__(self, file, color):
-        # parse file
+    def __init__(self, file, color, actuators, trajman):
 
         """Robot starting position"""
-        self.start_x = 600
-        self.start_y = 225 #if color == 'yellow' else 2725
+        self.start_x = 0
+        self.start_y = 0 #if color == 'yellow' else 2725
         self.theta = 0 #if color == 'yellow' else -pi/2
 
-        self.graph = {}
-        self.add_node('Start', done=True)
+        self.goals = []
+        self.current = 0
+
+        a = Action(actuators.open_arms)
+        b = Actiob(actuators.close_arms)
+
+        self.goals.append(Goal(0, 0, theta=0, actions=[a]))
+        self.goals.append(Goal(0, 0, theta=0, actions=[b]))
+
+        #self.graph = {}
+        #self.add_node('Start', done=True)
 
         # parse file
 
@@ -74,6 +82,14 @@ class Goals:
         l = []
         # Return available goals in the graph
         return l
+
+    def get_goal(self):
+        if self.current >= self.len(goals):
+            return None
+        return self.goals[self.current]
+
+    def finish_goal(self):
+        self.current += 1
 
 if __name__ == "__main__":
     goals = Goals('test.json', 'green')
