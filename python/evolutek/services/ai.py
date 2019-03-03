@@ -55,7 +55,7 @@ class Ai(Service):
         self.debug_count = 0
 
         # Match config
-        self.goals = Goals(color = self.color, file = "keke.json")
+        self.goals = Goals(file="keke.json", color = self.color, actuators = self.actuators, trajman = self.trajman)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -157,15 +157,12 @@ class Ai(Service):
         print('[AI] Selecting')
         self.state = State.Selecting
 
-        self.debug_count += 1
+        goal = goals.get_goal()
 
-        print("[AI] Number of actions :%d" %self.debug_count)
-        sleep(3)
-
-        if self.debug_count > 10:
+        if goal is None:
             self.end()
-
-        current_action = None
+        
+        self.making(goal)
         path = None
 
         # Select an action
@@ -181,7 +178,7 @@ class Ai(Service):
 
         self.making()
 
-    def making(self, current_acion=None, path=None):
+    def making(self, goal=None, path=None):
 
         # Need to rework
         if self.state != State.Selecting:
@@ -197,41 +194,29 @@ class Ai(Service):
             
         print("[AI][MAKING] Not aborted")
         self.selecting()
-            
 
-        """
-        if self.current_action.trsl_speed is not None:
-            self.trajman.set_trsl_max_speed(current_action.trsl_speed)
-
-        for point in path:
-            self.trajman.goto_xy(x=point.x, y=point.y)
-            while self.trajman.is_moving():
-                sleep(0.5) #Is this not too much?
-            if self.aborting.isSet():
-                self.selecting()
-
-        if self.current_action.rot_speed is not None:
-           self.trajman.set_rot_max_speed(self.current_action.trsl_speed)
-
-        if self.current_action.theta is not None:
-            self.trajman.goto_theta(self.current_action.theta)
-
+        self.trajman.goto_xy(x = goal.x, y = goal.y) 
         if self.aborting.isSet():
+            print("[AI][MAKING] Aborted")
             self.selecting()
 
-        if not self.current_acion.avoid:
-            self.avoid.disable()
+        self.trajman.goto_theta(goal.theta)
+        if self.aborting.isSet():
+            print("[AI][MAKING] Aborted")
+            self.selecting()
 
-        for action in self.current_acion.actions:
-            action()
+        for action in goal.actions:
             if self.aborting.isSet():
-                # memorize current action
+                print("[AI][MAKING] Aborted")
                 self.selecting()
+            action.make()
+
+        print("[AI] Finished goal")
+        self.goals.finish_goal()
 
         self.publish('score', self.current_action.score) # Increment score variable in match
         self.trajman.set_trsl_max_speed(self.max_trsl_speed)
         self.trajman.set_trsl_rot_speed(self.max_rot_speed)
-        """
         self.selecting()
 
 def main():
