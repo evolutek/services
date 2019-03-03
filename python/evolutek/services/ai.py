@@ -50,7 +50,6 @@ class Ai(Service):
 
         # Parameters
         self.aborting = Event()
-        self.current_action = None
         self.tmp_robot = None
         self.debug_count = 0
 
@@ -157,7 +156,7 @@ class Ai(Service):
         print('[AI] Selecting')
         self.state = State.Selecting
 
-        goal = goals.get_goal()
+        goal = self.goals.get_goal()
 
         if goal is None:
             self.end()
@@ -187,25 +186,26 @@ class Ai(Service):
         print('[AI] Making')
         self.state = State.Making
 
-        sleep(3)
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
             self.selecting()
-            
-        print("[AI][MAKING] Not aborted")
-        self.selecting()
+
 
         self.trajman.goto_xy(x = goal.x, y = goal.y) 
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
             self.selecting()
 
-        self.trajman.goto_theta(goal.theta)
-        if self.aborting.isSet():
-            print("[AI][MAKING] Aborted")
-            self.selecting()
+        sleep(1)
+        if goal.theta is not None:
+            self.trajman.goto_theta(goal.theta)
+            if self.aborting.isSet():
+                print("[AI][MAKING] Aborted")
+                self.selecting()
 
+        sleep(1)
         for action in goal.actions:
+            sleep(1)
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
@@ -214,9 +214,7 @@ class Ai(Service):
         print("[AI] Finished goal")
         self.goals.finish_goal()
 
-        self.publish('score', self.current_action.score) # Increment score variable in match
-        self.trajman.set_trsl_max_speed(self.max_trsl_speed)
-        self.trajman.set_trsl_rot_speed(self.max_rot_speed)
+        self.publish('score', goal.score) # Increment score variable in match
         self.selecting()
 
 def main():

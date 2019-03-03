@@ -19,11 +19,11 @@ class Action:
         self.rot_speed = rot_speed
 
     def make(self):
-        self.fct(self.args)
+        self.fct()
 
 class Goal:
 
-    def __init__(x, y, theta=None, actions=None, score=0, robot_proximity=False, proprity=0, time=0):
+    def __init__(self, x, y, theta=None, actions=None, score=0, robot_proximity=False, priority=0, time=0):
         self.x = x
         self.y = y
         self.theta = theta
@@ -47,10 +47,10 @@ class Goals:
         self.current = 0
 
         a = Action(actuators.open_arms)
-        b = Actiob(actuators.close_arms)
+        b = Action(actuators.close_arms)
 
-        self.goals.append(Goal(0, 0, theta=0, actions=[a]))
-        self.goals.append(Goal(0, 0, theta=0, actions=[b]))
+        self.goals.append(Goal(x=0, y=0, theta=0, actions=[a]))
+        self.goals.append(Goal(x=0, y=0, theta=0, actions=[b]))
 
         #self.graph = {}
         #self.add_node('Start', done=True)
@@ -84,7 +84,7 @@ class Goals:
         return l
 
     def get_goal(self):
-        if self.current >= self.len(goals):
+        if self.current >= len(self.goals):
             return None
         return self.goals[self.current]
 
