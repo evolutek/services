@@ -99,10 +99,15 @@ class Ai(Service):
             while self.trajman.is_moving():
                 sleep(0.1)
         else:
+            print("[AI][TRAJMAN] Free")
             self.trajman.free()
+            print("[AI][TRAJMAN] Set x")
             self.trajman.set_x(self.goals.start_x)
+            print("[AI][TRAJMAN] Set y")
             self.trajman.set_y(self.goals.start_y)
+            print("[AI][TRAJMAN] Theta")
             self.trajman.set_theta(self.goals.theta)
+            print("[AI][TRAJMAN] Unfree")
             self.trajman.unfree()
 
         #self.goals.reset()
