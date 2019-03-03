@@ -147,7 +147,7 @@ class Ai(Service):
         # Give it to the map
 
     def selecting(self):
-        if self.state != State.Wating or self.state != State.Making:
+        if self.state != State.Waiting or self.state != State.Making:
             return
 
         print('[AI] Selecting')
