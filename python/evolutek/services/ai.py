@@ -138,6 +138,8 @@ class Ai(Service):
         if self.state != State.Making:
             return
 
+        self.debug_count -= 1
+
         print('[AI] Aborting')
         self.aborting.set()
 
@@ -147,7 +149,7 @@ class Ai(Service):
         # Give it to the map
 
     def selecting(self):
-        if self.state != State.Waiting or self.state != State.Making:
+        if self.state != State.Waiting and self.state != State.Making:
             return
 
         print('[AI] Selecting')
@@ -155,7 +157,7 @@ class Ai(Service):
 
         self.debug_count += 1
 
-        print("[AI] Number of actions :%d" %debug_count)
+        print("[AI] Number of actions :%d" %self.debug_count)
 
         if self.debug_count > 10:
             self.end()
@@ -183,7 +185,7 @@ class Ai(Service):
             return
 
         print('[AI] Making')
-        self.state = Setup.making
+        self.state = state.Making
 
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
