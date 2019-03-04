@@ -63,14 +63,20 @@ class Actuators(Service):
     @Service.action
     def get_palet(self):
         self.open_arms()
-        sleep(1)
+        sleep(0.5)
         self.enable_suction_arms()
+
         self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
-        sleep(1)
+        while self.trajman.is_moving:
+            self.sleep(0.1)
+
         self.close_arms()
-        sleep(1)
+        sleep(0.5)
         self.disable_suction_arms()
+
         self.trajman.move_trsl(dest=25, acc=100, dec=100, maxspeed=500, sens=0)
+        while self.trajman.is_moving():
+            sleep(0.1)
 
     """ GOLDENIUM """
     @Service.action
@@ -84,6 +90,24 @@ class Actuators(Service):
     @Service.action
     def disable_suction_goldenium(self):
         self.gpios.write_gpio(value=True, name="relayGold")
+
+    @Service.action
+    def get_goldenium(self):
+        self.open_arm_goldenium()
+        sleep(0.5)
+        self.enable_suction_goldenium()
+
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
+        while self.trajman.is_moving:
+            self.sleep(0.1)
+
+        self.close_arms()
+        sleep(0.5)
+        self.disable_suction_goldenium()
+
+        self.trajman.move_trsl(dest=25, acc=100, dec=100, maxspeed=500, sens=0)
+        while self.trajman.is_moving():
+            sleep(0.1)
 
     """ CLAPET """
     @Service.action
@@ -101,12 +125,9 @@ class Actuators(Service):
         for n in [1, 2, 3, 4]:
             self.cs.ax[str(n)].free()
 
+    """ Recalibration """
     @Service.action
     def recalibrate(self, x=True, y=True, side=False, sens_x=False, sens_y=False, decal_x=0, decal_y=0, init=False):
-        Thread(target=self.recalibration, args=[x, y, side, sens_x, sens_y, decal_x, decal_y, init]).start()
-        return 'Done'
-
-    def recalibration(self, x=True, y=True, side=False, sens_x=False, sens_y=False, decal_x=0, decal_y=0, init=False):
         if not self.enabled:
             return
 
@@ -185,7 +206,6 @@ class Actuators(Service):
         self.trajman.set_trsl_dec(speeds['trdec'])
 
         print('[ACTUATORS] Recalibration done')
-        self.publish(ROBOT + '_recalibrated')
 
     @Service.action
     def enable(self):

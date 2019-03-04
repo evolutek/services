@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-from cellaserv.service import Service, Event
+from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
-from enum import Enum
 from evolutek.lib.goals import Goals
 from evolutek.lib.settings import ROBOT
+
+from enum import Enum
 from threading import Event, Thread
 from time import sleep
 
@@ -24,7 +25,6 @@ class State(Enum):
 #@Service.require('avoid', ROBOT)
 #@Service.require('gpios', ROBOT)
 @Service.require('match')
-#@Service.require('map')
 class Ai(Service):
 
     def __init__(self):
@@ -37,13 +37,12 @@ class Ai(Service):
         self.trajman = self.cs.trajman[ROBOT]
         self.actuators = self.cs.actuators[ROBOT]
         self.avoid = self.cs.avoid[ROBOT]
-        # self.recalibration_event = Event(set='recalibrated')
 
         # Config
-        #self.color1 = self.cs.config.get(section='match', option='color1')
-        #self.color2 = self.cs.config.get(section='match', option='color2')
+        self.color1 = self.cs.config.get(section='match', option='color1')
+        self.color2 = self.cs.config.get(section='match', option='color2')
         self.color = self.cs.match.get_match()['color']
-        #self.color = self.color1  #remove
+
         self.refresh = float(self.cs.config.get(section='ai', option='refresh'))
 
         self.max_trsl_speed = self.cs.config.get(section=ROBOT, option='trsl_max')
@@ -52,7 +51,6 @@ class Ai(Service):
         # Parameters
         self.aborting = Event()
         self.tmp_robot = None
-        self.debug_count = 0
 
         # Match config
         self.goals = Goals(file="keke.json", color = self.color, actuators = self.actuators, trajman = self.trajman)
@@ -69,10 +67,11 @@ class Ai(Service):
 
     @Service.action
     def setup(self, color=None, recalibration=True):
-        print(self.state)
+
         if self.state != State.Init and self.state != State.Waiting and self.state != State.Ending:
             return
         self.state = State.Setup
+
         if isinstance(recalibration, str):
             recalibration = recalibration == "true"
 
@@ -87,13 +86,13 @@ class Ai(Service):
             self.color = color
 
         if recalibration:
+
+            """ Let robot recalibrate itself """
             sens = self.color == self.color2
-            self.actuators.recalibrate(sens_y = sens, init=True)
+            self.actuators.recalibrate(sens_y=sens, init=True)
             sleep(10)
 
-            #self.recalibration_event.wait()
-            #self.recalibration_event.clear()
-
+            """ Goto to starting pos """
             self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
             while self.trajman.is_moving():
                 sleep(0.1)
@@ -101,15 +100,11 @@ class Ai(Service):
             while self.trajman.is_moving():
                 sleep(0.1)
         else:
-            print("[AI][TRAJMAN] Free")
+            """ Set Default config """
             self.trajman.free()
-            print("[AI][TRAJMAN] Set x")
             self.trajman.set_x(self.goals.start_x)
-            print("[AI][TRAJMAN] Set y")
             self.trajman.set_y(self.goals.start_y)
-            print("[AI][TRAJMAN] Theta")
             self.trajman.set_theta(self.goals.theta)
-            print("[AI][TRAJMAN] Unfree")
             self.trajman.unfree()
 
         #self.goals.reset()
@@ -137,6 +132,7 @@ class Ai(Service):
 
     @Service.action
     def abort(self, robot=None):
+
         if self.state != State.Making:
             return
 
@@ -154,6 +150,7 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
+        """ Clear abort event """
         self.aborting.clear()
 
         print('[AI] Selecting')
@@ -163,9 +160,8 @@ class Ai(Service):
 
         if goal is None:
             self.end()
-        
+
         self.making(goal)
-        path = None
 
         # Select an action
         #optimum  = self.map.get_optimal_goal(self.goals.get_available_goals())
@@ -182,47 +178,59 @@ class Ai(Service):
 
     def making(self, goal=None, path=None):
 
-        # Need to rework
         if self.state != State.Selecting:
             return
 
         print('[AI] Making')
         self.state = State.Making
 
-
-        if self.aborting.isSet():
-            print("[AI][MAKING] Aborted")
-            self.selecting()
-
-
-        self.trajman.goto_xy(x = goal.x, y = goal.y) 
+        """ Goto x y """
+        self.trajman.goto_xy(x = goal.x, y = goal.y)
+        while self.trajman.is_moving():
+            sleep(0.1)
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
             self.selecting()
 
         sleep(1)
+
+        """ Goto theta if there is one """
         if goal.theta is not None:
             self.trajman.goto_theta(goal.theta)
+            while self.trajman.is_moving():
+                sleep(0.1)
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
 
         sleep(1)
+
+        """ Make all actions """
         for action in goal.actions:
-            sleep(1)
+
+            """ Set parameters """
             if action.trsl_speed is not None:
                 self.trajman.set_trsl_max_speed(action.trsl_speed)
             if action.rot_speed is not None:
                 self.trajman.set_rot_max_speed(action.rot_speed)
             if not goal.avoid:
                 self.avoid.disable()
+
+            """ Make action """
+            action.make()
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
-            action.make()
-            self.avoid.enable()
-            self.trajman.set_trsl_max_speed(self.max_trsl_speed)
-            self.trajman.set_rot_max_speed(self.max_rot_speed)
+
+            """ Make things back """
+            if action.trsl_speed is not None:
+                self.trajman.set_trsl_max_speed(self.max_trsl_speed)
+            if action.rot_speed is not None:
+                self.trajman.set_rot_max_speed(self.max_rot_speed)
+            if not goal.avoid:
+                self.avoid.enable()
+
+            sleep(1)
 
         print("[AI] Finished goal")
         self.goals.finish_goal()
