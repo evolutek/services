@@ -68,10 +68,14 @@ class Gpio(Io):
         if not self.dir:
             return False
         if isinstance(value, str):
-            value == value == "true"
+            value = value == "true"
         if value:
+            print('lol')
+            print(self.id)
             GPIO.output(self.id, GPIO.HIGH)
         else:
+            print('mdr')
+            print(self.id)
             GPIO.output(self.id, GPIO.LOW)
         return True
 
@@ -103,7 +107,8 @@ class Gpios(Service):
             return False
         if hasattr(gpio, 'write'):
             gpio.write(value)
-        return True
+            return True
+        return False
 
     @Service.action
     def print_gpios(self):
@@ -138,11 +143,11 @@ class Gpios(Service):
         if gpio is None:
             return
 
-        print(gpio)
         value = gpio.read()
 
         self.publish(event=gpio.name if gpio.event is None else gpio.event,
             name=gpio.name, id=gpio.id, value=value)
+
 def wait_for_beacon():
     hostname = "pi"
     while True:
@@ -169,8 +174,8 @@ def main():
     gpios.add_gpio(20, "gtb5", False, event='back_%s' % ROBOT)
     gpios.add_gpio(21, "gtb6", False, event='back_%s' % ROBOT)
 
-    gpios.add_gpio(17, "relayGold", True, default_value=False)
-    gpios.add_gpio(27, "relayArms", True, default_value=False)
+    gpios.add_gpio(17, "relayGold", True, default_value=True)
+    gpios.add_gpio(27, "relayArms", True, default_value=True)
     
     #gpios.print_gpios()
 
