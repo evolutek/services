@@ -68,14 +68,14 @@ class Actuators(Service):
         self.enable_suction_arms()
 
         self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
-        while self.trajman.is_moving:
-            self.sleep(0.1)
+        while self.trajman.is_moving():
+            sleep(0.1)
 
         self.close_arms()
         sleep(0.5)
         self.disable_suction_arms()
 
-        self.trajman.move_trsl(dest=25, acc=100, dec=100, maxspeed=500, sens=0)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -99,14 +99,30 @@ class Actuators(Service):
         self.enable_suction_goldenium()
 
         self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
-        while self.trajman.is_moving:
-            self.sleep(0.1)
+        while self.trajman.is_moving():
+            sleep(0.1)
 
         self.close_arms()
         sleep(0.5)
-        self.disable_suction_goldenium()
 
-        self.trajman.move_trsl(dest=25, acc=100, dec=100, maxspeed=500, sens=0)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=0)
+        while self.trajman.is_moving():
+            sleep(0.1)
+
+    @Service.action
+    def drop_goldenium(self):
+        self.open_arm_goldenium()
+
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
+        while self.trajman.is_moving():
+            sleep(0.1)
+        
+        self.disable_suction_goldenium()
+        sleep(0.1)
+
+        self.close_arms()
+
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
 
