@@ -150,6 +150,10 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
+        avoid_status = self.avoid.status()
+        if int(avoid_status['front_detected']) > 0:
+            self.selecting()
+
         """ Clear abort event """
         self.aborting.clear()
 

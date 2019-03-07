@@ -31,7 +31,8 @@ class Avoid(Service):
             s = {
                 'front_detected' : self.front_detected,
                 'back_detected' : self.back_detected,
-                'avoid' : self.avoid
+                'avoid' : self.avoid,
+                'enabled' : self.enabled
             }
             self.publish(ROBOT + '_avoid_status', s)
             sleep(self.refresh)
