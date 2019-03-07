@@ -38,6 +38,11 @@ class Ai(Service):
         self.actuators = self.cs.actuators[ROBOT]
         self.avoid = self.cs.avoid[ROBOT]
 
+        # Simple AI
+        self.avoid_stat = None
+        self.side = None
+        globals()[ROBOT + '_avoid_status'] = self.avoid_status
+
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
@@ -64,6 +69,10 @@ class Ai(Service):
         while True:
             self.publish(ROBOT + '_ai_status', status=str(self.state))
             sleep(self.refresh)
+
+    @Service.event
+    def avoid_status(self, status):
+        self.avoid_stat = status
 
     @Service.action
     def setup(self, color=None, recalibration=True):
@@ -131,12 +140,12 @@ class Ai(Service):
         self.actuators.disable()
 
     @Service.action
-    def abort(self, robot=None):
+    def abort(self, robot=None, side=None):
 
         if self.state != State.Making:
             return
 
-        self.debug_count -= 1
+        self.side = side
 
         print('[AI] Aborting')
         self.aborting.set()
@@ -150,9 +159,15 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
-        avoid_status = self.avoid.status()
-        if int(avoid_status['front_detected']) > 0:
-            self.selecting()
+        if self.side is not None:
+            field = ''
+            if self.side == 'front':
+                field = 'front_detected'
+            else:
+                field = 'back_detected'
+            while int(self.avoid_stat[field]) > 0:
+                sleep(0.1)
+            side = None
 
         """ Clear abort event """
         self.aborting.clear()
