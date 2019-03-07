@@ -30,6 +30,7 @@ setup(
             'config = evolutek.services.config:main',
             'gpios = evolutek.services.gpios:main',
             'trajman = evolutek.services.trajman:main',
+            'avoid = evolutek.services.avoid:main'
         ],
     },
 )
