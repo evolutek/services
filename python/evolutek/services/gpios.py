@@ -14,11 +14,12 @@ class Edge(Enum):
 
 class Io():
 
-    def __init__(self, id, name, dir=True, event=None):
+    def __init__(self, id, name, dir=True, event=None, update=True):
         self.id = id
         self.name = name
         self.dir = dir
         self.event = event
+        self.update = update
 
     def __eq__(self, ident):
         return (ident[0] is not None and self.id == int(ident[0])) or self.name == ident[1]
@@ -37,9 +38,10 @@ class Io():
 
 class Gpio(Io):
 
-    def __init__(self, id, name, dir=True, event=None, callback=False, edge=None, callback_fct=None, default_value=False):
+    def __init__(self, id, name, dir=True, event=None, update=True, callback=False, edge=None, callback_fct=None, default_value=False):
 
-        super().__init__(id, name, dir, event)
+
+        super().__init__(id, name, dir, event, update)
         self.callback = callback
         self.edge = edge
         self.callback_fct = callback_fct
@@ -52,12 +54,11 @@ class Gpio(Io):
             GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         if callback:
             if edge == Edge.RISING:
-                GPIO.add_event_detect(id, GPIO.RISING, callback=self.callback_fct)
+                GPIO.add_event_detect(id, GPIO.RISING, callback=self.callback_fct, bouncetime=200)
             elif edge == Edge.FALLING:
-                print(self.id)
-                GPIO.add_event_detect(id, GPIO.FALLING, callback=self.callback_fct)
+                GPIO.add_event_detect(id, GPIO.FALLING, callback=self.callback_fct, bouncetime=200)
             else:
-                GPIO.add_event_detect(id, GPIO.BOTH, callback=self.callback_fct)
+                GPIO.add_event_detect(id, GPIO.BOTH, callback=self.callback_fct, bouncetime=200)
 
     def read(self):
         if self.dir:
@@ -70,27 +71,26 @@ class Gpio(Io):
         if isinstance(value, str):
             value = value == "true"
         if value:
-            print('lol')
-            print(self.id)
             GPIO.output(self.id, GPIO.HIGH)
         else:
-            print('mdr')
-            print(self.id)
             GPIO.output(self.id, GPIO.LOW)
         return True
 
+@Service.require('config')
 class Gpios(Service):
 
     def __init__(self):
         cs = CellaservProxy()
+        #self.refresh = float(cs.config.get(section='gpios', option='refresh'))
+        self.refresh = 1.0
         self.gpios = []
         super().__init__(ROBOT)
 
     """ Action """
 
     @Service.action
-    def add_gpio(self, id, name, dir=False, event=None, callback=False, edge=None, default_value=False):
-        self.gpios.append(Gpio(id, name, dir=dir, event=event,
+    def add_gpio(self, id, name, dir=False, event=None, update=True, callback=False, edge=None, default_value=False):
+        self.gpios.append(Gpio(id, name, dir=dir, event=event, update=update,
             callback=callback, edge=edge, callback_fct=self.callback_gpio, default_value=default_value))
 
     @Service.action
@@ -137,7 +137,7 @@ class Gpios(Service):
 
     def callback_gpio(self, id):
 
-        print(id)
+        print("id %d" % id)
 
         gpio = self.get_gpio(id)
         if gpio is None:
@@ -148,6 +148,14 @@ class Gpios(Service):
         self.publish(event=gpio.name if gpio.event is None else gpio.event,
             name=gpio.name, id=gpio.id, value=value)
 
+    #@Service.thread
+    def update_gpios(self):
+        while True:
+            for gpio in self.gpios:
+                if not gpio.dir and gpio.update:
+                    self.callback_gpio(gpio.id)
+            sleep(self.refresh)
+
 def wait_for_beacon():
     hostname = "pi"
     while True:
@@ -156,23 +164,22 @@ def wait_for_beacon():
             return
         pass
 
-
 def main():
     wait_for_beacon()
     gpios = Gpios()
 
-    gpios.add_gpio(5, "tirette", False, callback=True, edge=Edge.RISING)
-    gpios.add_gpio(6, "reset", False, callback=True, edge=Edge.FALLING)
+    gpios.add_gpio(5, "tirette", False, update=False, callback=True, edge=Edge.RISING)
+    gpios.add_gpio(6, "reset", False, update=False, callback=True, edge=Edge.FALLING)
 
     # Front gtb
-    gpios.add_gpio(18, "gtb1", False, event='front_%s' % ROBOT)
-    gpios.add_gpio(23, "gtb2", False, event='front_%s' % ROBOT)
-    gpios.add_gpio(24, "gtb3", False, event='front_%s' % ROBOT)
+    gpios.add_gpio(18, "gtb1", False, event='front_%s' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(23, "gtb2", False, event='front_%s' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(24, "gtb3", False, event='front_%s' % ROBOT, callback=True, edge=Edge.BOTH)
 
     # Back gtb
-    gpios.add_gpio(16, "gtb4", False, event='back_%s' % ROBOT)
-    gpios.add_gpio(20, "gtb5", False, event='back_%s' % ROBOT)
-    gpios.add_gpio(21, "gtb6", False, event='back_%s' % ROBOT)
+    gpios.add_gpio(16, "gtb4", False, event='back_%s' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(20, "gtb4", False, event='back_%s' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(21, "gtb4", False, event='back_%s' % ROBOT, callback=True, edge=Edge.BOTH)
 
     gpios.add_gpio(17, "relayGold", True, default_value=True)
     gpios.add_gpio(27, "relayArms", True, default_value=True)
