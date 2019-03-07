@@ -5,6 +5,7 @@ from evolutek.lib.settings import ROBOT
 from threading import Lock, Thread
 from time import sleep
 import RPi.GPIO as GPIO
+import os
 
 class Edge(Enum):
         RISING = 0
@@ -142,8 +143,17 @@ class Gpios(Service):
 
         self.publish(event=gpio.name if gpio.event is None else gpio.event,
             name=gpio.name, id=gpio.id, value=value)
+def wait_for_beacon():
+    hostname = "pi"
+    while True:
+        r = os.system("ping -c 1 " + hostname)
+        if r == 0:
+            return
+        pass
+
 
 def main():
+    wait_for_beacon()
     gpios = Gpios()
 
     gpios.add_gpio(5, "tirette", False, callback=True, edge=Edge.RISING)
@@ -159,8 +169,8 @@ def main():
     gpios.add_gpio(20, "gtb5", False, event='back_%s' % ROBOT)
     gpios.add_gpio(21, "gtb6", False, event='back_%s' % ROBOT)
 
-    gpios.add_gpio(17, "relayGold", True, default_value=True)
-    gpios.add_gpio(23, "relayArms", True, default_value=True)
+    gpios.add_gpio(17, "relayGold", True, default_value=False)
+    gpios.add_gpio(27, "relayArms", True, default_value=False)
     
     #gpios.print_gpios()
 

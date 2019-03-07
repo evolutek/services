@@ -5,9 +5,9 @@ from queue import Queue
 from struct import pack, unpack, calcsize
 from threading import Thread, Event
 import serial
-
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
+import os
 
 make_setting('TRAJMAN_PORT', '/dev/MotorCard', 'trajman', 'port', 'TRAJMAN_PORT')
 make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
@@ -700,8 +700,16 @@ class TrajMan(Service):
                 else:
                     self.log("Message not recognised")
 
+def wait_for_beacon():
+    hostname = "pi"
+    while True:
+        r = os.system("ping -c 1 " + hostname)
+        if r == 0:
+            return
+        pass
 
 def main():
+    wait_for_beacon()
     trajman = TrajMan()
     trajman.run()
 
