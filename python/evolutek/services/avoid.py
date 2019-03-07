@@ -15,7 +15,7 @@ class Avoid(Service):
     def __init__(self):
         self.cs = CellaservProxy()
         self.trajman = self.cs.trajman[ROBOT]
-        self.refresh = float(self.config.get(section='avoid', option='refresh'))
+        self.refresh = float(self.cs.config.get(section='avoid', option='refresh'))
 
         self.telemetry = None
         self.front_detected = 0
