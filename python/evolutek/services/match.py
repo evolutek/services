@@ -229,7 +229,7 @@ class Match(Service):
     @Service.event
     def pal_telemetry(self, status, telemetry):
         self.pal_watchdog.reset()
-        if status != failed:
+        if status != 'failed':
             self.pal_telem = telemetry
         else:
             self.pal_telem = None
@@ -245,17 +245,17 @@ class Match(Service):
         self.pal_watchdog.reset()
         self.pal_avoid_s = status
 
+
+    """ PMI """
     @Service.event
     def pmi_telemetry(self, status, telemetry):
         self.pmi_watchdog.reset()
-        if status != failed:
+        if status != 'failed':
             self.pmi_telem = telemetry
         else:
             self.pmi_telem = None
             print("Could not read telemetry")
 
-
-    """ PMI """
     @Service.event
     def pmi_ai_status(self, status):
         self.pmi_watchdog.reset()
@@ -353,7 +353,7 @@ class Match(Service):
         self.window = Tk()
         self.window.title('Match interface')
 
-        self.map = PhotoImage(file='/etc/conf.d/map.png')
+        self.map = PhotoImage(file='/etc/conf.d/map_%s.png' % str(self.interface_ratio))
 
         print('Window created')
         self.window.after(self.interface_refresh, self.update_interface)
