@@ -4,6 +4,8 @@ from evolutek.lib.watchdog import Watchdog
 from os import _exit
 from threading import Timer
 from tkinter import *
+from PIL import Image
+from PIL import ImageTk
 from time import sleep
 
 @Service.require('config')
@@ -353,7 +355,9 @@ class Match(Service):
         self.window = Tk()
         self.window.title('Match interface')
 
-        self.map = PhotoImage(file='/etc/conf.d/map_%s.png' % str(self.interface_ratio))
+        img = Image.open('/etc/conf.d/map.png')
+        img = img.resize((int(3000 * self.interface_ratio), int(2000 * self.interface_ratio)), Image.ANTIALIAS)
+        self.map =  ImageTk.PhotoImage(img)
 
         print('Window created')
         self.window.after(self.interface_refresh, self.update_interface)
