@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+from collections import deque
 from copy import deepcopy
-from math import ceil, sqrt
+from enum import Enum
+from math import ceil, sqrt, inf
 
 wall = "X"
 ground = " "
@@ -16,10 +18,16 @@ class Point:
         return "x: %s, y:%s" % (str(self.x), str(self.y))
 
     def dist(self, p):
-        return sqrt((self.x  - p.x) + (self.y  - p.y))
+        return sqrt((self.x  - p.x)**2 + (self.y  - p.y)**2)
 
     def __eq__(self, p):
         return self.x == p.x and self.y == p.y
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def to_dict(self):
+        return {'x': self.x, 'y': self.y}
 
 class Obstacle:
 
@@ -158,3 +166,77 @@ class Map:
             s += "|"
             print(s)
         print('-' * (self.width + 2))
+
+    def get_path(self, p1, p2):
+        if p1.x < 0 or p1.y < 0 or p1.x > self.real_height or p1.y > self.real_width\
+            or p2.x < 0 or p2.y < 0 or p2.x > self.real_height or p2.y > self.real_width:
+            print('Out of map')
+            return []
+
+        start = Point(int(p1.x/self.unit), int(p1.y/self.unit))
+        end = Point(int(p2.x/self.unit), int(p2.y/self.unit))
+
+        if self.map[start.x][start.y] > 0 or self.map[end.x][end.y] > 0:
+            print('Obstacle here')
+            return []
+
+        dist = []
+        for x in range(self.height + 1):
+            dist.append([])
+            for y in range(self.width + 1):
+                dist[x].append(inf)
+
+        queue = deque()
+        queue.append(start)
+        dist[start.x][start.y] = 0
+
+        pred = {}
+        while len(queue) > 0:
+            cur = queue.popleft()
+
+            if cur == end:
+                break
+
+            neighbours = self.neighbours(cur, map)
+            for neighbour in neighbours:
+                distance = dist[cur.x][cur.y] + self.distance(cur, neighbour) + cur.dist(end)
+                if distance < dist[neighbour.x][neighbour.y]:
+                    dist[neighbour.x][neighbour.y] = distance
+                    queue.append(neighbour)
+                    pred[neighbour] = cur
+
+        print('Complete Dijkstra')
+
+        path = []
+        if end in pred:
+            cur = end
+            p = end.to_dict()
+            path.append({'x': p['x'] * self.unit, 'y': p['y'] * self.unit})
+            while pred[cur] in pred:
+                cur = pred[cur]
+                p = cur.to_dict()
+                path.insert(0, {'x': p['x'] * self.unit, 'y': p['y'] * self.unit})
+
+        #TODO: linearize path
+
+        return path
+
+    def neighbours(self, p, map):
+        l = [
+            Point(p.x - 1, p.y),
+            Point(p.x + 1, p.y),
+            Point(p.x, p.y - 1),
+            Point(p.x, p.y + 1)
+        ]
+
+        neighbours = []
+        for point in l:
+            if point.x > 0 and point.y > 0 and point.x <= self.height\
+                and point.y <= self.width and self.map[point.x][point.y] == 0:
+                    neighbours.append(point)
+
+        return neighbours
+
+    def distance(self, p1, p2):
+        #TODO: COST
+        return p1.dist(p2)

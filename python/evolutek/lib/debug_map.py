@@ -31,10 +31,10 @@ class Interface:
         self.canvas = Canvas(self.window, width=self.width, height=self.height)
 
         img = Image.open('/etc/conf.d/map.png')
-        img = img.resize((int(3000 * self.unit), int(2000 * self.unit), Image.ANTIALIAS)
+        img = img.resize((int(3000 * unit), int(2000 * unit)), Image.ANTIALIAS)
         self.image =  ImageTk.PhotoImage(img)
 
-        self.canvas.create_image((int(3000 * self.unit / 2), int(2000 * self.unit / 2), image=self.image)
+        self.canvas.create_image(int(3000 * unit / 2), int(2000 * unit / 2), image=self.image)
 
         self.canvas.pack()
         print('Window created')
@@ -94,6 +94,8 @@ class Interface:
 
 
     def print_path(self, path):
+        if path is None:
+            return
         for i in range(1, len(path)):
             p1 = path[i - 1]
             p2 = path[i]
@@ -107,4 +109,5 @@ class Interface:
         self.print_grid()
         self.print_obstacles()
         self.print_pal(self.service.pal_telem)
+        self.print_path(self.service.path)
         self.window.after(refresh_interface, self.update)
