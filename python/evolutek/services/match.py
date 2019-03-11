@@ -1,6 +1,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
+from math import cos, sin
 from os import _exit
 from threading import Timer
 from tkinter import *
@@ -136,6 +137,29 @@ class Match(Service):
                 (robot['y'] + size) * self.interface_ratio,
                 (robot['x'] + size) * self.interface_ratio,
                 width=2, fill=color)
+            return
+        if 'theta' in robot:
+            x = robot['y'] * self.interface_ratio
+            y = robot['x'] * self.interface_ratio
+            size *= self.interface_ratio
+
+            points = []
+            points.append((x - size, y - size))
+            points.append((x + size, y - size))
+            points.append((x + size, y + size))
+            points.append((x - size, y + size))
+
+            cos_val = cos(robot['theta'])
+            sin_val = sin(robot['theta'])
+
+            new_points = []
+            for point in points:
+                new_points.append((
+                    (point[0] - x) * cos_val - (point[1] - y) * sin_val + x,
+                    (point[0] - x) * sin_val + (point[1] - y) * cos_val + y
+                ))
+
+            self.canvas.create_polygon(new_points, fill=color)
             return
         self.canvas.create_rectangle(
             (robot['y'] - size) * self.interface_ratio,

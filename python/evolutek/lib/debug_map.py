@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from tkinter import *
+from PIL import Image
+from PIL import ImageTk
 from evolutek.lib.map import wall
 from math import cos, sin, pi, atan
 from os import _exit
@@ -27,8 +29,12 @@ class Interface:
         self.close_button = Button(self.window, text='Close', command=self.close)
         self.close_button.pack()
         self.canvas = Canvas(self.window, width=self.width, height=self.height)
-        self.image = PhotoImage(file='/etc/conf.d/map.png')
-        self.canvas.create_image(750, 500, image=self.image)
+
+        img = Image.open('/etc/conf.d/map.png')
+        img = img.resize((int(3000 * self.unit), int(2000 * self.unit), Image.ANTIALIAS)
+        self.image =  ImageTk.PhotoImage(img)
+
+        self.canvas.create_image((int(3000 * self.unit / 2), int(2000 * self.unit / 2), image=self.image)
 
         self.canvas.pack()
         print('Window created')
