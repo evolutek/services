@@ -38,7 +38,7 @@ class Avoid(Service):
             sleep(self.refresh)
 
     @Service.thread
-    def direction(self, value):
+    def loop_avoid(self):
         while True:
             if self.telemetry is None:
                 continue
@@ -49,14 +49,14 @@ class Avoid(Service):
                 self.trajman.stop_asap(2000, 30)
                 self.avoid = True
                 print("[AVOID] Front detection")
-            elif self.telemetry['speed'] and self.back_detected > 0:
+            elif self.telemetry['speed'] < 0.0 and self.back_detected > 0:
                 self.trajman.stop_asap(2000, 30)
                 self.avoid = True
                 print("[AVOID] Back detection")
             else:
                 self.avoid = False
             slee(self.refresh)
-    
+
     @Service.action
     def enable(self):
         self.enabled = True
@@ -65,20 +65,26 @@ class Avoid(Service):
     def disable(self):
         self.enabled = False
 
-    @Service.event
-    def front(self, name, id, value):
+    @Service.event('%s_front' % ROBOT)
+    def front_detection(self, name, id, value):
         if int(value):
             self.front_detected += 1
         elif self.front_detected > 0:
             self.front_detected -= 1
 
-    # Update back detection
-    @Service.event
-    def back(self, name, id, value):
+    @Service.event('%s_back' % ROBOT)
+    def back_detection(self, name, id, value):
         if int(value):
             self.back_detected += 1
         elif self.back_detected > 0:
             self.back_detected -= 1
+
+    @Service.event('%s_telemetry')
+    def telemetry(self, status, telemetry):
+        if self.status == 'failed':
+            self.telemetry = None
+        else:
+            self.telemetry = telemetry
 
 def main():
     avoid = Avoid()

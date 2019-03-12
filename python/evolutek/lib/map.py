@@ -199,7 +199,7 @@ class Map:
 
             neighbours = self.neighbours(cur, map)
             for neighbour in neighbours:
-                distance = dist[cur.x][cur.y] + self.distance(cur, neighbour) + cur.dist(end)
+                distance = dist[cur.x][cur.y] + self.distance(cur, neighbour)
                 if distance < dist[neighbour.x][neighbour.y]:
                     dist[neighbour.x][neighbour.y] = distance
                     queue.append(neighbour)
@@ -216,7 +216,8 @@ class Map:
                 cur = pred[cur]
                 p = cur.to_dict()
                 path.insert(0, {'x': p['x'] * self.unit, 'y': p['y'] * self.unit})
-
+            p = start.to_dict()
+            path.insert(0, {'x': p['x'] * self.unit, 'y': p['y'] * self.unit})
         #TODO: linearize path
 
         return path

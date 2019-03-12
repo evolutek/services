@@ -172,18 +172,18 @@ def main():
     gpios.add_gpio(6, "reset", False, update=False, callback=True, edge=Edge.FALLING)
 
     # Front gtb
-    gpios.add_gpio(18, "gtb1", False, event='front_%s' % ROBOT, callback=True, edge=Edge.BOTH)
-    gpios.add_gpio(23, "gtb2", False, event='front_%s' % ROBOT, callback=True, edge=Edge.BOTH)
-    gpios.add_gpio(24, "gtb3", False, event='front_%s' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(18, "gtb1", False, event='%s_front' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(23, "gtb2", False, event='%s_front' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(24, "gtb3", False, event='%s_front' % ROBOT, callback=True, edge=Edge.BOTH)
 
     # Back gtb
-    gpios.add_gpio(16, "gtb4", False, event='back_%s' % ROBOT, callback=True, edge=Edge.BOTH)
-    gpios.add_gpio(20, "gtb4", False, event='back_%s' % ROBOT, callback=True, edge=Edge.BOTH)
-    gpios.add_gpio(21, "gtb4", False, event='back_%s' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(16, "gtb4", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(20, "gtb4", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(21, "gtb4", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
 
     gpios.add_gpio(17, "relayGold", True, default_value=True)
     gpios.add_gpio(27, "relayArms", True, default_value=True)
-    
+
     #gpios.print_gpios()
 
     gpios.run()
