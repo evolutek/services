@@ -35,7 +35,6 @@ class Match(Service):
         self.color = None
         self.match_status = 'unstarted'
         self.score = 0
-        self.tirette = False
         self.timer = Timer(self.match_time - 5, self.match_end)
         self.match_reseted = True
         self.color_setted = False
@@ -126,7 +125,7 @@ class Match(Service):
         close_button.grid(row=1, column=1)
         reset_button = Button(self.window, text='Reset Match', command=self.reset_match)
         reset_button.grid(row=1, column=3)
-        score_label = Label(self.window, text="Score: %d" % self.score, font=('Mono', 144), fg=self.color)
+        score_label = Label(self.window, text="Score:\n%d" % self.score, font=('Mono', 90), fg=self.color)
         score_label.grid(row=2, column=1, columnspan=3)
 
     def print_robot(self, robot, size, color):
@@ -243,8 +242,8 @@ class Match(Service):
     """ Event """
 
     """ Update score """
-    @Service.event
-    def score(self, value):
+    @Service.event('score')
+    def get_score(self, value):
         if self.match_status != 'started':
             return
         self.score += int(value)
@@ -300,17 +299,20 @@ class Match(Service):
       self.robots_watchdog.reset()
 
     """ Tirette """
-    @Service.event
-    def tirette(self, value, _=None):
-        print('Tirette: %s' % value)
-        tirette = int(value)
-        if tirette:
-            print('Tirette is inserted')
-        elif self.match_status == 'unstarted' and self.tirette:
-            self.match_start()
-        else:
-            print('Tirette is not inserted')
-        self.tirette = bool(tirette)
+    @Service.event('tirette')
+    def match_start(self):
+        if self.match_status != 'unstarted' and self.color is None:
+            return
+
+        try:
+            self.cs.ai['pal'].start()
+            self.cs.ai['pmi'].start()
+        except Exception as e:
+            print('Failed to start match: %s' % str(e))
+
+        self.timer.start()
+        self.match_status = 'started'
+        print('match_start')
 
 
     """ Action """
@@ -341,7 +343,6 @@ class Match(Service):
         match['color'] = self.color
         match['robots'] = self.robots
         match['score'] = self.score
-        match['tirette'] = self.tirette
 
         match['pal_ai_status'] = self.pal_ai_s
         match['pal_avoid_status'] = self.pal_avoid_s
