@@ -6,8 +6,6 @@ from evolutek.lib.settings import ROBOT
 
 from time import sleep
 
-ROBOT= "pal"
-
 @Service.require("config")
 @Service.require("trajman", ROBOT)
 @Service.require("gpios", ROBOT)
@@ -18,8 +16,8 @@ class Avoid(Service):
         self.refresh = float(self.cs.config.get(section='avoid', option='refresh'))
 
         self.telemetry = None
-        self.front_detected = 0
-        self.back_detected = 0
+        self.front_detected = []
+        self.back_detected = []
         self.avoid = False
         self.enabled = True
 
@@ -45,17 +43,17 @@ class Avoid(Service):
             if not self.enabled:
                 continue
 
-            if self.telemetry['speed'] > 0.0 and self.front_detected > 0:
+            if self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
                 self.trajman.stop_asap(2000, 30)
                 self.avoid = True
                 print("[AVOID] Front detection")
-            elif self.telemetry['speed'] < 0.0 and self.back_detected > 0:
+            elif self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
                 self.trajman.stop_asap(2000, 30)
                 self.avoid = True
                 print("[AVOID] Back detection")
             else:
                 self.avoid = False
-            slee(self.refresh)
+            sleep(self.refresh)
 
     @Service.action
     def enable(self):
@@ -67,17 +65,17 @@ class Avoid(Service):
 
     @Service.event('%s_front' % ROBOT)
     def front_detection(self, name, id, value):
-        if int(value):
-            self.front_detected += 1
-        elif self.front_detected > 0:
-            self.front_detected -= 1
+        if int(value) and not name in self.front_detected:
+            self.front_detected.append(name)
+        elif not int(value) and name in self.front_detected:
+            self.front_detected.remove(name)
 
     @Service.event('%s_back' % ROBOT)
     def back_detection(self, name, id, value):
-        if int(value):
-            self.back_detected += 1
-        elif self.back_detected > 0:
-            self.back_detected -= 1
+        if int(value) and not name in self.back_detected:
+            self.back_detected.append(name)
+        elif not int(value) and name in self.back_detected:
+            self.back_detected.remove(name)
 
     @Service.event('%s_telemetry')
     def telemetry(self, status, telemetry):

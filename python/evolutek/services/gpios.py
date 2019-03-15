@@ -90,8 +90,9 @@ class Gpios(Service):
 
     @Service.action
     def add_gpio(self, id, name, dir=False, event=None, update=True, callback=False, edge=None, default_value=False):
-        self.gpios.append(Gpio(id, name, dir=dir, event=event, update=update,
-            callback=callback, edge=edge, callback_fct=self.callback_gpio, default_value=default_value))
+        if self.get_gpio(id, name) is None:
+            self.gpios.append(Gpio(id, name, dir=dir, event=event, update=update,
+                callback=callback, edge=edge, callback_fct=self.callback_gpio, default_value=default_value))
 
     @Service.action
     def read_gpio(self, id=None, name=None):
