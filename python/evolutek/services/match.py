@@ -8,6 +8,14 @@ from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 from time import sleep
+from enum import Enum
+
+class InterfaceStatus(Enum):
+    init = 0
+    set = 1
+    running = 2
+    waiting = 3
+    end = 4
 
 @Service.require('config')
 class Match(Service):
@@ -36,9 +44,7 @@ class Match(Service):
         self.match_status = 'unstarted'
         self.score = 0
         self.timer = Timer(self.match_time - 5, self.match_end)
-        self.match_reseted = True
-        self.color_setted = False
-        self.match_ended = False
+        self.interface_status = InterfaceStatus.init
 
         # PAL status
         self.pal_ai_s = None
@@ -61,29 +67,6 @@ class Match(Service):
 
 
     """ Interface """
-
-    """ Set color """
-    def set_color(self, value):
-        self.color_setted = True
-        self.reset(value)
-        sleep(self.refresh)
-        if self.color is None:
-            print ('Failed to set color')
-            return
-        try:
-            self.cs.ai['pal'].setup(color=self.color, recalibration=False)
-            self.cs.ai['pmi'].setup(color=self.color, recalibration=False)
-        except Exception as e:
-            print('Failed to reset robots: %s' % str(e))
-        self.publish('match_color', color=self.color)
-
-    """ reset match """
-    def reset_match(self):
-        if self.match_status == 'started':
-            return
-        self.match_reseted = True
-        self.ended = False
-        self.color = None
 
     def close(self):
         self.window.destroy()
@@ -120,7 +103,6 @@ class Match(Service):
         self.match_status_label.grid(row=2, column=2)
 
     def set_score_interface(self):
-        self.match_ended = True
         close_button = Button(self.window, text='Close', command=self.close)
         close_button.grid(row=1, column=1)
         reset_button = Button(self.window, text='Reset Match', command=self.reset_match)
@@ -169,24 +151,26 @@ class Match(Service):
 
 
     def update_interface(self):
-        if self.match_reseted and self.color is None:
-            self.match_reseted = False
+        if self.interface_status == InterfaceStatus.init:
+            self.interface_status = InterfaceStatus.waiting
             widget_list = self.window.grid_slaves()
             for item in widget_list:
                 item.destroy()
             self.set_color_interface()
-        elif self.match_status == 'ended' and not self.match_ended and self.color is not None:
+        elif self.interface_status == InterfaceStatus.end:
+            self.interface_status = InterfaceStatus.waiting
             widget_list = self.window.grid_slaves()
             for item in widget_list:
                 item.destroy()
             self.set_score_interface()
-        elif self.color is not None and not self.match_ended:
-            if self.color_setted:
-                self.color_setted = False
-                widget_list = self.window.grid_slaves()
-                for item in widget_list:
-                    item.destroy()
-                self.set_match_interface()
+        elif self.interface_status == InterfaceStatus.set:
+            self.interface_status = InterfaceStatus.running
+            widget_list = self.window.grid_slaves()
+            for item in widget_list:
+                item.destroy()
+            self.set_match_interface()
+
+        if self.interface_status == InterfaceStatus.running:
             self.canvas.delete('all')
             self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
@@ -319,20 +303,44 @@ class Match(Service):
 
     """ Reset match """
     @Service.action
-    def reset(self, color=None):
+    def reset_match(self, color=None):
         if self.match_status == 'started':
-            return
+            return False
+
         print('reset')
         self.match_status = 'unstarted'
         self.score = 0
         self.timer = Timer(self.match_time - 5, self.match_end)
-        if color is not None and color == self.color1 or color == self.color2:
-            self.color = color
+
+        if not self.set_color(color):
+            self.interface_status = InterfaceStatus.init
+
+        return True
 
     """ Get color """
     @Service.action
     def get_color(self):
         return self.color
+
+    """ Set color """
+    @Service.action
+    def set_color(self, color):
+        if color != self.color1 and color != self.color2:
+            print('Invalid color')
+            return False
+
+        self.color = color
+        self.interface_status = InterfaceStatus.set
+
+        try:
+            self.cs.ai['pal'].setup(color=self.color, recalibration=False)
+            self.cs.ai['pmi'].setup(color=self.color, recalibration=False)
+        except Exception as e:
+            print('Failed to reset robots: %s' % str(e))
+
+        self.publish('match_color', color=self.color)
+
+        return True
 
     """ Get match """
     @Service.action
@@ -363,6 +371,7 @@ class Match(Service):
         except Exception as e:
             print('Failed to stop robots: %s' % str(e))
         self.match_status = 'ended'
+        self.interface_status = InterfaceStatus.end
         print('match_end')
 
     """ Match status thread """
