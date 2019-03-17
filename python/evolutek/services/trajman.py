@@ -8,6 +8,7 @@ import serial
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
 import os
+from time import sleep
 
 make_setting('TRAJMAN_PORT', '/dev/MotorCard', 'trajman', 'port', 'TRAJMAN_PORT')
 make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
@@ -150,8 +151,13 @@ class TrajMan(Service):
         self.thread = Thread(target=self.async_read)
         self.thread.daemon = True
         self.thread.start()
+        
+        self.thread2 = Thread(target=self.telemetry)
+        self.thread2.daemon = True
+        self.thread2.start()
 
         self.init_sequence()
+        self.set_telemetry(0)
 
         self.set_wheels_diameter(w1=self.w1(), w2=self.w2())
         self.set_wheels_spacing(spacing=self.spacing())
@@ -172,8 +178,23 @@ class TrajMan(Service):
 
         self.set_robot_size_x(self.robot_size_x())
         self.set_robot_size_y(self.robot_size_y())
+        
+        #self.set_telemetry(20)
 
-        #self.set_telemetry(self.telemetry_refresh())
+    #@Service.thread
+    def telemetry(self):
+        sleep(5)
+        while True:
+            position = self.get_position()
+            vector_trsl = self.get_vector_trsl()
+            telemetry = {
+                'x': position['x'],
+                'y': position['y'],
+                'theta': position['theta'],
+                'speed': vector_trsl['trsl_vector']
+            }
+            self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry)
+            sleep(1)
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -430,14 +451,14 @@ class TrajMan(Service):
     def set_robot_size_x(self, size):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_X)
-        tab += pack('f', float(size))
+        tab += pack('f', float(size * 2))
         self.command(bytes(tab))
 
     @Service.action
     def set_robot_size_y(self, size):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_Y)
-        tab += pack('f', float(size))
+        tab += pack('f', float(size * 2))
         self.command(bytes(tab))
 
     @Service.action

@@ -36,10 +36,24 @@ class Goal:
 
 def get_simple_strategy():
     l = []
-    l.append(Goal(1300, 225))
-    l.append(Goal(1300, 500, theta=pi))
-    l.append(Goal(750, 500, theta=-3 * pi / 4))
-    l.append(Goal(500, 300, theta=-pi/2))
+    l.append(Goal(1325, 225))
+    l.append(Goal(1325, 500, theta=pi))
+    l.append(Goal(750, 450))
+    l.append(Goal(750, 650))
+    l.append(Goal(450, 750)) 
+    l.append(Goal(450, 250))
+    l.append(Goal(750, 1350))
+    l.append(Goal(1250, 1350))
+    l.append(Goal(1050, 1000))
+    l.append(Goal(550, 400))
+    return l
+
+def test_avoid_strategy():
+    l = []
+    for i in range(100):
+        l.append(Goal(600, 1250))
+        l.append(Goal(600, 225))
+    
     return l
 
 class Goals:
@@ -50,15 +64,18 @@ class Goals:
         self.start_x = 600
         self.start_y = 225
         self.theta = 0
-
-        self.goals = get_simple_strategy()
-        self.current = 0
+        self.reset()
 
         #self.graph = {}
         #self.add_node('Start', done=True)
 
         # parse file
 
+    def reset(self):
+        #self.goals = get_simple_strategy()
+        self.goals = test_avoid_strategy()
+        self.current = 0
+        
     def add_node(self, name, parents=None, children=None, goal=None, done=False):
         if parents is None:
             parents = []

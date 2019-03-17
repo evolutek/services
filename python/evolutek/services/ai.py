@@ -23,8 +23,7 @@ class State(Enum):
 
 @Service.require('trajman', ROBOT)
 @Service.require('actuators', ROBOT)
-#@Service.require('avoid', ROBOT)
-#@Service.require('gpios', ROBOT)
+@Service.require('avoid', ROBOT)
 @Service.require('match')
 class Ai(Service):
 
@@ -42,7 +41,6 @@ class Ai(Service):
         # Simple AI
         self.avoid_stat = None
         self.side = None
-        globals()[ROBOT + '_avoid_status'] = self.avoid_status
 
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
@@ -71,9 +69,11 @@ class Ai(Service):
             self.publish(ROBOT + '_ai_status', status=str(self.state))
             sleep(self.refresh)
 
-    @Service.event
-    def avoid_status(self, status):
+    @Service.event('%s_avoid_status' % ROBOT)
+    def avoid_status(self, test, status={}):
+        print(test)
         self.avoid_stat = status
+        print(status)
     
     @Service.event('%s_reset' % ROBOT)
     @Service.action
@@ -91,11 +91,14 @@ class Ai(Service):
         self.actuators.reset()
 
         self.match_thread = Thread(target=self.selecting)
+        self.match_thread.deamon = True
 
         if color is not None:
             self.color = color
 
         if recalibration:
+            
+            self.avoid.disable()
 
             """ Let robot recalibrate itself """
             sens = self.color == self.color2
@@ -116,7 +119,7 @@ class Ai(Service):
             self.trajman.set_theta(self.goals.theta)
             self.trajman.unfree()
 
-        #self.goals.reset()
+        self.goals.reset()
 
         self.avoid.enable()
         self.state = State.Waiting
@@ -133,6 +136,7 @@ class Ai(Service):
     @Service.action
     def end(self):
         print('[AI] Ending')
+        self.abort()
         self.state = State.Ending
         self.trajman.free()
         self.trajman.disable()
@@ -163,7 +167,8 @@ class Ai(Service):
                 field = 'front_detected'
             else:
                 field = 'back_detected'
-            while int(self.avoid_stat[field]) > 0:
+            while len(self.avoid_stat[field]) > 0:
+                print('-----avoiding-----')
                 sleep(0.1)
             side = None
 
@@ -209,8 +214,6 @@ class Ai(Service):
             print("[AI][MAKING] Aborted")
             self.selecting()
 
-        sleep(1)
-
         """ Goto theta if there is one """
         if goal.theta is not None:
             self.trajman.goto_theta(goal.theta)
@@ -219,8 +222,6 @@ class Ai(Service):
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
-
-        sleep(1)
 
         """ Make all actions """
         for action in goal.actions:
@@ -246,8 +247,6 @@ class Ai(Service):
                 self.trajman.set_rot_max_speed(self.max_rot_speed)
             if not action.avoid:
                 self.avoid.enable()
-
-            sleep(1)
 
         print("[AI] Finished goal")
         self.goals.finish_goal()
