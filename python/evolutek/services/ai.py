@@ -63,7 +63,7 @@ class Ai(Service):
         super().__init__(ROBOT)
         self.setup(recalibration=False)
 
-    #@Service.thread
+    @Service.thread
     def status(self):
         while True:
             self.publish(ROBOT + '_ai_status', status=str(self.state))
@@ -162,6 +162,7 @@ class Ai(Service):
             return
 
         if self.side is not None:
+            sleep(1.0)
             field = ''
             if self.side == 'front':
                 field = 'front_detected'
@@ -210,6 +211,7 @@ class Ai(Service):
         self.trajman.goto_xy(x = goal.x, y = goal.y)
         while self.trajman.is_moving():
             sleep(0.1)
+        sleep(0.2)
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
             self.selecting()
@@ -219,6 +221,7 @@ class Ai(Service):
             self.trajman.goto_theta(goal.theta)
             while self.trajman.is_moving():
                 sleep(0.1)
+            sleep(0.2)
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
@@ -236,6 +239,7 @@ class Ai(Service):
 
             """ Make action """
             action.make()
+            sleep(0.2)
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()

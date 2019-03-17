@@ -152,9 +152,9 @@ class TrajMan(Service):
         self.thread.daemon = True
         self.thread.start()
         
-        self.thread2 = Thread(target=self.telemetry)
-        self.thread2.daemon = True
-        self.thread2.start()
+        #self.thread2 = Thread(target=self.telemetry)
+        #self.thread2.daemon = True
+        #self.thread2.start()
 
         self.init_sequence()
         self.set_telemetry(0)
@@ -179,7 +179,7 @@ class TrajMan(Service):
         self.set_robot_size_x(self.robot_size_x())
         self.set_robot_size_y(self.robot_size_y())
         
-        #self.set_telemetry(20)
+        self.set_telemetry(500)
 
     #@Service.thread
     def telemetry(self):
@@ -451,14 +451,14 @@ class TrajMan(Service):
     def set_robot_size_x(self, size):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_X)
-        tab += pack('f', float(size * 2))
+        tab += pack('f', float(size))
         self.command(bytes(tab))
 
     @Service.action
     def set_robot_size_y(self, size):
         tab = pack('B', 6)
         tab += pack('B', SET_ROBOT_SIZE_Y)
-        tab += pack('f', float(size * 2))
+        tab += pack('f', float(size))
         self.command(bytes(tab))
 
     @Service.action

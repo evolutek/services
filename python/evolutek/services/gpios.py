@@ -149,7 +149,7 @@ class Gpios(Service):
         self.publish(event=gpio.name if gpio.event is None else gpio.event,
             name=gpio.name, id=gpio.id, value=value)
 
-    #@Service.thread
+    @Service.thread
     def update_gpios(self):
         while True:
             for gpio in self.gpios:
@@ -179,8 +179,8 @@ def main():
 
     # Back gtb
     gpios.add_gpio(16, "gtb4", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
-    gpios.add_gpio(20, "gtb4", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
-    gpios.add_gpio(21, "gtb4", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(20, "gtb5", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
+    gpios.add_gpio(21, "gtb6", False, event='%s_back' % ROBOT, callback=True, edge=Edge.BOTH)
 
     gpios.add_gpio(17, "relayGold", True, default_value=True)
     gpios.add_gpio(27, "relayArms", True, default_value=True)
