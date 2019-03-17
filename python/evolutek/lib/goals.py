@@ -1,5 +1,5 @@
 from math import pi, sqrt
-import pygraphviz as pgv
+#import pygraphviz as pgv
 
 class Node:
 
@@ -34,12 +34,12 @@ class Goal:
         self.done = False
         self.last_action = None
 
-def get_simple_strat():
+def get_simple_strategy():
     l = []
-    l.append(Goal(1350, 225))
-    l.append(Goal(1350, 500, theta=pi))
+    l.append(Goal(1300, 225))
+    l.append(Goal(1300, 500, theta=pi))
     l.append(Goal(750, 500, theta=-3 * pi / 4))
-    l.append(Goal(500, 300))
+    l.append(Goal(500, 300, theta=-pi/2))
     return l
 
 class Goals:
@@ -51,14 +51,8 @@ class Goals:
         self.start_y = 225
         self.theta = 0
 
-        self.goals = []
+        self.goals = get_simple_strategy()
         self.current = 0
-
-        a = Action(actuators.open_arms)
-        b = Action(actuators.close_arms)
-
-        self.goals.append(Goal(x=0, y=0, theta=0, actions=[a]))
-        self.goals.append(Goal(x=0, y=0, theta=0, actions=[b]))
 
         #self.graph = {}
         #self.add_node('Start', done=True)
