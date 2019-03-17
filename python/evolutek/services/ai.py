@@ -74,9 +74,10 @@ class Ai(Service):
     @Service.event
     def avoid_status(self, status):
         self.avoid_stat = status
-
+    
+    @Service.event('%s_reset' % ROBOT)
     @Service.action
-    def setup(self, color=None, recalibration=True):
+    def setup(self, color=None, recalibration=True, **kwargs):
 
         if self.state != State.Init and self.state != State.Waiting and self.state != State.Ending:
             return
@@ -89,7 +90,6 @@ class Ai(Service):
         self.trajman.enable()
         self.actuators.reset()
 
-
         self.match_thread = Thread(target=self.selecting)
 
         if color is not None:
@@ -100,7 +100,6 @@ class Ai(Service):
             """ Let robot recalibrate itself """
             sens = self.color == self.color2
             self.actuators.recalibrate(sens_y=sens, init=True)
-            sleep(10)
 
             """ Goto to starting pos """
             self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
@@ -137,8 +136,6 @@ class Ai(Service):
         self.state = State.Ending
         self.trajman.free()
         self.trajman.disable()
-        self.actuators.free()
-        self.actuators.disable()
 
     @Service.action
     def abort(self, robot=None, side=None):
@@ -233,7 +230,7 @@ class Ai(Service):
                 self.trajman.set_trsl_max_speed(action.trsl_speed)
             if action.rot_speed is not None:
                 self.trajman.set_rot_max_speed(action.rot_speed)
-            if not goal.avoid:
+            if not action.avoid:
                 self.avoid.disable()
 
             """ Make action """
@@ -247,7 +244,7 @@ class Ai(Service):
                 self.trajman.set_trsl_max_speed(self.max_trsl_speed)
             if action.rot_speed is not None:
                 self.trajman.set_rot_max_speed(self.max_rot_speed)
-            if not goal.avoid:
+            if not action.avoid:
                 self.avoid.enable()
 
             sleep(1)

@@ -170,7 +170,7 @@ def main():
     gpios = Gpios()
 
     gpios.add_gpio(5, "tirette", False, update=False, callback=True, edge=Edge.RISING)
-    gpios.add_gpio(6, "reset", False, update=False, callback=True, edge=Edge.FALLING)
+    gpios.add_gpio(6, "%s_reset" % ROBOT, False, update=False, callback=True, edge=Edge.FALLING)
 
     # Front gtb
     gpios.add_gpio(18, "gtb1", False, event='%s_front' % ROBOT, callback=True, edge=Edge.BOTH)
