@@ -3,17 +3,12 @@
 from tkinter import *
 from PIL import Image
 from PIL import ImageTk
-from evolutek.lib.map import wall
 from math import cos, sin, pi, atan
 from os import _exit
 
-
-radius_pal = 75
-radius_mi = 52.5
-radius_robot = 75
-
-refresh_interface= 500
+colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
 unit = 1/2
+refresh = 500
 
 class Interface:
 
@@ -38,7 +33,7 @@ class Interface:
 
         self.canvas.pack()
         print('Window created')
-        self.window.after(refresh_interface, self.update)
+        self.window.after(refresh, self.update)
         self.window.mainloop()
 
     def close(self):
@@ -67,11 +62,30 @@ class Interface:
                     y2 = (x * self.map.unit + self.map.unit/2) * unit
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill='black')
 
-    def dump_raw_data(self, raw_data):
+    def print_raw_data(self, raw_data):
       print("data points: %d" % len(raw_data))
       for p in raw_data:
         print("%d, %d" % (p.x * unit, p.y * unit))
-        self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white') 
+        self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white')
+
+    def print_shapes(self, shapes):
+      print("nb shapes: %d" % len(shapes))
+      for i in range(len(shapes)):
+          color = colors[i % len(colors)]
+          for p in shapes[i]:
+            self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill=color)
+
+    def print_robots(self, robots):
+      print("nb robots: %d" % len(robots))
+      for i in range(len(robots)):
+        color = colors[i % len(colors)]
+        p = robots[i]
+        if self.service.debug:
+            self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 10, p.x * unit + 10, fill=color)
+        else:
+            self.canvas.create_rectangle((p['y'] - self.service.robot_size) * unit,
+            (p['x'] - self.service.robot_size) * unit, (p['y'] + self.service.robot_size) * unit,
+            (p['x'] + self.service.robot_size) * unit, fill='red')
 
     def print_pal(self, pal):
         if not pal:
@@ -81,13 +95,13 @@ class Interface:
         y = pal['x'] * unit
 
         points = []
-        points.append((x - radius_pal, y - radius_pal))
-        points.append((x + radius_pal, y - radius_pal))
-        points.append((x + radius_pal, y + radius_pal))
-        points.append((x - radius_pal, y + radius_pal))
+        points.append((x - self.service.pal_size, y - self.service.pal_size))
+        points.append((x + self.service.pal_size, y - self.service.pal_size))
+        points.append((x + self.service.pal_size, y + self.service.pal_size))
+        points.append((x - self.service.pal_size, y + self.service.pal_size))
 
-        cos_val = cos(pal['theta'])
-        sin_val = sin(pal['theta'])
+        cos_val = cos(pi/2 - pal['theta'])
+        sin_val = sin(pi/2 - pal['theta'])
 
         new_points = []
         for point in points:
@@ -97,7 +111,6 @@ class Interface:
             ))
 
         self.canvas.create_polygon(new_points, fill='orange')
-
 
     def print_path(self, path):
         if path is None:
@@ -115,7 +128,9 @@ class Interface:
         self.print_grid()
         self.print_obstacles()
         self.print_pal(self.service.pal_telem)
-        print("dumping data")
-        self.dump_raw_data(self.service.raw_data)
+        if self.service.debug:
+            self.print_raw_data(self.service.raw_data)
+            self.print_shapes(self.service.shapes)
+        self.print_robots(self.service.robots)
         #self.print_path(self.service.path)
-        self.window.after(refresh_interface, self.update)
+        self.window.after(refresh, self.update)

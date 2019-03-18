@@ -4,30 +4,7 @@ from collections import deque
 from copy import deepcopy
 from enum import Enum
 from math import ceil, sqrt, inf
-
-wall = "X"
-ground = " "
-colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
-class Point:
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return "x: %s, y:%s" % (str(self.x), str(self.y))
-
-    def dist(self, p):
-        return sqrt((self.x  - p.x)**2 + (self.y  - p.y)**2)
-
-    def __eq__(self, p):
-        return self.x == p.x and self.y == p.y
-
-    def __hash__(self):
-        return hash(str(self))
-
-    def to_dict(self):
-        return {'x': self.x, 'y': self.y}
+from evolutek.lib.point import Point
 
 class Obstacle:
 
@@ -72,24 +49,6 @@ class RectangleObstacle(Obstacle):
         for y in range(y2 - 1, y1, -1):
             self.points.append(Point(x1, y))
 
-class Path:
-
-    def __init__(self, begin, end):
-        self.cost = 0
-        self.begin = begin
-        self.end = end
-        self.path = []
-
-    def add_point(self, p):
-        self.path.append(p)
-
-    def __str__(self):
-        s = "Begin: (%s)\n" % str(self.begin)
-        for p in self.path:
-            s += "(%s)\n" % str(p)
-        s += "End: (%s)" % str(self.end)
-        return s
-
 class Map:
 
     def __init__(self, width, height, unit, robot_radius):
@@ -110,8 +69,17 @@ class Map:
 
         self.add_boundaries()
 
+    def is_real_point_outside(self, x, y):
+        return x < 0 or y < 0 or x > self.real_height or y > self.real_width
+
+    def is_point_inside(self, p):
+        return p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width
+
+    def convert_point(self, x, y):
+        return Point(int(x/self.unit), int(y/self.unit))
+
     def add_point_obstacle(self, x, y, tag=None):
-        if x < 0 or y < 0 or x > self.real_height or y > self.real_width:
+        if self.is_real_point_outside(x, y):
             return False
         obs = Obstacle(tag)
         x = int(x / self.unit)
@@ -120,21 +88,18 @@ class Map:
         self.map[x][y] += 1
         self.obstacles.append(obs)
 
-        
-
     def add_circle_obstacle(self, x, y, radius=0, tag=None):
-        if x < 0 or y < 0 or x > self.real_height or y > self.real_width:
+        if self.is_real_point_outside(x, y):
             return False
-        obs = CircleObstacle(Point(int(x/self.unit), (y/self.unit)), int((radius + self.robot_radius)/self.unit), tag=tag)
+        obs = CircleObstacle(self.convert_point(x, y), int((radius + self.robot_radius)/self.unit), tag=tag)
         for p in obs.points:
-            if p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width:
+            if self.is_point_inside(p):
                 self.map[p.x][p.y] += 1
         self.obstacles.append(obs)
         return True
 
     def add_rectangle_obstacle(self, x1, x2, y1, y2, tag=None):
-        if x1 < 0 or x1 > self.real_height or x2 < 0 or x2 > self.real_height \
-            or y1 < 0 or y1 > self.real_width or y2 < 0 or y2 > self.real_width:
+        if self.is_real_point_outside(x1, y1) or self.is_real_point_outside(x2, y2):
             return False
         if x1 > x2:
             x1, x2 = x2, x1
@@ -146,7 +111,7 @@ class Map:
         y2 = int((y2 + self.robot_radius) /self.unit)
         obs = RectangleObstacle(x1, x2, y1, y2, tag=tag)
         for p in obs.points:
-            if p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width:
+            if self.is_point_inside(p):
                 self.map[p.x][p.y] += 1
         self.obstacles.append(obs)
         return True
@@ -163,9 +128,9 @@ class Map:
     def remove_obstacle(self, tag):
         for obs in self.obstacles:
             if obs == tag:
-                for point in obs.points:
-                    if point.x >= 0 and point.x <= self.height and point.y >= 0 and point.y <= self.width:
-                        self.map[point.x][point.y] -= 1
+                for p in obs.points:
+                    if self.is_point_inside(p):
+                        self.map[p.x][p.y] -= 1
                 self.obstacles.remove(obs)
                 return True
         return False
@@ -181,13 +146,12 @@ class Map:
         print('-' * (self.width + 2))
 
     def get_path(self, p1, p2):
-        if p1.x < 0 or p1.y < 0 or p1.x > self.real_height or p1.y > self.real_width\
-            or p2.x < 0 or p2.y < 0 or p2.x > self.real_height or p2.y > self.real_width:
+        if self.is_real_point_outside(p1.x, p1.y) or self.is_real_point_outside(p2.x, p2.y):
             print('Out of map')
             return []
 
-        start = Point(int(p1.x/self.unit), int(p1.y/self.unit))
-        end = Point(int(p2.x/self.unit), int(p2.y/self.unit))
+        start = self.convert_point(p1.x, p1.y)
+        end = self.convert_point(p2.x, p2.y)
 
         if self.map[start.x][start.y] > 0 or self.map[end.x][end.y] > 0:
             print('Obstacle here')
@@ -245,8 +209,7 @@ class Map:
 
         neighbours = []
         for point in l:
-            if point.x > 0 and point.y > 0 and point.x <= self.height\
-                and point.y <= self.width and self.map[point.x][point.y] == 0:
+            if self.is_point_inside(point) and self.map[point.x][point.y] == 0:
                     neighbours.append(point)
 
         return neighbours
