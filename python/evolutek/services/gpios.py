@@ -231,7 +231,7 @@ def main():
     gpios.add_gpio(27, "relayArms", True, default_value=True)
 
     # Ejecteur
-    gpios.add_pwm(13, "ejecteur", 0, 0.5)
+    gpios.add_pwm(13, "ejecteur", 0, 0.3)
     gpios.add_gpio(19, "hbridge1", True)
     gpios.add_gpio(26, "hbridge2", True)
     gpios.add_gpio(4, "ejecteur_contact1", False, update=False, callback=False)
