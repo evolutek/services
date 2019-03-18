@@ -119,7 +119,7 @@ class Ai(Service):
             self.trajman.set_theta(self.goals.theta)
             self.trajman.unfree()
 
-        self.goals.reset()
+        self.goals.reset(self.actuators)
 
         self.avoid.enable()
         self.state = State.Waiting

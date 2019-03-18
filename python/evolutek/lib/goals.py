@@ -58,6 +58,16 @@ def test_avoid_strategy():
     
     return l
 
+
+def palet_strategy(actuators):
+    l = []
+    l.append(Goal(1260, 600, theta=0, actions=[
+        Action(actuators.get_palet),
+        Action(actuators.open_arms)
+    ]))
+
+    return l
+
 class Goals:
 
     def __init__(self, file, color, actuators, trajman):
@@ -70,9 +80,8 @@ class Goals:
         self.goals = []
         self.current = 0
 
-        self.parse("goals_files/good_test.json")
 
-        #self.reset()
+        self.reset(actuators)
         #self.graph = {}
         #self.add_node('Start', done=True)
 
@@ -85,14 +94,20 @@ class Goals:
         self.start_x = goals['start']['x']
         self.start_y = goals['start']['y']
         self.theta = goals['start']['theta']
-
+        result = []
         for g in goals['goals']:
-            goal = json.loads(data, object_hook=lambda d: namedtuple('goal', d.keys())(*d.values))
-            self.goals.append(goal)
+            goal = Goal(g['x'], g['y'])
+            if 'theta' in g:
+                goal.theta = g['theta']
+            result.append(goal)
 
-    def reset(self):
+        self.goals = result
+
+    def reset(self, actuators):
+        #self.parse("/root/pls/evolutek/lib/goals_files/good_test.json")
         #self.goals = get_simple_strategy()
-        self.goals = test_avoid_strategy()
+        #self.goals = test_avoid_strategy()
+        self.goals = palet_strategy(actuators)
         self.current = 0
         
     def add_node(self, name, parents=None, children=None, goal=None, done=False):
@@ -127,6 +142,7 @@ class Goals:
         return self.goals[self.current]
 
     def finish_goal(self):
+        print("[GOAL] Finished goal " + str(self.current))
         self.current += 1
 
 if __name__ == "__main__":

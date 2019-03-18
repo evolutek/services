@@ -43,9 +43,9 @@ class Actuators(Service):
     """ ARMS """
     @Service.action
     def close_arms(self):
-        self.cs.ax['1'].move(goal=136)
-        self.cs.ax['2'].move(goal=150)
-        self.cs.ax['3'].move(goal=136)
+        self.cs.ax['1'].move(goal=121)
+        self.cs.ax['2'].move(goal=135)
+        self.cs.ax['3'].move(goal=121)
 
     @Service.action
     def open_arms(self):

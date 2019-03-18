@@ -36,6 +36,26 @@ class Io():
             'event': self.event,
         }
 
+class Pwm(Io):
+
+    def __init__(self, id, name, dc=0, freq=0):
+
+        super().__init__(id, name, dir=True, update=False)
+
+        GPIO.setup(id, GPIO.OUT, initial=GPIO.LOW)
+
+        self.pwm = GPIO.PWM(id, freq)
+        self.start(dc)
+
+    def write(self, dc=0):
+        self.pwm.ChangeDutyCycle(dc)
+
+    def start(self, dc=0):
+        self.pwm.start(dc)
+
+    def stop(self):
+        self.pwm.stop()
+
 class Gpio(Io):
 
     def __init__(self, id, name, dir=True, event=None, update=True, callback=False, edge=None, callback_fct=None, default_value=False):
@@ -46,7 +66,6 @@ class Gpio(Io):
         self.edge = edge
         self.callback_fct = callback_fct
 
-        GPIO.setmode(GPIO.BCM)
         if dir:
             GPIO.setup(id,  GPIO.OUT, initial=GPIO.LOW)
             self.write(default_value)
@@ -84,6 +103,7 @@ class Gpios(Service):
         #self.refresh = float(cs.config.get(section='gpios', option='refresh'))
         self.refresh = 1.0
         self.gpios = []
+        GPIO.setmode(GPIO.BCM)
         super().__init__(ROBOT)
 
     """ Action """
@@ -93,6 +113,11 @@ class Gpios(Service):
         if self.get_gpio(id, name) is None:
             self.gpios.append(Gpio(id, name, dir=dir, event=event, update=update,
                 callback=callback, edge=edge, callback_fct=self.callback_gpio, default_value=default_value))
+
+    @Service.action
+    def add_pwm(self, id, name, dc=0, freq=0):
+        if self.get_gpio(id, name) is None:
+            self.gpios.append(Pwm(id, name, dc=dc, freq=freq))
 
     @Service.action
     def read_gpio(self, id=None, name=None):
@@ -108,6 +133,26 @@ class Gpios(Service):
             return False
         if hasattr(gpio, 'write'):
             gpio.write(value)
+            return True
+        return False
+
+    @Service.action
+    def start_pwm(self, dc, id=None, name=None):
+        gpio = self.get_gpio(id, name)
+        if gpio is None:
+            return False
+        if hasattr(gpio, 'start'):
+            gpio.start(dc)
+            return True
+        return False
+
+    @Service.action
+    def stop_pwm(self, id=None, name=None):
+        gpio = self.get_gpio(id, name)
+        if gpio is None:
+            return False
+        if hasattr(gpio, 'stop'):
+            gpio.stop()
             return True
         return False
 
@@ -184,6 +229,13 @@ def main():
 
     gpios.add_gpio(17, "relayGold", True, default_value=True)
     gpios.add_gpio(27, "relayArms", True, default_value=True)
+
+    # Ejecteur
+    gpios.add_pwm(13, "ejecteur", 0, 0.5)
+    gpios.add_gpio(19, "hbridge1", True)
+    gpios.add_gpio(26, "hbridge2", True)
+    gpios.add_gpio(4, "ejecteur_contact1", False, update=False, callback=False)
+    gpios.add_gpio(22, "ejecteur_contact2", False, update=False, callback=False)
 
     #gpios.print_gpios()
 

@@ -52,11 +52,11 @@ class Avoid(Service):
                 print("[AVOID] Back detection")
             else:
                 self.avoid = False
-            sleep(self.refresh)
+            sleep(0.1)
 
     @Service.action
     def stop_robot(self, side=None):
-        self.trajman.stop_asap(2000, 30)
+        self.trajman.stop_asap(1500, 30)
         self.avoid = True
         print('[AVOID] Stopping robot, %s detection triggered' % side)
         try:
