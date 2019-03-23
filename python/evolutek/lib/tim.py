@@ -14,6 +14,15 @@ def average(a, b, shape="sqare"):
     """ return the average between two points """
     return Point((a.x + b.x) // 2, (a.y + b.y) // 2, shape)
 
+def mean(l):
+    """ return the mean of a point list """
+    tot_x = 0
+    tot_y = 0
+    for p in l:
+      tot_x += p.x
+      tot_y += p.y
+    return Point(int(tot_x / len(l)), int(tot_y / len(l)))
+
 class Point:
 
   def __init__(self, x_, y_, shape_ = "square"):
@@ -80,29 +89,30 @@ class Tim:
             cur = data[i]
             prev_distance =  cur.distance(prev)
             if prev_distance < self.max_distance:
-            #if two points are close enougth, we select them
+            #if two points are close enough, we select them
                 shape.append(cur)
                 building_shape = True
             else:
                 if building_shape and len(shape) >= self.min_size:
-                    if is_circle(shape):
-                        print("Circle found!")
-                        circle_counter = circle_counter + 1
-                        result.append(average(shape[0], shape[-1], "circle"))
-                    else:
+                  #  if is_circle(shape):
+                  #      print("Circle found!")
+                  #      circle_counter = circle_counter + 1
+                  #      result.append(average(shape[0], shape[-1], "circle"))
+                  #  else:
                         # we do the average between the first point selected and the last
-                        result.append(average(shape[0], shape[-1]))
+                  
+                  result.append(mean(shape))
                 shape = []
                 building_shape = False
             prev = cur
 
         if building_shape and len(shape) >= self.min_size:
-            if is_circle(shape):
-                print("Circle found!")
-                circle_counter = circle_counter + 1
-                result.append(average(shape[0], shape[-1], "circle"))
-            else:
-                result.append(average(shape[0], shape[-1]))
+            #if is_circle(shape):
+            #    print("Circle found!")
+            #    circle_counter = circle_counter + 1
+            #    result.append(average(shape[0], shape[-1], "circle"))
+            #else:
+            result.append(mean(shape))
         print("circles: ", circle_counter, "/", len(result))
         return result
 
@@ -124,14 +134,14 @@ class Tim:
         angular_step = parse_num(data[24])/10000                       # step size
         length = parse_num(data[25])                             # number of values
         print("Converting to cardinal coordiantes")
-        data = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
+        raw_data = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
         print("Detecting robots")
-        data = self.detect_robots(data)
+        data = self.detect_robots(raw_data)
         print("End processing data")
         
         #self.export_png(data)
 
-        return data
+        return raw_data, data
 
     def export_png(self, data):
         arc_ray = 5

@@ -7,7 +7,7 @@ from math import ceil, sqrt, inf
 
 wall = "X"
 ground = " "
-
+colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
 class Point:
 
     def __init__(self, x, y):
@@ -31,9 +31,10 @@ class Point:
 
 class Obstacle:
 
-    def __init__(self, tag=None):
+    def __init__(self, tag=None, color="black"):
         self.points = []
         self.tag = tag
+        self.color = color
 
     def __eq__(self, tag):
         return self.tag == tag
@@ -108,6 +109,18 @@ class Map:
                 self.map[x].append(0)
 
         self.add_boundaries()
+
+    def add_point_obstacle(self, x, y, tag=None):
+        if x < 0 or y < 0 or x > self.real_height or y > self.real_width:
+            return False
+        obs = Obstacle(tag)
+        x = int(x / self.unit)
+        y = int(y / self.unit)
+        obs.points.append(Point(x, y))
+        self.map[x][y] += 1
+        self.obstacles.append(obs)
+
+        
 
     def add_circle_obstacle(self, x, y, radius=0, tag=None):
         if x < 0 or y < 0 or x > self.real_height or y > self.real_width:

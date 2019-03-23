@@ -67,6 +67,12 @@ class Interface:
                     y2 = (x * self.map.unit + self.map.unit/2) * unit
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill='black')
 
+    def dump_raw_data(self, raw_data):
+      print("data points: %d" % len(raw_data))
+      for p in raw_data:
+        print("%d, %d" % (p.x * unit, p.y * unit))
+        self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white') 
+
     def print_pal(self, pal):
         if not pal:
             return
@@ -109,5 +115,7 @@ class Interface:
         self.print_grid()
         self.print_obstacles()
         self.print_pal(self.service.pal_telem)
-        self.print_path(self.service.path)
+        print("dumping data")
+        self.dump_raw_data(self.service.raw_data)
+        #self.print_path(self.service.path)
         self.window.after(refresh_interface, self.update)

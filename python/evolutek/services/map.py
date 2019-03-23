@@ -16,7 +16,7 @@ def dist(a, b):
 class Map(Service):
 
     def __init__(self):
-
+        self.raw_data = []
         cs = CellaservProxy()
 
         self.color1 = cs.config.get(section='match', option='color1')
@@ -102,7 +102,7 @@ class Map(Service):
                 print('TIM not connected')
                 sleep(self.refresh * 10)
                 continue
-            data = self.tim.get_scan()
+            self.raw_data, data = self.tim.get_scan()
 
             with self.lock:
 
@@ -122,8 +122,9 @@ class Map(Service):
 
             for robot in self.robots:
                 self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
-            self.publish('oppenents', robots=self.robots)
+            #self.publish('opponents', robots=self.robots)
 
+          
             sleep(self.refresh)
 
 """
