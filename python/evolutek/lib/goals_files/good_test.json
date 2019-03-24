@@ -1,0 +1,35 @@
+{
+    "start": {
+        "x": 600,
+        "y": 225,
+        "theta": 0
+    },
+    "actions": {
+        "open_arms": {
+            "fct": "actuators['pal'].open_arms"
+        },
+        "close_arms": {
+            "fct": "actuators['pal'].close_arms"
+        }
+    },
+    "goals": [
+        "goal": {
+            "x": 600,
+            "y": 600,
+        },
+        "goal":{
+            "x" : 1350,
+            "y" : 500,
+            "theta" : 3.14159265359
+        },
+        "goal":{
+            "x" : 750,
+            "y" : 500,
+            "theta" : -2.35619449019
+        },
+        "goal":{
+            "x": 500,
+            "y": 300
+        }
+    ]
+}

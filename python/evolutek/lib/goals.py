@@ -1,5 +1,7 @@
 from math import pi, sqrt
 #import pygraphviz as pgv
+import json
+from collections import namedtuple
 
 class Node:
 
@@ -64,12 +66,29 @@ class Goals:
         self.start_x = 600
         self.start_y = 225
         self.theta = 0
-        self.reset()
 
+        self.goals = []
+        self.current = 0
+
+        self.parse("goals_files/good_test.json")
+
+        #self.reset()
         #self.graph = {}
         #self.add_node('Start', done=True)
 
-        # parse file
+    def parse(self, filename):
+        with open(filename, 'r') as goal_file:
+            data = goal_file.read()
+
+        goals = json.loads(data)
+
+        self.start_x = goals['start']['x']
+        self.start_y = goals['start']['y']
+        self.theta = goals['start']['theta']
+
+        for g in goals['goals']:
+            goal = json.loads(data, object_hook=lambda d: namedtuple('goal', d.keys())(*d.values))
+            self.goals.append(goal)
 
     def reset(self):
         #self.goals = get_simple_strategy()
