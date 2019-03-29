@@ -74,7 +74,7 @@ class Ai(Service):
         print(test)
         self.avoid_stat = status
         print(status)
-    
+
     @Service.event('%s_reset' % ROBOT)
     @Service.action
     def setup(self, color=None, recalibration=True, **kwargs):
@@ -97,7 +97,7 @@ class Ai(Service):
             self.color = color
 
         if recalibration:
-            
+
             self.avoid.disable()
 
             """ Let robot recalibrate itself """

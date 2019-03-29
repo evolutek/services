@@ -125,7 +125,7 @@ class Map:
     def add_circle_obstacle(self, x, y, radius=0, tag=None):
         if x < 0 or y < 0 or x > self.real_height or y > self.real_width:
             return False
-        obs = CircleObstacle(Point(int(x/self.unit), (y/self.unit)), int((radius + self.robot_radius)/self.unit), tag=tag)
+        obs = CircleObstacle(Point(int(x/self.unit), int(y/self.unit)), int((radius + self.robot_radius)/self.unit), tag=tag)
         for p in obs.points:
             if p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width:
                 self.map[p.x][p.y] += 1

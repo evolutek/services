@@ -6,6 +6,8 @@ from evolutek.lib.debug_map import Interface
 from evolutek.lib.map import Point, Map as Map_lib
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.tim import Tim
+
+from math import pi
 from threading import Lock
 from time import sleep
 
@@ -94,6 +96,8 @@ class Map(Service):
     def pal_telemetry(self, status, telemetry):
         if status is not 'failed':
             self.pal_telem = telemetry
+            status = self.is_facing_wall(telemetry)
+            self.publish("pal_near_wall", status=status)
 
     @Service.thread
     def loop_scan(self):
@@ -124,8 +128,45 @@ class Map(Service):
                 self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
             #self.publish('opponents', robots=self.robots)
 
-          
+
             sleep(self.refresh)
+
+    @Service.action
+    def is_facing_wall(self, telemetry):
+
+        if self.pal_telem['x'] < 0 or self.pal_telem['y'] < 0\
+            or self.pal_telem['x'] > self.map.real_height\
+            or self.pal_telem['y'] > self.map.real_width:
+            print("Error PAL out of map")
+            return
+
+        x_incr, y_incr = 0, 0
+        if telemetry['theta'] > pi/4 and telemetry['theta'] <= 3*pi/4:
+            y_incr = -1
+        elif telemetry['theta'] > 3*pi/4 and telemetry['theta'] <= 5*pi/4:
+            x_incr = 1
+        elif telemetry['theta'] > 5*pi/4 and telemetry['theta'] <= 7*pi/4:
+            y_incr = 1
+        else:
+            x_incr = 1
+
+        x, y = int(self.pal_telem['x']/self.map.unit), int(self.pal_telem['y']/self.map.unit)
+        front, back = False, False
+        for i in range(int((self.pal_dist_sensor + self.pal_size) / self.map.unit)):
+            fx, fy = x + (x_incr * i), y + (y_incr * i)
+            if fx < 0 or fy < 0 or fx > self.map.height or fy > self.map.width\
+                or self.map.map[fx][fy] > 0:
+                front = True
+
+            bx, by = x + (-x_incr * i), y + (-y_incr * i)
+            if bx < 0 or by < 0 or bx > self.map.height or by > self.map.width\
+                or self.map.map[bx][by] > 0:
+                back = True
+
+            if front and back:
+                break
+
+        return  {'front': front, 'back': back}
 
 """
     @Service.action

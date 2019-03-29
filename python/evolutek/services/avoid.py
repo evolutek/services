@@ -21,6 +21,7 @@ class Avoid(Service):
         self.back_detected = []
         self.avoid = False
         self.enabled = True
+        self.near_wall_status = None
 
         super().__init__(ROBOT)
 
@@ -44,10 +45,12 @@ class Avoid(Service):
             if not self.enabled:
                 continue
 
-            if self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
+            if self.near_wall_status is not None and not self.near_wall_status['front']\
+                and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
                 self.stop_robot('front')
                 print("[AVOID] Front detection")
-            elif self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
+            elif self.near_wall_status is not None and not self.near_wall_status['back']\
+                and self.telemetry['speed'] < 0.0 and len(self.front_detected) < 0:
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
             else:
@@ -63,7 +66,6 @@ class Avoid(Service):
             self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:
             print('Failed to abort ai of %s: %s' % (ROBOT, str(e)))
-        
 
     @Service.action
     def enable(self):
@@ -93,6 +95,10 @@ class Avoid(Service):
             self.telemetry = None
         else:
             self.telemetry = telemetry
+
+    @Service.event("%s_near_wall" % ROBOT)
+    def near_wall(self, status):
+        self.near_wall_status = status
 
 def wait_for_beacon():
     hostname = "pi"
