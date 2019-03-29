@@ -83,7 +83,9 @@ class Interface:
         if self.service.debug:
             self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 10, p.x * unit + 10, fill=color)
         else:
-            self.canvas.create_rectangle((p.y - self.service.robot_size) * unit, (p.x - self.service.robot_size) * unit, (p.y + self.service.robot_size) * unit, (p.x + self.service.robot_size) * unit, fill='red')
+            self.canvas.create_rectangle((p['y'] - self.service.robot_size) * unit,
+            (p['x'] - self.service.robot_size) * unit, (p['y'] + self.service.robot_size) * unit,
+            (p['x'] + self.service.robot_size) * unit, fill='red')
 
     def print_pal(self, pal):
         if not pal:

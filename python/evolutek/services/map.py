@@ -54,7 +54,7 @@ class Map(Service):
         #self.map.add_circle_obstacle(1000, 1500, 150)
 
         # Example
-        # self.path = self.map.get_path(Point(1650, 225), Point(1000, 2000))
+        #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
 
         # TIM
         self.lock = Lock()
@@ -114,27 +114,26 @@ class Map(Service):
                 self.raw_data, self.shapes, self.robots = self.tim.get_scan()
             else:
                 robots = self.tim.get_scan()
-                """
-                with self.lock:
 
-                    for robot in self.robots:
-                        self.map.remove_obstacle(robot['tag'])
-                    self.robots.clear()
-
-                    i = 0
-                    for point in data:
-                        # Check if point is not one of our robots
-                        if self.pal_telem and dist(self.pal_telem, point) < self.delta_dist:
-                            continue
-                        p = point.to_dict()
-                        p['tag'] = "robot%d" % i
-                        i += 1
-                        self.robots.append(p)
                 for robot in self.robots:
-                    self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
-                #self.publish('opponents', robots=self.robots)
-                """
+                    self.map.remove_obstacle(robot['tag'])
+                self.robots.clear()
 
+                i = 0
+                for point in robots:
+                    # Check if point is not one of our robots
+                    if self.pal_telem and dist(self.pal_telem, point) < self.delta_dist:
+                        continue
+                    robot = point.to_dict()
+                    robot['tag'] = "robot%d" % i
+                    i += 1
+                    self.robots.append(robot)
+
+            for robot in self.robots:
+                self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
+                self.publish('opponents', robots=self.robots)
+
+            #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))3
             sleep(self.refresh)
 
     @Service.action
