@@ -51,7 +51,7 @@ class Map(Service):
         self.map.add_rectangle_obstacle(1422, 1622, 1475, 1525)
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
 
-        #self.map.add_circle_obstacle(1000, 1500, 150)
+        self.map.add_circle_obstacle(1000, 1500, 150)
 
         # Example
         self.path = self.map.get_path(Point(1650, 225), Point(1000, 2000))
@@ -136,9 +136,7 @@ class Map(Service):
     @Service.action
     def is_facing_wall(self, telemetry):
 
-        if self.pal_telem['x'] < 0 or self.pal_telem['y'] < 0\
-            or self.pal_telem['x'] > self.map.real_height\
-            or self.pal_telem['y'] > self.map.real_width:
+        if self.map.is_real_point_outside(telemetry['x'], telemetry['y']):
             print("Error PAL out of map")
             return
 
@@ -152,17 +150,15 @@ class Map(Service):
         else:
             x_incr = 1
 
-        x, y = int(self.pal_telem['x']/self.map.unit), int(self.pal_telem['y']/self.map.unit)
+        p = self.map.convert_point(telemetry['x'], telemetry['y'])
         front, back = False, False
         for i in range(int((self.pal_dist_sensor + self.pal_size) / self.map.unit)):
-            fx, fy = x + (x_incr * i), y + (y_incr * i)
-            if fx < 0 or fy < 0 or fx > self.map.height or fy > self.map.width\
-                or self.map.map[fx][fy] > 0:
+            f = Point(p.x + (x_incr * i), p.y + (y_incr * i))
+            if not self.map.is_point_inside(f) or self.map.map[f.x][f.y] > 0:
                 front = True
 
-            bx, by = x + (-x_incr * i), y + (-y_incr * i)
-            if bx < 0 or by < 0 or bx > self.map.height or by > self.map.width\
-                or self.map.map[bx][by] > 0:
+            b = Point(p.x + (-x_incr * i), p.y + (-y_incr * i))
+            if not self.map.is_point_inside(b) or self.map.map[b.x][b.y] > 0:
                 back = True
 
             if front and back:

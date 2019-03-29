@@ -117,5 +117,5 @@ class Interface:
         self.print_pal(self.service.pal_telem)
         print("dumping data")
         self.dump_raw_data(self.service.raw_data)
-        #self.print_path(self.service.path)
+        self.print_path(self.service.path)
         self.window.after(refresh_interface, self.update)
