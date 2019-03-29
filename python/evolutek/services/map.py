@@ -117,7 +117,7 @@ class Map(Service):
                 self.robots.clear()
 
                 i = 0
-                for point in data:
+                for point in self.raw_data:
                     # Check if point is not one of our robots
                     if self.pal_telem and dist(self.pal_telem, point) < self.delta_dist:
                         continue
