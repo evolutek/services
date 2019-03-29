@@ -28,7 +28,7 @@ class Map(Service):
 
         self.delta_dist = float(cs.config.get(section='tim', option='delta_dist'))
         self.refresh = float(cs.config.get(section='tim', option='refresh'))
-        self.debug = cs.config.get(section='tim', option='debug') == 'True
+        self.debug = cs.config.get(section='tim', option='debug') == 'True'
 
         self.tim_config = {
             'min_size' : float(cs.config.get(section='tim', option='min_size')),
@@ -91,7 +91,7 @@ class Map(Service):
             if self.color != self.color1:
                 config['pos_y'] = 3000 - config['pos_y']
                 config['angle'] *= -1
-            self.tim = Tim(config)
+            self.tim = Tim(config, self.debug)
         else:
             self.map.remove_obstacle('zone')
             self.tim = None

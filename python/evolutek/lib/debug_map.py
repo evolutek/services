@@ -8,6 +8,7 @@ from os import _exit
 
 colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
 unit = 1/2
+refresh = 500
 
 class Interface:
 
@@ -32,7 +33,7 @@ class Interface:
 
         self.canvas.pack()
         print('Window created')
-        self.window.after(refresh_interface, self.update)
+        self.window.after(refresh, self.update)
         self.window.mainloop()
 
     def close(self):
@@ -109,7 +110,6 @@ class Interface:
 
         self.canvas.create_polygon(new_points, fill='orange')
 
-
     def print_path(self, path):
         if path is None:
             return
@@ -131,4 +131,4 @@ class Interface:
             self.print_shapes(self.service.shapes)
         self.print_robots(self.service.robots)
         #self.print_path(self.service.path)
-        self.window.after(self.service.refresh, self.update)
+        self.window.after(refresh, self.update)
