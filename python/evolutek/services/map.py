@@ -19,7 +19,7 @@ def dist(a, b):
 class Map(Service):
 
     def __init__(self):
-        self.raw_data = []
+
         cs = CellaservProxy()
 
         self.color1 = cs.config.get(section='match', option='color1')
@@ -28,6 +28,7 @@ class Map(Service):
 
         self.delta_dist = float(cs.config.get(section='tim', option='delta_dist'))
         self.refresh = float(cs.config.get(section='tim', option='refresh'))
+        self.debug = cs.config.get(section='tim', option='debug') == 'True
 
         self.tim_config = {
             'min_size' : float(cs.config.get(section='tim', option='min_size')),
@@ -43,20 +44,22 @@ class Map(Service):
         height = int(cs.config.get(section='map', option='height'))
         map_unit = int(cs.config.get(section='map', option='map_unit'))
         self.pal_size = int(cs.config.get(section='pal', option='robot_size_y'))
-        self.pal_dist_sensor = 250
-        self.map = Map_lib(width, height, map_unit, self.pal_size)
+        self.pal_dist_sensor = int(cs.config.get(section='pal', option='dist_detection'))
 
+        self.map = Map_lib(width, height, map_unit, self.pal_size)
         """ Add obstacles """
         self.map.add_rectangle_obstacle(1622, 2000, 450, 2550)
         self.map.add_rectangle_obstacle(1422, 1622, 1475, 1525)
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
-
-        self.map.add_circle_obstacle(1000, 1500, 150)
+        #self.map.add_circle_obstacle(1000, 1500, 150)
 
         # Example
-        self.path = self.map.get_path(Point(1650, 225), Point(1000, 2000))
+        # self.path = self.map.get_path(Point(1650, 225), Point(1000, 2000))
 
+        # TIM
         self.lock = Lock()
+        self.raw_data = []
+        self.shapes = []
         self.robots = []
         self.pal_telem = None
         self.color = None
@@ -76,15 +79,14 @@ class Map(Service):
 
     @Service.event
     def match_color(self, color):
-        print(color)
         if color != self.color:
             self.color = color
         if self.color is not None:
             self.map.remove_obstacle('zone')
             if self.color != self.color1:
-                print(self.map.add_rectangle_obstacle(300, 1200, 0, 450, tag='zone'))
+                self.map.add_rectangle_obstacle(300, 1200, 0, 450, tag='zone')
             else:
-                print(self.map.add_rectangle_obstacle(300, 1200, 2550, 3000, tag='zone'))
+                self.map.add_rectangle_obstacle(300, 1200, 2550, 3000, tag='zone')
             config = self.tim_config
             if self.color != self.color1:
                 config['pos_y'] = 3000 - config['pos_y']
@@ -108,28 +110,30 @@ class Map(Service):
                 print('TIM not connected')
                 sleep(self.refresh * 10)
                 continue
-            self.raw_data, robots = self.tim.get_scan()
+            if self.debug:
+                self.raw_data, self.shapes, self.robots = self.tim.get_scan()
+            else:
+                robots = self.tim.get_scan()
+                """
+                with self.lock:
 
-            with self.lock:
+                    for robot in self.robots:
+                        self.map.remove_obstacle(robot['tag'])
+                    self.robots.clear()
 
+                    i = 0
+                    for point in data:
+                        # Check if point is not one of our robots
+                        if self.pal_telem and dist(self.pal_telem, point) < self.delta_dist:
+                            continue
+                        p = point.to_dict()
+                        p['tag'] = "robot%d" % i
+                        i += 1
+                        self.robots.append(p)
                 for robot in self.robots:
-                    self.map.remove_obstacle(robot['tag'])
-                self.robots.clear()
-
-                i = 0
-                for point in data:
-                    # Check if point is not one of our robots
-                    if self.pal_telem and dist(self.pal_telem, point) < self.delta_dist:
-                        continue
-                    p = point.to_dict()
-                    p['tag'] = "robot%d" % i
-                    i += 1
-                    self.robots.append(p)
-
-            for robot in self.robots:
-                self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
-            #self.publish('opponents', robots=self.robots)
-
+                    self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
+                #self.publish('opponents', robots=self.robots)
+                """
 
             sleep(self.refresh)
 
