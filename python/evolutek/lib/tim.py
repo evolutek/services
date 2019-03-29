@@ -1,43 +1,15 @@
 from PIL import Image, ImageDraw
-from math import sqrt, cos, sin, radians
+from math import cos, sin, radians
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
 from evolutek.lib.shapes import is_circle
+from evolutek.lib.point import Point
 
 def parse_num(s):
     if '+' in s or '-' in s:
         return int(s)
     else:
         return int(s, 16)
-
-def average(a, b, shape="sqare"):
-    """ return the average between two points """
-    return Point((a.x + b.x) // 2, (a.y + b.y) // 2, shape)
-
-def mean(l):
-    """ return the mean of a point list """
-    tot_x = 0
-    tot_y = 0
-    for p in l:
-      tot_x += p.x
-      tot_y += p.y
-    return Point(int(tot_x / len(l)), int(tot_y / len(l)))
-
-class Point:
-
-  def __init__(self, x_, y_, shape_ = "square"):
-    self.x = x_
-    self.y = y_
-    self.shape = shape_
-
-  def __str__(self):
-    return "(" + str(self.x) + ', ' + str(self.y) + ")"
-
-  def distance(self, point):
-    return sqrt((point.x - self.x) ** 2 + (point.y - self.y) ** 2)
-
-  def to_dict(self):
-    return {'x': self.x, 'y': self.y, 'shape' : self.shape}
 
 # TIM Class
 # config: {pos_x : int, pos_y : int, angle : float, min_size : float, max_distance : float, ip : str, port : int}
@@ -87,7 +59,7 @@ class Tim:
         circle_counter = 0
         for i in range(1, len(data)):
             cur = data[i]
-            prev_distance =  cur.distance(prev)
+            prev_distance =  cur.dist(prev)
             if prev_distance < self.max_distance:
             #if two points are close enough, we select them
                 shape.append(cur)
@@ -100,8 +72,8 @@ class Tim:
                   #      result.append(average(shape[0], shape[-1], "circle"))
                   #  else:
                         # we do the average between the first point selected and the last
-                  
-                  result.append(mean(shape))
+
+                  result.append(Point.mean(shape))
                 shape = []
                 building_shape = False
             prev = cur
@@ -112,9 +84,12 @@ class Tim:
             #    circle_counter = circle_counter + 1
             #    result.append(average(shape[0], shape[-1], "circle"))
             #else:
-            result.append(mean(shape))
+            result.append(Pointsmean(shape))
         print("circles: ", circle_counter, "/", len(result))
         return result
+
+    #def split_raw_data(self, raw_data):
+
 
     def get_scan(self):
         print("Send a scan request to the TIM")
@@ -136,12 +111,13 @@ class Tim:
         print("Converting to cardinal coordiantes")
         raw_data = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
         print("Detecting robots")
-        data = self.detect_robots(raw_data)
+        robots = []
+        #robots = self.detect_robots(raw_data)
         print("End processing data")
-        
+
         #self.export_png(data)
 
-        return raw_data, data
+        return raw_data, robots
 
     def export_png(self, data):
         arc_ray = 5

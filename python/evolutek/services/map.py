@@ -3,7 +3,8 @@
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 from evolutek.lib.debug_map import Interface
-from evolutek.lib.map import Point, Map as Map_lib
+from evolutek.lib.map import Map as Map_lib
+from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.tim import Tim
 
@@ -42,17 +43,18 @@ class Map(Service):
         height = int(cs.config.get(section='map', option='height'))
         map_unit = int(cs.config.get(section='map', option='map_unit'))
         self.pal_size = int(cs.config.get(section='pal', option='robot_size_y'))
+        self.pal_dist_sensor = 250
         self.map = Map_lib(width, height, map_unit, self.pal_size)
 
         """ Add obstacles """
         self.map.add_rectangle_obstacle(1622, 2000, 450, 2550)
-        self.map.add_rectangle_obstacle(1422, 1622, 1480, 1520)
+        self.map.add_rectangle_obstacle(1422, 1622, 1475, 1525)
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
 
         #self.map.add_circle_obstacle(1000, 1500, 150)
 
         # Example
-        #self.path = self.map.get_path(Point(1650, 225), Point(1000, 2000))
+        self.path = self.map.get_path(Point(1650, 225), Point(1000, 2000))
 
         self.lock = Lock()
         self.robots = []
@@ -106,7 +108,7 @@ class Map(Service):
                 print('TIM not connected')
                 sleep(self.refresh * 10)
                 continue
-            self.raw_data, data = self.tim.get_scan()
+            self.raw_data, robots = self.tim.get_scan()
 
             with self.lock:
 

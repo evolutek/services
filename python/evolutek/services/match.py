@@ -1,7 +1,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
-from math import cos, sin
+from math import cos, sin, pi
 from os import _exit
 from threading import Timer
 from tkinter import *
@@ -130,8 +130,8 @@ class Match(Service):
             points.append((x + size, y + size))
             points.append((x - size, y + size))
 
-            cos_val = cos(robot['theta'])
-            sin_val = sin(robot['theta'])
+            cos_val = cos(pi/2 - robot['theta'])
+            sin_val = sin(pi/2 - robot['theta'])
 
             new_points = []
             for point in points:

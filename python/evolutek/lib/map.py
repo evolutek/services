@@ -4,30 +4,7 @@ from collections import deque
 from copy import deepcopy
 from enum import Enum
 from math import ceil, sqrt, inf
-
-wall = "X"
-ground = " "
-colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
-class Point:
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return "x: %s, y:%s" % (str(self.x), str(self.y))
-
-    def dist(self, p):
-        return sqrt((self.x  - p.x)**2 + (self.y  - p.y)**2)
-
-    def __eq__(self, p):
-        return self.x == p.x and self.y == p.y
-
-    def __hash__(self):
-        return hash(str(self))
-
-    def to_dict(self):
-        return {'x': self.x, 'y': self.y}
+from evolutek.lib.point import Point
 
 class Obstacle:
 
@@ -72,24 +49,6 @@ class RectangleObstacle(Obstacle):
         for y in range(y2 - 1, y1, -1):
             self.points.append(Point(x1, y))
 
-class Path:
-
-    def __init__(self, begin, end):
-        self.cost = 0
-        self.begin = begin
-        self.end = end
-        self.path = []
-
-    def add_point(self, p):
-        self.path.append(p)
-
-    def __str__(self):
-        s = "Begin: (%s)\n" % str(self.begin)
-        for p in self.path:
-            s += "(%s)\n" % str(p)
-        s += "End: (%s)" % str(self.end)
-        return s
-
 class Map:
 
     def __init__(self, width, height, unit, robot_radius):
@@ -119,8 +78,6 @@ class Map:
         obs.points.append(Point(x, y))
         self.map[x][y] += 1
         self.obstacles.append(obs)
-
-        
 
     def add_circle_obstacle(self, x, y, radius=0, tag=None):
         if x < 0 or y < 0 or x > self.real_height or y > self.real_width:

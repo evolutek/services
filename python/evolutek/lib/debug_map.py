@@ -3,10 +3,10 @@
 from tkinter import *
 from PIL import Image
 from PIL import ImageTk
-from evolutek.lib.map import wall
 from math import cos, sin, pi, atan
 from os import _exit
 
+colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
 
 radius_pal = 75
 radius_mi = 52.5
@@ -71,7 +71,7 @@ class Interface:
       print("data points: %d" % len(raw_data))
       for p in raw_data:
         print("%d, %d" % (p.x * unit, p.y * unit))
-        self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white') 
+        self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white')
 
     def print_pal(self, pal):
         if not pal:
@@ -86,8 +86,8 @@ class Interface:
         points.append((x + radius_pal, y + radius_pal))
         points.append((x - radius_pal, y + radius_pal))
 
-        cos_val = cos(pal['theta'])
-        sin_val = sin(pal['theta'])
+        cos_val = cos(pi/2 - pal['theta'])
+        sin_val = sin(pi/2 - pal['theta'])
 
         new_points = []
         for point in points:
