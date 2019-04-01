@@ -19,6 +19,8 @@ class Point:
         return {'x': self.x, 'y': self.y,}
 
     def dist(self, p):
+        if isinstance(p, dict):
+            return sqrt((p['x'] - self.x) ** 2 + (p['y'] - self.y) ** 2)
         return sqrt((p.x - self.x) ** 2 + (p.y - self.y) ** 2)
 
     def average(self, p):

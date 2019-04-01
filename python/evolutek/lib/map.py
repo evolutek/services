@@ -6,6 +6,43 @@ from enum import Enum
 from math import ceil, sqrt, inf
 from evolutek.lib.point import Point
 
+class ObstacleType(Enum):
+    obstacle = 0
+    robot = 1
+
+class Square:
+
+    def __init__(self, obstacles=None, robots=None):
+        self.obstacles = [] if obstacles is None else obstacles
+        self.robots = [] if robots is None else robots
+
+    def add_obstacle(self, obstacle, type):
+        if type == ObstacleType.obstacle and not obstacle in self.obstacles:
+            self.obstacles.append(obstacle)
+            return True
+        elif type == ObstacleType.robot and not obstacle in self.robots:
+            self.robots.append(obstacle)
+            return True
+        return False
+
+    def remove_obstacle(self, obstacle):
+        if obstacle in self.obstacles:
+            self.obstacles.remove(obstacle)
+            return True
+        elif obstacle in self.robots:
+            self.robots.remove(robot)
+            return True
+        return False
+
+    def is_obstacle(self):
+        return len(self.obstacles) > 0
+
+    def is_robot(self):
+        return len(self.robots) > 0
+
+    def is_empty(self):
+        return len(self.obstacles) == 0 and len(self.robots) == 0
+
 class Obstacle:
 
     def __init__(self, tag=None, color="black"):
@@ -65,7 +102,7 @@ class Map:
         for x in range(self.height + 1):
             self.map.append([])
             for y in range(self.width + 1):
-                self.map[x].append(0)
+                self.map[x].append(Square())
 
         self.add_boundaries()
 
@@ -78,27 +115,27 @@ class Map:
     def convert_point(self, x, y):
         return Point(int(x/self.unit), int(y/self.unit))
 
-    def add_point_obstacle(self, x, y, tag=None):
+    def add_point_obstacle(self, x, y, tag=None, type=ObstacleType.obstacle):
         if self.is_real_point_outside(x, y):
             return False
         obs = Obstacle(tag)
         x = int(x / self.unit)
         y = int(y / self.unit)
         obs.points.append(Point(x, y))
-        self.map[x][y] += 1
+        self.map[x][y].add_obstacle(tag, type)
         self.obstacles.append(obs)
 
-    def add_circle_obstacle(self, x, y, radius=0, tag=None):
+    def add_circle_obstacle(self, x, y, radius=0, tag=None, type=ObstacleType.obstacle):
         if self.is_real_point_outside(x, y):
             return False
         obs = CircleObstacle(self.convert_point(x, y), int((radius + self.robot_radius)/self.unit), tag=tag)
         for p in obs.points:
             if self.is_point_inside(p):
-                self.map[p.x][p.y] += 1
+                self.map[p.x][p.y].add_obstacle(tag, type)
         self.obstacles.append(obs)
         return True
 
-    def add_rectangle_obstacle(self, x1, x2, y1, y2, tag=None):
+    def add_rectangle_obstacle(self, x1, x2, y1, y2, tag=None, type=ObstacleType.obstacle):
         if self.is_real_point_outside(x1, y1) or self.is_real_point_outside(x2, y2):
             return False
         if x1 > x2:
@@ -112,25 +149,25 @@ class Map:
         obs = RectangleObstacle(x1, x2, y1, y2, tag=tag)
         for p in obs.points:
             if self.is_point_inside(p):
-                self.map[p.x][p.y] += 1
+                self.map[p.x][p.y].add_obstacle(tag, type)
         self.obstacles.append(obs)
         return True
 
     def add_boundaries(self):
         radius = int(self.robot_radius / self.unit)
         for x in range(radius, self.height - radius + 1):
-            self.map[x][radius] += 1
-            self.map[x][self.width - radius] += 1
+            self.map[x][radius].add_obstacle('add_boundaries', ObstacleType.obstacle)
+            self.map[x][self.width - radius].add_obstacle('add_boundaries', ObstacleType.obstacle)
         for y in range(radius, self.width - radius):
-            self.map[radius][y] += 1
-            self.map[self.height - radius][y] += 1
+            self.map[radius][y].add_obstacle('add_boundaries', ObstacleType.obstacle)
+            self.map[self.height - radius][y].add_obstacle('add_boundaries', ObstacleType.obstacle)
 
     def remove_obstacle(self, tag):
         for obs in self.obstacles:
             if obs == tag:
                 for p in obs.points:
                     if self.is_point_inside(p):
-                        self.map[p.x][p.y] -= 1
+                        self.map[p.x][p.y].remove_obstacle(tag)
                 self.obstacles.remove(obs)
                 return True
         return False
@@ -153,7 +190,7 @@ class Map:
         start = self.convert_point(p1.x, p1.y)
         end = self.convert_point(p2.x, p2.y)
 
-        if self.map[start.x][start.y] > 0 or self.map[end.x][end.y] > 0:
+        if not self.map[start.x][start.y].is_empty() or not self.map[end.x][end.y].is_empty():
             print('Obstacle here')
             return []
 
@@ -209,7 +246,7 @@ class Map:
 
         neighbours = []
         for point in l:
-            if self.is_point_inside(point) and self.map[point.x][point.y] == 0:
+            if self.is_point_inside(point) and self.map[point.x][point.y].is_empty():
                     neighbours.append(point)
 
         return neighbours

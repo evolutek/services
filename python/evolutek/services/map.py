@@ -3,7 +3,7 @@
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 from evolutek.lib.debug_map import Interface
-from evolutek.lib.map import Map as Map_lib
+from evolutek.lib.map import ObstacleType, Map as Map_lib
 from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.tim import Tim
@@ -11,9 +11,6 @@ from evolutek.lib.tim import Tim
 from math import pi
 from threading import Lock
 from time import sleep
-
-def dist(a, b):
-    return (a['x'] * b['x'] + a['y'] * b['y']) ** 0.5
 
 @Service.require('config')
 class Map(Service):
@@ -51,10 +48,10 @@ class Map(Service):
         self.map.add_rectangle_obstacle(1622, 2000, 450, 2550)
         self.map.add_rectangle_obstacle(1422, 1622, 1475, 1525)
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
-        #self.map.add_circle_obstacle(1000, 1500, 150)
+        self.map.add_circle_obstacle(1000, 1500, 150, "robot", ObstacleType.robot)
 
         # Example
-        #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
+        self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
 
         # TIM
         self.lock = Lock()
@@ -122,18 +119,18 @@ class Map(Service):
                 i = 0
                 for point in robots:
                     # Check if point is not one of our robots
-                    if self.pal_telem and dist(self.pal_telem, point) < self.delta_dist:
+                    if self.pal_telem and point.dist(self.pal_telem) < self.delta_dist:
                         continue
                     robot = point.to_dict()
                     robot['tag'] = "robot%d" % i
                     i += 1
                     self.robots.append(robot)
 
-            for robot in self.robots:
-                self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'])
-                self.publish('opponents', robots=self.robots)
+                for robot in self.robots:
+                    self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'], type=ObstacleType.robot)
+                    self.publish('opponents', robots=self.robots)
 
-            #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))3
+            self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
             sleep(self.refresh)
 
     @Service.action
@@ -157,11 +154,11 @@ class Map(Service):
         front, back = False, False
         for i in range(int((self.pal_dist_sensor + self.pal_size) / self.map.unit)):
             f = Point(p.x + (x_incr * i), p.y + (y_incr * i))
-            if not self.map.is_point_inside(f) or self.map.map[f.x][f.y] > 0:
+            if not self.map.is_point_inside(f) or self.map.map[f.x][f.y].is_obstacle():
                 front = True
 
             b = Point(p.x + (-x_incr * i), p.y + (-y_incr * i))
-            if not self.map.is_point_inside(b) or self.map.map[b.x][b.y] > 0:
+            if not self.map.is_point_inside(b) or self.map.map[b.x][b.y].is_obstacle():
                 back = True
 
             if front and back:

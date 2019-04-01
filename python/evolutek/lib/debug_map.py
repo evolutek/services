@@ -55,12 +55,12 @@ class Interface:
     def print_obstacles(self):
         for y in range(self.map.width + 1):
             for x in range(self.map.height + 1):
-                if self.map.map[x][y] > 0:
+                if not self.map.map[x][y].is_empty():
                     x1 = (y * self.map.unit - self.map.unit/2) * unit
                     x2 = (y * self.map.unit + self.map.unit/2) * unit
                     y1 = (x * self.map.unit - self.map.unit/2) * unit
                     y2 = (x * self.map.unit + self.map.unit/2) * unit
-                    self.canvas.create_rectangle(x1, y1, x2, y2, fill='black')
+                    self.canvas.create_rectangle(x1, y1, x2, y2, fill='red' if self.map.map[x][y].is_robot() else 'black')
 
     def print_raw_data(self, raw_data):
       print("data points: %d" % len(raw_data))
@@ -132,5 +132,5 @@ class Interface:
             self.print_raw_data(self.service.raw_data)
             self.print_shapes(self.service.shapes)
         self.print_robots(self.service.robots)
-        #self.print_path(self.service.path)
+        self.print_path(self.service.path)
         self.window.after(refresh, self.update)
