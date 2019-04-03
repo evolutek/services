@@ -26,32 +26,54 @@ class Actuators(Service):
         self.trajman = self.cs.trajman[ROBOT]
         self.enabled = True
         self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) + 50
+        self.color = 'yellow'
+        self.color1 = self.cs.config.get(section='match', option='color1')
+
+        try:
+            self.color = self.cs.match.get_match()['color']
+        except:
+            pass
 
         for n in [1, 2, 3, 4]:
             self.cs.ax[str(n)].mode_joint()
+
+        self.cs.ax['4'].moving_speed(256)
+
         self.reset()
 
     @Service.action
-    def reset(self):
+    def reset(self, color=None):
+        if color is not None:
+            self.color = color
+
         self.enabled = True
         self.disable_suction_arms()
         self.disable_suction_goldenium()
         self.close_arms()
+        self.reset_ejecteur()
         self.close_clapet()
 
 
     """ ARMS """
     @Service.action
     def close_arms(self):
+
+        self.cs.ax['1'].moving_speed(128)
+        self.cs.ax['2'].moving_speed(128)
+        self.cs.ax['3'].moving_speed(128)
         self.cs.ax['1'].move(goal=121)
         self.cs.ax['2'].move(goal=135)
         self.cs.ax['3'].move(goal=121)
+        sleep(1.5)
+        self.cs.ax['1'].moving_speed(512)
+        self.cs.ax['2'].moving_speed(512)
+        self.cs.ax['3'].moving_speed(512)
 
     @Service.action
     def open_arms(self):
-        self.cs.ax['1'].move(goal=498)
-        self.cs.ax['2'].move(goal=512)
-        self.cs.ax['3'].move(goal=498)
+        self.cs.ax['1'].move(goal=478)
+        self.cs.ax['2'].move(goal=492)
+        self.cs.ax['3'].move(goal=478)
 
     @Service.action
     def enable_suction_arms(self):
@@ -67,7 +89,7 @@ class Actuators(Service):
         sleep(0.5)
         self.enable_suction_arms()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
+        self.trajman.move_trsl(dest=20, acc=100, dec=100, maxspeed=500, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -75,7 +97,7 @@ class Actuators(Service):
         sleep(0.5)
         self.disable_suction_arms()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=0)
+        self.trajman.move_trsl(dest=20, acc=100, dec=100, maxspeed=500, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -116,7 +138,7 @@ class Actuators(Service):
         self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
-        
+
         self.disable_suction_goldenium()
         sleep(0.1)
 
@@ -129,7 +151,7 @@ class Actuators(Service):
     """ CLAPET """
     @Service.action
     def close_clapet(self):
-        self.cs.ax['4'].move(goal=490)
+        self.cs.ax['4'].move(goal=475)
 
     @Service.action
     def open_clapet(self):
@@ -141,6 +163,43 @@ class Actuators(Service):
         self.disable_suction_goldenium()
         for n in [1, 2, 3, 4]:
             self.cs.ax[str(n)].free()
+
+    """ Ejecteur """
+    @Service.action
+    def reset_ejecteur(self):
+        contact = None
+
+        if self.color == self.color1:
+            self.cs.gpios['pal'].write_gpio(value=False, id=19)
+            self.cs.gpios['pal'].write_gpio(value=True, id=26)
+            contact = 4
+        else:
+            self.cs.gpios['pal'].write_gpio(value=True, id=19)
+            self.cs.gpios['pal'].write_gpio(value=False, id=26)
+            contact = 22
+        self.cs.gpios['pal'].write_gpio(value=100, id=13)
+        while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+            sleep(0.1)
+
+        self.cs.gpios['pal'].write_gpio(value=0, id=13)
+
+    @Service.action
+    def push_ejecteur(self):
+        contact = None
+
+        if self.color != self.color1:
+            self.cs.gpios['pal'].write_gpio(value=False, id=19)
+            self.cs.gpios['pal'].write_gpio(value=True, id=26)
+            contact = 4
+        else:
+            self.cs.gpios['pal'].write_gpio(value=True, id=19)
+            self.cs.gpios['pal'].write_gpio(value=False, id=26)
+            contact = 22
+        self.cs.gpios['pal'].write_gpio(value=100, id=13)
+        while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+            sleep(0.1)
+
+        self.cs.gpios['pal'].write_gpio(value=0, id=13)
 
     """ Recalibration """
     @Service.action
