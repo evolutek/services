@@ -61,11 +61,13 @@ def test_avoid_strategy():
 
 def palet_strategy(actuators):
     l = []
-    l.append(Goal(1260, 600, theta=0, actions=[
-        Action(actuators.get_palet),
-        Action(actuators.open_arms)
+    l.append(Goal(1300, 600, theta=0, actions=[
+        Action(actuators.get_palet)
     ]))
-
+    l.append(Goal(1300, 900, theta=0, actions=[
+        Action(actuators.get_palet)
+    ]))
+    
     return l
 
 class Goals:
