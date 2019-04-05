@@ -62,7 +62,7 @@ class Actuators(Service):
         self.cs.ax['2'].moving_speed(128)
         self.cs.ax['3'].moving_speed(128)
         self.cs.ax['1'].move(goal=121)
-        self.cs.ax['2'].move(goal=135)
+        self.cs.ax['2'].move(goal=121)
         self.cs.ax['3'].move(goal=121)
         sleep(1.5)
         self.cs.ax['1'].moving_speed(512)
@@ -71,9 +71,9 @@ class Actuators(Service):
 
     @Service.action
     def open_arms(self):
-        self.cs.ax['1'].move(goal=478)
+        self.cs.ax['1'].move(goal=492)
         self.cs.ax['2'].move(goal=492)
-        self.cs.ax['3'].move(goal=478)
+        self.cs.ax['3'].move(goal=492)
 
     @Service.action
     def enable_suction_arms(self):
@@ -86,7 +86,7 @@ class Actuators(Service):
     @Service.action
     def get_palet(self):
         self.open_arms()
-        sleep(0.5)
+        sleep(1.5)
         self.enable_suction_arms()
 
         self.trajman.move_trsl(dest=20, acc=100, dec=100, maxspeed=500, sens=1)
@@ -94,7 +94,7 @@ class Actuators(Service):
             sleep(0.1)
 
         self.close_arms()
-        sleep(0.5)
+        sleep(1.5)
         self.disable_suction_arms()
 
         self.trajman.move_trsl(dest=20, acc=100, dec=100, maxspeed=500, sens=0)
