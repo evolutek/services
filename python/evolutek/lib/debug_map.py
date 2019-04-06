@@ -93,12 +93,13 @@ class Interface:
 
         x = pal['y'] * unit
         y = pal['x'] * unit
+        size = self.service.pal_size * unit
 
         points = []
-        points.append((x - self.service.pal_size, y - self.service.pal_size))
-        points.append((x + self.service.pal_size, y - self.service.pal_size))
-        points.append((x + self.service.pal_size, y + self.service.pal_size))
-        points.append((x - self.service.pal_size, y + self.service.pal_size))
+        points.append((x - size, y - size))
+        points.append((x + size, y - size))
+        points.append((x + size, y + size))
+        points.append((x - size, y + size))
 
         cos_val = cos(pi/2 - pal['theta'])
         sin_val = sin(pi/2 - pal['theta'])
@@ -122,6 +123,14 @@ class Interface:
             self.canvas.create_line(p1['y'] * unit, p1['x'] * unit,
                 p2['y'] * unit, p2['x'] * unit, width=5, fill='yellow')
 
+    def print_line_of_sight(self, line):
+        for p in line:
+            x1 = (p.y - self.map.unit/2) * unit
+            x2 = (p.y + self.map.unit/2) * unit
+            y1 = (p.x - self.map.unit/2) * unit
+            y2 = (p.x + self.map.unit/2) * unit
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill='orange')
+
     def update(self):
         self.canvas.delete('all')
         self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
@@ -131,6 +140,7 @@ class Interface:
         if self.service.debug:
             self.print_raw_data(self.service.raw_data)
             self.print_shapes(self.service.shapes)
+            self.print_line_of_sight(self.service.line_of_sight)
         self.print_robots(self.service.robots)
         self.print_path(self.service.path)
         self.window.after(refresh, self.update)

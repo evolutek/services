@@ -157,10 +157,10 @@ class Map:
         radius = int(self.robot_radius / self.unit)
         for x in range(radius, self.height - radius + 1):
             self.map[x][radius].add_obstacle('add_boundaries', ObstacleType.obstacle)
-            self.map[x][self.width - radius].add_obstacle('add_boundaries', ObstacleType.obstacle)
+            self.map[x][self.width - radius].add_obstacle('boundaries', ObstacleType.obstacle)
         for y in range(radius, self.width - radius):
             self.map[radius][y].add_obstacle('add_boundaries', ObstacleType.obstacle)
-            self.map[self.height - radius][y].add_obstacle('add_boundaries', ObstacleType.obstacle)
+            self.map[self.height - radius][y].add_obstacle('boundaries', ObstacleType.obstacle)
 
     def remove_obstacle(self, tag):
         for obs in self.obstacles:
