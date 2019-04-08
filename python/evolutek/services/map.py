@@ -99,7 +99,7 @@ class Map(Service):
         if status is not 'failed':
             self.pal_telem = telemetry
             status = self.is_facing_wall(telemetry)
-            if not self.status is None:
+            if not status is None:
                 self.publish("pal_near_wall", status=status)
 
     @Service.thread
@@ -182,21 +182,18 @@ class Map(Service):
             p1 = self.map.convert_point(x1, y1)
             p2 = self.map.convert_point(x2, y2)
 
+            if m <0:
+                p1, p2 = p2, p1
+
 
             if self.debug:
                 self.line_of_sight.append(Point(x1, y1))
                 self.line_of_sight.append(Point(x2, y2))
 
             if not self.map.is_point_inside(p1) or self.map.map[p1.x][p1.y].is_obstacle():
-                if sens:
-                    back = True
-                else:
-                    front = True
+                front = True
             if not self.map.is_point_inside(p2) or self.map.map[p2.x][p2.y].is_obstacle():
-                if sens:
-                    front = True
-                else:
-                    back = True
+                back = True
             if front and back:
                 break
 

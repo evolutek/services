@@ -88,7 +88,7 @@ class Ai(Service):
 
         print('[AI] Setup')
         self.trajman.enable()
-        self.actuators.reset()
+        self.actuators.reset(self.color)
 
         self.match_thread = Thread(target=self.selecting)
         self.match_thread.deamon = True
