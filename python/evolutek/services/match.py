@@ -270,7 +270,7 @@ class Match(Service):
 
     """ Tirette """
     @Service.event('tirette')
-    def match_start(self):
+    def match_start(self, name, id, value):
         if self.match_status != 'unstarted' or self.color is None:
             return
 
@@ -279,6 +279,8 @@ class Match(Service):
             self.cs.ai['pmi'].start()
         except Exception as e:
             print('Failed to start match: %s' % str(e))
+
+        print('-------------------')
 
         self.timer.start()
         self.match_status = 'started'
