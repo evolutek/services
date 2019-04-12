@@ -1,0 +1,44 @@
+{
+  "start": {
+    "x": 600,
+    "y": 225,
+    "theta": 0
+  },
+  "actions": {
+    "get_palet": {
+      "service": "actuators",
+      "id": "pal",
+      "fct": "get_palet"
+    }
+  },
+  "goals": [
+    {
+      "x": 1270,
+      "y": 600,
+      "theta": 0,
+      "actions": [
+        "get_palet"
+      ]
+    },
+    {
+      "x": 1270,
+      "y": 900,
+      "theta": 0,
+      "actions": [
+        "get_palet"
+      ]
+    },
+    {
+      "x": 1270,
+      "y": 225,
+      "theta": 0
+    },
+    {
+      "x": 1730,
+      "y": 225,
+      "actions": [
+        "get_palet"
+      ]
+    }
+  ]
+}

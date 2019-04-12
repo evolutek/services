@@ -1,0 +1,29 @@
+{
+  "start": {
+    "x": 600,
+    "y": 225,
+    "theta": 0
+  },
+  "actions": {
+    "open_arms": {
+      "service": "actuators",
+      "id": "pal",
+      "fct": "open_arms"
+    },
+    "close_arms": {
+      "service": "actuators",
+      "id": "pal",
+      "fct": "close_arms"
+    }
+  },
+  "goals": [
+    {
+      "x": 600,
+      "y": 600,
+      "actions": [
+        "open_arms",
+        "close_arms"
+      ]
+    }
+  ]
+}

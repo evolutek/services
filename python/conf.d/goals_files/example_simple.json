@@ -6,14 +6,18 @@
   },
   "actions": {
     "open_arms": {
-      "fct": "actuators['pal'].open_arms"
+      "service": "actuators",
+      "id": "pal",
+      "fct": "open_arms"
     },
     "close_arms": {
-      "fct": "actuators['pal'].close_arms"
+      "service": "actuators",
+      "id": "pal",
+      "fct": "close_arms"
     }
   },
-  "goals": {
-    "goal1": {
+  "goals": [
+    {
       "x": 600,
       "y": 600,
       "actions": [
@@ -21,5 +25,5 @@
         "close_arms"
       ]
     }
-  }
+  ]
 }
