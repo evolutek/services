@@ -1,4 +1,4 @@
-import evolutek.lib.i2c_lib
+import evolutek.lib.i2c_lib as i2c_lib
 from time import *
 
 # LCD Address

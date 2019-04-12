@@ -2,7 +2,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from enum import Enum
 from evolutek.lib.settings import ROBOT
-from evolutek.lib.lcdddriver import lcd
+from evolutek.lib.lcddriver import lcd
 from threading import Lock, Thread
 from time import sleep
 import RPi.GPIO as GPIO
@@ -160,8 +160,19 @@ class Gpios(Service):
 
     @Service.action    
     def write_lcd(self, string, line):
+        if isinstance(line, str):
+            line = int(line)
         self.lcd.lcd_display_string(string, line)
     
+    @Service.action
+    def write_status(self, score=None, status=None):
+        if not score is None:
+            self.lcd.lcd_display_string(" " * 16, 2)
+            self.lcd.lcd_display_string("Score: %s" % score, 2)
+        if not status is None:
+            self.lcd.lcd_display_string(" " * 16, 1)
+            self.lcd.lcd_display_string("Status: %s" % status, 1)
+
     @Service.action
     def clear_lcd(self):
         self.lcd.lcd_clear()
