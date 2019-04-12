@@ -179,7 +179,7 @@ class TrajMan(Service):
         self.set_robot_size_x(self.robot_size_x())
         self.set_robot_size_y(self.robot_size_y())
         
-        self.set_telemetry(3000)
+        self.set_telemetry(self.telemetry_refresh())
 
     #@Service.thread
     def telemetry(self):
