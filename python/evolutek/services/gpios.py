@@ -2,6 +2,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from enum import Enum
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.lcdddriver import lcd
 from threading import Lock, Thread
 from time import sleep
 import RPi.GPIO as GPIO
@@ -60,7 +61,6 @@ class Gpio(Io):
 
     def __init__(self, id, name, dir=True, event=None, update=True, callback=False, edge=None, callback_fct=None, default_value=False):
 
-
         super().__init__(id, name, dir, event, update)
         self.callback = callback
         self.edge = edge
@@ -105,6 +105,8 @@ class Gpios(Service):
         self.gpios = []
         GPIO.setmode(GPIO.BCM)
         super().__init__(ROBOT)
+        self.lcd = lcd()
+        self.clear_lcd()
 
     """ Action """
 
@@ -155,6 +157,14 @@ class Gpios(Service):
             gpio.stop()
             return True
         return False
+
+    @Service.action    
+    def write_lcd(self, string, line):
+        self.lcd.lcd_display_string(string, line)
+    
+    @Service.action
+    def clear_lcd(self):
+        self.lcd.lcd_clear()
 
     @Service.action
     def print_gpios(self):
