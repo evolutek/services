@@ -45,6 +45,8 @@ class Avoid(Service):
             if not self.enabled:
                 continue
 
+            ## TODO Before stop, check if it is normal if a robot is in front of us
+
             if self.near_wall_status is not None and not self.near_wall_status['front']\
                 and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
                 self.stop_robot('front')
@@ -62,6 +64,9 @@ class Avoid(Service):
         self.trajman.stop_asap(1500, 30)
         self.avoid = True
         print('[AVOID] Stopping robot, %s detection triggered' % side)
+
+        ##TODO: compute pos of tmp robot
+
         try:
             self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:

@@ -18,12 +18,15 @@ class State(Enum):
     Ending = 5
     Error = 6
 
+##TODO: Check errors and set to Error State
+##TODO: Does we need to depend of avoid ?
+@Service.require('avoid', ROBOT)
 @Service.require('trajman', ROBOT)
 @Service.require('actuators', ROBOT)
-@Service.require('avoid', ROBOT)
 @Service.require('match')
 class Ai(Service):
 
+    """ INIT """
     def __init__(self):
 
         self.state = State.Init
@@ -41,7 +44,6 @@ class Ai(Service):
 
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
-        self.color2 = self.cs.config.get(section='match', option='color2')
         self.color = self.cs.match.get_match()['color']
 
         self.refresh = float(self.cs.config.get(section='ai', option='refresh'))
@@ -51,27 +53,17 @@ class Ai(Service):
 
         # Parameters
         self.aborting = Event()
+        self.ending = Event()
         self.tmp_robot = None
 
         # Match config
-        self.goals = Goals(file="keke.json", color = self.color, actuators = self.actuators, trajman = self.trajman)
+        self.goals = Goals(file="get_palet.json", self.color!=self.color1, self.cs)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
         self.setup(recalibration=False)
 
-    @Service.thread
-    def status(self):
-        while True:
-            self.publish(ROBOT + '_ai_status', status=str(self.state))
-            sleep(self.refresh)
-
-    @Service.event('%s_avoid_status' % ROBOT)
-    def avoid_status(self, test, status={}):
-        print(test)
-        self.avoid_stat = status
-        print(status)
-
+    """ SETUP """
     @Service.event('%s_reset' % ROBOT)
     @Service.action
     def setup(self, color=None, recalibration=True, **kwargs):
@@ -98,7 +90,7 @@ class Ai(Service):
             self.avoid.disable()
 
             """ Let robot recalibrate itself """
-            sens = self.color == self.color2
+            sens = self.color != self.color1
             self.actuators.recalibrate(sens_y=sens, init=True)
 
             """ Goto to starting pos """
@@ -116,48 +108,26 @@ class Ai(Service):
             self.trajman.set_theta(self.goals.theta)
             self.trajman.unfree()
 
-        self.goals.reset(self.actuators)
+        if not self.goals.reset(sens):
+            print('[AI] Error')
+            self.state = State.Error
+            return
 
         self.avoid.enable()
+
+        self.aborting.clear()
+        self.ending.clear()
+
         self.state = State.Waiting
         print('[AI] Waiting')
 
-    @Service.action
-    def start(self):
-        if self.state != State.Waiting:
-            return
-
-        print('[AI] Starting')
-        self.match_thread.start()
-
-    @Service.action
-    def end(self):
-        print('[AI] Ending')
-        self.abort()
-        self.state = State.Ending
-        self.trajman.free()
-        self.trajman.disable()
-
-    @Service.action
-    def abort(self, robot=None, side=None):
-
-        if self.state != State.Making:
-            return
-
-        self.side = side
-
-        print('[AI] Aborting')
-        self.aborting.set()
-
-        if robot is not None:
-            self.tmp_robot = robot
-
-        # Give it to the map
-
+    """ SELECTING """
     def selecting(self):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
+        """ WAIT FOR END OF DETECTION """
+        ##TODO: patch
         if self.side is not None:
             sleep(1.0)
             field = ''
@@ -183,19 +153,11 @@ class Ai(Service):
 
         self.making(goal)
 
-        # Select an action
-        #optimum  = self.map.get_optimal_goal(self.goals.get_available_goals())
-        #current_action = optimum[0]
-        #path = optimum[1]
-
-        #if current_action is None:
-        #    self.end()
-
-        #if path is None:
-        #  self.state = State.Selecting
+        ##TODO: Select an action
 
         self.making()
 
+    """ MAKING """
     def making(self, goal=None, path=None):
 
         if self.state != State.Selecting:
@@ -212,6 +174,8 @@ class Ai(Service):
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
             self.selecting()
+        if self.ending.isSet():
+            return
 
         """ Goto theta if there is one """
         if goal.theta is not None:
@@ -222,6 +186,8 @@ class Ai(Service):
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
+            if self.ending.isSet():
+                return
 
         """ Make all actions """
         for action in goal.actions:
@@ -240,6 +206,8 @@ class Ai(Service):
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.selecting()
+            if self.ending.isSet():
+                return
 
             """ Make things back """
             if action.trsl_speed is not None:
@@ -254,6 +222,59 @@ class Ai(Service):
 
         self.publish('score', goal.score) # Increment score variable in match
         self.selecting()
+
+    """ END """
+    @Service.action
+    def end(self):
+        print('[AI] Ending')
+
+        # STOP ROBOT
+        self.trajman.free()
+        self.trajman.disable()
+        self.actuators.free()
+        self.actuators.disable()
+
+        self.ending.set()
+        self.state = State.Ending
+
+    """ UTILITIES """
+    @Service.thread
+    def status(self):
+        while True:
+            self.publish(ROBOT + '_ai_status', status=str(self.state))
+            sleep(self.refresh)
+
+    @Service.event('%s_avoid_status' % ROBOT)
+    def avoid_status(self, test, status={}):
+        print(test)
+        self.avoid_stat = status
+        print(status)
+
+    @Service.action
+    def start(self):
+        if self.state != State.Waiting:
+            return
+
+        print('[AI] Starting')
+        self.match_thread.start()
+
+    """ ABORT """
+    @Service.action
+    def abort(self, robot=None, side=None):
+
+        if self.state != State.Making:
+            return
+
+        self.side = side
+
+        print('[AI] Aborting')
+        self.aborting.set()
+
+        if robot is not None:
+            self.tmp_robot = robot
+
+        ##TODO Give tmp robot to the map
+        ##TODO: Manage tmp robots
 
 def main():
     ai = Ai()

@@ -31,8 +31,8 @@ class Actuators(Service):
 
         try:
             self.color = self.cs.match.get_match()['color']
-        except:
-            pass
+        except Exception as e:
+            print("Failed to get color: %s" % str(e))
 
         for n in [1, 2, 3, 4]:
             self.cs.ax[str(n)].mode_joint()
@@ -57,7 +57,6 @@ class Actuators(Service):
     """ ARMS """
     @Service.action
     def close_arms(self):
-
         self.cs.ax['1'].moving_speed(128)
         self.cs.ax['2'].moving_speed(128)
         self.cs.ax['3'].moving_speed(128)
@@ -165,6 +164,9 @@ class Actuators(Service):
             self.cs.ax[str(n)].free()
 
     """ Ejecteur """
+
+    ##TODO: Use PWM fct instead of wrtie_gpio
+
     @Service.action
     def reset_ejecteur(self):
         contact = None
