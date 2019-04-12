@@ -106,6 +106,13 @@ def palet_strategy(cs, mirror=False):
 
     return l
 
+def test_wall_evit(mirror=False):
+    l = []
+    for i in range(10):
+        l.append(Goal(200, 750, mirror=mirror))
+        l.append(Goal(1350, 750, mirror=mirror))
+    return l
+
 ##TODO: add name
 class Goals:
 
@@ -195,11 +202,14 @@ class Goals:
         return True
 
     def reset(self, mirror):
-        print(self.parse(mirror))
         #self.goals = get_simple_strategy()
         #self.goals = test_avoid_strategy()
         #self.goals = palet_strategy(self.cs, mirror)
+        self.goals = test_wall_evit(mirror)
+        return True
+
         self.current = 0
+        return self.parse(mirror)
 
     """
     def add_node(self, name, parents=None, children=None, goal=None, done=False):

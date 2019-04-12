@@ -57,7 +57,7 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Match config
-        self.goals = Goals(file="get_palet.json", self.color!=self.color1, self.cs)
+        self.goals = Goals(file="get_palet.json", mirror=self.color!=self.color1, cs=self.cs)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -108,7 +108,7 @@ class Ai(Service):
             self.trajman.set_theta(self.goals.theta)
             self.trajman.unfree()
 
-        if not self.goals.reset(sens):
+        if not self.goals.reset(self.color!=self.color1):
             print('[AI] Error')
             self.state = State.Error
             return
