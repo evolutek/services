@@ -196,20 +196,6 @@ class Match(Service):
 
     """ Match utilities """
 
-    def match_start(self):
-        if self.match_status != 'unstarted' and self.color is None:
-            return
-
-        try:
-            self.cs.ai['pal'].start()
-            self.cs.ai['pmi'].start()
-        except Exception as e:
-            print('Failed to start match: %s' % str(e))
-
-        self.timer.start()
-        self.match_status = 'started'
-        print('match_start')
-
     def reset_pal_status(self):
         self.pal_ai_s = None
         self.pal_telem = None
@@ -256,7 +242,7 @@ class Match(Service):
 
 
     """ PMI """
-    @Service.event
+    """@Service.event
     def pmi_telemetry(self, status, telemetry):
         self.pmi_watchdog.reset()
         if status != 'failed':
@@ -273,19 +259,19 @@ class Match(Service):
     @Service.event
     def pmi_avoid_status(self, status):
         self.pmi_watchdog.reset()
-        self.pmi_avoid_s = status
+        self.pmi_avoid_s = status"""
 
 
     """ oppenents """
     @Service.event
-    def oppenents(self, robots):
+    def opponents(self, robots):
       self.robots = robots
       self.robots_watchdog.reset()
 
     """ Tirette """
     @Service.event('tirette')
     def match_start(self):
-        if self.match_status != 'unstarted' and self.color is None:
+        if self.match_status != 'unstarted' or self.color is None:
             return
 
         try:
@@ -297,7 +283,6 @@ class Match(Service):
         self.timer.start()
         self.match_status = 'started'
         print('match_start')
-
 
     """ Action """
 
@@ -358,7 +343,7 @@ class Match(Service):
 
         match['pmi_ai_status'] = self.pmi_ai_s
         match['pmi_avoid_status'] = self.pmi_avoid_s
-        match['pmi_t:elemetry'] = self.pmi_telem
+        match['pmi_telemetry'] = self.pmi_telem
 
         return match
 

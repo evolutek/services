@@ -65,7 +65,6 @@ class Interface:
     def print_raw_data(self, raw_data):
       print("data points: %d" % len(raw_data))
       for p in raw_data:
-        print("%d, %d" % (p.x * unit, p.y * unit))
         self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white')
 
     def print_shapes(self, shapes):

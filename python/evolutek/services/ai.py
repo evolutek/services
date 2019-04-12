@@ -9,9 +9,6 @@ from enum import Enum
 from threading import Event, Thread
 from time import sleep
 
-# Hack to remove
-ROBOT = "pal"
-
 class State(Enum):
     Init = 0
     Setup = 1
