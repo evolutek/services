@@ -34,7 +34,7 @@ class Avoid(Service):
                 'avoid' : self.avoid,
                 'enabled' : self.enabled
             }
-            self.publish(ROBOT + '_avoid_status', test='lol', status=status)
+            self.publish(ROBOT + '_avoid_status', status=status)
             sleep(self.refresh * 2)
 
     @Service.thread
