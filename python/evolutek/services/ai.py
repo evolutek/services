@@ -19,7 +19,7 @@ class State(Enum):
     Error = 6
 
 ##TODO: Check errors and set to Error State
-##TODO: Does we need to depend of avoid ?
+##TODO: Do we need to depend of avoid ?
 @Service.require('avoid', ROBOT)
 @Service.require('trajman', ROBOT)
 @Service.require('actuators', ROBOT)
@@ -64,7 +64,7 @@ class Ai(Service):
         self.setup(recalibration=False)
 
     """ SETUP """
-    #@Service.event('%s_reset' % ROBOT)
+    @Service.event('%s_reset' % ROBOT)
     @Service.action
     def setup(self, color=None, recalibration=True, **kwargs):
 
@@ -85,28 +85,28 @@ class Ai(Service):
         if color is not None:
             self.color = color
 
-        if recalibration:
+        #if recalibration:
 
-            self.avoid.disable()
+         #   self.avoid.disable()
 
             """ Let robot recalibrate itself """
-            sens = self.color != self.color1
-            self.actuators.recalibrate(sens_y=sens, init=True)
+          #  sens = self.color != self.color1
+          #  self.actuators.recalibrate(sens_y=sens, init=True)
 
             """ Goto to starting pos """
-            self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
-            while self.trajman.is_moving():
-                sleep(0.1)
-            self.trajman.goto_theta(self.goals.theta)
-            while self.trajman.is_moving():
-                sleep(0.1)
-        else:
-            """ Set Default config """
-            self.trajman.free()
-            self.trajman.set_x(self.goals.start_x)
-            self.trajman.set_y(self.goals.start_y)
-            self.trajman.set_theta(self.goals.theta)
-            self.trajman.unfree()
+           # self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
+           # while self.trajman.is_moving():
+           #    sleep(0.1)
+           # self.trajman.goto_theta(self.goals.theta)
+           # while self.trajman.is_moving():
+            #    sleep(0.1)
+        #else:
+        """ Set Default config """
+        self.trajman.free()
+        self.trajman.set_x(self.goals.start_x)
+        self.trajman.set_y(self.goals.start_y)
+        self.trajman.set_theta(self.goals.theta)
+        self.trajman.unfree()
 
         if not self.goals.reset(self.color!=self.color1):
             print('[AI] Error')
@@ -128,6 +128,8 @@ class Ai(Service):
 
         """ WAIT FOR END OF DETECTION """
         ##TODO: patch
+
+
         if self.side is not None:
             sleep(1.0)
             field = ''
@@ -135,9 +137,9 @@ class Ai(Service):
                 field = 'front_detected'
             else:
                 field = 'back_detected'
-            while len(self.avoid_stat[field]) > 0:
-                print('-----avoiding-----')
-                sleep(0.1)
+            #while len(self.avoid_stat[field]) > 0:
+            #    print('-----avoiding-----')
+            #    sleep(0.1)
             side = None
 
         """ Clear abort event """

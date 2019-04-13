@@ -3,6 +3,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.watchdog import Watchdog
 
 import os
 from time import sleep
@@ -22,6 +23,7 @@ class Avoid(Service):
         self.avoid = False
         self.enabled = True
         self.near_wall_status = None
+        self.watchdog = Watchdog(timeout=1.0, userHandler=self.reset_wall)
 
         super().__init__(ROBOT)
 
@@ -35,7 +37,7 @@ class Avoid(Service):
                 'enabled' : self.enabled
             }
             self.publish(ROBOT + '_avoid_status', status=status)
-            sleep(self.refresh * 2)
+            sleep(0.5)
 
     @Service.thread
     def loop_avoid(self):
@@ -46,13 +48,12 @@ class Avoid(Service):
                 continue
 
             ## TODO Before stop, check if it is normal if a robot is in front of us
-
-            if self.near_wall_status is not None and not self.near_wall_status['front']\
-                and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
+            front_wall = (self.near_wall_status is not None and not self.near_wall_status['front']) or False
+            back_wall = (self.near_wall_status is not None and not self.near_wall_status['back']) or False
+            if not front_wall and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
                 self.stop_robot('front')
                 print("[AVOID] Front detection")
-            elif self.near_wall_status is not None and not self.near_wall_status['back']\
-                and self.telemetry['speed'] < 0.0 and len(self.front_detected) < 0:
+            elif not back_wall and self.telemetry['speed'] < 0.0 and len(self.front_detected) < 0:
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
             else:
@@ -104,6 +105,10 @@ class Avoid(Service):
     @Service.event("%s_near_wall" % ROBOT)
     def near_wall(self, status):
         self.near_wall_status = status
+        self.watchdog.reset()
+
+    def reset_wall(self):
+        self.near_wall_status = None
 
 def wait_for_beacon():
     hostname = "pi"
