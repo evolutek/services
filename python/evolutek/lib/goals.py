@@ -15,16 +15,16 @@ class Node:
 
 class Action:
 
-    def __init__(self, fct, args={}, avoid=True, trsl_speed=None, rot_speed=None, mirror=False):
+    def __init__(self, fct, args=None, avoid=True, trsl_speed=None, rot_speed=None, mirror=False):
         self.fct = fct
 
-        if 'theta' in args:
+        if args and 'theta' in args and isinstance(args['theta'], str):
             args['theta'] = eval(args['theta'])
 
         # mirror
-        if mirror and 'y' in args:
+        if args and mirror and 'y' in args:
             args['y'] = 3000 - y
-        if mirror and 'theta' in args:
+        if args and mirror and 'theta' in args:
             args['theta'] = 0 - args['theta']
 
         self.args = args
@@ -35,7 +35,8 @@ class Action:
     def make(self):
         if not self.args is None:
             self.fct(**self.args)
-        self.fct()
+        else:
+            self.fct()
 
     def __str__(self):
         return str(self.fct)
@@ -131,6 +132,8 @@ class Goals:
 
         self.reset(mirror)
 
+        print(self)
+
         #self.graph = {}
         #self.add_node('Start', done=True)
 
@@ -202,14 +205,15 @@ class Goals:
         return True
 
     def reset(self, mirror):
+        self.goals = []
+        self.current = 0
         #self.goals = get_simple_strategy()
         #self.goals = test_avoid_strategy()
-        #self.goals = palet_strategy(self.cs, mirror)
-        self.goals = test_wall_evit(mirror)
+        self.goals = palet_strategy(self.cs, mirror)
+        #self.goals = test_wall_evit(mirror)
         return True
 
-        self.current = 0
-        return self.parse(mirror)
+        #return self.parse(mirror)
 
     """
     def add_node(self, name, parents=None, children=None, goal=None, done=False):
