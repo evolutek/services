@@ -221,7 +221,7 @@ class Gpios(Service):
             for gpio in self.gpios:
                 if not gpio.dir and gpio.update:
                     self.callback_gpio(gpio.id)
-            sleep(self.refresh)
+            sleep(2.0)
 
 def wait_for_beacon():
     hostname = "pi"

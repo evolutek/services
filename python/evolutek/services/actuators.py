@@ -88,7 +88,7 @@ class Actuators(Service):
         sleep(1.5)
         self.enable_suction_arms()
 
-        self.trajman.move_trsl(dest=20, acc=100, dec=100, maxspeed=500, sens=1)
+        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -96,7 +96,7 @@ class Actuators(Service):
         sleep(1.5)
         self.disable_suction_arms()
 
-        self.trajman.move_trsl(dest=20, acc=100, dec=100, maxspeed=500, sens=0)
+        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
 

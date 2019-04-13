@@ -64,7 +64,7 @@ class Ai(Service):
         self.setup(recalibration=False)
 
     """ SETUP """
-    @Service.event('%s_reset' % ROBOT)
+    #@Service.event('%s_reset' % ROBOT)
     @Service.action
     def setup(self, color=None, recalibration=True, **kwargs):
 
@@ -245,10 +245,8 @@ class Ai(Service):
             sleep(self.refresh)
 
     @Service.event('%s_avoid_status' % ROBOT)
-    def avoid_status(self, test, status={}):
-        print(test)
+    def avoid_status(self, status):
         self.avoid_stat = status
-        print(status)
 
     @Service.action
     def start(self):
