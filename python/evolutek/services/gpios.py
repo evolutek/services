@@ -230,7 +230,7 @@ class Gpios(Service):
                                 self.callback_gpio(gpio)
                             elif gpio.edge == Edge.FALLING and gpio.value == 0:
                                 self.callback_gpio(gpio)
-            sleep(0.05)
+            sleep(0.025)
 
 
 def wait_for_beacon():

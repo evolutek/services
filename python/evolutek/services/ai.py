@@ -129,18 +129,7 @@ class Ai(Service):
         """ WAIT FOR END OF DETECTION """
         ##TODO: patch
 
-
-        if self.side is not None:
-            sleep(1.0)
-            field = ''
-            if self.side == 'front':
-                field = 'front_detected'
-            else:
-                field = 'back_detected'
-            #while len(self.avoid_stat[field]) > 0:
-            #    print('-----avoiding-----')
-            #    sleep(0.1)
-            side = None
+        self.wait_until_detection_end()
 
         """ Clear abort event """
         self.aborting.clear()
@@ -159,6 +148,24 @@ class Ai(Service):
 
         self.making()
 
+    """ WAIT FOR END OF DETECTION """
+    def wait_until_detection_end(self):
+        
+        self.avoid_stat = self.avoid.status()
+        if self.side is not None and self.avoid_stat is not None:
+            sleep(1.0)
+            field = ''
+            if self.side == 'front':
+                field = 'front_detected'
+            else:
+                field = 'back_detected'
+            while self.avoid_stat[field] is not None and len(self.avoid_stat[field]) > 0:
+                self.avoid_stat = self.avoid.status()
+                print('-----avoiding-----')
+                sleep(0.3)
+            side = None
+
+
     """ MAKING """
     def making(self, goal=None, path=None):
 
@@ -172,24 +179,26 @@ class Ai(Service):
         self.trajman.goto_xy(x = goal.x, y = goal.y)
         while self.trajman.is_moving():
             sleep(0.1)
-        sleep(0.2)
-        if self.aborting.isSet():
-            print("[AI][MAKING] Aborted")
-            self.selecting()
+        sleep(1)
         if self.ending.isSet():
             return
+        if self.aborting.isSet():
+            print("[AI][MAKING] Aborted")
+            #self.aborting()
+            self.selecting()
 
         """ Goto theta if there is one """
         if goal.theta is not None:
             self.trajman.goto_theta(goal.theta)
             while self.trajman.is_moving():
                 sleep(0.1)
-            sleep(0.2)
-            if self.aborting.isSet():
-                print("[AI][MAKING] Aborted")
-                self.selecting()
+            sleep(1)
             if self.ending.isSet():
                 return
+            if self.aborting.isSet():
+                print("[AI][MAKING] Aborted")
+                #self.aborting()
+                self.selecting()
 
         """ Make all actions """
         for action in goal.actions:
@@ -204,13 +213,13 @@ class Ai(Service):
 
             """ Make action """
             action.make()
-            sleep(0.2)
-            if self.aborting.isSet():
-                print("[AI][MAKING] Aborted")
-                self.selecting()
+            sleep(1)
             if self.ending.isSet():
                 return
-
+            if self.aborting.isSet():
+                print("[AI][MAKING] Aborted")
+                self.wait_until_detection_end()
+                action.make()
             """ Make things back """
             if action.trsl_speed is not None:
                 self.trajman.set_trsl_max_speed(self.max_trsl_speed)
@@ -246,9 +255,6 @@ class Ai(Service):
             self.publish(ROBOT + '_ai_status', status=str(self.state))
             sleep(self.refresh)
 
-    @Service.event('%s_avoid_status' % ROBOT)
-    def avoid_status(self, status):
-        self.avoid_stat = status
 
     @Service.action
     def start(self):

@@ -27,17 +27,16 @@ class Avoid(Service):
 
         super().__init__(ROBOT)
 
-    @Service.thread
+    @Service.action
     def status(self):
-        while True:
-            status = {
-                'front_detected' : self.front_detected,
-                'back_detected' : self.back_detected,
-                'avoid' : self.avoid,
-                'enabled' : self.enabled
-            }
-            self.publish(ROBOT + '_avoid_status', status=status)
-            sleep(0.5)
+        status = {
+            'front_detected' : self.front_detected,
+            'back_detected' : self.back_detected,
+            'avoid' : self.avoid,
+            'enabled' : self.enabled
+        }
+
+        return status
 
     @Service.thread
     def loop_avoid(self):
@@ -48,20 +47,21 @@ class Avoid(Service):
                 continue
 
             ## TODO Before stop, check if it is normal if a robot is in front of us
-            front_wall = (self.near_wall_status is not None and not self.near_wall_status['front']) or False
-            back_wall = (self.near_wall_status is not None and not self.near_wall_status['back']) or False
-            if not front_wall and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
+            front_wall = (self.near_wall_status is not None and self.near_wall_status['front']) or False
+            back_wall = (self.near_wall_status is not None and self.near_wall_status['back']) or False
+            if self.telemetry and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
                 self.stop_robot('front')
                 print("[AVOID] Front detection")
-            elif not back_wall and self.telemetry['speed'] < 0.0 and len(self.front_detected) < 0:
+            elif self.telemetry and self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
             else:
                 self.avoid = False
-            sleep(0.1)
+            #sleep(0.05)
 
     @Service.action
     def stop_robot(self, side=None):
+        print(side)
         self.trajman.stop_asap(1500, 30)
         self.avoid = True
         print('[AVOID] Stopping robot, %s detection triggered' % side)
