@@ -164,18 +164,26 @@ class Map(Service):
 
         sens = telemetry['theta'] > pi/2 and telemetry['theta'] < 3 * pi / 2
 
+        distance = telemetry['speed'] * 0.5
+        if not y:
+            next_x = telemetry['x'] + (distance / sqrt(1 + m  ** 2))
+            next_y = next_x * m + n
+        else :
+            next_y = telemetry['y'] + (distance / sqrt(1 + m ** 2))
+            next_x = next_y * m + n
+
         front, back = False, False
         for i in range(int(self.pal_dist_sensor / self.map.unit) + 2):
             dist = i * self.map.unit / sqrt(1 + m ** 2)
 
             if y:
-                y1 = int(telemetry['y'] + dist)
-                y2 = int(telemetry['y'] - dist)
+                y1 = int(next_y + dist)
+                y2 = int(next_y - dist)
                 x1 = int(y1 * m + n)
                 x2 = int(y2 * m + n)
             else:
-                x1 = int(telemetry['x'] + dist)
-                x2 = int(telemetry['x'] - dist)
+                x1 = int(next_x + dist)
+                x2 = int(next_x - dist)
                 y1 = int(x1 * m + n)
                 y2 = int(x2 * m + n)
 
