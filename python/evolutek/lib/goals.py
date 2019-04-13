@@ -106,10 +106,19 @@ def palet_strategy(cs, mirror=False):
 
     return l
 
+def goldenium_strat(cs, mirror=False):
+    l = []
+    l.append(Goal(300, 1635, theta=0, mirror=mirror, actions=[]))
+    l.append(Goal(150,1635, theta=0, mirror=mirror, actions=[
+        Action(cs.actuators['pal'].push_ejecteur),
+        Action(cs.actuators['pal'].reset_ejecteur)
+    ]))
+    return l
+
 def test_wall_evit(mirror=False):
     l = []
     for i in range(10):
-        l.append(Goal(200, 750, mirror=mirror))
+        l.append(Goal(300, 750, mirror=mirror))
         l.append(Goal(1350, 750, mirror=mirror))
     return l
 
@@ -143,7 +152,7 @@ class Goals:
 
     def parse(self, mirror=False):
         with open(self.file, 'r') as goal_file:
-        goals = json.loads(data)
+            goals = json.loads(data)
 
         # Parse start point
         try:
@@ -216,8 +225,9 @@ class Goals:
         self.current = 0
         #self.goals = get_simple_strategy()
         #self.goals = test_avoid_strategy()
-        self.goals = palet_strategy(self.cs, mirror)
+        #self.goals = palet_strategy(self.cs, mirror)
         #self.goals = test_wall_evit(mirror)
+        self.goals = goldenium_strat(self.cs)
         return True
 
         #return self.parse(mirror)
