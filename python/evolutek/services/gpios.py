@@ -208,16 +208,12 @@ class Gpios(Service):
 
     def callback_gpio(self, gpio):
 
-        print("id %d" % id)
-
         #gpio = self.get_gpio(id)
         if gpio is None:
             return
 
-        value = gpio.read()
-
         self.publish(event=gpio.name if gpio.event is None else gpio.event,
-            name=gpio.name, id=gpio.id, value=value)
+            name=gpio.name, id=gpio.id, value=gpio.value)
 
     @Service.thread
     def update_gpios(self):
@@ -227,11 +223,14 @@ class Gpios(Service):
                     tmp = gpio.value
                     value = gpio.read()
                     if value != tmp:
-                        if gpio.edge and gpio.edge == Edge.RISING and value == 1:
+                        if not gpio.edge or gpio.edge == Edge.BOTH:
                             self.callback_gpio(gpio)
-                        elif gpio.edge and gpio.edge == Edge.FALLING and value == 0:
-                            self.callback_gpio(gpio)
-            sleep(0.5)
+                        else:
+                            if gpio.edge == Edge.RISING and value == 1:
+                                self.callback_gpio(gpio)
+                            elif gpio.edge == Edge.FALLING and value == 0:
+                                self.callback_gpio(gpio)
+
 
 def wait_for_beacon():
     hostname = "pi"
@@ -245,8 +244,8 @@ def main():
     wait_for_beacon()
     gpios = Gpios()
 
-    gpios.add_gpio(5, "tirette", False, update=False, callback=True, edge=Edge.RISING)
-    gpios.add_gpio(6, "%s_reset" % ROBOT, False, update=False, callback=True, edge=Edge.FALLING)
+    gpios.add_gpio(5, "tirette", False, callback=True, edge=Edge.FALLING)
+    gpios.add_gpio(6, "%s_reset" % ROBOT, False, callback=True, edge=Edge.FALLING)
 
     # Front gtb
     gpios.add_gpio(18, "gtb1", False, event='%s_front' % ROBOT, callback=True, edge=Edge.BOTH)
