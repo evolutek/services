@@ -21,6 +21,7 @@ class Io():
         self.dir = dir
         self.event = event
         self.update = update
+        self.value = None
 
     def __eq__(self, ident):
         return (ident[0] is not None and self.id == int(ident[0])) or self.name == ident[1]
@@ -71,6 +72,7 @@ class Gpio(Io):
             self.write(default_value)
         else:
             GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        """
         if callback:
             if edge == Edge.RISING:
                 GPIO.add_event_detect(id, GPIO.RISING, callback=self.callback_fct, bouncetime=200)
@@ -78,11 +80,13 @@ class Gpio(Io):
                 GPIO.add_event_detect(id, GPIO.FALLING, callback=self.callback_fct, bouncetime=200)
             else:
                 GPIO.add_event_detect(id, GPIO.BOTH, callback=self.callback_fct, bouncetime=200)
+        """
 
     def read(self):
         if self.dir:
             return None
-        return GPIO.input(self.id)
+        self.value = GPIO.input(self.id)
+        return self.value
 
     def write(self, value):
         if not self.dir:
@@ -158,12 +162,12 @@ class Gpios(Service):
             return True
         return False
 
-    @Service.action    
+    @Service.action
     def write_lcd(self, string, line):
         if isinstance(line, str):
             line = int(line)
         self.lcd.lcd_display_string(string, line)
-    
+
     @Service.action
     def write_status(self, score=None, status=None):
         self.lcd.lcd_display_string(" " * 16, 1)
@@ -202,11 +206,11 @@ class Gpios(Service):
                 g = gpio
         return g
 
-    def callback_gpio(self, id):
+    def callback_gpio(self, gpio):
 
         print("id %d" % id)
 
-        gpio = self.get_gpio(id)
+        #gpio = self.get_gpio(id)
         if gpio is None:
             return
 
@@ -220,8 +224,14 @@ class Gpios(Service):
         while True:
             for gpio in self.gpios:
                 if not gpio.dir and gpio.update:
-                    self.callback_gpio(gpio.id)
-            sleep(2.0)
+                    tmp = gpio.value
+                    value = gpio.read()
+                    if value != tmp:
+                        if gpio.edge and gpio.edge == Edge.RISING and value == 1:
+                            self.callback_gpio(gpio)
+                        elif gpio.edge and gpio.edge == Edge.FALLING and value == 0:
+                            self.callback_gpio(gpio)
+            sleep(0.5)
 
 def wait_for_beacon():
     hostname = "pi"
