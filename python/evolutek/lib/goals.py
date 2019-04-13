@@ -1,7 +1,6 @@
 from math import pi, sqrt
 #import pygraphviz as pgv
 import json
-from collections import namedtuple
 
 """
 class Node:
@@ -133,7 +132,6 @@ class Goals:
         self.reset(mirror)
 
         print(self)
-
         #self.graph = {}
         #self.add_node('Start', done=True)
 
@@ -145,8 +143,6 @@ class Goals:
 
     def parse(self, mirror=False):
         with open(self.file, 'r') as goal_file:
-            data = goal_file.read()
-
         goals = json.loads(data)
 
         # Parse start point
@@ -197,6 +193,17 @@ class Goals:
 
             goal['actions'] = actions
             result.append(Goal(**goal, mirror=mirror))
+        self.start_x = goals['start']['x']
+        self.start_y = goals['start']['y']
+        self.theta = goals['start']['theta']
+
+        return_list = []
+        for g in goals['goals']:
+            goal = json.loads(data, object_hook=lambda d: namedtuple('goal', d.keys())(*d.values))
+            return_list.append(goal)
+
+        return return_list
+
 
         self.goals = result
 
