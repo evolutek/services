@@ -165,7 +165,7 @@ class Actuators(Service):
 
     """ Ejecteur """
 
-    ##TODO: Use PWM fct instead of wrtie_gpio
+    ##TODO: Use PWM fct instead of write_gpio
 
     @Service.action
     def reset_ejecteur(self):
@@ -179,11 +179,11 @@ class Actuators(Service):
             self.cs.gpios['pal'].write_gpio(value=True, id=19)
             self.cs.gpios['pal'].write_gpio(value=False, id=26)
             contact = 22
-        self.cs.gpios['pal'].write_gpio(value=100, id=13)
-        while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
-            sleep(0.1)
-
-        self.cs.gpios['pal'].write_gpio(value=0, id=13)
+        if int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+            self.cs.gpios['pal'].write_gpio(value=100, id=13)
+            while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+                sleep(0.1)
+            self.cs.gpios['pal'].write_gpio(value=0, id=13)
 
     @Service.action
     def push_ejecteur(self):
@@ -197,11 +197,11 @@ class Actuators(Service):
             self.cs.gpios['pal'].write_gpio(value=True, id=19)
             self.cs.gpios['pal'].write_gpio(value=False, id=26)
             contact = 22
-        self.cs.gpios['pal'].write_gpio(value=100, id=13)
-        while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
-            sleep(0.1)
-
-        self.cs.gpios['pal'].write_gpio(value=0, id=13)
+        if int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+            self.cs.gpios['pal'].write_gpio(value=100, id=13)
+            while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+                sleep(0.1)
+            self.cs.gpios['pal'].write_gpio(value=0, id=13)
 
     """ Recalibration """
     @Service.action

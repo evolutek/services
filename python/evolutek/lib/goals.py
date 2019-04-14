@@ -198,7 +198,7 @@ class Goals:
                     del action['service']
                     del action['id']
                     del action['fct']
-                    actions.append(Action(fct, **action))
+                    actions.append(Action(fct, **action, mirror=mirror))
 
             goal['actions'] = actions
             result.append(Goal(**goal, mirror=mirror))
@@ -226,8 +226,8 @@ class Goals:
         #self.goals = get_simple_strategy()
         #self.goals = test_avoid_strategy()
         #self.goals = palet_strategy(self.cs, mirror)
-        #self.goals = test_wall_evit(mirror)
-        self.goals = goldenium_strat(self.cs)
+        self.goals = test_wall_evit(mirror)
+        #self.goals = goldenium_strat(self.cs)
         return True
 
         #return self.parse(mirror)
