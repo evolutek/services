@@ -127,6 +127,7 @@ def exp_strategy(cs, mirror=False):
         Action(cs.trajman['pal'].goto_xy, args={'x': 270, 'y': 225}, avoid=False, mirror=mirror),
         Action(cs.actuators['pal'].activate_exp, avoid=False, mirror=mirror)
     ], score=40))
+    return l
 
 ##TODO: add name
 class Goals:
