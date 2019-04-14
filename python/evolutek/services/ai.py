@@ -126,6 +126,9 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
+        if self.ending.isSet():
+            return
+
         """ WAIT FOR END OF DETECTION """
         ##TODO: patch
 
@@ -133,6 +136,9 @@ class Ai(Service):
 
         """ Clear abort event """
         self.aborting.clear()
+
+        if self.ending.isSet():
+            return
 
         print('[AI] Selecting')
         self.state = State.Selecting
@@ -160,6 +166,8 @@ class Ai(Service):
             else:
                 field = 'back_detected'
             while self.avoid_stat[field] is not None and len(self.avoid_stat[field]) > 0:
+                if self.ending.isSet():
+                    return
                 self.avoid_stat = self.avoid.status()
                 print('-----avoiding-----')
                 sleep(0.3)
@@ -170,6 +178,9 @@ class Ai(Service):
     def making(self, goal=None, path=None):
 
         if self.state != State.Selecting:
+            return
+
+        if self.ending.isSet():
             return
 
         print('[AI] Making')
@@ -184,7 +195,6 @@ class Ai(Service):
             return
         if self.aborting.isSet():
             print("[AI][MAKING] Aborted")
-            #self.aborting()
             self.selecting()
 
         """ Goto theta if there is one """
@@ -231,10 +241,13 @@ class Ai(Service):
             if not action.avoid:
                 self.avoid.enable()
 
+            if self.ending.isSet():
+                return
+
         print("[AI] Finished goal")
         self.goals.finish_goal()
 
-        self.publish('score', goal.score) # Increment score variable in match
+        self.publish('score', value=goal.score) # Increment score variable in match
         self.selecting()
 
     """ END """
@@ -266,6 +279,7 @@ class Ai(Service):
 
         print('[AI] Starting')
         self.match_thread.start()
+        return
 
     """ ABORT """
     @Service.action

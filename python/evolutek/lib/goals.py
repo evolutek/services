@@ -210,11 +210,11 @@ class Goals:
         self.goals = []
         self.current = 0
         #self.goals = get_simple_strategy()
-        #self.goals = test_avoid_strategy()
+        self.goals = test_avoid_strategy()
         #self.goals = palet_strategy(self.cs, mirror)
         #self.goals = test_wall_evit(mirror)
         #self.goals = goldenium_strat(self.cs)
-        #return True
+        return True
 
         return self.parse(mirror)
 
