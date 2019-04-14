@@ -166,15 +166,15 @@
         },
         {
             "x": 500,
-            "y": 2230,
+            "y": 2235,
             "theta": "pi",
             "score": 20,
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 230,
-                        "y": 2230
+                        "x": 240,
+                        "y": 2235
                     }
                 },
                 {
@@ -184,7 +184,7 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 2230
+                        "y": 2235
                     }
                 }
             ]
