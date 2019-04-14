@@ -70,7 +70,7 @@ class Actuators(Service):
         self.cs.ax['1'].move(goal=121)
         self.cs.ax['2'].move(goal=121)
         self.cs.ax['3'].move(goal=121)
-        sleep(2.0)
+        sleep(1.5)
         self.cs.ax['1'].moving_speed(512)
         self.cs.ax['2'].moving_speed(512)
         self.cs.ax['3'].moving_speed(512)
@@ -80,7 +80,18 @@ class Actuators(Service):
         self.cs.ax['1'].move(goal=492)
         self.cs.ax['2'].move(goal=492)
         self.cs.ax['3'].move(goal=492)
-        sleep(0.75)
+        sleep(0.5)
+
+    @Service.action
+    def lower_palet(self):
+        self.cs.ax['1'].move(goal=225)
+        self.cs.ax['2'].move(goal=225)
+        self.cs.ax['3'].move(goal=225)
+        sleep(0.15)
+        self.cs.ax['1'].move(goal=121)
+        self.cs.ax['2'].move(goal=121)
+        self.cs.ax['3'].move(goal=121)
+        sleep(0.15)
 
     @Service.action
     def enable_suction_arms(self):
@@ -101,7 +112,6 @@ class Actuators(Service):
 
         self.close_arms()
         self.disable_suction_arms()
-        sleep(0.1)
 
         self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
         while self.trajman.is_moving():
@@ -111,7 +121,7 @@ class Actuators(Service):
     @Service.action
     def open_arm_goldenium(self):
         self.cs.ax['2'].move(goal=220)
-        sleep(0.5)
+        sleep(0.25)
 
     @Service.action
     def enable_suction_goldenium(self):
@@ -124,7 +134,6 @@ class Actuators(Service):
     @Service.action
     def get_goldenium(self):
         self.open_arm_goldenium()
-        sleep(0.5)
         self.enable_suction_goldenium()
 
         self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
@@ -146,7 +155,6 @@ class Actuators(Service):
             sleep(0.1)
 
         self.disable_suction_goldenium()
-        sleep(0.1)
 
         self.close_arms()
 
@@ -163,20 +171,23 @@ class Actuators(Service):
     @Service.action
     def open_clapet(self):
         self.cs.ax['4'].move(goal=780)
-        sleep(0.5)
+        sleep(0.25)
 
     @Service.action
     def drop_palet(self):
-        self.open_clapet()
-        self.push_ejecteur()
-        self.reset_ejecteur()
-        self.close_clapet()
+        self.lower_palet()
         self.trajman.move_trsl(dest=100, acc=400, dec=400, maxspeed=600, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
         self.trajman.move_trsl(dest=100, acc=4000, dec=400, maxspeed=600, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
+            
+        self.open_clapet()
+        self.push_ejecteur()
+        self.reset_ejecteur()
+        self.close_clapet()
+
 
     """ Ejecteur """
     ##TODO: Use PWM fct instead of write_gpio
@@ -198,7 +209,6 @@ class Actuators(Service):
             while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
-            sleep(0.25)
 
     @Service.action
     def push_ejecteur(self):
@@ -217,7 +227,6 @@ class Actuators(Service):
             while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
-            sleep(0.25)
 
     """ EXP """
     @Service.action
