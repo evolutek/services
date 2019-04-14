@@ -362,10 +362,17 @@ class Match(Service):
         print('match_end')
 
     """ Match status thread """
-    #@Service.thread
+    @Service.thread
     def match_status(self):
       while True:
-        self.publish('match_status', match=self.get_match())
+        #self.publish('match_status', match=self.get_match())
+        try:
+            status = self.pal_ai_s
+            if not status is None:
+                status = status.split('.')[1]
+            self.cs.gpios['pal'].write_status(score=self.score, status=status)
+        except:
+            pass
         sleep(self.refresh)
 
     """ Interface thread """
