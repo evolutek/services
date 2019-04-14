@@ -93,15 +93,14 @@ def test_avoid_strategy():
 
 def palet_strategy(cs, mirror=False):
     l = []
-    l.append(Goal(1270, 600, theta=0, mirror=mirror, actions=[
-        Action(cs.actuators['pal'].get_palet)
-    ]))
-    l.append(Goal(1270, 900, theta=0, mirror=mirror, actions=[
-        Action(cs.actuators['pal'].get_palet)
-    ]))
-    l.append(Goal(1270, 225, theta=0, mirror=mirror, actions=[]))
-    l.append(Goal(1730, 225, theta=0, mirror=mirror, actions=[
-        Action(cs.actuators['pal'].get_palet)
+    l.append(Goal(1020, 900, mirror=mirror, actions=[
+        Action(cs.trajman['pal'].goto_xy, args={'x': 1270, 'y': 900}, avoid=False),
+        Action(cs.trajman['pal'].goto_theta, args={'theta': 0}, avoid=False),
+        Action(cs.actuators['pal'].get_palet, avoid=False),
+        Action(cs.trajman['pal'].goto_theta, args={'theta': -pi/2}, avoid=False),
+        Action(cs.trajman['pal'].goto_xy, args={'x': 1270, 'y': 600}),
+        Action(cs.trajman['pal'].goto_theta, args={'theta': 0}, avoid=False),
+        Action(cs.actuators['pal'].get_palet, avoid=False)
     ]))
 
     return l
@@ -130,7 +129,7 @@ class Goals:
         """Robot starting position"""
         self.start_x = 600
         self.start_y = 225
-        self.theta = 0
+        self.theta = pi
 
         self.goals = []
         self.current = 0
@@ -225,8 +224,8 @@ class Goals:
         self.current = 0
         #self.goals = get_simple_strategy()
         #self.goals = test_avoid_strategy()
-        #self.goals = palet_strategy(self.cs, mirror)
-        self.goals = test_wall_evit(mirror)
+        self.goals = palet_strategy(self.cs, mirror)
+        #self.goals = test_wall_evit(mirror)
         #self.goals = goldenium_strat(self.cs)
         return True
 

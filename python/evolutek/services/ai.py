@@ -202,7 +202,6 @@ class Ai(Service):
 
         """ Make all actions """
         for action in goal.actions:
-
             """ Set parameters """
             if action.trsl_speed is not None:
                 self.trajman.set_trsl_max_speed(action.trsl_speed)
@@ -213,6 +212,8 @@ class Ai(Service):
 
             """ Make action """
             action.make()
+            while self.trajman.is_moving():
+                sleep(0.1)
             sleep(1)
             if self.ending.isSet():
                 return
@@ -220,6 +221,8 @@ class Ai(Service):
                 print("[AI][MAKING] Aborted")
                 self.wait_until_detection_end()
                 action.make()
+                while self.trajman.is_moving():
+                    sleep(0.1)
             """ Make things back """
             if action.trsl_speed is not None:
                 self.trajman.set_trsl_max_speed(self.max_trsl_speed)

@@ -45,19 +45,29 @@ class Avoid(Service):
                 continue
             if not self.enabled:
                 continue
+            status = None
+            #try:
+            #    status = self.cs.map.near_wall_status()
+            #except:
+            #    pass
+
+            #print(status)
 
             ## TODO Before stop, check if it is normal if a robot is in front of us
-            front_wall = (self.near_wall_status is not None and self.near_wall_status['front']) or False
-            back_wall = (self.near_wall_status is not None and self.near_wall_status['back']) or False
+            #front_wall = (status is not None and bool(status['front'])) or False
+            #print(front_wall)
+            #back_wall = (status is not None and bool(status['back'])) or False
             if self.telemetry and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
+            #and not front_wall:
                 self.stop_robot('front')
                 print("[AVOID] Front detection")
             elif self.telemetry and self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
+            #and not back_wall:
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
             else:
                 self.avoid = False
-            #sleep(0.05)
+            sleep(0.5)
 
     @Service.action
     def stop_robot(self, side=None):
@@ -90,6 +100,7 @@ class Avoid(Service):
 
     @Service.event('%s_back' % ROBOT)
     def back_detection(self, name, id, value):
+        print(id)
         if int(value) and not name in self.back_detected:
             self.back_detected.append(name)
         elif not int(value) and name in self.back_detected:
