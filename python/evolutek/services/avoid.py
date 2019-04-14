@@ -59,7 +59,7 @@ class Avoid(Service):
 
     @Service.action
     def stop_robot(self, side=None):
-        print(side)
+        print('----- Aborting: %s ---' % side)
         self.trajman.stop_asap(1500, 30)
         self.avoid = True
         print('[AVOID] Stopping robot, %s detection triggered' % side)

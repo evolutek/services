@@ -83,11 +83,11 @@ def get_simple_strategy():
     l.append(Goal(550, 400))
     return l
 
-def test_avoid_strategy():
+def test_avoid_strategy(mirror=False):
     l = []
     for i in range(100):
-        l.append(Goal(600, 1250))
-        l.append(Goal(600, 225))
+        l.append(Goal(600, 1250, mirror=mirror))
+        l.append(Goal(600, 400, mirror=mirror))
 
     return l
 
@@ -136,7 +136,7 @@ class Goals:
 
         """Robot starting position"""
         self.start_x = 600
-        self.start_y = 225
+        self.start_y = 225 if not mirror else 2775
         self.start_theta = pi
 
         self.goals = []
@@ -224,7 +224,7 @@ class Goals:
         self.goals = []
         self.current = 0
         #self.goals = get_simple_strategy()
-        #self.goals = test_avoid_strategy()
+        #self.goals = test_avoid_strategy(mirror)
         #self.goals = palet_strategy(self.cs, mirror)
         #self.goals = test_wall_evit(mirror)
         #self.goals = goldenium_strat(self.cs)

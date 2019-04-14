@@ -331,6 +331,7 @@ class Ai(Service):
                 print('-----avoiding-----')
                 sleep(0.1)
             side = None
+        self.aborting.clear()
 
 def main():
     ai = Ai()
