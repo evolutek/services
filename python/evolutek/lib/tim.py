@@ -93,10 +93,10 @@ class Tim:
         angular_step = parse_num(data[24])/10000
         length = parse_num(data[25])
         raw_data = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
-        print("Detecting robots")
+        #print("Detecting robots")
         shapes = self.split_raw_data(raw_data)
         robots = self.compute_center(shapes)
-        print("End processing data")
+        print("End scanning")
 
         if self.debug:
             return raw_data, shapes, robots

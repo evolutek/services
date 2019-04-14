@@ -25,7 +25,6 @@ class Map(Service):
 
         self.delta_dist = float(cs.config.get(section='tim', option='delta_dist'))
         self.refresh = float(cs.config.get(section='tim', option='refresh'))
-        self.debug = cs.config.get(section='map', option='debug') == 'True'
 
         self.tim_config = {
             'min_size' : float(cs.config.get(section='tim', option='min_size')),
@@ -48,10 +47,11 @@ class Map(Service):
         self.map.add_rectangle_obstacle(1622, 2000, 450, 2550)
         self.map.add_rectangle_obstacle(1422, 1622, 1475, 1525)
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
-        self.map.add_circle_obstacle(1000, 1500, 150, "robot", ObstacleType.robot)
+        #self.map.add_circle_obstacle(1000, 1500, 150, "robot", ObstacleType.robot)
 
         # Example
-        self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
+        self.path = None
+        #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
 
         # TIM
         self.lock = Lock()
@@ -132,7 +132,7 @@ class Map(Service):
                     self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'], type=ObstacleType.robot)
                     self.publish('opponents', robots=self.robots)
 
-            self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
+            #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
             sleep(self.refresh)
 
     @Service.action
@@ -145,24 +145,23 @@ class Map(Service):
             print("Error PAL out of map")
             return
 
-        if telemetry['theta'] < 0:
-            telemetry['theta'] = 2 * pi - telemetry['theta']
+        # We use theta between 0 and 2pi
+        theta = telemetry['theta']
+        if theta < 0:
+            theta += 2 * pi
 
         y = False
         m = 0
         n = 0
-        delta = 0.001
-        if round(telemetry['theta'] % (2 * pi), 2) > delta\
-            and round(telemetry['theta'] % pi, 2) > delta\
-            and round(telemetry['theta'] % (pi/2), 2) < delta:
+        delta = 0.75
+        if round(theta % pi, 3) > delta\
+            and round(theta % (pi/2), 3) < delta:
             y = True
-            m = tan(telemetry['theta'] - pi/2)
+            m = tan((pi/2) - theta)
             n = telemetry['x'] - (m * telemetry['y'])
         else:
-            m = tan(telemetry['theta'])
+            m = tan(theta)
             n = telemetry['y'] - (m * telemetry['x'])
-
-        sens = telemetry['theta'] > pi/2 and telemetry['theta'] < 3 * pi / 2
 
         distance = telemetry['speed'] * 0.5
         if not y:
@@ -171,6 +170,8 @@ class Map(Service):
         else :
             next_y = telemetry['y'] + (distance / sqrt(1 + m ** 2))
             next_x = next_y * m + n
+
+        sens = abs((pi/2) - theta) < abs((3*pi/2) - theta) if y else abs(0 - theta) < abs(pi - theta)
 
         front, back = False, False
         for i in range(int(self.pal_dist_sensor / self.map.unit) + 2):
@@ -190,9 +191,9 @@ class Map(Service):
             p1 = self.map.convert_point(x1, y1)
             p2 = self.map.convert_point(x2, y2)
 
-            if m <0:
-                p1, p2 = p2, p1
 
+            if not sens:
+                p1, p2 = p2, p1
 
             if self.debug:
                 self.line_of_sight.append(Point(x1, y1))

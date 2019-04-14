@@ -30,7 +30,7 @@ class Square:
             self.obstacles.remove(obstacle)
             return True
         elif obstacle in self.robots:
-            self.robots.remove(robot)
+            self.robots.remove(obstacle)
             return True
         return False
 

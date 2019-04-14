@@ -63,19 +63,19 @@ class Interface:
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill='red' if self.map.map[x][y].is_robot() else 'black')
 
     def print_raw_data(self, raw_data):
-      print("data points: %d" % len(raw_data))
+      #print("data points: %d" % len(raw_data))
       for p in raw_data:
         self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white')
 
     def print_shapes(self, shapes):
-      print("nb shapes: %d" % len(shapes))
+      #print("nb shapes: %d" % len(shapes))
       for i in range(len(shapes)):
           color = colors[i % len(colors)]
           for p in shapes[i]:
             self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill=color)
 
     def print_robots(self, robots):
-      print("nb robots: %d" % len(robots))
+      #print("nb robots: %d" % len(robots))
       for i in range(len(robots)):
         color = colors[i % len(colors)]
         p = robots[i]
@@ -141,5 +141,6 @@ class Interface:
             self.print_shapes(self.service.shapes)
             self.print_line_of_sight(self.service.line_of_sight)
         self.print_robots(self.service.robots)
-        self.print_path(self.service.path)
+        if self.service.robots:
+            self.print_path(self.service.path)
         self.window.after(refresh, self.update)
