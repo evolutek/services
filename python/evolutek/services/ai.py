@@ -6,6 +6,7 @@ from evolutek.lib.goals import Goals
 from evolutek.lib.settings import ROBOT
 
 from enum import Enum
+from math import sqrt
 from threading import Event, Thread
 from time import sleep
 
@@ -196,15 +197,17 @@ class Ai(Service):
         self.state = State.Making
 
         """ Goto x y """
-        self.trajman.goto_xy(x = goal.x, y = goal.y)
-        while self.trajman.is_moving():
-            sleep(0.1)
-        sleep(1)
-        if self.ending.isSet():
-            return
-        if self.aborting.isSet():
-            print("[AI][MAKING] Aborted")
-            self.selecting()
+        pos = self.trajman.get_position()
+        if sqrt((pos['x'] - goal.x)**2 + (pos['y'] - goal.y)**2) > 5:
+            self.trajman.goto_xy(x = goal.x, y = goal.y)
+            while self.trajman.is_moving():
+                sleep(0.1)
+            sleep(1)
+            if self.ending.isSet():
+                return
+            if self.aborting.isSet():
+                print("[AI][MAKING] Aborted")
+                self.selecting()
 
         """ Goto theta if there is one """
         if goal.theta is not None:
@@ -227,6 +230,7 @@ class Ai(Service):
                 self.trajman.set_rot_max_speed(action.rot_speed)
             if not action.avoid:
                 self.avoid.disable()
+            sleep(0.25)
 
             """ Make action """
             action.make()
@@ -248,6 +252,7 @@ class Ai(Service):
                 self.trajman.set_rot_max_speed(self.max_rot_speed)
             if not action.avoid:
                 self.avoid.enable()
+            sleep(0.25)
 
             if self.ending.isSet():
                 return

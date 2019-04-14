@@ -46,7 +46,7 @@ class Avoid(Service):
             if not self.enabled:
                 continue
 
-            front = False
+            """front = False
             back = False
             for zone in self.zones:
                 if zone.is_inside(self.telemetry):
@@ -56,12 +56,13 @@ class Avoid(Service):
                         self.back = True
                 if front and back:
                     continue
+            """
 
             ## TODO Before stop, check if it is normal if a robot is in front of us
-            if not front and self.telemetry and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
+            if self.telemetry and self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
                 self.stop_robot('front')
                 print("[AVOID] Front detection")
-            elif not back and self.telemetry and self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
+            elif self.telemetry and self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
             else:
