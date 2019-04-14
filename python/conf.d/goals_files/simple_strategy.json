@@ -111,18 +111,22 @@
                     "args": {
                         "x": 1250,
                         "y": 1350
-                    },
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 1050,
-                        "y": 1000
-                    },
+                    }
+                },
+                {
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 1050,
                         "y": 1000
                     }
                 },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 550,
+                        "y": 400
+                    }
+                }
             ]
         }
     ]
