@@ -14,22 +14,26 @@
         "push_ejecteur": {
             "service": "actuators",
             "id": "pal",
-            "fct": "push_ejecteur"
+            "fct": "push_ejecteur",
+            "avoid": false
         },
         "reset_ejecteur": {
             "service": "actuators",
             "id": "pal",
-            "fct": "reset_ejecteur"
+            "fct": "reset_ejecteur",
+            "avoid": false
         },
         "drop_goldenium": {
             "service": "actuators",
             "id": "pal",
-            "fct": "drop_goldenium"
+            "fct": "drop_goldenium",
+            "avoid": false
         },
         "get_goldenium": {
             "service": "actuators",
             "id": "pal",
-            "fct": "get_goldenium"
+            "fct": "get_goldenium",
+            "avoid": false
         },
         "goto_xy_with_avoid": {
             "service": "trajman",
@@ -53,26 +57,19 @@
             "id": "pal",
             "fct": "goto_theta",
             "avoid": false
+        },
+        "free": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "free"
+        },
+        "unfree": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "unfree"
         }
     },
     "goals": [
-        {
-            "x": 600,
-            "y": 225,
-            "score": 40,
-            "actions": [
-                {
-                    "name": "goto_xy_without_avoid",
-                    "args": {
-                        "x": 270,
-                        "y": 225
-                    }
-                },
-                {
-                    "name": "exp"
-                }
-            ]
-        },
         {
             "x": 1325,
             "y": 225,
@@ -86,37 +83,10 @@
                     }
                 },
                 {
-                    "name": "goto_theta_without_avoid",
-                    "args": {
-                        "theta": "pi"
-                    }
-                },
-                {
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 750,
-                        "y": 450
-                    }
-                },
-                {
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 750,
-                        "y": 650
-                    }
-                },
-                {
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 450,
-                        "y": 650
-                    }
-                },
-                {
-                    "name": "goto_xy_without_avoid",
-                    "args": {
-                        "x": 450,
-                        "y": 250
+                        "y": 500
                     }
                 }
             ]
@@ -127,45 +97,39 @@
             "score": 14,
             "actions": [
                 {
-                    "name": "goto_xy_with_avoid",
+                    "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 1250,
+                        "x": 1200,
                         "y": 1350
                     }
                 },
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 1050,
-                        "y": 1000
-                    }
-                },
-                {
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 550,
-                        "y": 400
+                        "x": 575,
+                        "y": 325
                     }
                 }
             ]
         },
         {
             "x": 1000,
-            "y": 1635,
+            "y": 1625,
+            "theta": 0,
             "score": 20,
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 300,
-                        "y": 1635
+                        "x": 500,
+                        "y": 1625
                     }
                 },
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 150,
-                        "y": 1635
+                        "x": 140,
+                        "y": 1625
                     }
                 },
                 {
@@ -177,22 +141,23 @@
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 300,
-                        "y": 1635
+                        "x": 500,
+                        "y": 1625
                     }
                 }
             ]
         },
         {
-            "x": 300,
-            "y": 2227,
+            "x": 500,
+            "y": 2230,
+            "theta": "pi",
             "score": 20,
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 210,
-                        "y": 2227
+                        "x": 220,
+                        "y": 2230
                     }
                 },
                 {
@@ -201,36 +166,35 @@
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 300,
-                        "y": 2227
+                        "x": 500,
+                        "y": 2230
                     }
                 }
             ]
         },
         {
             "x": 1250,
-            "y": 1364,
+            "y": 1300,
+            "theta": 0,
             "score": 24,
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 1410,
-                        "y": 1364
+                        "x": 1420,
+                        "y": 1300
+                    }
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": 0.03
                     }
                 },
                 {
                     "name": "drop_goldenium"
-                },
-                {
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 1250,
-                        "y": 1364
-                    }
                 }
             ]
-        },
-
+        }
     ]
 }

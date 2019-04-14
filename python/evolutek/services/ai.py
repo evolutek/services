@@ -41,6 +41,7 @@ class Ai(Service):
         # Simple AI
         self.avoid_stat = None
         self.side = None
+        self.avoid_disable = False
 
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
@@ -124,6 +125,7 @@ class Ai(Service):
             return
 
         self.avoid.enable()
+        self.avoid_disable = False
 
         self.aborting.clear()
         self.ending.clear()
@@ -169,7 +171,6 @@ class Ai(Service):
 
         self.avoid_stat = self.avoid.status()
         if self.side is not None and self.avoid_stat is not None:
-            sleep(1.0)
             field = ''
             if self.side == 'front':
                 field = 'front_detected'
@@ -180,7 +181,7 @@ class Ai(Service):
                     return
                 self.avoid_stat = self.avoid.status()
                 print('-----avoiding-----')
-                sleep(0.3)
+                sleep(0.1)
             side = None
 
 
@@ -200,9 +201,9 @@ class Ai(Service):
         pos = self.trajman.get_position()
         if sqrt((pos['x'] - goal.x)**2 + (pos['y'] - goal.y)**2) > 5:
             self.trajman.goto_xy(x = goal.x, y = goal.y)
-            while self.trajman.is_moving():
+            while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
-            sleep(1)
+            sleep(0.4)
             if self.ending.isSet():
                 return
             if self.aborting.isSet():
@@ -212,9 +213,9 @@ class Ai(Service):
         """ Goto theta if there is one """
         if goal.theta is not None:
             self.trajman.goto_theta(goal.theta)
-            while self.trajman.is_moving():
+            while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
-            sleep(1)
+            sleep(0.4)
             if self.ending.isSet():
                 return
             if self.aborting.isSet():
@@ -228,15 +229,19 @@ class Ai(Service):
                 self.trajman.set_trsl_max_speed(action.trsl_speed)
             if action.rot_speed is not None:
                 self.trajman.set_rot_max_speed(action.rot_speed)
-            if not action.avoid:
+            if not action.avoid and not self.avoid_disable:
+                self.avoid_disable = True
                 self.avoid.disable()
-            sleep(0.25)
+            elif action.avoid and self.avoid_disable:
+                self.avoid_disable = False
+                self.avoid.enable()
+            sleep(0.5)
 
             """ Make action """
             action.make()
-            while self.trajman.is_moving():
+            while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
-            sleep(1)
+            sleep(0.4)
             if self.ending.isSet():
                 return
             if self.aborting.isSet():
@@ -245,17 +250,20 @@ class Ai(Service):
                 action.make()
                 while self.trajman.is_moving():
                     sleep(0.1)
+            sleep(0.4)
             """ Make things back """
             if action.trsl_speed is not None:
                 self.trajman.set_trsl_max_speed(self.max_trsl_speed)
             if action.rot_speed is not None:
                 self.trajman.set_rot_max_speed(self.max_rot_speed)
-            if not action.avoid:
-                self.avoid.enable()
-            sleep(0.25)
+            sleep(0.2)
 
             if self.ending.isSet():
                 return
+        
+        if self.avoid_disable:
+            self.avoid_disable = False
+            self.avoid.enable()
 
         print("[AI] Finished goal")
         self.goals.finish_goal()
