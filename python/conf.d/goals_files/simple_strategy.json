@@ -174,7 +174,7 @@
                     "name": "goto_xy_without_avoid",
                     "args": {
                         "x": 240,
-                        "y": 2235
+                        "y": 2245
                     }
                 },
                 {
@@ -184,7 +184,7 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 2235
+                        "y": 2245
                     }
                 }
             ]

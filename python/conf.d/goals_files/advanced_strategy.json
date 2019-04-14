@@ -90,7 +90,7 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 270,
+                        "x": 250,
                         "y": 225
                     }
                 },
@@ -101,13 +101,13 @@
         },
         {
             "x": 800,
-            "y": 1350,
+            "y": 1300,
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 1050,
-                        "y": 1350
+                        "y": 1300
                     }
                 },
                 {
@@ -122,6 +122,12 @@
                     "args": {
                         "x": 1050,
                         "y": 900
+                    }
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": 0
                     }
                 },
                 {
@@ -142,11 +148,11 @@
                     }
                 },
                 {
-                    "name": "goto_xy_without_avoid",
+                    "name": "goto_theta_without_avoid",
                     "args": {
                         "theta": 0
                     }
-                }
+                },
                 {
                     "name": "get_palet"
                 }
@@ -162,14 +168,14 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 1625
+                        "y": 1615
                     }
                 },
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 135,
-                        "y": 1625
+                        "x": 145,
+                        "y": 1615
                     }
                 },
                 {
@@ -188,7 +194,7 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 1625
+                        "y": 1615
                     }
                 }
             ]
