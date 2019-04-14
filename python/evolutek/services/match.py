@@ -212,8 +212,8 @@ class Match(Service):
     """ Update score """
     @Service.event('score')
     def get_score(self, value=0):
-        if self.match_status != 'started':
-            return
+        #if self.match_status != 'started':
+        #    return
         self.score += int(value)
         print('score is now: %d' % self.score)
 
@@ -267,8 +267,9 @@ class Match(Service):
             return
 
         try:
-            self.cs.ai['pal'].start()
-            self.cs.ai['pmi'].start()
+            if not self.cs.ai['pal'].start():
+                raise Exception('Failed to start pal')
+            #self.cs.ai['pmi'].start()
         except Exception as e:
             print('Failed to start match: %s' % str(e))
 

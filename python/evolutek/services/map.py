@@ -112,6 +112,7 @@ class Map(Service):
                 self.robots.clear()
 
                 i = 0
+                print(robots)
                 for point in robots:
                     # Check if point is not one of our robots
                     if self.pal_telem and point.dist(self.pal_telem) < self.delta_dist:
@@ -123,7 +124,7 @@ class Map(Service):
 
                 for robot in self.robots:
                     self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'], type=ObstacleType.robot)
-                #self.publish('opponents', robots=self.robots)
+                self.publish('opponents', robots=self.robots)
 
             #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
             sleep(self.refresh)
