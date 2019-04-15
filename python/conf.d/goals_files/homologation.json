@@ -60,7 +60,7 @@
             "score": 0,
             "actions": [
             {
-                "name": "goto_xy_with_avoid",
+                "name": "goto_xy_without_avoid",
                 "args": {
                     "x": 1325,
                     "y": 500

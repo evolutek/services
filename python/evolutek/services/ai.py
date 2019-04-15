@@ -61,7 +61,7 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Match config
-        self.goals = Goals(file="homologation.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="advanced_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
