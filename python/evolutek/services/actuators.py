@@ -165,12 +165,12 @@ class Actuators(Service):
         sleep(0.5)
         self.enable_suction_arms()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
         self.cs.ax['2'].move(goal=250)
@@ -181,13 +181,14 @@ class Actuators(Service):
         self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
+        self.cs.ax['2'].move(goal=492)
 
         self.cs.ax['2'].move(goal=492)
         self.disable_suction_arms()
         sleep(0.2)
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
         self.close_arms()
