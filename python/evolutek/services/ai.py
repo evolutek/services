@@ -99,9 +99,8 @@ class Ai(Service):
         self.match_thread = Thread(target=self.selecting)
         self.match_thread.deamon = True
 
-        """
+        
         if recalibration:
-
             self.cs.avoid[ROBOT].disable()
 
             sens = self.color != self.color1
@@ -113,14 +112,13 @@ class Ai(Service):
             self.cs.trajman[ROBOT].goto_theta(self.goals.start_theta)
             while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
-        else:"""
-
-        """ Set Default config """
-        self.cs.trajman[ROBOT].free()
-        self.cs.trajman[ROBOT].set_x(self.goals.start_x)
-        self.cs.trajman[ROBOT].set_y(self.goals.start_y)
-        self.cs.trajman[ROBOT].set_theta(self.goals.start_theta)
-        self.cs.trajman[ROBOT].unfree()
+        else:
+            """ Set Default config """
+            self.cs.trajman[ROBOT].free()
+            self.cs.trajman[ROBOT].set_x(self.goals.start_x)
+            self.cs.trajman[ROBOT].set_y(self.goals.start_y)
+            self.cs.trajman[ROBOT].set_theta(self.goals.start_theta)
+            self.cs.trajman[ROBOT].unfree()
 
         self.cs.avoid[ROBOT].enable()
         self.avoid_disable = False
@@ -177,33 +175,48 @@ class Ai(Service):
             self.cs.avoid[ROBOT].enable()
 
         """ Goto x y """
-        pos = self.cs.trajman[ROBOT].get_position()
-        while sqrt((pos['x'] - goal.x)**2 + (pos['y'] - goal.y)**2) > 5:
-            self.cs.trajman[ROBOT].goto_xy(x = goal.x, y = goal.y)
-            while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                sleep(0.1)
+        self.goto_xy_theta()
 
-            if self.ending.isSet():
-                return
+        """ Make all actions """
+        self.make_actions()
 
-            if self.aborting.isSet():
-                print("[AI][MAKING] Aborted")
-                self.wait_until_detection_end(timeout=True)
+        print("[AI] Finished goal")
+        self.goals.finish_goal()
 
-            if self.ending.isSet():
-                return
+        self.publish('score', value=goal.score) # Increment score variable in match
+        self.selecting()
 
-            if self.side is not None:
-                self.going_back(pos)
-                self.side = None
-                # we can be in avoiding state
+    def goto_xy_theta_with_path(self):
 
-            sleep(2)
-
-            if self.ending.isSet():
-                return
-
+        for p in goal.path:
+            print("[AI] Going to x : " + p.x + ", y : " p.y + ", theta : " + p.theta) 
             pos = self.cs.trajman[ROBOT].get_position()
+            while sqrt((pos['x'] - p.x)**2 + (pos['y'] - p.y)**2) > 5:
+                self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
+                while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+                    sleep(0.1)
+
+                if self.ending.isSet():
+                    return
+
+                if self.aborting.isSet():
+                    print("[AI][MAKING] Aborted")
+                    self.wait_until_detection_end(timeout=True)
+
+                if self.ending.isSet():
+                    return
+
+                if self.side is not None:
+                    self.going_back(pos)
+                    self.side = None
+                    # we can be in avoiding state
+
+                sleep(2)
+
+                if self.ending.isSet():
+                    return
+
+                pos = self.cs.trajman[ROBOT].get_position()
 
         """ Goto theta if there is one """
         if goal.theta is not None:
@@ -225,7 +238,11 @@ class Ai(Service):
 
                 pos = self.cs.trajman[ROBOT].get_position()
 
-        """ Make all actions """
+        
+
+    """ MAKE ACTIONS """
+    def make_actions(self):
+        print("[AI] Making actions")
         i = 0
         while i < len(goal.actions):
 
@@ -271,12 +288,7 @@ class Ai(Service):
 
             i += 1
 
-
-        print("[AI] Finished goal")
-        self.goals.finish_goal()
-
-        self.publish('score', value=goal.score) # Increment score variable in match
-        self.selecting()
+        
 
     """ END """
     @Service.event('match_end')
