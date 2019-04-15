@@ -59,7 +59,6 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Timer
-        self.timeout_watchdog = Watchdog(5, self.timeout_handler)
         self.timeout_event = Event()
 
         # Match config
@@ -129,7 +128,6 @@ class Ai(Service):
         self.aborting.clear()
         self.ending.clear()
         self.timeout_event.clear()
-        self.timeout_watchdog = Watchdog(5, timeout_handler)
 
         self.state = State.Waiting
         print('[AI] Waiting')
@@ -190,23 +188,21 @@ class Ai(Service):
 
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
-                self.state = State.Aborting
-                self.timeout_watchdog.reset()
-                self.wait_until_detection_end()
-                self.timeout_watchdog.stop()
-                self.timeout_watchdog = Watchdog(5, timeout_handler)
+                self.wait_until_detection_end(timeout=True)
 
             if self.ending.isSet():
                 return
 
-            tmp_pos = pos = self.cs.trajman[ROBOT].get_position()
-            if self.side is not None and sqrt((pos['x'] - tmp_pos['x'])**2 + (pos['y'] - tmp_pos['y'])**2) >= 50:
-                self.cs.trajman[ROBOT].move_trsl(50, 100, 100, 500, self.side=='front')
+            if self.side is not None:
+                self.going_back(pos)
+                self.side = None
+                # we can be in avoiding state
+
+            sleep(2)
 
             if self.ending.isSet():
                 return
 
-            self.state = State.Making
             pos = self.cs.trajman[ROBOT].get_position()
 
         """ Goto theta if there is one """
@@ -222,16 +218,11 @@ class Ai(Service):
 
                 if self.aborting.isSet():
                     print("[AI][MAKING] Aborted")
-                    self.state = State.Aborting
-                    self.timeout_watchdog.reset()
                     self.wait_until_detection_end()
-                    self.timeout_watchdog.stop()
-                    self.timeout_watchdog = Watchdog(5, timeout_handler)
 
                 if self.ending.isSet():
                     return
 
-                self.state = State.Making
                 pos = self.cs.trajman[ROBOT].get_position()
 
         """ Make all actions """
@@ -266,12 +257,7 @@ class Ai(Service):
 
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
-                self.state = State.Aborting
-                self.timeout_watchdog.reset()
                 self.wait_until_detection_end()
-                self.timeout_watchdog.stop()
-                self.timeout_watchdog = Watchdog(5, timeout_handler)
-                self.state = State.Making
                 continue
 
             if self.ending.isSet():
@@ -305,10 +291,9 @@ class Ai(Service):
         self.cs.actuators[ROBOT].free()
         self.cs.actuators[ROBOT].disable()
 
-        self.state = State.Ending
 
     """ UTILITIES """
-    @Service.thread
+    #@Service.thread
     def status(self):
         while True:
             self.publish(ROBOT + '_ai_status', status=str(self.state))
@@ -344,7 +329,7 @@ class Ai(Service):
         ##TODO: Manage tmp robots
 
     """ WAIT FOR END OF DETECTION """
-    def wait_until_detection_end(self):
+    def wait_until_detection_end(self, timeout=False):
         avoid_stat = self.cs.avoid[ROBOT].status()
         if self.side is not None and avoid_stat is not None:
             field = ''
@@ -352,15 +337,28 @@ class Ai(Service):
                 field = 'front_detected'
             else:
                 field = 'back_detected'
+            state = self.state
+            self.state = State.Aborting
+            if timeout:
+                Watchdog(5, self.timeout_handler).reset()
             while not self.ending.isSet() and not self.timeout_event.isSet()\
                 and avoid_stat[field] is not None and len(avoid_stat[field]) > 0:
                 avoid_stat = self.cs.avoid[ROBOT].status()
-                print('-----avoiding-----')
+                print('-----Avoiding-----')
                 sleep(0.1)
             if not self.timeout_event.isSet():
                 self.side = None
+            self.state = state
         self.aborting.clear()
         self.timeout_event.clear()
+
+    def going_back(self, pos):
+        print('-----Going back-----')
+        tmp_pos = self.cs.trajman[ROBOT].get_position()
+        dist = min(sqrt((pos['x'] - tmp_pos['x'])**2 + (pos['y'] - tmp_pos['y'])**2), 250)
+        self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
+        while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
 
     """ Timeout handler """
     def timeout_handler(self):
