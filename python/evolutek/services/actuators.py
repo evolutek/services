@@ -178,11 +178,11 @@ class Actuators(Service):
 
     @Service.action
     def drop_blue_palet(self):
-        self.cs.ax['2'].move(goal=492)
         self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
 
+        self.cs.ax['2'].move(goal=492)
         self.disable_suction_arms()
         sleep(0.2)
 
