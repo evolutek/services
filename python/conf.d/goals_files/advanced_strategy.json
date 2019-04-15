@@ -117,7 +117,7 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 1210,
+                        "x": 1212,
                         "y": 600
                     }
                 },
@@ -133,7 +133,7 @@
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 1210,
+                        "x": 1212,
                         "y": 900
                     }
                 },
@@ -150,7 +150,7 @@
         },
         {
             "x": 1000,
-            "y": 1625,
+            "y": 1635,
             "theta": 0,
             "score": 70,
             "actions": [
@@ -158,14 +158,14 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 1625
+                        "y": 1635
                     }
                 },
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
                         "x": 145,
-                        "y": 1625
+                        "y": 1635
                     }
                 },
                 {
@@ -185,7 +185,7 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 1625
+                        "y": 1635
                     }
                 }
             ]
