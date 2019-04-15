@@ -7,6 +7,7 @@ from math import pi
 from threading import Thread
 from time import sleep
 import os
+import _thread
 
 @Service.require("ax", "1")
 @Service.require("ax", "2")
@@ -189,7 +190,8 @@ class Actuators(Service):
     """ Ejecteur """
     ##TODO: Use PWM fct instead of write_gpio
 
-    def reset_ejecteur_func(self):
+    @Service.action
+    def reset_ejecteur(self):
         contact = None
 
         if self.color == self.color1:
@@ -206,12 +208,14 @@ class Actuators(Service):
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
 
-    @Service.action
-    def reset_ejecteur(self):
-        thread = Thread(target=reset_ejecteur_func, args=(self))
-        thread.start()
+    #@Service.action
+    #def reset_ejecteur(self):
+    #    thread = Thread(target=self.reset_ejecteur_func, args=()) 
+    #    thread.daemon = True
+    #    thread.start()
 
-    def push_ejecteur_func(self):
+    @Service.action
+    def push_ejecteur(self):
         contact = None
 
         if self.color != self.color1:
@@ -228,10 +232,11 @@ class Actuators(Service):
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
 
-    @Service.action
-    def push_ejecteur(self):
-        thread = Thread(target=reset_ejecteur_func, args=(self))
-        thread.start()
+    #@Service.action
+    #def push_ejecteur(self):
+    #    thread = Thread(target=self.push_ejecteur_func, args=())
+    #    thread.daemon = True
+    #    thread.start()
 
     """ EXP """
     @Service.action
