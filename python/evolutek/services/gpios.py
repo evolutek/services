@@ -156,7 +156,6 @@ class Gpios(Service):
     """ LCD """
     @Service.action
     def write_lcd(self, string, line):
-        print(string)
         if isinstance(line, str):
             line = int(line)
         self.lcd.lcd_display_string(string, line)
