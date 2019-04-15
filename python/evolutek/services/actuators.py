@@ -212,7 +212,7 @@ class Actuators(Service):
         self.trajman.move_trsl(dest=100, acc=200, dec=200, maxspeed=400, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
-            
+
         self.open_clapet()
         self.push_ejecteur()
         self.reset_ejecteur()
@@ -242,7 +242,7 @@ class Actuators(Service):
 
     #@Service.action
     #def reset_ejecteur(self):
-    #    thread = Thread(target=self.reset_ejecteur_func, args=()) 
+    #    thread = Thread(target=self.reset_ejecteur_func, args=())
     #    thread.daemon = True
     #    thread.start()
 
