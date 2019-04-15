@@ -221,6 +221,13 @@
 		    {
 			"name": "goto_xy_with_avoid",
 			"args": {
+			    "x": 1210,
+			    "y": 1320
+			}
+		    },
+            {
+			"name": "goto_xy_without_avoid",
+			"args": {
 			    "x": 1420,
 			    "y": 1320
 			}
