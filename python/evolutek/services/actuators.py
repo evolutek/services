@@ -120,7 +120,7 @@ class Actuators(Service):
     """ GOLDENIUM """
     @Service.action
     def open_arm_goldenium(self):
-        self.cs.ax['2'].move(goal=220)
+        self.cs.ax['2'].move(goal=205)
         sleep(0.25)
 
     @Service.action

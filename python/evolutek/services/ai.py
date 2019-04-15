@@ -61,7 +61,7 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Match config
-        self.goals = Goals(file="homologation.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="advanced_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -85,6 +85,11 @@ class Ai(Service):
             self.color = self.cs.match.get_match()['color']
         except Exception as e:
             print('Failed to set color: %s' % (str(e)))
+        
+        if not self.goals.reset(self.color!=self.color1):
+            print('[AI] Error')
+            self.state = State.Error
+            return
 
         self.trajman.enable()
         self.actuators.reset(self.color)
@@ -93,18 +98,14 @@ class Ai(Service):
         self.match_thread = Thread(target=self.selecting)
         self.match_thread.deamon = True
 
-        if color is not None:
-            self.color = color
 
         #if recalibration:
 
          #   self.avoid.disable()
 
-            """ Let robot recalibrate itself """
           #  sens = self.color != self.color1
           #  self.actuators.recalibrate(sens_y=sens, init=True)
 
-            """ Goto to starting pos """
           #  self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
           #  while self.trajman.is_moving():
           #     sleep(0.1)
@@ -118,11 +119,6 @@ class Ai(Service):
         self.trajman.set_y(self.goals.start_y)
         self.trajman.set_theta(self.goals.start_theta)
         self.trajman.unfree()
-
-        if not self.goals.reset(self.color!=self.color1):
-            print('[AI] Error')
-            self.state = State.Error
-            return
 
         self.avoid.enable()
         self.avoid_disable = False
