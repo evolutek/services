@@ -148,6 +148,5 @@ class Interface:
             self.print_shapes(self.service.shapes)
             self.print_line_of_sight(self.service.line_of_sight)
         self.print_robots(self.service.robots)
-        if self.service.robots:
-            self.print_path(self.service.path)
+        self.print_path(self.service.path)
         self.window.after(refresh, self.update)

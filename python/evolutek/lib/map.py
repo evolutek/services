@@ -43,6 +43,12 @@ class Square:
     def is_empty(self):
         return len(self.obstacles) == 0 and len(self.robots) == 0
 
+    def __str__(self):
+        s = "Square:\n"
+        s += str(self.obstacles) + "\n"
+        s += str(self.robots) + "\n"
+        return s
+
 class Obstacle:
 
     def __init__(self, tag=None, color="black"):
@@ -181,7 +187,7 @@ class Map:
             s += "|"
             print(s)
         print('-' * (self.width + 2))
-    
+
     def get_path(self, p1, p2):
         if self.is_real_point_outside(p1.x, p1.y) or self.is_real_point_outside(p2.x, p2.y):
             print('Out of map')
@@ -224,18 +230,13 @@ class Map:
         path = []
         if end in pred:
             cur = end
-            p = end.to_dict()
-            path.append(p)
+            path.append(end)
             while pred[cur] in pred:
                 cur = pred[cur]
-                p = cur.to_dict()
-                path.insert(0, p)
-            p = start.to_dict()
+                path.insert(0, cur)
+            path.insert(0, start)
 
-            path.insert(0, p)
-
-        #TODO: linearize path
-
+        path  = self.path_opti(self.smooth(path))
         return self.convert_path(path)
 
     def smooth(self,path):
@@ -248,7 +249,7 @@ class Map:
         chemin.append(path[0])
         for i in range(2,len(path)):
             n1 = path[i]
-            if (not (n2['x'] - n3['x'] == n1['x'] - n2['x'] and n2['y'] - n3['y'] == n1['y'] - n2['y'])):
+            if (not (n2.x - n3.x == n1.x - n2.x and n2.y - n3.y == n1.y - n2.y)):
                 chemin.append(n2)
             n3 = n2
             n2 = n1
@@ -256,23 +257,33 @@ class Map:
         return chemin
 
     def path_opti(self,path):
-        if(len(path)<=2):
+        if (len(path)<=2):
             return path
-        cheminf = []
         n1 = path[0]
         n2 = path[1]
+        n3 = path[2]
 
-        cheminf.append(path[0])
-        for i in range(2, len(path)):
+        new = []
+        new.append(n1)
+        i=2
+        while (i<len(path)):
             n3 = path[i]
-            ctmp = self.smooth(self.get_path(Point(n1['x'],n1['y']),Point(n3['x'],n3['y'])))
-            if (len(ctmp)<4 and ctmp[0] == n1 and ctmp[1] == n2 and ctmp[2] == n3):
-                cheminf.append(n2)
-            else:
-                n1 = n2
-            n2 = n3
-        cheminf.append(path[-1])
-        return cheminf
+            mini = n2
+            modifi = False
+            for j in range(i,len(path)):
+                if(self.is_correct_trajectory(n1,n3)):
+                    mini = n3
+                    i = j
+                    modifi = True
+                n2 = n3
+                n3 = path[j]
+            new.append(mini)
+            n1 = mini
+            i+=1
+        new.append(n3)
+
+        return new
+
 
     def neighbours(self, p, map):
         l = [
@@ -300,19 +311,21 @@ class Map:
         a = 0
         b = 0
 
-        # If x1 = x2 make equation depend on y
-        if p1.x == p2.x:
-            dy = True
-            a = (p2.x - p1.x) / (p2.y - p1.y)
-            b = p1.x - a * p1.y
-        else:
-            a = (p2.y - p1.y) / (p2.x - p1.x)
-            b = p1.y - a * p1.x
+        p1, p2 = Point.min(p1, p2), Point.max(p1, p2)
+        start = Point(p1.x * self.unit, p1.y * self.unit)
+        end = Point(p2.x * self.unit, p2.y * self.unit)
 
-        start, end = Point.min(p1, p2), Point.max(p1, p2)
+        # If x1 = x2 make equation depend on y
+        if start.x == end.x:
+            dy = True
+            a = (end.x - start.x) / (end.y - start.y)
+            b = start.x - a * start.y
+        else:
+            a = (end.y - start.y) / (end.x - start.x)
+            b = start.y - a * start.x
 
         # Nb of point to visit
-        l = (end.x - start.x) if not y else (end.y - start.y)
+        l = (end.x - start.x) if not dy else (end.y - start.y)
 
         # Check if the line between the two points collide with something
         for i in range(1, l):
@@ -324,7 +337,7 @@ class Map:
             else:
                 x = start.x + i
                 y = x * a + b
-            p = Point(int(x), int(y))
+            p = self.convert_point(x, y)
 
             # Check if the current point is empty
             if not self.map[p.x][p.y].is_empty():
@@ -336,4 +349,3 @@ class Map:
         for p in path:
             l.append({'x': p.x * self.unit, 'y': p.y * self.unit})
         return l
-
