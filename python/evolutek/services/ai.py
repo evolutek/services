@@ -23,7 +23,6 @@ class State(Enum):
 @Service.require('avoid', ROBOT)
 @Service.require('trajman', ROBOT)
 @Service.require('actuators', ROBOT)
-@Service.require('match')
 class Ai(Service):
 
     """ INIT """
@@ -44,7 +43,11 @@ class Ai(Service):
 
         # Config
         self.color1 = self.cs.config.get(section='match', option='color1')
-        self.color = self.cs.match.get_match()['color']
+        self.color = None
+        try:
+            self.color = self.cs.match.get_match()['color']
+        except Exception as e:
+            print('Failed to set color: %s' % (str(e)))
 
         self.refresh = float(self.cs.config.get(section='ai', option='refresh'))
 
@@ -207,7 +210,6 @@ class Ai(Service):
                 return
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
-                #self.aborting()
                 self.selecting()
 
         """ Make all actions """
