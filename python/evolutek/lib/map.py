@@ -236,7 +236,7 @@ class Map:
                     queue.append(neighbour)
                     pred[neighbour] = cur
 
-        print('Complete Dijkstra')
+        #print('Complete Dijkstra')
 
         path = []
         if end in pred:
@@ -248,6 +248,7 @@ class Map:
             path.insert(0, start)
 
         path  = self.path_opti(self.smooth(path))
+        #path = self.smooth(path)
         return self.convert_path(path)
 
     def smooth(self,path):
@@ -269,10 +270,18 @@ class Map:
 
     def path_opti(self,path):
         if (len(path)<=2):
+            print("lenpath<2")
             return path
+       
+        #for i in range(2,len(path)):
+        print(self.is_correct_trajectory(path[-3],path[-1]))
         n1 = path[0]
         n2 = path[1]
         n3 = path[2]
+        neww=[]
+        #for i in range(5):
+        #    neww.append(path[i])
+        #path = neww
 
         new = []
         new.append(n1)
@@ -280,15 +289,14 @@ class Map:
         while (i<len(path)):
             n3 = path[i]
             mini = n2
-            modifi = False
-            for j in range(i,len(path)):
+            for j in range(i+1,len(path)):
                 if(self.is_correct_trajectory(n1,n3)):
                     mini = n3
                     i = j
-                    modifi = True
                 n2 = n3
                 n3 = path[j]
             new.append(mini)
+            n2 = path[i]
             n1 = mini
             i+=1
         new.append(n3)
@@ -317,7 +325,6 @@ class Map:
 
     def is_correct_trajectory(self, p1, p2):
 
-        print(p1, p2)
 
         if p1 == p2:
             return True
