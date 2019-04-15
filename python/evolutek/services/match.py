@@ -277,8 +277,11 @@ class Match(Service):
         self.match_status = 'started'
         print('Match start')
 
-        self.start_experiment()
-        self.score += 40
+        try:
+            self.start_experiment()
+            self.score += 40
+        except:
+            pass
 
     """ Action """
 
