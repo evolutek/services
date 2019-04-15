@@ -106,7 +106,14 @@
                         "x": 1050,
                         "y": 400
                     }
-                },
+                }
+            ]
+        },
+        {
+            "x": 1050,
+            "y": 400,
+            "actions":
+            [
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
