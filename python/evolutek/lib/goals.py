@@ -151,7 +151,9 @@ class Goals:
 
     def parse(self, mirror=False):
         with open(self.file, 'r') as goal_file:
-            goals = json.loads(data)
+            data = goal_file.read()
+
+        goals = json.loads(data)
 
         # Parse start point
         try:
@@ -184,7 +186,6 @@ class Goals:
                         print('Failed to get action: Missing action')
                         return False
                     action = dict(goals['actions'][action_name])
-                    print(goals['actions'])
                     if not 'fct' in action:
                         print('Error in parsing action in goal: Missing fct')
                         return False
@@ -197,26 +198,12 @@ class Goals:
                     del action['service']
                     del action['id']
                     del action['fct']
-                    actions.append(Action(fct, **action, mirror=mirror))
+                    actions.append(Action(fct, **action))
 
             goal['actions'] = actions
             result.append(Goal(**goal, mirror=mirror))
-        self.start_x = goals['start']['x']
-        self.start_y = goals['start']['y']
-        self.theta = goals['start']['theta']
-
-        return_list = []
-        for g in goals['goals']:
-            goal = json.loads(data, object_hook=lambda d: namedtuple('goal', d.keys())(*d.values))
-            return_list.append(goal)
-
-        return return_list
-
 
         self.goals = result
-
-        #print(self)
-
         return True
 
     def reset(self, mirror):
@@ -224,12 +211,12 @@ class Goals:
         self.current = 0
         #self.goals = get_simple_strategy()
         #self.goals = test_avoid_strategy()
-        self.goals = palet_strategy(self.cs, mirror)
+        #self.goals = palet_strategy(self.cs, mirror)
         #self.goals = test_wall_evit(mirror)
         #self.goals = goldenium_strat(self.cs)
-        return True
+        #return True
 
-        #return self.parse(mirror)
+        return self.parse(mirror)
 
     """
     def add_node(self, name, parents=None, children=None, goal=None, done=False):
@@ -278,7 +265,7 @@ class fake_actuators:
 
 class fake_cs:
     def __init__(self):
-        self.actuators = fake_actuators()
+        self.actuators = {'pal': fake_actuators()}
 
 if __name__ == "__main__":
     goals = Goals('get_palet.json', True, fake_cs())
