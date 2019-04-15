@@ -1,10 +1,11 @@
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from subprocess import check_call
+import sys
 
 class PostDevelopCommand(develop):
     def run(self):
-        check_call("cp -r evolutek/ /usr/lib/python3.7/site-packages/".split())
+        check_call(("cp -r evolutek/ /usr/lib/python3.%d/site-packages/" % sys.version_info.minor).split())
         check_call("cp -r conf.d /etc/".split())
         develop.run(self)
 
