@@ -65,7 +65,7 @@ class Goal:
         for action in self.actions:
             actions += "->%s\n" % str(action)
         return "x: %f\ny: %f\ntheta: %s\nscore: %d\nactions:\n%s"\
-            % (path.x, path.y, str(path.theta), self.score, actions)
+            % (self.path[0].x, self.path[0].y, str(self.path[0].theta), self.score, actions)
 
 class Point:
     def __init__(self, x, y, theta=None):
