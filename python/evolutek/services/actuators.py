@@ -222,7 +222,8 @@ class Actuators(Service):
     """ Ejecteur """
     ##TODO: Use PWM fct instead of write_gpio
 
-    def reset_ejecteur_func(self):
+    @Service.action
+    def reset_ejecteur(self):
         contact = None
 
         if self.color == self.color1:
@@ -246,11 +247,7 @@ class Actuators(Service):
     #    thread.start()
 
     @Service.action
-    def reset_ejecteur(self):
-        thread = Thread(target=reset_ejecteur_func, args=(self))
-        thread.start()
-
-    def push_ejecteur_func(self):
+    def push_ejecteur(self):
         contact = None
 
         if self.color != self.color1:

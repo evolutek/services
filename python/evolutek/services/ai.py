@@ -85,7 +85,7 @@ class Ai(Service):
             self.color = self.cs.match.get_match()['color']
         except Exception as e:
             print('Failed to set color: %s' % (str(e)))
-        
+
         if not self.goals.reset(self.color!=self.color1):
             print('[AI] Error')
             self.state = State.Error
