@@ -66,7 +66,7 @@ class Avoid(Service):
                 print("[AVOID] Back detection")
             else:
                 self.avoid = False
-            sleep(0.5)
+            sleep(self.refresh)
 
     @Service.action
     def stop_robot(self, side=None):

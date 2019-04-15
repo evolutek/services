@@ -30,7 +30,7 @@ class Map(Service):
         width = int(cs.config.get(section='map', option='width'))
         height = int(cs.config.get(section='map', option='height'))
         map_unit = int(cs.config.get(section='map', option='map_unit'))
-        self.debug = cs.config.get(section='map', option='debug')
+        self.debug = cs.config.get(section='map', option='debug') == 'true'
         self.pal_size = int(cs.config.get(section='pal', option='robot_size_y'))
         self.pal_dist_sensor = int(cs.config.get(section='pal', option='dist_detection'))
 

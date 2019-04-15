@@ -150,7 +150,7 @@ class Ai(Service):
 
     """ WAIT FOR END OF DETECTION """
     def wait_until_detection_end(self):
-        
+
         self.avoid_stat = self.avoid.status()
         if self.side is not None and self.avoid_stat is not None:
             sleep(1.0)
