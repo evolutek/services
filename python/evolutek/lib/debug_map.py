@@ -8,7 +8,7 @@ from os import _exit
 
 colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
 unit = 1/2
-refresh = 500
+refresh = 100
 
 class Interface:
 
@@ -114,7 +114,10 @@ class Interface:
 
     def print_path(self, path):
         if path is None:
+            print("no path to display")
             return
+        print("displaying path: ")
+        print(path)
         for i in range(1, len(path)):
             p1 = path[i - 1]
             p2 = path[i]

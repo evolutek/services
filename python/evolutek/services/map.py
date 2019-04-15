@@ -17,22 +17,22 @@ class Map(Service):
 
     def __init__(self):
 
-        cs = CellaservProxy()
+        self.cs = CellaservProxy()
 
-        self.color1 = cs.config.get(section='match', option='color1')
-        self.color2 = cs.config.get(section='match', option='color2')
-        self.robot_size = int(cs.config.get(section='match', option='robot_size'))
+        self.color1 = self.cs.config.get(section='match', option='color1')
+        self.color2 = self.cs.config.get(section='match', option='color2')
+        self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
-        self.delta_dist = float(cs.config.get(section='tim', option='delta_dist'))
-        self.refresh = float(cs.config.get(section='tim', option='refresh'))
+        self.delta_dist = float(self.cs.config.get(section='tim', option='delta_dist')) * 2
+        self.refresh = float(self.cs.config.get(section='tim', option='refresh'))
 
-        self.tim_config = cs.config.get_section('tim')
-        width = int(cs.config.get(section='map', option='width'))
-        height = int(cs.config.get(section='map', option='height'))
-        map_unit = int(cs.config.get(section='map', option='map_unit'))
-        self.debug = cs.config.get(section='map', option='debug') == 'true'
-        self.pal_size = int(cs.config.get(section='pal', option='robot_size_y'))
-        self.pal_dist_sensor = int(cs.config.get(section='pal', option='dist_detection'))
+        self.tim_config = self.cs.config.get_section('tim')
+        width = int(self.cs.config.get(section='map', option='width'))
+        height = int(self.cs.config.get(section='map', option='height'))
+        map_unit = int(self.cs.config.get(section='map', option='map_unit'))
+        self.debug = self.cs.config.get(section='map', option='debug') == 'true'
+        self.pal_size = int(self.cs.config.get(section='pal', option='robot_size_y'))
+        self.pal_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
 
         self.map = Map_lib(width, height, map_unit, self.pal_size)
         """ Add obstacles """
@@ -45,6 +45,7 @@ class Map(Service):
 
         # Example
         self.path = []
+        self.path_lock = Lock()
 
         # TIM
         self.lock = Lock()
@@ -58,10 +59,11 @@ class Map(Service):
         self.tim = None
 
         try:
-            color = cs.match.get_color()
+            color = self.cs.match.get_color()
             self.match_color(color)
         except Exception as e:
-            print('Failed to get color: %s' % str(e))
+            print('Failed to get color: %s\nUsing default Yellow' % str(e))
+            self.match_color("yellow")
 
         super().__init__()
 
@@ -74,18 +76,18 @@ class Map(Service):
         if color != self.color:
             self.color = color
         if self.color is not None:
-            self.map.remove_obstacle('zone')
-            if self.color != self.color1:
-                self.map.add_rectangle_obstacle(300, 1200, 0, 450, tag='zone')
-            else:
-                self.map.add_rectangle_obstacle(300, 1200, 2550, 3000, tag='zone')
+#            self.map.remove_obstacle('zone')
+#            if self.color != self.color1:
+#                self.map.add_rectangle_obstacle(300, 1200, 0, 450, tag='zone')
+#            else:
+#                self.map.add_rectangle_obstacle(300, 1200, 2550, 3000, tag='zone')
             config = self.tim_config
             if self.color != self.color1:
                 config['pos_y'] = 3000 - int(config['pos_y'])
                 config['angle'] = - int(config['angle'])
             self.tim = Tim(config, self.debug)
         else:
-            self.map.remove_obstacle('zone')
+#            self.map.remove_obstacle('zone')
             self.tim = None
 
     @Service.event
@@ -152,10 +154,10 @@ class Map(Service):
 
             sleep(self.refresh)
 
-    @Service.thread
+    #@Service.thread
     def loop_path(self):
         while True:
-            if not self.goal is None:
+            if self.goal:
                 print('computing path')
                 self.path = self.map.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
             else:
@@ -235,18 +237,21 @@ class Map(Service):
 
         return  {'front': front, 'back': back}
 
-"""
+    @Service.thread
+    def test_path(self):
+        while True:
+          if(self.pal_telem):
+            self.path = self.cs.map.get_path(dict(self.pal_telem),{'x': 1000, 'y':500})
+          else:
+            self.path = self.cs.map.get_path(start_x=1500, start_y=2750, dest_x=500, dest_y=500)
+          sleep(0.15)
+
     @Service.action
-    def get_optimal_goal(self, goals):
-      optimum = None
-      for goal in goals:
-        option = dijkstra_path(goal)
-        if optimum is None || option.cost < optimum.cost:
-          # optimum -> Cfeate dict here
+    def get_path(self, start_x, start_y, dest_x, dest_y):
+      print("path request received")
+      self.path = self.map.get_path(Point(int(start_x), int(start_y)), Point(int(dest_x), int(dest_y)))
+      return self.path
 
-      return optimum
-
-"""
 if __name__ == '__main__':
   map = Map()
   map.run()
