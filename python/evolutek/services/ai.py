@@ -187,9 +187,8 @@ class Ai(Service):
         self.selecting()
 
     def goto_xy_theta_with_path(self):
-
         for p in goal.path:
-            print("[AI] Going to x : " + p.x + ", y : " p.y + ", theta : " + p.theta) 
+            print("[AI] Going to x : " + p.x + ", y : " + p.y + ", theta : " + p.theta) 
             pos = self.cs.trajman[ROBOT].get_position()
             while sqrt((pos['x'] - p.x)**2 + (pos['y'] - p.y)**2) > 5:
                 self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
@@ -218,25 +217,25 @@ class Ai(Service):
 
                 pos = self.cs.trajman[ROBOT].get_position()
 
-        """ Goto theta if there is one """
-        if goal.theta is not None:
+            """ Goto theta if there is one """
+            if p.theta is not None:
 
-            while abs(pos['theta'] - goal.theta) > 0.5:
-                self.cs.trajman[ROBOT].goto_theta(goal.theta)
-                while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                    sleep(0.1)
+                while abs(pos['theta'] - p.theta) > 0.5:
+                    self.cs.trajman[ROBOT].goto_theta(p.theta)
+                    while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+                        sleep(0.1)
 
-                if self.ending.isSet():
-                    return
+                    if self.ending.isSet():
+                        return
 
-                if self.aborting.isSet():
-                    print("[AI][MAKING] Aborted")
-                    self.wait_until_detection_end()
+                    if self.aborting.isSet():
+                        print("[AI][MAKING] Aborted")
+                        self.wait_until_detection_end()
 
-                if self.ending.isSet():
-                    return
+                    if self.ending.isSet():
+                        return
 
-                pos = self.cs.trajman[ROBOT].get_position()
+                    pos = self.cs.trajman[ROBOT].get_position()
 
         
 
