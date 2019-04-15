@@ -4,10 +4,11 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 from evolutek.lib.settings import ROBOT
 from math import pi
-from threading import Thread
 from time import sleep
 import os
-import _thread
+
+
+##TODO: DISABLE not working
 
 @Service.require("ax", "1")
 @Service.require("ax", "2")
@@ -23,12 +24,11 @@ class Actuators(Service):
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
-        self.gpios = self.cs.gpios[ROBOT]
-        self.trajman = self.cs.trajman[ROBOT]
         self.enabled = True
         self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) + 50
         self.color = 'yellow'
         self.color1 = self.cs.config.get(section='match', option='color1')
+        self.timeout_ejecteur = float(self.cs.config.get(section='ROBOT', option='timeout_ejecteur'))
 
         try:
             self.color = self.cs.match.get_match()['color']
@@ -96,26 +96,26 @@ class Actuators(Service):
 
     @Service.action
     def enable_suction_arms(self):
-        self.gpios.write_gpio(value=False, name="relayArms")
+        self.cs.gpios[ROBOT].write_gpio(value=False, name="relayArms")
 
     @Service.action
     def disable_suction_arms(self):
-        self.gpios.write_gpio(value=True, name="relayArms")
+        self.cs.gpios[ROBOT].write_gpio(value=True, name="relayArms")
 
     @Service.action
     def get_palet(self):
         self.open_arms()
         self.enable_suction_arms()
 
-        self.trajman.move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=1)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=1)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
         self.close_arms()
         self.disable_suction_arms()
 
-        self.trajman.move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=0)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
     """ GOLDENIUM """
@@ -126,33 +126,33 @@ class Actuators(Service):
 
     @Service.action
     def enable_suction_goldenium(self):
-        self.gpios.write_gpio(value=False, name="relayGold")
+        self.cs.gpios[ROBOT].write_gpio(value=False, name="relayGold")
 
     @Service.action
     def disable_suction_goldenium(self):
-        self.gpios.write_gpio(value=True, name="relayGold")
+        self.cs.gpios[ROBOT].write_gpio(value=True, name="relayGold")
 
     @Service.action
     def get_goldenium(self):
         self.open_arm_goldenium()
         self.enable_suction_goldenium()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
         self.close_arms()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
     @Service.action
     def drop_goldenium(self):
         self.open_arm_goldenium()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
         self.disable_suction_goldenium()
@@ -206,13 +206,13 @@ class Actuators(Service):
     @Service.action
     def drop_palet(self):
         self.lower_palet()
-        self.trajman.move_trsl(dest=100, acc=200, dec=200, maxspeed=600, sens=1)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=100, acc=200, dec=200, maxspeed=600, sens=1)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
-        self.trajman.move_trsl(dest=100, acc=200, dec=200, maxspeed=400, sens=0)
-        while self.trajman.is_moving():
+        self.cs.trajman[ROBOT].move_trsl(dest=100, acc=200, dec=200, maxspeed=400, sens=0)
+        while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
-            
+
         self.open_clapet()
         self.push_ejecteur()
         self.reset_ejecteur()
@@ -227,62 +227,41 @@ class Actuators(Service):
         contact = None
 
         if self.color == self.color1:
-            self.cs.gpios['pal'].write_gpio(value=False, id=19)
-            self.cs.gpios['pal'].write_gpio(value=True, id=26)
+            self.cs.gpios[ROBOT].write_gpio(value=False, id=19)
+            self.cs.gpios[ROBOT].write_gpio(value=True, id=26)
             contact = 4
         else:
-            self.cs.gpios['pal'].write_gpio(value=True, id=19)
-            self.cs.gpios['pal'].write_gpio(value=False, id=26)
+            self.cs.gpios[ROBOT].write_gpio(value=True, id=19)
+            self.cs.gpios[ROBOT].write_gpio(value=False, id=26)
             contact = 22
-        if int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
-            self.cs.gpios['pal'].write_gpio(value=100, id=13)
-            while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+        if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
+            self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
+            timeout = 0.0
+            while timeout < self.timeout_ejecteur and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
                 sleep(0.1)
-            self.cs.gpios['pal'].write_gpio(value=0, id=13)
-
-    #@Service.action
-    #def reset_ejecteur(self):
-    #    thread = Thread(target=self.reset_ejecteur_func, args=()) 
-    #    thread.daemon = True
-    #    thread.start()
+                timeout += 0.1
+            self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
 
     @Service.action
     def push_ejecteur(self):
         contact = None
 
         if self.color != self.color1:
-            self.cs.gpios['pal'].write_gpio(value=False, id=19)
-            self.cs.gpios['pal'].write_gpio(value=True, id=26)
+            self.cs.gpios[ROBOT].write_gpio(value=False, id=19)
+            self.cs.gpios[ROBOT].write_gpio(value=True, id=26)
             contact = 4
         else:
-            self.cs.gpios['pal'].write_gpio(value=True, id=19)
-            self.cs.gpios['pal'].write_gpio(value=False, id=26)
+            self.cs.gpios[ROBOT].write_gpio(value=True, id=19)
+            self.cs.gpios[ROBOT].write_gpio(value=False, id=26)
             contact = 22
-        if int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
-            self.cs.gpios['pal'].write_gpio(value=100, id=13)
-            while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
+
+        if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
+            self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
+            timeout = 0.0
+            while timeout < self.timeout_ejecteur and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
                 sleep(0.1)
-            self.cs.gpios['pal'].write_gpio(value=0, id=13)
-
-    #@Service.action
-    #def push_ejecteur(self):
-    #    thread = Thread(target=self.push_ejecteur_func, args=())
-    #    thread.daemon = True
-    #    thread.start()
-
-    """ EXP """
-    @Service.action
-    def activate_exp(self):
-        self.cs.ax['2'].move(goal=492)
-        sleep(0.5)
-        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
-        while self.trajman.is_moving():
-            sleep(0.1)
-        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
-        while self.trajman.is_moving():
-            sleep(0.1)
-        self.cs.ax['2'].move(goal=121)
-        sleep(0.5)
+                timeout += 0.1
+            self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
 
     """ Recalibration """
     @Service.action
@@ -291,7 +270,7 @@ class Actuators(Service):
             return
 
         # Save speeds
-        speeds = self.trajman.get_speeds()
+        speeds = self.cs.trajman[ROBOT].get_speeds()
 
         # Check params
         if isinstance(x, str):
@@ -310,59 +289,59 @@ class Actuators(Service):
             init = init == "true"
 
         # Set theta, max speed, x and y
-        self.trajman.free()
-        self.trajman.set_trsl_max_speed(200)
-        self.trajman.set_trsl_acc(200)
-        self.trajman.set_trsl_dec(200)
+        self.cs.trajman[ROBOT].free()
+        self.cs.trajman[ROBOT].set_trsl_max_speed(200)
+        self.cs.trajman[ROBOT].set_trsl_acc(200)
+        self.cs.trajman[ROBOT].set_trsl_dec(200)
 
         if init:
-            self.trajman.set_theta(0)
-            self.trajman.set_x(1000)
-            self.trajman.set_y(1000)
+            self.cs.trajman[ROBOT].set_theta(0)
+            self.cs.trajman[ROBOT].set_x(1000)
+            self.cs.trajman[ROBOT].set_y(1000)
 
         # Recalibrate X
         if x:
             print('[ACTUATORS] Recalibration X')
-            self.trajman.goto_theta(pi if sens_x ^ side else 0)
-            while self.trajman.is_moving():
+            self.cs.trajman[ROBOT].goto_theta(pi if sens_x ^ side else 0)
+            while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
-            self.trajman.recalibration(sens=int(side))
-            while self.trajman.is_moving():
+            self.cs.trajman[ROBOT].recalibration(sens=int(side))
+            while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
             print('[ACTUATORS] X pos found')
             sleep(0.5)
-            position = self.trajman.get_position()
+            position = self.cs.trajman[ROBOT].get_position()
             pos_x = position['x'] + decal_x if not sens_x else position['x'] - decal_x
-            self.trajman.set_x(pos_x)
+            self.cs.trajman[ROBOT].set_x(pos_x)
             new_x = pos_x + self.dist - self.robot_size_x() if not sens_x else pos_x - self.dist + self.robot_size_x()
-            self.trajman.goto_xy(x=new_x, y=position['y'])
-            while self.trajman.is_moving():
+            self.cs.trajman[ROBOT].goto_xy(x=new_x, y=position['y'])
+            while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
         # Recalibrate Y
         if y:
             print('[ACTUATORS] Recalibration Y')
-            self.trajman.goto_theta(- pi / 2 if sens_y ^ side else pi /2)
-            while self.trajman.is_moving():
+            self.cs.trajman[ROBOT].goto_theta(- pi / 2 if sens_y ^ side else pi /2)
+            while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
-            self.trajman.recalibration(int(side))
-            while self.trajman.is_moving():
+            self.cs.trajman[ROBOT].recalibration(int(side))
+            while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
             print('[ACTUTATORS] Y pos found')
             sleep(0.5)
-            position = self.trajman.get_position()
+            position = self.cs.trajman[ROBOT].get_position()
             pos_y = position['y'] + decal_y if not sens_y else position['y'] - decal_y
-            self.trajman.set_y(pos_y)
+            self.cs.trajman[ROBOT].set_y(pos_y)
             new_y = pos_y + self.dist - self.robot_size_y() if not sens_y else pos_y - self.dist + self.robot_size_y()
             print(new_y)
-            self.trajman.goto_xy(x=position['x'], y=new_y)
-            while self.trajman.is_moving():
+            self.cs.trajman[ROBOT].goto_xy(x=position['x'], y=new_y)
+            while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
         # Set back trajman params
-        self.trajman.set_trsl_max_speed(speeds['trmax'])
-        self.trajman.set_trsl_acc(speeds['tracc'])
-        self.trajman.set_trsl_dec(speeds['trdec'])
+        self.cs.trajman[ROBOT].set_trsl_max_speed(speeds['trmax'])
+        self.cs.trajman[ROBOT].set_trsl_acc(speeds['tracc'])
+        self.cs.trajman[ROBOT].set_trsl_dec(speeds['trdec'])
 
         print('[ACTUATORS] Recalibration done')
 

@@ -185,7 +185,11 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
+<<<<<<< HEAD
                         "x": 230,
+=======
+                        "x": 240,
+>>>>>>> 6154c83d58f741e1ae3e16dda7dd552e9f652943
                         "y": 2235
                     }
                 },
@@ -210,7 +214,7 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 1380,
+                        "x": 1420,
                         "y": 1320
                     }
                 },
@@ -227,7 +231,7 @@
             ]
         },
 	{
-		"x": 1260,
+		"x": 1210,
 		"y": 800,
 		"theta": 0,
 		"score": 12,
@@ -238,9 +242,9 @@
             {
 			"name": "goto_xy_without_avoid",
 			"args": {
-			    "x": 1220,
+			    "x": 1420,
 			    "y": 1320
-			    }
+			}
 		    },
 		    {
 			"name" : "goto_theta_without_avoid",
