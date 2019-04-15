@@ -39,6 +39,7 @@ class Map(Service):
         width = int(cs.config.get(section='map', option='width'))
         height = int(cs.config.get(section='map', option='height'))
         map_unit = int(cs.config.get(section='map', option='map_unit'))
+        self.debug = cs.config.get(section='map', option='debug')
         self.pal_size = int(cs.config.get(section='pal', option='robot_size_y'))
         self.pal_dist_sensor = int(cs.config.get(section='pal', option='dist_detection'))
 
@@ -47,7 +48,6 @@ class Map(Service):
         self.map.add_rectangle_obstacle(1622, 2000, 450, 2550)
         self.map.add_rectangle_obstacle(1422, 1622, 1475, 1525)
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
-        #self.map.add_circle_obstacle(1000, 1500, 150, "robot", ObstacleType.robot)
 
         # Example
         self.path = None
@@ -98,9 +98,8 @@ class Map(Service):
     def pal_telemetry(self, status, telemetry):
         if status is not 'failed':
             self.pal_telem = telemetry
-            status = self.is_facing_wall(telemetry)
-            if not status is None:
-                self.publish("pal_near_wall", status=status)
+        else:
+            self.pal_telem = None
 
     @Service.thread
     def loop_scan(self):
@@ -131,10 +130,9 @@ class Map(Service):
                 for robot in self.robots:
                     self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'], type=ObstacleType.robot)
                     self.publish('opponents', robots=self.robots)
-
-            #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
             sleep(self.refresh)
 
+    """ Don't work with avoid """
     @Service.action
     def is_facing_wall(self, telemetry):
 
@@ -208,18 +206,6 @@ class Map(Service):
 
         return  {'front': front, 'back': back}
 
-"""
-    @Service.action
-    def get_optimal_goal(self, goals):
-      optimum = None
-      for goal in goals:
-        option = dijkstra_path(goal)
-        if optimum is None || option.cost < optimum.cost:
-          # optimum -> Cfeate dict here
-
-      return optimum
-
-"""
 if __name__ == '__main__':
   map = Map()
   map.run()

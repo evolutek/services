@@ -48,15 +48,14 @@ class Match(Service):
 
         # PAL status
         self.pal_ai_s = None
-        self.pal_avoid_s = None
         self.pal_telem = None
         self.pal_watchdog = Watchdog(self.timeout_robot, self.reset_pal_status)
 
         # PMI status
-        self.pmi_ai_s = None
-        self.pmi_avoid_s = None
-        self.pmi_telem = None
-        self.pmi_watchdog = Watchdog(self.timeout_robot, self.reset_pmi_status)
+        #self.pmi_ai_s = None
+        #self.pmi_avoid_s = None
+        #self.pmi_telem = None
+        #self.pmi_watchdog = Watchdog(self.timeout_robot, self.reset_pmi_status)
 
         # Oppenents positions
         self.robots = []
@@ -199,12 +198,11 @@ class Match(Service):
     def reset_pal_status(self):
         self.pal_ai_s = None
         self.pal_telem = None
-        self.pal_avoid_s = None
 
-    def reset_pmi_status(self):
-        self.pmi_ai_s = None
-        self.pmi_telem = None
-        self.pmi_avoid_s = None
+    #def reset_pmi_status(self):
+    #    self.pmi_ai_s = None
+    #    self.pmi_telem = None
+    #    self.pmi_avoid_s = None
 
     def reset_robots(self):
         self.robots = []
@@ -234,12 +232,6 @@ class Match(Service):
     def pal_ai_status(self, status):
         self.pal_watchdog.reset()
         self.pal_ai_s = status
-
-    @Service.event
-    def pal_avoid_status(self, status):
-        self.pal_watchdog.reset()
-        self.pal_avoid_s = status
-
 
     """ PMI """
     """@Service.event
@@ -280,11 +272,9 @@ class Match(Service):
         except Exception as e:
             print('Failed to start match: %s' % str(e))
 
-        print('-------------------')
-
         self.timer.start()
         self.match_status = 'started'
-        print('match_start')
+        print('Match start')
 
     """ Action """
 
@@ -294,7 +284,7 @@ class Match(Service):
         if self.match_status == 'started':
             return False
 
-        print('reset')
+        print('Reset match')
         self.match_status = 'unstarted'
         self.score = 0
         self.timer = Timer(self.match_time - 5, self.match_end)
@@ -359,13 +349,16 @@ class Match(Service):
             print('Failed to stop robots: %s' % str(e))
         self.match_status = 'ended'
         self.interface_status = InterfaceStatus.end
-        print('match_end')
+        print('Match End')
 
     """ Match status thread """
     @Service.thread
     def match_status(self):
       while True:
+        #Usefull ?
         #self.publish('match_status', match=self.get_match())
+
+        # Update PAL LCD
         try:
             status = self.pal_ai_s
             if not status is None:
