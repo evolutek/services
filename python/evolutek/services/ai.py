@@ -99,26 +99,26 @@ class Ai(Service):
         self.match_thread.deamon = True
 
 
-        #if recalibration:
+        if recalibration:
 
-         #   self.avoid.disable()
+            self.avoid.disable()
 
-          #  sens = self.color != self.color1
-          #  self.actuators.recalibrate(sens_y=sens, init=True)
+            sens = self.color != self.color1
+            self.actuators.recalibrate(sens_y=sens, init=True)
 
-          #  self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
-          #  while self.trajman.is_moving():
-          #     sleep(0.1)
-          #  self.trajman.goto_theta(self.goals.start_theta)
-          #  while self.trajman.is_moving():
-          #      sleep(0.1)
-        # else:
-        """ Set Default config """
-        self.trajman.free()
-        self.trajman.set_x(self.goals.start_x)
-        self.trajman.set_y(self.goals.start_y)
-        self.trajman.set_theta(self.goals.start_theta)
-        self.trajman.unfree()
+            self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
+            while self.trajman.is_moving():
+               sleep(0.1)
+            self.trajman.goto_theta(self.goals.start_theta)
+            while self.trajman.is_moving():
+                sleep(0.1)
+        else:
+            """ Set Default config """
+            self.trajman.free()
+            self.trajman.set_x(self.goals.start_x)
+            self.trajman.set_y(self.goals.start_y)
+            self.trajman.set_theta(self.goals.start_theta)
+            self.trajman.unfree()
 
         self.avoid.enable()
         self.avoid_disable = False
