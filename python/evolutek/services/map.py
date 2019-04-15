@@ -26,16 +26,7 @@ class Map(Service):
         self.delta_dist = float(cs.config.get(section='tim', option='delta_dist'))
         self.refresh = float(cs.config.get(section='tim', option='refresh'))
 
-        self.tim_config = {
-            'min_size' : float(cs.config.get(section='tim', option='min_size')),
-            'max_distance' : float(cs.config.get(section='tim', option='max_distance')),
-            'ip' : cs.config.get(section='tim', option='ip'),
-            'port' : int(cs.config.get(section='tim', option='port')),
-            'pos_x' : int(cs.config.get(section='tim', option='pos_x')),
-            'pos_y' : int(cs.config.get(section='tim', option='pos_y')),
-            'angle' : float(cs.config.get(section='tim', option='angle'))
-        }
-
+        self.tim_config = cs.config.get_section('tim')
         width = int(cs.config.get(section='map', option='width'))
         height = int(cs.config.get(section='map', option='height'))
         map_unit = int(cs.config.get(section='map', option='map_unit'))
@@ -87,8 +78,8 @@ class Map(Service):
                 self.map.add_rectangle_obstacle(300, 1200, 2550, 3000, tag='zone')
             config = self.tim_config
             if self.color != self.color1:
-                config['pos_y'] = 3000 - config['pos_y']
-                config['angle'] *= -1
+                config['pos_y'] = 3000 - int(config['pos_y'])
+                config['angle'] = - int(config['angle'])
             self.tim = Tim(config, self.debug)
         else:
             self.map.remove_obstacle('zone')

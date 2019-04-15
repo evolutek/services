@@ -2,6 +2,7 @@ from math import cos, sin, radians, sqrt
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
 from evolutek.lib.point import Point
+from threading import Thread, Lock
 
 def parse_num(s):
     if '+' in s or '-' in s:
@@ -19,13 +20,19 @@ def parse_num(s):
 class Tim:
 
     def __init__(self, config, debug):
-        self.pos = Point(config['pos_x'], config['pos_y'])
-        self.angle = config['angle']
-        self.min_size = config['min_size']
-        self.max_distance = config['max_distance']
+        self.window = []
+        self.pos = Point(int(config['pos_x']),int(config['pos_y']))
+        self.angle = int(config['angle'])
+        self.refresh = float(config['refresh'])
+        self.window_size = float(config['window'])
+        self.min_size = int(config['min_size'])
+        self.max_distance = int(config['max_distance'])
+        self.window_size = int(config['window'])
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.connected = False
         self.debug = debug
+        self.looper = Thread(self.loop_scan)
+        self.lock = Lock()
         try:
             print('Connecting to the TIM')
             self.socket.connect((config['ip'], config['port']))
@@ -41,9 +48,15 @@ class Tim:
             angle = radians(length - i * size_a + self.angle)
             y = cyl_data[i] * cos(angle) + self.pos.y
             x = cyl_data[i] * sin(angle) + self.pos.x
-            if y >= 0 and y <= 3000 and x >= 0 and x <= 2000:       # check if it is in the table
-                clean_data.append(Point(x, y))
+            clean_data.append(Point(x, y))
         return clean_data
+
+    def cleanup(self, raw_points):
+        clean_points = []
+        for p in raw_points:
+            if p.y >= 0 and p.x <= 3000 and p.x >= 0 and p.x <= 2000:
+                clean_data.append(p)
+        return clean_points
 
     def split_raw_data(self, raw_data):
         shapes = []
@@ -75,8 +88,9 @@ class Tim:
             y = a * x + b
             centers.append(Point(x, y))
         return centers
+        
 
-    def get_scan(self):
+    def scan(self)
         print("Send a scan request to the TIM")
         self.socket.sendall("\x02sRN LMDscandata\x03\0".encode())
         data = ""
@@ -92,11 +106,32 @@ class Tim:
         data = data[1:len(data) - 2].split(' ')
         angular_step = parse_num(data[24])/10000
         length = parse_num(data[25])
-        raw_data = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
-        #print("Detecting robots")
+        raw_points = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
+        print("End scanning")
+        return raw_data
+
+    def loop_scan(self)
+        while(1)
+          self.sleep(self.refresh_time)
+          new_data = self.scan()
+          self.lock.acquire()
+          if len(self.window) == self.window_size:
+              self.window.pop()
+          self.window.append(self.scan())
+          self.lock.release()
+
+
+      
+    def get_scan(self):
+        if self.window == []:
+          return None
+        self.lock.acquire()
+        for a in range(len(self.window[0]))
+        raw_data = [point for scan in self.window for point in scan]
+        self.lock.release()
+        raw_data = self.scan()
         shapes = self.split_raw_data(raw_data)
         robots = self.compute_center(shapes)
-        print("End scanning")
 
         if self.debug:
             return raw_data, shapes, robots

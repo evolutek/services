@@ -17,6 +17,21 @@ class Config(Service):
         super().__init__()
 
     @Service.action
+    def get_section(self, name : str) -> dict:
+        """
+        Return section from config file. If the section does not exists, a 
+        KeyError is raised
+        """
+        try:
+            section = self.config_file.items(name)
+            ret = {}
+            for val in section:
+              ret[val[0]] = val[1]
+            return ret
+        except (NoSectionError) as exc:
+            raise KeyError("Unknown config section: {0}".format(section)) from exc
+
+    @Service.action
     def get(self, section: str, option: str) -> str:
         """
         Return value from config file. If the section does not exists, a
