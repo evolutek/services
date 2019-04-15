@@ -85,7 +85,7 @@ def get_simple_strategy():
 
 def test_avoid_strategy(mirror=False):
     l = []
-    for i in range(100):
+    for i in range(20):
         l.append(Goal(600, 1250, mirror=mirror))
         l.append(Goal(600, 400, mirror=mirror))
 
