@@ -91,9 +91,9 @@ class Match(Service):
         self.pal_ai_status_label = Label(self.window,
             text="PAL status: %s" % (self.pal_ai_s if self.pal_ai_s is not None else 'PAL not connected'))
         self.pal_ai_status_label.grid(row=2, column=1)
-        self.pmi_ai_status_label = Label(self.window,
-            text="PMI status: %s" % (self.pmi_ai_s if self.pmi_ai_s is not None else 'PMI not connected'))
-        self.pmi_ai_status_label.grid(row=3, column=1)
+        #self.pmi_ai_status_label = Label(self.window,
+        #    text="PMI status: %s" % (self.pmi_ai_s if self.pmi_ai_s is not None else 'PMI not connected'))
+        #self.pmi_ai_status_label.grid(row=3, column=1)
         self.color_label = Label(self.window, text="Color: %s" % self.color, fg=self.color)
         self.color_label.grid(row=2, column=3)
         self.score_label = Label(self.window, text="Score: %d" % self.score)
@@ -176,15 +176,15 @@ class Match(Service):
             if self.pal_telem is not None:
                 self.print_robot(self.pal_telem, self.pal_size_y, 'orange')
 
-            if self.pmi_telem is not None:
-                self.print_robot(self.pmi_telem, self.pmi_size_y, 'orange')
+            #if self.pmi_telem is not None:
+            #    self.print_robot(self.pmi_telem, self.pmi_size_y, 'orange')
 
             for robot in self.robots:
               print(robot)
               self.print_robot(robot, self.robot_size, 'red')
 
             self.pal_ai_status_label.config(text="PAL status: %s" % (self.pal_ai_s if self.pal_ai_s is not None else 'PAL not connected'))
-            self.pmi_ai_status_label.config(text="PMI status: %s" % (self.pmi_ai_s if self.pmi_ai_s is not None else 'PMI not connected'))
+            #self.pmi_ai_status_label.config(text="PMI status: %s" % (self.pmi_ai_s if self.pmi_ai_s is not None else 'PMI not connected'))
 
             self.color_label.config(text="Color: %s" % self.color)
             self.score_label.config(text="Score: %d" % self.score)
