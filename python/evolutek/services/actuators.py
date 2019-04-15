@@ -31,7 +31,7 @@ class Actuators(Service):
         self.color = 'yellow'
         self.color1 = self.cs.config.get(section='match', option='color1')
         #self.timeout_ejecteur = float(self.cs.config.get(section='ROBOT', option='timeout_ejecteur'))
-        self.timeout_ejecteur = 4.5
+        self.timeout_ejecteur = 4
 
         try:
             self.color = self.cs.match.get_match()['color']
@@ -242,12 +242,15 @@ class Actuators(Service):
             self.cs.gpios[ROBOT].write_gpio(value=True, id=26)
             contact = 4
         if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
-            Watchdog(self.timeout_ejecteur / 2, self.handler_timeout_ejecteur).reset()
+            watchdog = Watchdog(1, self.handler_timeout_ejecteur)
+            watchdog.reset()
             self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
             while not self.ejecteur_event.isSet() and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
+            watchdog.stop()
             self.ejecteur_event.clear()
+        
 
     @Service.action
     def reset_ejecteur(self):
@@ -262,11 +265,13 @@ class Actuators(Service):
             self.cs.gpios[ROBOT].write_gpio(value=False, id=26)
             contact = 22
         if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
-            Watchdog(self.timeout_ejecteur, self.handler_timeout_ejecteur).reset()
+            watchdog = Watchdog(self.timeout_ejecteur, self.handler_timeout_ejecteur)
+            watchdog.reset()
             self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
             while not self.ejecteur_event.isSet() and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
+            watchdog.stop()
             self.ejecteur_event.clear()
 
     @Service.action
@@ -283,11 +288,13 @@ class Actuators(Service):
             contact = 22
 
         if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
-            Watchdog(self.timeout_ejecteur, self.handler_timeout_ejecteur).reset()
+            watchdog = Watchdog(self.timeout_ejecteur, self.handler_timeout_ejecteur)
+            watchdog.reset()
             self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
             while not self.ejecteur_event.isSet() and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
+            watchdog.stop()
             self.ejecteur_event.clear()
 
     """ Recalibration """
