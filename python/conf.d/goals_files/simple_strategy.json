@@ -147,14 +147,14 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 135,
-                        "y": 1615
+                        "x": 150,
+                        "y": 1625
                     }
                 },
                 {
                     "name": "move_trsl",
                     "args": {
-                        "dest": 25,
+                        "dest": 40,
                         "acc": 100,
                         "dec": 100,
                         "maxspeed": 500,
@@ -166,6 +166,16 @@
                 },
                 {
                     "name": "reset_ejecteur"
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "dest": 40,
+                        "acc": 100,
+                        "dec": 100,
+                        "maxspeed": 500,
+                        "sens": 1
+                    }
                 },
                 {
                     "name": "goto_xy_with_avoid",
@@ -185,11 +195,7 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-<<<<<<< HEAD
-                        "x": 230,
-=======
-                        "x": 240,
->>>>>>> 6154c83d58f741e1ae3e16dda7dd552e9f652943
+                        "x": 235,
                         "y": 2235
                     }
                 },
@@ -231,18 +237,24 @@
             ]
         },
 	{
-		"x": 1210,
+		"x": 1260,
 		"y": 800,
 		"theta": 0,
 		"score": 12,
 		"actions": [	
+		    {
+			"name" : "goto_theta_without_avoid",
+			"args": {
+				"theta": 0
+			}
+		    },
 		    {
 			"name": "get_blue_palet"
 		    },
             {
 			"name": "goto_xy_without_avoid",
 			"args": {
-			    "x": 1420,
+			    "x": 1160,
 			    "y": 1320
 			}
 		    },
