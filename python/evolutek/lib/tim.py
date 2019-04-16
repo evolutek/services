@@ -31,15 +31,17 @@ class Tim:
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.connected = False
         self.debug = debug
-        self.looper = Thread(self.loop_scan)
+        self.looper = Thread(target = self.loop_scan)
+        self.looper.setDaemon(True)
         self.lock = Lock()
         try:
             print('Connecting to the TIM')
-            self.socket.connect((config['ip'], config['port']))
+            self.socket.connect((config['ip'], int(config['port'])))
             self.connected = True
         except Exception as e:
             print('Failed to connect to the TIM: ' + str(e))
         print('Connected to the TIM')
+        self.looper.start()
 
     def convert_to_card(self, cyl_data, size_a):
         clean_data = []
@@ -54,8 +56,8 @@ class Tim:
     def cleanup(self, raw_points):
         clean_points = []
         for p in raw_points:
-            if p.y >= 0 and p.x <= 3000 and p.x >= 0 and p.x <= 2000:
-                clean_data.append(p)
+            if p.y >= 0 and p.y <= 3000 and p.x >= 0 and p.x <= 2000:
+                clean_points.append(p)
         return clean_points
 
     def split_raw_data(self, raw_data):
@@ -90,7 +92,7 @@ class Tim:
         return centers
         
 
-    def scan(self)
+    def scan(self):
         print("Send a scan request to the TIM")
         self.socket.sendall("\x02sRN LMDscandata\x03\0".encode())
         data = ""
@@ -107,12 +109,17 @@ class Tim:
         angular_step = parse_num(data[24])/10000
         length = parse_num(data[25])
         raw_points = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
+        clean_points = self.cleanup(raw_points)
+        shapes = self.split_raw_data(clean_points)
+        robots = self.compute_center(shapes)
+        for a in robots:
+          print(a)
         print("End scanning")
-        return raw_data
+        return clean_points, shapes, robots
 
-    def loop_scan(self)
-        while(1)
-          self.sleep(self.refresh_time)
+    def loop_scan(self):
+        while 1:
+          sleep(.1)
           new_data = self.scan()
           self.lock.acquire()
           if len(self.window) == self.window_size:
@@ -120,18 +127,22 @@ class Tim:
           self.window.append(self.scan())
           self.lock.release()
 
+    def merge_window(self):
+        clean = []
+        robots = [scan[2] for scan in self.window]
+        return robots
+
 
       
     def get_scan(self):
         if self.window == []:
           return None
         self.lock.acquire()
-        for a in range(len(self.window[0]))
-        raw_data = [point for scan in self.window for point in scan]
+        robots = self.merge_window()[0]
         self.lock.release()
-        raw_data = self.scan()
-        shapes = self.split_raw_data(raw_data)
-        robots = self.compute_center(shapes)
+        #raw_data = self.scan()
+        #print(robots)
+
 
         if self.debug:
             return raw_data, shapes, robots
