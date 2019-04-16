@@ -7,6 +7,7 @@ from evolutek.lib.settings import ROBOT
 
 from math import cos, sin, tan, pi, sqrt
 import os
+from threading import Lock
 from time import sleep
 
 dist_sensor_x = 115
@@ -14,12 +15,12 @@ dist_sensor_y = 125
 
 # TODO: map sensors
 sensors = {
-    'gtb1': {'x': dist_sensor_x, 'y': -dist_sensor_y},
+    'gtb1': {'x': dist_sensor_x, 'y': dist_sensor_y},
     'gtb2': {'x': dist_sensor_x, 'y': 0},
-    'gtb3': {'x': dist_sensor_x, 'y': dist_sensor_y},
-    'gtb4': {'x': -dist_sensor_x, 'y': -dist_sensor_y},
+    'gtb3': {'x': dist_sensor_x, 'y': -dist_sensor_y},
+    'gtb4': {'x': -dist_sensor_x, 'y': dist_sensor_y},
     'gtb5': {'x': -dist_sensor_x, 'y': 0},
-    'gtb6': {'x': -dist_sensor_x, 'y': dist_sensor_y}
+    'gtb6': {'x': -dist_sensor_x, 'y': -dist_sensor_y}
 }
 
 @Service.require("config")
@@ -30,6 +31,7 @@ class Avoid(Service):
 
         self.refresh = float(self.cs.config.get(section='avoid', option='refresh'))
         self.robot_dist_sensor = int(self.cs.config.get(section=ROBOT, option='dist_detection'))
+        self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
         self.telemetry = None
         self.front_detected = []
@@ -37,6 +39,7 @@ class Avoid(Service):
         self.avoid = False
         self.enabled = True
         self.tmp_robot = None
+        self.lock = Lock()
 
         super().__init__(ROBOT)
 
@@ -54,35 +57,42 @@ class Avoid(Service):
     @Service.thread
     def loop_avoid(self):
         while True:
-            if self.telemetry is None:
-                continue
-            if not self.enabled:
-                continue
+            front = False
+            back = False
+            with self.lock:
+                if self.telemetry is None:
+                    continue
+                if not self.enabled:
+                    continue
 
-            if self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
+                if self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
+                    front = True
+                    print("[AVOID] Front detection")
+                elif self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
+                    back = True
+                    print("[AVOID] Back detection")
+                else:
+                    self.avoid = False
+                sleep(0.1)
+            if front:
                 self.stop_robot('front')
-                print("[AVOID] Front detection")
-            elif self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
+            elif back:
                 self.stop_robot('back')
-                print("[AVOID] Back detection")
-            else:
-                self.avoid = False
-            sleep(0.1)
 
     @Service.action
     def stop_robot(self, side=None):
-        print('----- Aborting: %s ---' % side)
+        with self.lock:
+            print('----- Aborting: %s ---' % side)
 
-        try:
-            self.cs.trajman[ROBOT].stop_asap(1000, 20)
-            self.cs.ai[ROBOT].abort(side=side)
+            try:
+                self.cs.trajman[ROBOT].stop_asap(1000, 20)
+                self.cs.ai[ROBOT].abort(side=side)
+            except Exception as e:
+                print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
+            self.avoid = True
             sensor = self.compute_sensor_pos(side)
             self.tmp_robot = self.compute_tmp_robot(sensor.to_dict(), side)
-        except Exception as e:
-            print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
-            return
-        self.avoid = True
-        print('[AVOID] Stopping robot, %s detection triggered' % side)
+            print('[AVOID] Stopping robot, %s detection triggered' % side)
 
     @Service.action
     def enable(self):
@@ -142,6 +152,9 @@ class Avoid(Service):
     @Service.action
     def compute_tmp_robot(self, pos, side):
 
+        print(pos)
+        print(side)
+
         # We use theta between 0 and 2pi
         theta = self.cs.trajman[ROBOT].get_position()['theta']
         if theta < 0:
@@ -161,10 +174,14 @@ class Avoid(Service):
 
         sens = theta > pi / 2 and theta < 3 * pi / 2 if not y else theta > pi
 
-        dist = (self.robot_dist_sensor / 2 + 210) / sqrt(1 + m ** 2)
+        dist = (self.robot_dist_sensor + self.robot_size) / sqrt(1 + m ** 2)
+
+        print(dist)
 
         if sens ^ (side != 'front'):
             dist *= -1
+
+        print(dist)
 
         new_x = 0
         new_y = 0
