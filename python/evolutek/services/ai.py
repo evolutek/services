@@ -64,7 +64,7 @@ class Ai(Service):
 
         # Match config
         #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.goals = Goals(file="startegy.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="strategy.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?
 
@@ -157,6 +157,7 @@ class Ai(Service):
 
         if self.avoid_disable:
             self.avoid_disable = False
+            print('---- enable ----')
             self.cs.avoid[ROBOT].enable()
 
         #Goto x y with path
@@ -279,6 +280,7 @@ class Ai(Service):
 
             # Check if we are already on the point
             pos = self.cs.trajman[ROBOT].get_position()
+            print('[AI] Current pos: %s' % str(pos))
             if Point.dist_dict(pos, self.current_path[i]) <= 5:
                 i += 1
                 if i >= len(self.current_path):
@@ -293,7 +295,7 @@ class Ai(Service):
             if self.ending.isSet():
                 return
 
-            sleep(0.1)
+            sleep(0.2)
             if self.aborting.isSet():
 
                 # Check if it's normal to be aborted
@@ -302,7 +304,11 @@ class Ai(Service):
                     if self.cs.map.is_ok(self.cs.trajman[ROBOT].get_position(), point, self.side):
                         print('[AI] IS OK')
                         self.avoid_disable = True
+                        print('------ DISABLE ------')
                         self.cs.avoid[ROBOT].disable()
+                        self.aborting.clear()
+                        print('ok')
+                        sleep(0.2)
                         continue
                 except Exception as e:
                     print('[AI] Could not check if current dest is viable : %s' % str(e))
@@ -315,8 +321,9 @@ class Ai(Service):
 
             # Enable avoid again
             if self.avoid_disable:
+                print('------ ENABLE ------')
                 self.cs.avoid[ROBOT].enable()
-                self.cs.avoid_disable = False
+                self.avoid_disable = False
 
             # If we were abort and the robot is still there, we are going back
             if self.side is not None:
@@ -327,12 +334,12 @@ class Ai(Service):
                 self.going_back(tmp_point, 150)
 
                 # If we were aborted, we go back again in the other direction
-                sleep(0.1)
+                sleep(0.2)
                 if self.aborting.isSet():
                     self.going_back(self.current_path[i - 1], 50)
 
                     # Clear abort
-                    sleep(0.1)
+                    sleep(0.2)
                     if self.aborting.isSet():
                         self.aborting.clear()
                         self.side = None
@@ -383,10 +390,14 @@ class Ai(Service):
             if action.rot_speed is not None:
                 self.cs.trajman[ROBOT].set_rot_max_speed(action.rot_speed)
 
+            print(action.avoid)
             if not action.avoid and not self.avoid_disable:
+                print('------ DISABLE --------')
                 self.avoid_disable = True
                 self.cs.avoid[ROBOT].disable()
+                sleep(0.2)
             elif action.avoid and self.avoid_disable:
+                print('------ Enable --------')
                 self.avoid_disable = False
                 self.cs.avoid[ROBOT].enable()
 
@@ -394,12 +405,12 @@ class Ai(Service):
             # Make action
             action.make()
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                sleep(0.1)
+                sleep(0.2)
 
             if self.ending.isSet():
                 return
 
-            sleep(0.1)
+            sleep(0.2)
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 print("[AI] Avoid strategy is " + str(action.avoid_strategy))
@@ -419,7 +430,7 @@ class Ai(Service):
                         self.going_back(pos, 20)
 
                     # Clear abort
-                    sleep(0.1)
+                    sleep(0.2)
                     if self.aborting.isSet():
                         self.aborting.clear()
                         self.side = None
