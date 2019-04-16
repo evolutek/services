@@ -1,0 +1,105 @@
+{
+    "start": {
+        "x": 600,
+        "y": 225,
+        "theta": "pi"
+    },
+    "actions": {
+        "exp": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "activate_exp",
+            "avoid": false
+        },
+        "goto_xy_with_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_xy"
+        },
+        "goto_xy_without_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_xy",
+            "avoid": false
+
+        },
+        "goto_theta_with_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_theta"
+        },
+        "goto_theta_without_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_theta",
+            "avoid": false
+        }
+    },
+    "goals": [
+        {
+            "x": 600,
+            "y": 225,
+            "score": 40,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 270,
+                        "y": 225
+                    }
+                },
+                {
+                    "name": "exp"
+                }
+            ]
+        },
+        {
+            "x": 1325,
+            "y": 225,
+            "score": 13,
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1325,
+                        "y": 500
+                    }
+                },
+                {
+                    "name": "goto_theta_with_avoid",
+                    "args": {
+                        "theta": "pi"
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 750,
+                        "y": 450
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 750,
+                        "y": 650
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 450,
+                        "y": 650
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 450,
+                        "y": 250
+                    }
+                }
+            ]
+        }
+    ]
+}

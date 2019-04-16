@@ -61,7 +61,7 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Match config
-        self.goals = Goals(file="get_palet.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -115,7 +115,7 @@ class Ai(Service):
         self.trajman.free()
         self.trajman.set_x(self.goals.start_x)
         self.trajman.set_y(self.goals.start_y)
-        self.trajman.set_theta(self.goals.theta)
+        self.trajman.set_theta(self.goals.start_theta)
         self.trajman.unfree()
 
         if not self.goals.reset(self.color!=self.color1):

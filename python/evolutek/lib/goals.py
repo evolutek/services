@@ -22,7 +22,7 @@ class Action:
 
         # mirror
         if args and mirror and 'y' in args:
-            args['y'] = 3000 - y
+            args['y'] = 3000 - args['y']
         if args and mirror and 'theta' in args:
             args['theta'] = 0 - args['theta']
 
@@ -137,7 +137,7 @@ class Goals:
         """Robot starting position"""
         self.start_x = 600
         self.start_y = 225
-        self.theta = pi
+        self.start_theta = pi
 
         self.goals = []
         self.current = 0
@@ -152,7 +152,10 @@ class Goals:
         #self.add_node('Start', done=True)
 
     def __str__(self):
-        s = ""
+        s = "start:\n"
+        s += "->x: %d\n" % self.start_x
+        s += "->y: %d\n" % self.start_y
+        s += "->theta: %f\n" % self.start_theta
         for goal in self.goals:
             s += "goal:\n%s" % str(goal)
         return s
@@ -167,15 +170,15 @@ class Goals:
         try:
             self.start_x = goals['start']['x']
             self.start_y = goals['start']['y']
-            self.theta = goals['start']['theta']
-            if isinstance(self.theta, str):
-                self.theta = eval(self.theta)
+            self.start_theta = goals['start']['theta']
+            if isinstance(self.start_theta, str):
+                self.start_theta = eval(self.start_theta)
         except Exception as e:
             print('Failed to parse start point: %s' % str(e))
             return False
         if mirror:
             self.start_y = 3000 - self.start_y
-            self.theta = 0 - self.theta
+            self.start_theta = 0 - self.start_theta
 
         # Parse goals
         result = []
@@ -189,24 +192,27 @@ class Goals:
             # Parse actions
             actions = []
             if 'actions' in goal:
-                for action_name in goal['actions']:
-                    if action_name not in goals['actions']:
+                for action in goal['actions']:
+                    if action['name'] not in goals['actions']:
                         print('Failed to get action: Missing action')
                         return False
-                    action = dict(goals['actions'][action_name])
-                    if not 'fct' in action:
+                    action_instance = dict(goals['actions'][action['name']])
+                    if not 'fct' in action_instance:
                         print('Error in parsing action in goal: Missing fct')
                         return False
 
                     # Get instance of fct via CellaservProxy (cs.service['id'].fct)
                     try:
-                        fct = getattr(getattr(self.cs, action['service'])[action['id']], action['fct'])
+                        fct = getattr(getattr(self.cs, action_instance['service'])[action_instance['id']], action_instance['fct'])
                     except Exception as e:
                         print('Failed to get fct: %s' % str(e))
-                    del action['service']
-                    del action['id']
-                    del action['fct']
-                    actions.append(Action(fct, **action))
+                    del action_instance['service']
+                    del action_instance['id']
+                    del action_instance['fct']
+                    if 'args' in action:
+                        actions.append(Action(fct, args=action['args'], **action_instance, mirror=mirror))
+                    else:
+                        actions.append(Action(fct, **action_instance, mirror=mirror))
 
             goal['actions'] = actions
             result.append(Goal(**goal, mirror=mirror))
@@ -222,8 +228,8 @@ class Goals:
         #self.goals = palet_strategy(self.cs, mirror)
         #self.goals = test_wall_evit(mirror)
         #self.goals = goldenium_strat(self.cs)
-        self.goals = exp_strategy(self.cs, mirror)
-        return True
+        #self.goals = exp_strategy(self.cs, mirror)
+        #return True
 
         return self.parse(mirror)
 
@@ -271,13 +277,20 @@ class fake_actuators:
         self.get_palet = 'get_palet'
         self.open_arms = 'open_arms'
         self.close_arms = 'close_arms'
+        self.activate_exp = 'activate_exp'
+
+class fake_trajman:
+    def __init__(self):
+        self.goto_xy = "goto_xy"
+        self.goto_theta = "goto_theta"
 
 class fake_cs:
     def __init__(self):
         self.actuators = {'pal': fake_actuators()}
+        self.trajman = {'pal': fake_trajman()}
 
 if __name__ == "__main__":
-    goals = Goals('get_palet.json', True, fake_cs())
+    goals = Goals('simple_strategy.json', True, fake_cs())
     #goals.add_node('First', ['Start'])
     #goals.export_dot_file()
     #print(goals.get_available_goals())
