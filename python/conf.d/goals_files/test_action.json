@@ -1,138 +1,137 @@
 {
-    "start": {
-        "x": 600,
-        "theta": "pi",
-        "y": 225
-    },
     "goals": [
         {
-            "path": [],
-            "score": 0,
-            "name": "Test",
+            "name": "Push Blue Palet",
+            "path": [
+                {
+                    "x": 700,
+                    "y": 1625,
+                    "theta": "0"
+                }
+            ],
             "actions": [
                 {
-                    "avoid_strategy": "Avoid.Skip",
+                    "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 1000,
-                        "y": 500
-                    },
-                    "name": "goto_xy_with_avoid"
+                        "x": 500,
+                        "y": 1625
+                    }
                 },
                 {
-                    "avoid_strategy": "Avoid.Skip",
+                    "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 1000,
-                        "y": 1350
-                    },
-                    "name": "goto_xy_with_avoid"
+                        "x": 150,
+                        "y": 1625
+                    }
                 },
                 {
-                    "avoid_strategy": "Avoid.Skip",
+                    "name": "move_trsl",
                     "args": {
-                        "x": 1000,
-                        "y": 500
-                    },
-                    "name": "goto_xy_with_avoid"
+                        "maxspeed": 500,
+                        "sens": 0,
+                        "dec": 100,
+                        "acc": 100,
+                        "dest": 40
+                    }
                 },
                 {
-                    "avoid_strategy": "Avoid.Skip",
-                    "args": {
-                        "x": 1000,
-                        "y": 1350
-                    },
-                    "name": "goto_xy_with_avoid"
+                    "name": "push_ejecteur"
                 },
                 {
-                    "avoid_strategy": "Avoid.Timeout",
-                    "args": {
-                        "x": 1000,
-                        "y": 500
-                    },
-                    "name": "goto_xy_with_avoid"
+                    "name": "reset_ejecteur"
                 },
                 {
+                    "name": "move_trsl",
                     "args": {
-                        "x": 1000,
-                        "y": 1350
-                    },
-                    "name": "goto_xy_with_avoid"
+                        "maxspeed": 500,
+                        "sens": 1,
+                        "dec": 100,
+                        "acc": 100,
+                        "dest": 40
+                    }
                 },
                 {
+                    "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 1000,
-                        "y": 500
-                    },
-                    "name": "goto_xy_with_avoid"
+                        "x": 500,
+                        "y": 1625
+                    }
                 }
-            ]
+            ],
+            "score": 20
         }
     ],
     "actions": {
         "push_ejecteur": {
-            "avoid": false,
+            "fct": "push_ejecteur",
             "service": "actuators",
             "id": "pal",
-            "fct": "push_ejecteur"
-        },
-        "move_trsl": {
-            "avoid": false,
-            "service": "trajman",
-            "id": "pal",
-            "fct": "move_trsl"
-        },
-        "goto_xy_without_avoid": {
-            "avoid": false,
-            "service": "trajman",
-            "id": "pal",
-            "fct": "goto_xy"
-        },
-        "reset_ejecteur": {
-            "avoid": false,
-            "service": "actuators",
-            "id": "pal",
-            "fct": "reset_ejecteur"
-        },
-        "goto_theta_with_avoid": {
-            "avoid": true,
-            "service": "trajman",
-            "id": "pal",
-            "fct": "goto_theta"
+            "avoid": false
         },
         "get_blue_palet": {
-            "avoid": false,
+            "fct": "get_blue_palet",
             "service": "actuators",
             "id": "pal",
-            "fct": "get_blue_palet"
+            "avoid": false
         },
-        "goto_xy_with_avoid": {
-            "avoid": true,
+        "goto_theta_with_avoid": {
+            "fct": "goto_theta",
             "service": "trajman",
             "id": "pal",
-            "fct": "goto_xy"
+            "avoid": true
         },
         "goto_theta_without_avoid": {
-            "avoid": false,
+            "fct": "goto_theta",
             "service": "trajman",
             "id": "pal",
-            "fct": "goto_theta"
-        },
-        "drop_goldenium": {
-            "avoid": false,
-            "service": "actuators",
-            "id": "pal",
-            "fct": "drop_goldenium"
+            "avoid": false
         },
         "drop_blue_palet": {
-            "avoid": false,
+            "fct": "drop_blue_palet",
             "service": "actuators",
             "id": "pal",
-            "fct": "drop_blue_palet"
+            "avoid": false
+        },
+        "drop_goldenium": {
+            "fct": "drop_goldenium",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "goto_xy_without_avoid": {
+            "fct": "goto_xy",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "goto_xy_with_avoid": {
+            "fct": "goto_xy",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": true
+        },
+        "move_trsl": {
+            "fct": "move_trsl",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "reset_ejecteur": {
+            "fct": "reset_ejecteur",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
         },
         "get_goldenium": {
-            "avoid": false,
+            "fct": "get_goldenium",
             "service": "actuators",
             "id": "pal",
-            "fct": "get_goldenium"
+            "avoid": false
         }
+    },
+    "start": {
+        "x": 600,
+        "y": 225,
+        "theta": "pi"
     }
 }
