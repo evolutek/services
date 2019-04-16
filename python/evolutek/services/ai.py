@@ -65,7 +65,7 @@ class Ai(Service):
 
         # Match config
         #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.goals = Goals(file="push_blue_palet.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="test_action.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?
 
@@ -307,6 +307,8 @@ class Ai(Service):
 
     """ Goto with path """
     def goto_xy_with_path(self):
+        if len(self.current_path) == 0:
+            return
         dest = self.current_path[-1]
         i = 0
         while i < len(self.current_path):
@@ -395,7 +397,8 @@ class Ai(Service):
         print("[AI] Making actions")
         i = 0
         while i < len(self.goal.actions):
-
+            print("i = " + str(i))
+            pos = self.cs.trajman[ROBOT].get_position()
             if self.ending.isSet():
                 return
 
@@ -431,6 +434,7 @@ class Ai(Service):
 
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
+                print("Strategy is " + str(action.avoid_strategy))
 
                 # Avoid staretgy is Wait
                 if action.avoid_strategy == Avoid.Wait:
@@ -444,13 +448,13 @@ class Ai(Service):
 
                     # Go back
                     if self.side is not None:
-                        self.going_back(self.goal.path[-1], 150)
+                        self.going_back(pos, 20)
                     # Clear abort
                     if self.aborting.isSet():
                         self.aborting.clear()
                         self.side = None
 
-                    if avoid.strategy != Avoid.Skip:
+                    if action.avoid_strategy != Avoid.Skip:
                         # Continue if we don't skip action
                         continue
             else:

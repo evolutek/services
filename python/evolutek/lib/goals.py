@@ -86,8 +86,8 @@ class Goal:
         actions = ""
         for action in self.actions:
             actions += "->%s\n" % str(action)
-        return "---%s---\nx: %f\ny: %f\nscore: %d\nactions:\n%s"\
-            % (self.name, self.path[0]['x'], self.path[0]['y'], self.score, actions)
+        return "---%s---\nscore: %d\nactions:\n%s"\
+            % (self.name, self.score, actions)
 
 """ STRATS FOR TESTS """
 ##TODO: RM
