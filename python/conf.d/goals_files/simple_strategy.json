@@ -66,7 +66,7 @@
                     }
                 },
                 {
-                    "name": "goto_theta_with_avoid",
+                    "name": "goto_theta_without_avoid",
                     "args": {
                         "theta": "pi"
                     }
@@ -99,6 +99,30 @@
                         "y": 250
                     }
                 }
+            ]
+        },
+        {
+            "x": 750,
+            "y": 1350,
+            "score": 14,
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1250,
+                        "y": 1350
+                    },
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1050,
+                        "y": 1000
+                    },
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1050,
+                        "y": 1000
+                    }
+                },
             ]
         }
     ]
