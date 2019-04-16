@@ -59,7 +59,7 @@ class Avoid(Service):
 
         ##TODO: compute pos of tmp robot
         try:
-            self.cs.trajman[ROBOT].stop_asap(1500, 30)
+            self.cs.trajman[ROBOT].stop_asap(1000, 20)
             self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:
             print('Failed to abort ai of %s: %s' % (ROBOT, str(e)))
