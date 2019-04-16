@@ -204,12 +204,12 @@ class Ai(Service):
     def color(self, color):
         if not color is None and color != self.color:
             self.color = color
-            self.reset(recalibration=False)
+            self.setup(recalibration=False)
 
     """ Reset button """
     @Service.event('%s_reset' % ROBOT)
     def reset_button(self, **kwargs):
-        self.reset(recalibration=True)
+        self.setup(recalibration=True)
 
     """ Match Start """
     @Service.event('match_start')
@@ -251,7 +251,7 @@ class Ai(Service):
             if timeout:
                 watchdog = Watchdog(5, self.timeout_handler)
                 watchdog.reset()
-            while not self.ending.isSet() and not self.timeout_event.isSet() and len(avoid_stat[side]) > 0:
+            while not self.ending.isSet() and not self.timeout_event.isSet() and len(avoid_stat[self.side]) > 0:
                 avoid_stat = self.cs.avoid[ROBOT].status()
                 print('-----Avoiding-----')
                 sleep(0.1)
@@ -313,11 +313,18 @@ class Ai(Service):
             pos = self.cs.trajman[ROBOT].get_position()
             if Point.dist_dict(pos, self.current_path[i]) <= 5:
                 i += 1
+                if i >= len(self.current_path):
+                    break
+            
             point = self.current_path[i]
             print("[AI] Going to x : " + str(point['x']) + ", y : " + str(point['y']))
             self.cs.trajman[ROBOT].goto_xy(x = point['x'], y = point['y'])
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
+
+            if self.avoid_disable:
+                self.cs.avoid[ROBOT].enable()
+                self.cs.avoid_disable = False
 
             if self.ending.isSet():
                 return
@@ -326,10 +333,12 @@ class Ai(Service):
 
                 # Check if it's normal to be aborted
                 try:
-                    if self.cs.map.is_ok(self.cs.trajman[ROBOT].get_position(), point, side):
+                    if self.cs.map.is_ok(self.cs.trajman[ROBOT].get_position(), point, self.side):
+                        self.avoid_disable = True
+                        self.cs.avoid[ROBOT].disable()
                         continue
                 except Exception as e:
-                    print('[AI] Could not check if current dest is viable')
+                    print('[AI] Could not check if current dest is viable : %s' % str(e))
 
                 print("[AI][GOING] Aborted")
                 self.wait_until_detection_end(timeout=True)
