@@ -79,6 +79,12 @@ class Ai(Service):
             recalibration = recalibration == "true"
 
         print('[AI] Setup')
+
+        try:
+            self.color = self.cs.match.get_match()['color']
+        except Exception as e:
+            print('Failed to set color: %s' % (str(e)))
+
         self.trajman.enable()
         self.actuators.reset(self.color)
 

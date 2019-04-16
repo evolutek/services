@@ -63,7 +63,7 @@ class Actuators(Service):
         self.cs.ax['1'].move(goal=121)
         self.cs.ax['2'].move(goal=121)
         self.cs.ax['3'].move(goal=121)
-        sleep(1.5)
+        sleep(2.0)
         self.cs.ax['1'].moving_speed(512)
         self.cs.ax['2'].moving_speed(512)
         self.cs.ax['3'].moving_speed(512)
@@ -73,6 +73,7 @@ class Actuators(Service):
         self.cs.ax['1'].move(goal=492)
         self.cs.ax['2'].move(goal=492)
         self.cs.ax['3'].move(goal=492)
+        sleep(0.75)
 
     @Service.action
     def enable_suction_arms(self):
@@ -85,7 +86,6 @@ class Actuators(Service):
     @Service.action
     def get_palet(self):
         self.open_arms()
-        sleep(1.5)
         self.enable_suction_arms()
 
         self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
@@ -93,8 +93,8 @@ class Actuators(Service):
             sleep(0.1)
 
         self.close_arms()
-        sleep(1.5)
         self.disable_suction_arms()
+        sleep(0.1)
 
         self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
         while self.trajman.is_moving():
@@ -104,6 +104,7 @@ class Actuators(Service):
     @Service.action
     def open_arm_goldenium(self):
         self.cs.ax['2'].move(goal=220)
+        sleep(0.5)
 
     @Service.action
     def enable_suction_goldenium(self):
@@ -119,14 +120,13 @@ class Actuators(Service):
         sleep(0.5)
         self.enable_suction_goldenium()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
+        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
 
         self.close_arms()
-        sleep(0.5)
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=0)
+        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -151,10 +151,12 @@ class Actuators(Service):
     @Service.action
     def close_clapet(self):
         self.cs.ax['4'].move(goal=475)
+        sleep(0.5)
 
     @Service.action
     def open_clapet(self):
         self.cs.ax['4'].move(goal=710)
+        sleep(0.5)
 
     @Service.action
     def free(self):
@@ -184,6 +186,7 @@ class Actuators(Service):
             while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
+            sleep(0.25)
 
     @Service.action
     def push_ejecteur(self):
@@ -202,6 +205,21 @@ class Actuators(Service):
             while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
+            sleep(0.25)
+
+    """ EXP """
+    @Service.action
+    def activate_exp(self):
+        self.cs.ax['2'].move(goal=492)
+        sleep(0.5)
+        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
+        while self.trajman.is_moving():
+            sleep(0.1)
+        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
+        while self.trajman.is_moving():
+            sleep(0.1)
+        self.cs.ax['2'].move(goal=121)
+        sleep(0.5)
 
     """ Recalibration """
     @Service.action

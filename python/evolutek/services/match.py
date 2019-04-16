@@ -211,7 +211,7 @@ class Match(Service):
 
     """ Update score """
     @Service.event('score')
-    def get_score(self, value):
+    def get_score(self, value=0):
         if self.match_status != 'started':
             return
         self.score += int(value)
@@ -309,11 +309,11 @@ class Match(Service):
         self.color = color
         self.interface_status = InterfaceStatus.set
 
-        try:
-            self.cs.ai['pal'].setup(color=self.color, recalibration=False)
-            self.cs.ai['pmi'].setup(color=self.color, recalibration=False)
-        except Exception as e:
-            print('Failed to reset robots: %s' % str(e))
+        #try:
+            #self.cs.ai['pal'].setup(color=self.color, recalibration=False)
+            #self.cs.ai['pmi'].setup(color=self.color, recalibration=False)
+        #except Exception as e:
+        #    print('Failed to reset robots: %s' % str(e))
 
         self.publish('match_color', color=self.color)
 
@@ -330,12 +330,12 @@ class Match(Service):
         match['score'] = self.score
 
         match['pal_ai_status'] = self.pal_ai_s
-        match['pal_avoid_status'] = self.pal_avoid_s
+        #match['pal_avoid_status'] = self.pal_avoid_s
         match['pal_telemetry'] = self.pal_telem
 
-        match['pmi_ai_status'] = self.pmi_ai_s
-        match['pmi_avoid_status'] = self.pmi_avoid_s
-        match['pmi_telemetry'] = self.pmi_telem
+        #match['pmi_ai_status'] = self.pmi_ai_s
+        #match['pmi_avoid_status'] = self.pmi_avoid_s
+        #match['pmi_telemetry'] = self.pmi_telem
 
         return match
 

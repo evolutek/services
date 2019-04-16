@@ -121,6 +121,13 @@ def test_wall_evit(mirror=False):
         l.append(Goal(1350, 750, mirror=mirror))
     return l
 
+def exp_strategy(cs, mirror=False):
+    l = []
+    l.append(Goal(600, 225, mirror=mirror, actions=[
+        Action(cs.trajman['pal'].goto_xy, args={'x': 270, 'y': 225}, avoid=False, mirror=mirror),
+        Action(cs.actuators['pal'].activate_exp, avoid=False, mirror=mirror)
+    ], score=40))
+
 ##TODO: add name
 class Goals:
 
@@ -210,10 +217,11 @@ class Goals:
         self.goals = []
         self.current = 0
         #self.goals = get_simple_strategy()
-        self.goals = test_avoid_strategy()
+        #self.goals = test_avoid_strategy()
         #self.goals = palet_strategy(self.cs, mirror)
         #self.goals = test_wall_evit(mirror)
         #self.goals = goldenium_strat(self.cs)
+        self.goals = exp_strategy(self.cs, mirror)
         return True
 
         return self.parse(mirror)
