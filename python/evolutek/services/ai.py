@@ -65,7 +65,7 @@ class Ai(Service):
 
         # Match config
         #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.goals = Goals(file="test_ai.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="push_blue_palet.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?
 
@@ -329,6 +329,10 @@ class Ai(Service):
             if self.ending.isSet():
                 return
 
+            avoid_stat = self.cs.avoid[ROBOT].status()
+            if self.side is not None and avoid_stat is not None and not self.aborting.isSet():
+                self.aborting.set()
+
             if self.aborting.isSet():
 
                 # Check if it's normal to be aborted
@@ -347,7 +351,7 @@ class Ai(Service):
                 return
 
             if self.side is not None:
-                self.going_back(self.goal.path[i - 1], 250)
+                self.going_back(self.goal.path[i - 1], 150)
 
 
                 if self.aborting.isSet():

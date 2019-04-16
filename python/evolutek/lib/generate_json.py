@@ -53,28 +53,29 @@ class FileGenerator():
             f.write(raw)
 
 fg = FileGenerator()
-fg.add_start(600, 225)
+fg.add_start(600, 225, theta="pi")
 fg.add_action("push_ejecteur", "actuators", "pal", "push_ejecteur", False)
 fg.add_action("reset_ejecteur", "actuators", "pal", "reset_ejecteur", False)
 fg.add_action("drop_goldenium", "actuators", "pal", "drop_goldenium", False)
 fg.add_action("get_goldenium", "actuators", "pal", "get_goldenium", False)
 fg.add_action("get_blue_palet", "actuators", "pal", "get_blue_palet", False)
 fg.add_action("drop_blue_palet", "actuators", "pal", "drop_blue_palet", False)
-fg.add_action("goto_xy_with_avoid", "trajman", "pal", "goto_xy_with_avoid", True)
-fg.add_action("goto_xy_without_avoid", "trajman", "pal", "goto_xy_without_avoid", False)
-fg.add_action("goto_theta_with_avoid", "trajman", "pal", "goto_theta_with_avoid")
-fg.add_action("goto_theta_without_avoid", "trajman", "pal", "goto_theta_without_avoid", False)
+fg.add_action("goto_xy_with_avoid", "trajman", "pal", "goto_xy", True)
+fg.add_action("goto_xy_without_avoid", "trajman", "pal", "goto_xy", False)
+fg.add_action("goto_theta_with_avoid", "trajman", "pal", "goto_theta")
+fg.add_action("goto_theta_without_avoid", "trajman", "pal", "goto_theta", False)
 fg.add_action("move_trsl", "trajman", "pal", "move_trsl", False)
 
-fg.add_goal("Push Front Palet", 0)\
-    .add_path(1325, 225)\
-    .add_goto_xy_subaction(1325, 500, True)\
-    .add_goto_xy_subaction(850, 500, True)
 
-fg.add_goal("Push Chaos Zone", 17)\
-    .add_path(750, 1350)\
-    .add_goto_xy_subaction(1200, 1350, False)\
-    .add_goto_xy_subaction(600, 375, True)
+#fg.add_goal("Push Front Palet", 0)\
+#    .add_path(1325, 225)\
+#    .add_goto_xy_subaction(1325, 500, True)\
+#    .add_goto_xy_subaction(850, 500, True)
+
+#fg.add_goal("Push Chaos Zone", 17)\
+#    .add_path(750, 1350)\
+#    .add_goto_xy_subaction(1200, 1350, False)\
+#    .add_goto_xy_subaction(600, 375, True)
 
 fg.add_goal("Push Blue Palet", 20)\
     .add_path(700, 1625, "0")\
@@ -86,25 +87,25 @@ fg.add_goal("Push Blue Palet", 20)\
     .add_subaction("move_trsl", {"dest": 40, "acc": 100, "dec": 100, "maxspeed":500, "sens": 1})\
     .add_goto_xy_subaction(500, 1625, True)
 
-fg.add_goal("Get Goldenium", 20)\
-    .add_path(500, 2235, "pi")\
-    .add_goto_xy_subaction(240, 2235, False)\
-    .add_subaction("get_goldenium", avoid="Avoid.Skip", score=20)\
-    .add_goto_xy_subaction(500, 2235, False)
+#fg.add_goal("Get Goldenium", 20)\
+#    .add_path(500, 2235, "pi")\
+#    .add_goto_xy_subaction(240, 2235, False)\
+#    .add_subaction("get_goldenium", avoid="Avoid.Skip", score=20)\
+#    .add_goto_xy_subaction(500, 2235, False)
 
-fg.add_goal("Drop Goldenium", 24)\
-    .add_path(1050, 1320, "0")\
-    .add_goto_xy_subaction(1420, 1320, False)\
-    .add_subaction("drop_goldenium")\
-    .add_goto_xy_subaction(1210, 1320, True)
+#fg.add_goal("Drop Goldenium", 24)\
+#    .add_path(1050, 1320, "0")\
+#    .add_goto_xy_subaction(1420, 1320, False)\
+#    .add_subaction("drop_goldenium")\
+#    .add_goto_xy_subaction(1210, 1320, True)
 
-fg.add_goal("Get blue palet and drop it", 12)\
-    .add_path(1210, 800, "0")\
-    .add_goto_theta_subaction("0", False)\
-    .add_subaction("get_blue_palet")\
-    .add_goto_xy_subaction(1160, 1320)\
-    .add_goto_theta_subaction("0", False)\
-    .add_goto_xy_subaction(1260, 1320, False)\
-    .add_subaction("drop_blue_palet")
+#fg.add_goal("Get blue palet and drop it", 12)\
+#    .add_path(1210, 800, "0")\
+#    .add_goto_theta_subaction("0", False)\
+#    .add_subaction("get_blue_palet")\
+#    .add_goto_xy_subaction(1160, 1320)\
+#    .add_goto_theta_subaction("0", False)\
+#    .add_goto_xy_subaction(1260, 1320, False)\
+#    .add_subaction("drop_blue_palet")
 
 fg.generate_file("test.json")
