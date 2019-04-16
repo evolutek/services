@@ -99,31 +99,10 @@
             "score": 0,
             "path": [
                 {"x": 750, "y": 225},
-                {"x": 1750, "y": 225}
+                {"x": 1670, "y": 225}
 
             ],
             "actions": [
-                {
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 1050,
-                        "y": 1300
-                    }
-                },
-                {
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 1050,
-                        "y": 400
-                    }
-                }
-            ]
-        },
-        {
-            "x": 1050,
-            "y": 400,
-            "actions":
-            [
                 {
                     "name": "get_palet"
                 }
