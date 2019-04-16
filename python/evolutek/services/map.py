@@ -123,7 +123,7 @@ class Map(Service):
 
                 for robot in self.robots:
                     self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'], type=ObstacleType.robot)
-                #self.publish('opponents', robots=self.robots)
+                self.publish('opponents', robots=self.robots)
 
             #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
             sleep(self.refresh)
