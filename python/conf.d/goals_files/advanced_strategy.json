@@ -11,6 +11,12 @@
             "fct": "activate_exp",
             "avoid": false
         },
+        "init_ejecteur": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "init_ejecteur",
+            "avoid": false
+        },
         "push_ejecteur": {
             "service": "actuators",
             "id": "pal",
@@ -145,6 +151,12 @@
                 },
                 {
                     "name": "get_palet"
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "pi/2"
+                    }
                 }
             ]
         },
@@ -171,10 +183,6 @@
                 {
                     "name": "push_ejecteur"
                 },
-
-                {
-                    "name": "reset_ejecteur"
-                },
                 {
                     "name": "drop_palet"
                 },
@@ -182,10 +190,16 @@
                     "name": "drop_palet"
                 },
                 {
-                    "name": "goto_xy_with_avoid",
+                    "name": "init_ejecteur"
+                },
+                {
+                    "name": "move_trsl",
                     "args": {
-                        "x": 500,
-                        "y": 1635
+                        "dest": 300,
+                        "acc": 200,
+                        "dec": 200,
+                        "maxspeed": 400,
+                        "sens": 1
                     }
                 }
             ]
@@ -200,7 +214,8 @@
                     "name": "goto_xy_without_avoid",
                     "args": {
                         "x": 235,
-                        "y": 2235                    }
+                        "y": 2235
+                    }
                 },
                 {
                     "name": "get_goldenium"

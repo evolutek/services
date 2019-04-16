@@ -1,0 +1,11 @@
+[Unit]
+Description=PowerOff service
+PartOf=evolutek.target
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service
+
+[Service]
+ExecStart=/usr/local/bin/poweroff_cst
+
+[Install]
+WantedBy=multi-user.target
