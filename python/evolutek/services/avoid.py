@@ -10,7 +10,6 @@ from time import sleep
 
 @Service.require("config")
 @Service.require("trajman", ROBOT)
-@Service.require("gpios", ROBOT)
 class Avoid(Service):
     def __init__(self):
         self.cs = CellaservProxy()
@@ -79,6 +78,7 @@ class Avoid(Service):
     @Service.action
     def disable(self):
         self.enabled = False
+        self.telemetry = None
 
     @Service.event('%s_front' % ROBOT)
     def front_detection(self, name, id, value):
@@ -97,7 +97,7 @@ class Avoid(Service):
 
     @Service.event('%s_telemetry' % ROBOT)
     def telemetry(self, status, telemetry):
-        if self.status == 'failed':
+        if not self.enabled or self.status == 'failed':
             self.telemetry = None
         else:
             self.telemetry = telemetry
