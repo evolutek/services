@@ -3,6 +3,7 @@
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 from evolutek.lib.goals import Goals
+from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
@@ -63,8 +64,9 @@ class Ai(Service):
         self.timeout_event = Event()
 
         # Match config
-        self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.current_path = None
+        #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="test_ai.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.current_path = []
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -171,7 +173,8 @@ class Ai(Service):
             self.cs.avoid[ROBOT].enable()
 
         #Goto x y with path
-        self.goto_xy_theta_with_path()
+        self.current_path = self.goal.path
+        self.goto_xy_theta_with_path(self.current_path)
 
         #Make all actions
         self.make_actions()
@@ -248,13 +251,17 @@ class Ai(Service):
                 field = 'back_detected'
             state = self.state
             self.state = State.Aborting
+            watchdog = None
             if timeout:
-                Watchdog(5, self.timeout_handler).reset()
+                watchdog = Watchdog(5, self.timeout_handler)
+                watchdog.reset()
             while not self.ending.isSet() and not self.timeout_event.isSet()\
                 and avoid_stat[field] is not None and len(avoid_stat[field]) > 0:
                 avoid_stat = self.cs.avoid[ROBOT].status()
                 print('-----Avoiding-----')
                 sleep(0.1)
+            if watchdog is not None:
+                watchdog.stop()
             if not self.timeout_event.isSet():
                 self.side = None
             self.state = state
@@ -262,10 +269,10 @@ class Ai(Service):
         self.timeout_event.clear()
 
     """ Going Back """
-    def going_back(self, last_point):
+    def going_back(self, last_point, max_dist):
         print('-----Going back-----')
         tmp_pos = self.cs.trajman[ROBOT].get_position()
-        dist = min(Point.dist_dict(tmp_pos, last_point), 250)
+        dist = min(last_point.dist(tmp_pos), max_dist)
         self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
@@ -298,15 +305,23 @@ class Ai(Service):
 
             pos = self.cs.trajman[ROBOT].get_position()
 
+    @Service.action
+    def get_path(self):
+        l = []
+        for p in self.current_path:
+            l.append({'x' : p.x, 'y': p.y})
+        return l
+
     """ Goto with path """
-    def goto_xy_theta_with_path(self):
-        for i in range(1, len(self.goal.path)):
-            if self.current_path is None:
-                self.current_path = self.goal.path[i]
-            print("[AI] Going to x : " + self.current_path.x + ", y : " + self.current_path.y)
+    def goto_xy_theta_with_path(self, path):
+        self.current_path = path
+        dest = path[len(path) - 1]
+        for i in range(1, len(path)):
+            point = self.current_path[i]
+            print("[AI] Going to x : " + str(point.x) + ", y : " + str(point.y))
             pos = self.cs.trajman[ROBOT].get_position()
-            while p.dist(pos) > 5:
-                self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
+            while point.dist(pos) > 5:
+                self.cs.trajman[ROBOT].goto_xy(x = point.x, y = point.y)
                 while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                     sleep(0.1)
 
@@ -321,46 +336,38 @@ class Ai(Service):
                     return
 
                 if self.side is not None:
-                    self.going_back(self.goal.path[i - 1])
-                    self.side = None
+                    self.going_back(self.goal.path[i - 1], 250)
+                    print("[AI] Self.aborting = " + str(self.aborting.isSet()))
+                    #Abort when going back
                     if self.aborting.isSet():
+                        self.aborting.clear()
+                        self.going_back(self.goal.path[i - 1], 50)
                         self.side = None
-                        # TODO: Recompute path
-                        try:
-                            self.current_path = self.cs.map.get_path(start_x, start_y, dest_x, dest_y)
-                            break
-                        except Exception as e:
-                            # TODO: manage error
 
-                    else:
-                        self.current_path = None
+                    if self.aborting.isSet():
+                        self.aborting.clear()
+                        self.side = None
 
+                    pos = self.cs.trajman[ROBOT].get_position()
+                    #Compute new path
+                    try:
+                        print("[AI] Computing new path")
+                        tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest.x, dest_y=dest.y)
+                        print("NEW PATH = " + str(tmp_path))
+                        self.goto_xy_theta_with_path(tmp_path)
+                        break
+                    except Exception as e:
+                        print("[AI] Cannot compute new path: " + str(e))
+
+                else:
+                    print("[AI] Continuing current path")
 
                 if self.ending.isSet():
                     return
 
                 pos = self.cs.trajman[ROBOT].get_position()
 
-            # TODO: Remove theta
-            # Goto theta if there is one
-            if p.theta is not None:
-
-                while abs(pos['theta'] - p.theta) > 0.5:
-                    self.cs.trajman[ROBOT].goto_theta(p.theta)
-                    while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                        sleep(0.1)
-
-                    if self.ending.isSet():
-                        return
-
-                    if self.aborting.isSet():
-                        print("[AI][MAKING] Aborted")
-                        self.wait_until_detection_end()
-
-                    if self.ending.isSet():
-                        return
-
-                    pos = self.cs.trajman[ROBOT].get_position()
+        self.current_path = []
 
     """ Make actions """
     def make_actions(self):

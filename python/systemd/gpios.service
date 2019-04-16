@@ -9,4 +9,3 @@ ExecStart=/usr/local/bin/gpios
 
 [Install]
 WantedBy=multi-user.target
-
