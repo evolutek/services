@@ -1,0 +1,42 @@
+{
+    "start": {
+        "x": 600,
+        "y": 500,
+        "theta": "pi"
+    },
+    "actions": {
+        "goto_xy_with_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_xy"
+        },
+        "goto_xy_without_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_xy",
+            "avoid": false
+
+        },
+        "goto_theta_with_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_theta"
+        },
+        "goto_theta_without_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_theta",
+            "avoid": false
+        }
+    },
+    "goals": [
+        {
+            "name": "GoUP",
+            "score": 0,
+	        "path" : [
+		        {"x": 600, "y": 500 },
+		        {"x": 600, "y": 2000 }
+	        ]
+        }
+    ]
+}

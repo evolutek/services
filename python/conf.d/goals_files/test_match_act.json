@@ -1,0 +1,65 @@
+{
+    "start": {
+        "x": 600,
+            "y": 225,
+            "theta": "pi"
+    },
+        "actions": {
+            "push_ejecteur": {
+                "service": "actuators",
+                "id": "pal",
+                "fct": "push_ejecteur",
+                "avoid": false
+            },
+            "reset_ejecteur": {
+                "service": "actuators",
+                "id": "pal",
+                "fct": "reset_ejecteur",
+                "avoid": false
+            },
+            "get_goldenium": {
+                "service": "actuators",
+                "id": "pal",
+                "fct": "get_goldenium",
+                "avoid": false
+            },
+            "drop_goldenium": {
+                "service": "actuators",
+                "id": "pal",
+                "fct": "drop_goldenium",
+                "avoid": false
+            }
+        },
+        "goals": [
+        {
+            "x": 600,
+            "y": 225,
+            "score": 0,
+            "actions": [
+            {
+                "name": "push_ejecteur"         
+            },
+            {
+                "name": "reset_ejecteur"
+            }
+            ]
+        },
+        {
+            "x": 600,
+            "y": 225,
+            "score": 0,
+            "actions": [
+            {
+                "name": "get_goldenium"
+            },
+            {
+                "name": "drop_goldenium",
+                "args": {
+                    "x": 850,
+                    "y": 500
+                }
+            }
+            ]
+        }
+    ]
+}
