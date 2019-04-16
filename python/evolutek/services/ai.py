@@ -174,7 +174,7 @@ class Ai(Service):
 
         #Goto x y with path
         self.current_path = self.goal.path
-        self.goto_xy_theta_with_path(self.current_path)
+        self.goto_xy_theta_with_path()
 
         #Make all actions
         self.make_actions()
@@ -272,16 +272,17 @@ class Ai(Service):
     def going_back(self, last_point, max_dist):
         print('-----Going back-----')
         tmp_pos = self.cs.trajman[ROBOT].get_position()
-        dist = min(last_point.dist(tmp_pos), max_dist)
+        dist = min(Point.dist_dict(tmp_pos, last_point), max_dist)
         self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
     """ Goto xy """
     def goto_xy(self):
+        pos = self.cs.trajman[ROBOT].get_position()
         p = self.goal.path[0]
-        while p.dist(pos) > 5:
-            self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
+        while Point.dist_dict(point, pos) > 5:
+            self.cs.trajman[ROBOT].goto_xy(x = p["x"], y = p["y"])
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
@@ -312,63 +313,60 @@ class Ai(Service):
     """ Goto with path """
     def goto_xy_theta_with_path(self):
         dest = self.current_path[-1]
-        break_out = False
-        while len(self.current_path) > 0:
-            point = self.current_path[i]
-            print("[AI] Going to x : " + str(point['x') + ", y : " + str(point['y']))
+        i = 0
+        while i < len(self.current_path):
+            i += 1
             pos = self.cs.trajman[ROBOT].get_position()
-            while Point.dist_dict(point, pos) > 5:
-                self.cs.trajman[ROBOT].goto_xy(x = point['x'], y = point['y'])
-                while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                    sleep(0.1)
+            #if Point.dist_dict(pos, self.current_path[i]) <= 5:
+            point = self.current_path[i]
+            print("##### i : " + str(i) + "/" + str(len(self.current_path)) + " #####")
+            print("[AI] Going to x : " + str(point['x']) + ", y : " + str(point['y']))
+            self.cs.trajman[ROBOT].goto_xy(x = point['x'], y = point['y'])
+            while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+                sleep(0.1)
+            
+            print("LOOOL")
+            if self.ending.isSet():
+                return
 
-                if self.ending.isSet():
-                    return
+            if self.aborting.isSet():
+                print("[AI][GOING] Aborted")
+                self.wait_until_detection_end(timeout=True)
+
+            if self.ending.isSet():
+                return
+            print("self.side =  " + str(self.side))
+            if self.side is not None:
+                self.going_back(self.goal.path[i - 1], 250)
+                #Abort when going back
+                if self.aborting.isSet():
+                    self.aborting.clear()
+                    self.going_back(self.goal.path[i - 1], 50)
+                    self.side = None
 
                 if self.aborting.isSet():
-                    print("[AI][MAKING] Aborted")
-                    self.wait_until_detection_end(timeout=True)
-
-                if self.ending.isSet():
-                    return
-
-                if self.side is not None:
-                    self.going_back(self.goal.path[i - 1], 250)
-                    print("[AI] Self.aborting = " + str(self.aborting.isSet()))
-                    #Abort when going back
-                    if self.aborting.isSet():
-                        self.aborting.clear()
-                        self.going_back(self.goal.path[i - 1], 50)
-                        self.side = None
-
-                    if self.aborting.isSet():
-                        self.aborting.clear()
-                        self.side = None
-
-                    pos = self.cs.trajman[ROBOT].get_position()
-                    #Compute new path
-                    try:
-                        print("[AI] Computing new path")
-                        tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
-                        self.current_path = tmp_path
-                        #TODO : check if path is empty
-                        point = tmp_path[0]
-                        print("NEW PATH = " + str(tmp_path))
-                        break_out = True
-                        break
-                    except Exception as e:
-                        print("[AI] Cannot compute new path: " + str(e))
-
-                else:
-                    print("[AI] Continuing current path")
-
-                if self.ending.isSet():
-                    return
+                    self.aborting.clear()
+                    self.side = None
 
                 pos = self.cs.trajman[ROBOT].get_position()
+                #Compute new path
+                try:
+                    print("[AI] Computing new path")
+                    tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+                    #TODO : check if path is empty
+                    #while tmp_path == []:
+                    #    tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+                    #    sleep(1)
+                    print("[AI] New path = " + str(tmp_path))
+                    self.current_path = tmp_path
+                    i = 0
+                    self.avoid_disable = True
+                    self.cs.avoid[ROBOT].disable()
+                except Exception as e:
+                    print("[AI] Cannot compute new path: " + str(e))
 
-            if break_out:
-                break
+            if self.ending.isSet():
+                return
 
     """ Make actions """
     def make_actions(self):
