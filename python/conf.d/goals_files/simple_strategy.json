@@ -2,7 +2,7 @@
     "start": {
         "x": 600,
         "y": 225,
-        "theta": "pi"
+        "theta": "0"
     },
     "actions": {
         "exp": {
@@ -35,6 +35,18 @@
             "fct": "get_goldenium",
             "avoid": false
         },
+	"get_blue_palet":{
+	    "service": "actuators",
+	    "id": "pal",
+	    "fct": "get_blue_palet",
+	    "avoid": false
+	},
+	"drop_blue_palet":{
+	    "service": "actuators",
+	    "id": "pal",
+	    "fct": "drop_blue_palet",
+	    "avoid": false
+	},
         "goto_xy_with_avoid": {
             "service": "trajman",
             "id": "pal",
@@ -106,14 +118,14 @@
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 575,
+                        "x": 600,
                         "y": 375
                     }
                 }
             ]
         },
         {
-            "x": 1000,
+            "x": 700,
             "y": 1625,
             "theta": 0,
             "score": 20,
@@ -157,7 +169,7 @@
                     "name": "goto_xy_without_avoid",
                     "args": {
                         "x": 240,
-                        "y": 2245
+                        "y": 2235
                     }
                 },
                 {
@@ -167,14 +179,14 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 2245
+                        "y": 2235
                     }
                 }
             ]
         },
         {
             "x": 1050,
-            "y": 1315,
+            "y": 1320,
             "theta": 0,
             "score": 24,
             "actions": [
@@ -182,13 +194,48 @@
                     "name": "goto_xy_without_avoid",
                     "args": {
                         "x": 1420,
-                        "y": 1315
+                        "y": 1320
                     }
                 },
                 {
                     "name": "drop_goldenium"
-                }
+                },
+		{
+		    "name": "goto_xy_with_avoid",
+		    "args" : {
+			"x": 1210,
+			"y" : 1320
+		    }
+		}
             ]
-        }
+        },
+	{
+		"x": 1210,
+		"y": 800,
+		"theta": 0,
+		"score": 12,
+		"actions": [	
+		    {
+			"name": "get_blue_palet"
+		    },
+		    {
+			"name": "goto_xy_with_avoid",
+			"args": {
+			    "x": 1420,
+			    "y": 1320
+			}
+		    },
+		    {
+			"name" : "goto_theta_without_avoid",
+			"args": {
+				"theta": 0
+			}
+		    },
+		    {
+			"name" : "drop_blue_palet"
+		    }
+
+		]
+	}
     ]
 }
