@@ -192,8 +192,7 @@ class Actuators(Service):
     """ Ejecteur """
     ##TODO: Use PWM fct instead of write_gpio
 
-    @Service.action
-    def reset_ejecteur(self):
+    def reset_ejecteur_func(self):
         contact = None
 
         if self.color == self.color1:
@@ -211,7 +210,11 @@ class Actuators(Service):
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
 
     @Service.action
-    def push_ejecteur(self):
+    def reset_ejecteur(self):
+        thread = Thread(target=reset_ejecteur_func, args=(self))
+        thread.start()
+
+    def push_ejecteur_func(self):
         contact = None
 
         if self.color != self.color1:
@@ -227,6 +230,11 @@ class Actuators(Service):
             while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
+
+    @Service.action
+    def push_ejecteur(self):
+        thread = Thread(target=reset_ejecteur_func, args=(self))
+        thread.start()
 
     """ EXP """
     @Service.action
