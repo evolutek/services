@@ -11,6 +11,26 @@
             "fct": "activate_exp",
             "avoid": false
         },
+        "push_ejecteur": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "push_ejecteur"
+        },
+        "reset_ejecteur": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "reset_ejecteur"
+        },
+        "drop_goldenium": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "drop_goldenium"
+        },
+        "get_goldenium": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "get_goldenium"
+        },
         "goto_xy_with_avoid": {
             "service": "trajman",
             "id": "pal",
@@ -128,6 +148,89 @@
                     }
                 }
             ]
-        }
+        },
+        {
+            "x": 1000,
+            "y": 1635,
+            "score": 20,
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 300,
+                        "y": 1635
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 150,
+                        "y": 1635
+                    }
+                },
+                {
+                    "name": "push_ejecteur"
+                },
+                {
+                    "name": "reset_ejecteur"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 300,
+                        "y": 1635
+                    }
+                }
+            ]
+        },
+        {
+            "x": 300,
+            "y": 2227,
+            "score": 20,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 210,
+                        "y": 2227
+                    }
+                },
+                {
+                    "name": "get_goldenium"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 300,
+                        "y": 2227
+                    }
+                }
+            ]
+        },
+        {
+            "x": 1250,
+            "y": 1364,
+            "score": 24,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 1410,
+                        "y": 1364
+                    }
+                },
+                {
+                    "name": "drop_goldenium"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1250,
+                        "y": 1364
+                    }
+                }
+            ]
+        },
+
     ]
 }
