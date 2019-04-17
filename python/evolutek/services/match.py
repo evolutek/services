@@ -199,6 +199,11 @@ class Match(Service):
         self.pal_ai_s = None
         self.pal_telem = None
 
+    def start_experiment(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Ports : 4343=yellow; 4141=pink
+        s.connect(("192.168.8.10", 4343 if self.color == self.color1 else 4141))
+        s.close()
+
     #def reset_pmi_status(self):
     #    self.pmi_ai_s = None
     #    self.pmi_telem = None
@@ -270,6 +275,7 @@ class Match(Service):
         self.timer.start()
         self.match_status = 'started'
         print('Match start')
+        self.start_experiment()
 
     """ Action """
 
