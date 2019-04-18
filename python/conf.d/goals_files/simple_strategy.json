@@ -71,6 +71,23 @@
     },
     "goals": [
         {
+            "x": 600,
+            "y": 225,
+            "score": 40,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 270,
+                        "y": 225
+                    }
+                },
+                {
+                    "name": "exp"
+                }
+            ]
+        }
+        {
             "x": 1325,
             "y": 225,
             "score": 13,
