@@ -90,9 +90,10 @@
     },
     "goals": [
         {
-            "x": 1325,
-            "y": 225,
             "score": 0,
+	    "path" : [
+		{"x": 1325, "y": 225 }
+	    ],
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
@@ -111,9 +112,10 @@
             ]
         },
         {
-            "x": 750,
-            "y": 1350,
             "score": 17,
+	    "path" : [
+		{"x": 750, "y": 1350 }
+	    ],
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
@@ -132,10 +134,10 @@
             ]
         },
         {
-            "x": 700,
-            "y": 1625,
-            "theta": 0,
             "score": 20,
+	    "path" : [
+		{"x": 700, "y": 1625, "theta": 0 }
+	    ],
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
@@ -177,19 +179,15 @@
             ]
         },
         {
-            "x": 500,
-            "y": 2235,
-            "theta": "pi",
             "score": 20,
+	    "path" : [
+		{"x": 500, "y": 2235, "theta": "pi" }
+	    ],
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-<<<<<<< HEAD
-                        "x": 230,
-=======
                         "x": 240,
->>>>>>> 6154c83d58f741e1ae3e16dda7dd552e9f652943
                         "y": 2235
                     }
                 },
@@ -206,10 +204,10 @@
             ]
         },
         {
-            "x": 1050,
-            "y": 1320,
-            "theta": 0,
             "score": 24,
+	    "path" : [
+		{"x": 1050, "y": 1320, "theta": 0 }
+	    ],
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
@@ -231,10 +229,10 @@
             ]
         },
 	{
-		"x": 1210,
-		"y": 800,
-		"theta": 0,
 		"score": 12,
+		"path" : [
+		    {"x": 1210, "y": 800, "theta": 0 }
+		],
 		"actions": [	
 		    {
 			"name": "get_blue_palet"

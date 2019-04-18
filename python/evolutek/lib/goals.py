@@ -42,16 +42,16 @@ class Action:
 
 class Goal:
 
-    def __init__(self, x, y, theta=None, actions=None, score=0, robot_proximity=False, priority=0, time=0, mirror=False):
-        self.x = x
-
+    def __init__(self, path, theta=None, actions=None, score=0, robot_proximity=False, priority=0, time=0, mirror=False):
         #mirror
-        self.y = y if not mirror else 3000 - y
-        self.theta = theta
+        self.path = []
+        lcl_theta = path.theta
         if isinstance(theta, str):
-            self.theta = eval(theta)
+            lcl_theta = eval(theta)
         if not theta is None and mirror:
-            self.theta = 0 - self.theta
+            lcl_theta = 0 - lcl_theta
+        lcl_theta = path.y if not mirror else 3000 - path.y
+        self.path.append(Point(path.x, path.y, theta=lcl_theta))
 
         self.actions = [] if actions is None else actions
         self.score = score
@@ -65,35 +65,41 @@ class Goal:
         for action in self.actions:
             actions += "->%s\n" % str(action)
         return "x: %f\ny: %f\ntheta: %s\nscore: %d\nactions:\n%s"\
-            % (self.x, self.y, str(self.theta), self.score, actions)
+            % (path.x, path.y, str(path.theta), self.score, actions)
+
+class Point:
+    def __init__(self, x, y, theta=None):
+        self.x = x
+        self.y = y
+        self.theta = theta
 
 """ STRATS FOR TESTS """
 ##TODO: RM
 def get_simple_strategy():
     l = []
-    l.append(Goal(1325, 225))
-    l.append(Goal(1325, 500, theta=pi))
-    l.append(Goal(750, 450))
-    l.append(Goal(750, 650))
-    l.append(Goal(450, 750))
-    l.append(Goal(450, 250))
-    l.append(Goal(750, 1350))
-    l.append(Goal(1250, 1350))
-    l.append(Goal(1050, 1000))
-    l.append(Goal(550, 400))
+    l.append(Goal(Point(1325, 225)))
+    l.append(Goal(Point(1325, 500, theta=pi)))
+    l.append(Goal(Point(750, 450)))
+    l.append(Goal(Point(750, 650)))
+    l.append(Goal(Point(450, 750)))
+    l.append(Goal(Point(450, 250)))
+    l.append(Goal(Point(750, 1350)))
+    l.append(Goal(Point(1250, 1350)))
+    l.append(Goal(Point(1050, 1000)))
+    l.append(Goal(Point(550, 400)))
     return l
 
 def test_avoid_strategy(mirror=False):
     l = []
     for i in range(100):
-        l.append(Goal(600, 1250, mirror=mirror))
-        l.append(Goal(600, 400, mirror=mirror))
+        l.append(Goal(Point(600, 1250), mirror=mirror))
+        l.append(Goal(Point(600, 400), mirror=mirror))
 
     return l
 
 def palet_strategy(cs, mirror=False):
     l = []
-    l.append(Goal(1020, 900, mirror=mirror, actions=[
+    l.append(Goal(Point(1020, 900), mirror=mirror, actions=[
         Action(cs.trajman['pal'].goto_xy, args={'x': 1270, 'y': 900}, avoid=False),
         Action(cs.trajman['pal'].goto_theta, args={'theta': 0}, avoid=False),
         Action(cs.actuators['pal'].get_palet, avoid=False),
@@ -107,8 +113,8 @@ def palet_strategy(cs, mirror=False):
 
 def goldenium_strat(cs, mirror=False):
     l = []
-    l.append(Goal(300, 1635, theta=0, mirror=mirror, actions=[]))
-    l.append(Goal(150,1635, theta=0, mirror=mirror, actions=[
+    l.append(Goal(Point(300, 1635, theta=0), mirror=mirror, actions=[]))
+    l.append(Goal(Point(150,1635, theta=0), mirror=mirror, actions=[
         Action(cs.actuators['pal'].push_ejecteur),
         Action(cs.actuators['pal'].reset_ejecteur)
     ]))
@@ -117,13 +123,13 @@ def goldenium_strat(cs, mirror=False):
 def test_wall_evit(mirror=False):
     l = []
     for i in range(10):
-        l.append(Goal(300, 750, mirror=mirror))
-        l.append(Goal(1350, 750, mirror=mirror))
+        l.append(Goal(Point(300, 750), mirror=mirror))
+        l.append(Goal(Point(1350, 750), mirror=mirror))
     return l
 
 def exp_strategy(cs, mirror=False):
     l = []
-    l.append(Goal(600, 225, mirror=mirror, actions=[
+    l.append(Goal(Point(600, 225), mirror=mirror, actions=[
         Action(cs.trajman['pal'].goto_xy, args={'x': 270, 'y': 225}, avoid=False, mirror=mirror),
         Action(cs.actuators['pal'].activate_exp, avoid=False, mirror=mirror)
     ], score=40))
@@ -133,7 +139,6 @@ def exp_strategy(cs, mirror=False):
 class Goals:
 
     def __init__(self, file, mirror, cs):
-
         """Robot starting position"""
         self.start_x = 600
         self.start_y = 225 if not mirror else 2775
@@ -185,8 +190,8 @@ class Goals:
         for goal in goals['goals']:
 
             # Check if goal is correct
-            if not 'x' in goal or not 'y' in goal:
-                print('Error in parsing goal: Missing coords')
+            if not 'path' in goal:
+                print('Error in parsing goal: Missing path')
                 return False
 
             # Parse actions
@@ -224,12 +229,12 @@ class Goals:
         self.goals = []
         self.current = 0
         #self.goals = get_simple_strategy()
-        #self.goals = test_avoid_strategy(mirror)
+        self.goals = test_avoid_strategy(mirror)
         #self.goals = palet_strategy(self.cs, mirror)
         #self.goals = test_wall_evit(mirror)
         #self.goals = goldenium_strat(self.cs)
         #self.goals = exp_strategy(self.cs, mirror)
-        #return True
+        return True
 
         return self.parse(mirror)
 
