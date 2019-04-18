@@ -26,6 +26,7 @@ class Tim:
         self.refresh = float(config['refresh'])
         self.window_size = float(config['window'])
         self.min_size = int(config['min_size'])
+        self.min_size = 4
         self.max_distance = int(config['max_distance'])
         self.window_size = int(config['window'])
         self.socket = socket(AF_INET, SOCK_STREAM)
@@ -85,10 +86,10 @@ class Tim:
             b = 0
             dy = False
             if self.pos.x != moy.x:
-                dy = True
                 a = (moy.y - self.pos.y) / (moy.x - self.pos.x)
                 b = moy.y - a * moy.x
             else:
+                dy = True
                 a = (moy.x - self.pos.x) / (moy.y - self.pos.y)
                 b = moy.x - a * moy.y
             radius = -40 if self.pos.x > moy.x else 40
