@@ -122,8 +122,11 @@ class Tim:
           sleep(.1)
           new_data = self.scan()
           self.lock.acquire()
+          print("window size: %d" % len(self.window))
           if len(self.window) == self.window_size:
-              self.window.pop()
+              self.window.pop(0)
+          print("window size: %d" % len(self.window))
+
           self.window.append(self.scan())
           self.lock.release()
 
@@ -138,7 +141,7 @@ class Tim:
         if self.window == []:
           return None
         self.lock.acquire()
-        robots = self.merge_window()[0]
+        robots = self.merge_window()[-1]
         self.lock.release()
         #raw_data = self.scan()
         #print(robots)
