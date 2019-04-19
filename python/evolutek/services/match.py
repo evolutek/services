@@ -267,8 +267,7 @@ class Match(Service):
             return
 
         try:
-            if not self.cs.ai['pal'].start():
-                raise Exception('Failed to start pal')
+            self.cs.ai['pal'].start():
             #self.cs.ai['pmi'].start()
         except Exception as e:
             print('Failed to start match: %s' % str(e))
