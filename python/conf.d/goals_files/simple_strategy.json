@@ -102,7 +102,7 @@
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 750,
+                        "x": 850,
                         "y": 500
                     }
                 }
@@ -124,7 +124,7 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 575,
-                        "y": 325
+                        "y": 375
                     }
                 }
             ]
@@ -145,7 +145,7 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 140,
+                        "x": 135,
                         "y": 1625
                     }
                 },
@@ -166,15 +166,15 @@
         },
         {
             "x": 500,
-            "y": 2230,
+            "y": 2235,
             "theta": "pi",
             "score": 20,
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 220,
-                        "y": 2230
+                        "x": 240,
+                        "y": 2235
                     }
                 },
                 {
@@ -184,14 +184,14 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 2230
+                        "y": 2235
                     }
                 }
             ]
         },
         {
-            "x": 1250,
-            "y": 1300,
+            "x": 1050,
+            "y": 1315,
             "theta": 0,
             "score": 24,
             "actions": [
@@ -199,13 +199,7 @@
                     "name": "goto_xy_without_avoid",
                     "args": {
                         "x": 1420,
-                        "y": 1300
-                    }
-                },
-                {
-                    "name": "goto_theta_without_avoid",
-                    "args": {
-                        "theta": 0.03
+                        "y": 1315
                     }
                 },
                 {

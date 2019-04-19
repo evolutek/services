@@ -161,10 +161,9 @@ class Ai(Service):
             self.end()
 
         self.making(goal)
-
+        
         ##TODO: Select an action
 
-        self.making()
 
     """ WAIT FOR END OF DETECTION """
     def wait_until_detection_end(self):
