@@ -266,12 +266,7 @@ class Match(Service):
         if self.match_status != 'unstarted' or self.color is None:
             return
 
-        try:
-            self.cs.ai['pal'].start():
-            #self.cs.ai['pmi'].start()
-        except Exception as e:
-            print('Failed to start match: %s' % str(e))
-
+        self.publish('match_start')
         self.timer.start()
         self.match_status = 'started'
         print('Match start')
@@ -342,11 +337,7 @@ class Match(Service):
     """ End match """
     @Service.action
     def match_end(self):
-        try:
-            self.cs.ai['pal'].end()
-            self.cs.ai['pmi'].end()
-        except Exception as e:
-            print('Failed to stop robots: %s' % str(e))
+        self.publish('match_end')
         self.match_status = 'ended'
         self.interface_status = InterfaceStatus.end
         print('Match End')

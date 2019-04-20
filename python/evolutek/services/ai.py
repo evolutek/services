@@ -20,7 +20,6 @@ class State(Enum):
     Error = 6
 
 ##TODO: Check errors and set to Error State
-##TODO: Do we need to depend of avoid ?
 @Service.require('avoid', ROBOT)
 @Service.require('trajman', ROBOT)
 @Service.require('actuators', ROBOT)
@@ -89,6 +88,7 @@ class Ai(Service):
 
         self.trajman.enable()
         self.actuators.reset(self.color)
+        self.avoid.disable()
 
         self.match_thread = Thread(target=self.selecting)
         self.match_thread.deamon = True
@@ -138,19 +138,16 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
-        if self.ending.isSet():
-            return
-
         """ WAIT FOR END OF DETECTION """
         ##TODO: patch
 
         self.wait_until_detection_end()
 
-        """ Clear abort event """
-        self.aborting.clear()
-
         if self.ending.isSet():
             return
+
+        """ Clear abort event """
+        self.aborting.clear()
 
         print('[AI] Selecting')
         self.state = State.Selecting
@@ -161,28 +158,8 @@ class Ai(Service):
             self.end()
 
         self.making(goal)
-        
-        ##TODO: Select an action
 
-
-    """ WAIT FOR END OF DETECTION """
-    def wait_until_detection_end(self):
-
-        self.avoid_stat = self.avoid.status()
-        if self.side is not None and self.avoid_stat is not None:
-            field = ''
-            if self.side == 'front':
-                field = 'front_detected'
-            else:
-                field = 'back_detected'
-            while self.avoid_stat[field] is not None and len(self.avoid_stat[field]) > 0:
-                if self.ending.isSet():
-                    return
-                self.avoid_stat = self.avoid.status()
-                print('-----avoiding-----')
-                sleep(0.1)
-            side = None
-
+        ##TODO: Select a goal
 
     """ MAKING """
     def making(self, goal=None, path=None):
@@ -202,64 +179,76 @@ class Ai(Service):
             self.trajman.goto_xy(x = goal.x, y = goal.y)
             while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
-            sleep(0.4)
+
             if self.ending.isSet():
                 return
+            #if self.aborting.isSet():
+            #    print("[AI][MAKING] Aborted")
+            #    self.selecting()
             if self.aborting.isSet():
-                print("[AI][MAKING] Aborted")
-                self.selecting()
+                self.wait_until_detection_end()
 
         """ Goto theta if there is one """
         if goal.theta is not None:
             self.trajman.goto_theta(goal.theta)
             while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
-            sleep(0.4)
+
             if self.ending.isSet():
                 return
+            #if self.aborting.isSet():
+            #    print("[AI][MAKING] Aborted")
+            #    self.selecting()
+
             if self.aborting.isSet():
-                print("[AI][MAKING] Aborted")
-                self.selecting()
+                self.wait_until_detection_end()
 
         """ Make all actions """
-        for action in goal.actions:
+        i = 0
+        while i < len(goal.actions):
+
+            if self.ending.isSet():
+                return
+
+            action = goal.actions[i]
+
             """ Set parameters """
             if action.trsl_speed is not None:
                 self.trajman.set_trsl_max_speed(action.trsl_speed)
             if action.rot_speed is not None:
                 self.trajman.set_rot_max_speed(action.rot_speed)
+
             if not action.avoid and not self.avoid_disable:
                 self.avoid_disable = True
                 self.avoid.disable()
             elif action.avoid and self.avoid_disable:
                 self.avoid_disable = False
                 self.avoid.enable()
-            sleep(0.5)
 
             """ Make action """
             action.make()
             while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
-            sleep(0.4)
+
             if self.ending.isSet():
                 return
+
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
                 self.wait_until_detection_end()
-                action.make()
-                while self.trajman.is_moving():
-                    sleep(0.1)
-            sleep(0.4)
+                continue
+
+            if self.ending.isSet():
+                return
+
             """ Make things back """
             if action.trsl_speed is not None:
                 self.trajman.set_trsl_max_speed(self.max_trsl_speed)
             if action.rot_speed is not None:
                 self.trajman.set_rot_max_speed(self.max_rot_speed)
-            sleep(0.2)
 
-            if self.ending.isSet():
-                return
-        
+            i += 1
+
         if self.avoid_disable:
             self.avoid_disable = False
             self.avoid.enable()
@@ -271,9 +260,11 @@ class Ai(Service):
         self.selecting()
 
     """ END """
+    @service.event('match_end')
     @Service.action
     def end(self):
         print('[AI] Ending')
+        self.ending.set()
 
         # STOP ROBOT
         self.trajman.free()
@@ -281,7 +272,6 @@ class Ai(Service):
         self.actuators.free()
         self.actuators.disable()
 
-        self.ending.set()
         self.state = State.Ending
 
     """ UTILITIES """
@@ -292,6 +282,7 @@ class Ai(Service):
             sleep(self.refresh)
 
 
+    @service.event('match_start')
     @Service.action
     def start(self):
         if self.state != State.Waiting:
@@ -318,6 +309,22 @@ class Ai(Service):
 
         ##TODO Give tmp robot to the map
         ##TODO: Manage tmp robots
+
+    """ WAIT FOR END OF DETECTION """
+    def wait_until_detection_end(self):
+
+        self.avoid_stat = self.avoid.status()
+        if self.side is not None and self.avoid_stat is not None:
+            field = ''
+            if self.side == 'front':
+                field = 'front_detected'
+            else:
+                field = 'back_detected'
+            while not self.ending.isSet() and self.avoid_stat[field] is not None and len(self.avoid_stat[field]) > 0:
+                self.avoid_stat = self.avoid.status()
+                print('-----avoiding-----')
+                sleep(0.1)
+            side = None
 
 def main():
     ai = Ai()
