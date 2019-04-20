@@ -175,7 +175,7 @@ class Ai(Service):
 
         """ Goto x y """
         pos = self.trajman.get_position()
-        if sqrt((pos['x'] - goal.x)**2 + (pos['y'] - goal.y)**2) > 5:
+        while sqrt((pos['x'] - goal.x)**2 + (pos['y'] - goal.y)**2) > 5:
             self.trajman.goto_xy(x = goal.x, y = goal.y)
             while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
@@ -188,20 +188,26 @@ class Ai(Service):
             if self.aborting.isSet():
                 self.wait_until_detection_end()
 
+            pos = self.trajman.get_position()
+
         """ Goto theta if there is one """
         if goal.theta is not None:
-            self.trajman.goto_theta(goal.theta)
-            while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
+
+            while abs(pos['theta'] - goal.theta) > 0.5:
+                self.trajman.goto_theta(goal.theta)
+                while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
                 sleep(0.1)
 
-            if self.ending.isSet():
-                return
-            #if self.aborting.isSet():
-            #    print("[AI][MAKING] Aborted")
-            #    self.selecting()
+                if self.ending.isSet():
+                    return
+                #if self.aborting.isSet():
+                #    print("[AI][MAKING] Aborted")
+                #    self.selecting()
 
-            if self.aborting.isSet():
-                self.wait_until_detection_end()
+                if self.aborting.isSet():
+                    self.wait_until_detection_end()
+
+                pos = self.trajman.get_position()
 
         """ Make all actions """
         i = 0
