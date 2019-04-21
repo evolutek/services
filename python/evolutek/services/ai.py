@@ -196,7 +196,7 @@ class Ai(Service):
             while abs(pos['theta'] - goal.theta) > 0.5:
                 self.trajman.goto_theta(goal.theta)
                 while not self.ending.isSet() and not self.aborting.isSet() and self.trajman.is_moving():
-                sleep(0.1)
+                    sleep(0.1)
 
                 if self.ending.isSet():
                     return
@@ -266,7 +266,7 @@ class Ai(Service):
         self.selecting()
 
     """ END """
-    @service.event('match_end')
+    @Service.event('match_end')
     @Service.action
     def end(self):
         print('[AI] Ending')
@@ -288,7 +288,7 @@ class Ai(Service):
             sleep(self.refresh)
 
 
-    @service.event('match_start')
+    @Service.event('match_start')
     @Service.action
     def start(self):
         if self.state != State.Waiting:
