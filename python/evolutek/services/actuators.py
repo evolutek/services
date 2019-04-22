@@ -157,12 +157,12 @@ class Actuators(Service):
     """ CLAPET """
     @Service.action
     def close_clapet(self):
-        self.cs.ax['4'].move(goal=530)
+        self.cs.ax['4'].move(goal=520)
         sleep(0.5)
 
     @Service.action
     def open_clapet(self):
-        self.cs.ax['4'].move(goal=800)
+        self.cs.ax['4'].move(goal=780)
         sleep(0.5)
 
     @Service.action
@@ -171,8 +171,12 @@ class Actuators(Service):
         self.push_ejecteur()
         self.reset_ejecteur()
         self.close_clapet()
-        self.trajman.move_trsl(dest=100, acc=1000, dec=1000, maxspeed=1500, sens=1)
-        self.trajman.move_trsl(dest=100, acc=1000, dec=1000, maxspeed=1500, sens=0)
+        self.trajman.move_trsl(dest=100, acc=400, dec=400, maxspeed=600, sens=1)
+        while self.trajman.is_moving():
+            sleep(0.1)
+        self.trajman.move_trsl(dest=100, acc=4000, dec=400, maxspeed=600, sens=0)
+        while self.trajman.is_moving():
+            sleep(0.1)
 
     """ Ejecteur """
     ##TODO: Use PWM fct instead of write_gpio
