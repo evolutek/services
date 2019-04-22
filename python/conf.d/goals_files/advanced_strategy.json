@@ -1,0 +1,197 @@
+{
+    "start": {
+        "x": 600,
+        "y": 225,
+        "theta": "pi"
+    },
+    "actions": {
+        "exp": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "activate_exp",
+            "avoid": false
+        },
+        "push_ejecteur": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "push_ejecteur",
+            "avoid": false
+        },
+        "reset_ejecteur": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "reset_ejecteur",
+            "avoid": false
+        },
+        "get_palet": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "get_palet",
+            "avoid": false
+        },
+        "drop_palet": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "drop_palet",
+            "avoid": false
+        },
+        "drop_goldenium": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "drop_goldenium",
+            "avoid": false
+        },
+        "get_goldenium": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "get_goldenium",
+            "avoid": false
+        },
+        "goto_xy_with_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_xy"
+        },
+        "goto_xy_without_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_xy",
+            "avoid": false
+
+        },
+        "goto_theta_with_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_theta"
+        },
+        "goto_theta_without_avoid": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "goto_theta",
+            "avoid": false
+        },
+        "free": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "free"
+        },
+        "unfree": {
+            "service": "trajman",
+            "id": "pal",
+            "fct": "unfree"
+        }
+    },
+    "goals": [
+        {
+            "x": 600,
+            "y": 225,
+            "score": 40,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 270,
+                        "y": 225
+                    }
+                },
+                {
+                    "name": "exp"
+                }
+            ]
+        },
+        {
+            "x": 800,
+            "y": 1350,
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1050,
+                        "y": 1350
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1050,
+                        "y": 400
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1050,
+                        "y": 900
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 1270,
+                        "y": 900
+                    }
+                },
+                {
+                    "name": "get_palet"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1270,
+                        "y": 600
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "theta": 0
+                    }
+                }
+                {
+                    "name": "get_palet"
+                }
+            ]
+        },
+        {
+            "x": 1000,
+            "y": 1625,
+            "theta": 0,
+            "score": 80,
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 500,
+                        "y": 1625
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 135,
+                        "y": 1625
+                    }
+                },
+                {
+                    "name": "push_ejecteur"
+                },
+                {
+                    "name": "reset_ejecteur"
+                },
+                {
+                    "name": "drop_palet"
+                },
+                {
+                    "name": "drop_palet"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 500,
+                        "y": 1625
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -53,6 +53,13 @@ class Actuators(Service):
         self.reset_ejecteur()
         self.close_clapet()
 
+    """ FREE """
+    @Service.action
+    def free(self):
+        self.disable_suction_arms()
+        self.disable_suction_goldenium()
+        for n in [1, 2, 3, 4]:
+            self.cs.ax[str(n)].free()
 
     """ ARMS """
     @Service.action
@@ -150,23 +157,24 @@ class Actuators(Service):
     """ CLAPET """
     @Service.action
     def close_clapet(self):
-        self.cs.ax['4'].move(goal=475)
+        self.cs.ax['4'].move(goal=530)
         sleep(0.5)
 
     @Service.action
     def open_clapet(self):
-        self.cs.ax['4'].move(goal=710)
+        self.cs.ax['4'].move(goal=800)
         sleep(0.5)
 
     @Service.action
-    def free(self):
-        self.disable_suction_arms()
-        self.disable_suction_goldenium()
-        for n in [1, 2, 3, 4]:
-            self.cs.ax[str(n)].free()
+    def drop_palet(self):
+        self.open_clapet()
+        self.push_ejecteur()
+        self.reset_ejecteur()
+        self.close_clapet()
+        self.trajman.move_trsl(dest=100, acc=1000, dec=1000, maxspeed=1500, sens=1)
+        self.trajman.move_trsl(dest=100, acc=1000, dec=1000, maxspeed=1500, sens=0)
 
     """ Ejecteur """
-
     ##TODO: Use PWM fct instead of write_gpio
 
     @Service.action
