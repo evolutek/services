@@ -82,15 +82,27 @@ class Tim:
         for shape in shapes:
             moy = Point.mean(shape)
             a = 0
+            b = 0
+            dy = False
             if self.pos.x != moy.x:
+                dy = True
                 a = (moy.y - self.pos.y) / (moy.x - self.pos.x)
-            b = moy.y - a * moy.x
-            radius = -38 if self.pos.x > moy.x else 38
-            x = moy.x + (radius / sqrt(1 + a ** 2))
-            y = a * x + b
+                b = moy.y - a * moy.x
+            else:
+                a = (moy.x - self.pos.x) / (moy.y - self.pos.y)
+                b = moy.x - a * moy.y
+            radius = -40 if self.pos.x > moy.x else 40
+            x = 0
+            y = 0
+            if dy:
+                y = moy.y + (radius / sqrt(1 + a ** 2))
+                x = a * y + b
+            else:
+                x  = moy.x + (radius / sqrt(1 + a ** 2))
+                y = a * x + b
             centers.append(Point(x, y))
         return centers
-        
+
 
     def scan(self):
         print("Send a scan request to the TIM")
@@ -136,7 +148,7 @@ class Tim:
         return robots
 
 
-      
+
     def get_scan(self):
         if self.window == []:
           return None
