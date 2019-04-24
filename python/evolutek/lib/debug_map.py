@@ -122,6 +122,13 @@ class Interface:
             self.canvas.create_line(p1['y'] * unit, p1['x'] * unit,
                 p2['y'] * unit, p2['x'] * unit, width=5, fill='yellow')
 
+        for p in path:
+            x1 = (p['y'] - self.map.unit/4) * unit
+            x2 = (p['y'] + self.map.unit/4) * unit
+            y1 = (p['x'] - self.map.unit/4) * unit
+            y2 = (p['x'] + self.map.unit/4) * unit
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
+
     def print_line_of_sight(self, line):
         for p in line:
             x1 = (p.y - self.map.unit/2) * unit
