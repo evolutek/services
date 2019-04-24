@@ -28,6 +28,18 @@ class Point:
         return Point((self.x + p.x) // 2, (self.y + p.y) // 2)
 
     @staticmethod
+    def min(p1, p2):
+        if p1.x == p2.x:
+            return p1 if p1.y < p2.y else p2
+        return p1 if p1.x < p2.x else p2
+
+    @staticmethod
+    def max(p1, p2):
+        if p1.x == p2.x:
+            return p1 if p1.y > p2.y else p2
+        return p1 if p1.x > p2.x else p2
+
+    @staticmethod
     def mean(l):
         """ return the mean of a point list """
         tot_x = 0

@@ -225,16 +225,17 @@ class Map:
         if end in pred:
             cur = end
             p = end.to_dict()
-            path.append({'x': p['x'] * self.unit, 'y': p['y'] * self.unit})
+            path.append(p)
             while pred[cur] in pred:
                 cur = pred[cur]
                 p = cur.to_dict()
-                path.insert(0, {'x': p['x'] * self.unit, 'y': p['y'] * self.unit})
+                path.insert(0, p)
             p = start.to_dict()
-            path.insert(0, {'x': p['x'] * self.unit, 'y': p['y'] * self.unit})
+            path.insert(0, p)
+
         #TODO: linearize path
 
-        return path
+        return self.convert_path(path)
 
     def neighbours(self, p, map):
         l = [
@@ -247,10 +248,54 @@ class Map:
         neighbours = []
         for point in l:
             if self.is_point_inside(point) and self.map[point.x][point.y].is_empty():
-                    neighbours.append(point)
+                neighbours.append(point)
 
         return neighbours
 
     def distance(self, p1, p2):
         #TODO: COST
         return p1.dist(p2)
+
+    def is_correct_trajectory(self, p1, p2):
+
+        # Compute 2nd degree equation between two points
+        dy = False
+        a = 0
+        b = 0
+
+        # If x1 = x2 make equation depend on y
+        if p1.x == p2.x:
+            dy = True
+            a = (p2.x - p1.x) / (p2.y - p1.y)
+            b = p1.x - a * p1.y
+        else:
+            a = (p2.y - p1.y) / (p2.x - p1.x)
+            b = p1.y - a * p1.x
+
+        start, end = Point.min(p1, p2), Point.max(p1, p2)
+
+        # Nb of point to visit
+        l = (end.x - start.x) if not y else (end.y - start.y)
+
+        # Check if the line between the two points collide with something
+        for i in range(1, l):
+            x = 0
+            y = 0
+            if dy:
+                y = start.y + i
+                x = y * a + b
+            else:
+                x = start.x + i
+                y = x * a + b
+            p = Point(int(x), int(y))
+
+            # Check if the current point is empty
+            if not self.map[p.x][p.y].is_empty():
+                return False
+        return True
+
+    def convert_path(self, path):
+        l = []
+        for p in path:
+            l.append({'x': p.x * self.unit, 'y': p.y * self.unit})
+        return l
