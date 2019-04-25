@@ -61,10 +61,10 @@ class CircleObstacle(Obstacle):
         self.radius = radius
 
         for x in range(-radius, radius + 1):
-                for y in range(-radius, radius + 1):
-                    equa = ((center.x - x) - center.x)**2 + ((center.y - y) - center.y)**2
-                    if equa >= radius**2 - radius and equa <= radius**2 + radius:
-                        self.points.append(Point(int(center.x - x), int(center.y - y)))
+            for y in range(-radius, radius + 1):
+                equa = ((center.x - x) - center.x)**2 + ((center.y - y) - center.y)**2
+                if equa >= radius**2 - radius and equa <= radius**2 + radius:
+                    self.points.append(Point(int(center.x - x), int(center.y - y)))
 
     def __str__(self):
         return "center: [%s], radius: %s" % (str(self.center), str(self.radius))
@@ -181,7 +181,7 @@ class Map:
             s += "|"
             print(s)
         print('-' * (self.width + 2))
-
+    
     def get_path(self, p1, p2):
         if self.is_real_point_outside(p1.x, p1.y) or self.is_real_point_outside(p2.x, p2.y):
             print('Out of map')
@@ -231,19 +231,56 @@ class Map:
                 p = cur.to_dict()
                 path.insert(0, p)
             p = start.to_dict()
+
             path.insert(0, p)
 
         #TODO: linearize path
 
         return self.convert_path(path)
 
+    def smooth(self,path):
+        if (len(path) <= 2):
+            return path
+        chemin = []
+        n3 = path[0]
+        n2 = path[1]
+
+        chemin.append(path[0])
+        for i in range(2,len(path)):
+            n1 = path[i]
+            if (not (n2['x'] - n3['x'] == n1['x'] - n2['x'] and n2['y'] - n3['y'] == n1['y'] - n2['y'])):
+                chemin.append(n2)
+            n3 = n2
+            n2 = n1
+        chemin.append(path[-1])
+        return chemin
+
+    def path_opti(self,path):
+        if(len(path)<=2):
+            return path
+        cheminf = []
+        n1 = path[0]
+        n2 = path[1]
+
+        cheminf.append(path[0])
+        for i in range(2, len(path)):
+            n3 = path[i]
+            ctmp = self.smooth(self.get_path(Point(n1['x'],n1['y']),Point(n3['x'],n3['y'])))
+            if (len(ctmp)<4 and ctmp[0] == n1 and ctmp[1] == n2 and ctmp[2] == n3):
+                cheminf.append(n2)
+            else:
+                n1 = n2
+            n2 = n3
+        cheminf.append(path[-1])
+        return cheminf
+
     def neighbours(self, p, map):
         l = [
-            Point(p.x - 1, p.y),
-            Point(p.x + 1, p.y),
-            Point(p.x, p.y - 1),
-            Point(p.x, p.y + 1)
-        ]
+                Point(p.x - 1, p.y),
+                Point(p.x + 1, p.y),
+                Point(p.x, p.y - 1),
+                Point(p.x, p.y + 1)
+                ]
 
         neighbours = []
         for point in l:
@@ -299,3 +336,4 @@ class Map:
         for p in path:
             l.append({'x': p.x * self.unit, 'y': p.y * self.unit})
         return l
+
