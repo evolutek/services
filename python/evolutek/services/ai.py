@@ -61,7 +61,7 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Match config
-        self.goals = Goals(file="advanced_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="homologation.json", mirror=self.color!=self.color1, cs=self.cs)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -105,13 +105,13 @@ class Ai(Service):
           #  self.actuators.recalibrate(sens_y=sens, init=True)
 
             """ Goto to starting pos """
-           # self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
-           # while self.trajman.is_moving():
-           #    sleep(0.1)
-           # self.trajman.goto_theta(self.goals.theta)
-           # while self.trajman.is_moving():
-            #    sleep(0.1)
-        #else:
+          #  self.trajman.goto_xy(x=self.goals.start_x, y=self.goals.start_y)
+          #  while self.trajman.is_moving():
+          #     sleep(0.1)
+          #  self.trajman.goto_theta(self.goals.start_theta)
+          #  while self.trajman.is_moving():
+          #      sleep(0.1)
+        # else:
         """ Set Default config """
         self.trajman.free()
         self.trajman.set_x(self.goals.start_x)
@@ -172,6 +172,10 @@ class Ai(Service):
 
         print('[AI] Making')
         self.state = State.Making
+
+        if self.avoid_disable:
+            self.avoid_disable = False
+            self.avoid.enable()
 
         """ Goto x y """
         pos = self.trajman.get_position()
@@ -255,9 +259,6 @@ class Ai(Service):
 
             i += 1
 
-        if self.avoid_disable:
-            self.avoid_disable = False
-            self.avoid.enable()
 
         print("[AI] Finished goal")
         self.goals.finish_goal()

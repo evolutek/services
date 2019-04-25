@@ -35,6 +35,12 @@
             "fct": "drop_palet",
             "avoid": false
         },
+        "lower_palet": {
+            "service": "actuators",
+            "id": "pal",
+            "fct": "lower_palet",
+            "avoid": false
+        },
         "drop_goldenium": {
             "service": "actuators",
             "id": "pal",
@@ -90,18 +96,23 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 250,
+                        "x": 120,
                         "y": 225
                     }
                 },
                 {
-                    "name": "exp"
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 200,
+                        "y": 225
+                    }
                 }
             ]
         },
         {
             "x": 800,
             "y": 1300,
+            "score": 9,
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
@@ -118,10 +129,10 @@
                     }
                 },
                 {
-                    "name": "goto_xy_with_avoid",
+                    "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 1050,
-                        "y": 900
+                        "x": 1270,
+                        "y": 600
                     }
                 },
                 {
@@ -131,20 +142,13 @@
                     }
                 },
                 {
-                    "name": "goto_xy_without_avoid",
-                    "args": {
-                        "x": 1270,
-                        "y": 900
-                    }
-                },
-                {
                     "name": "get_palet"
                 },
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 1270,
-                        "y": 600
+                        "y": 900
                     }
                 },
                 {
@@ -160,27 +164,28 @@
         },
         {
             "x": 1000,
-            "y": 1625,
+            "y": 1627,
             "theta": 0,
-            "score": 80,
+            "score": 70,
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 1615
+                        "y": 1627
                     }
                 },
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 145,
-                        "y": 1615
+                        "x": 150,
+                        "y": 1627
                     }
                 },
                 {
                     "name": "push_ejecteur"
                 },
+
                 {
                     "name": "reset_ejecteur"
                 },
@@ -194,8 +199,51 @@
                     "name": "goto_xy_with_avoid",
                     "args": {
                         "x": 500,
-                        "y": 1615
+                        "y": 1627
                     }
+                }
+            ]
+        },
+        {
+            "x": 500,
+            "y": 2235,
+            "theta": "pi",
+            "score": 20,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 235,
+                        "y": 2235                    }
+                },
+                {
+                    "name": "get_goldenium"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 500,
+                        "y": 2235
+                    }
+                }
+            ]
+        },
+        {
+
+            "x": 1050,
+            "y": 1320,
+            "theta": 0,
+            "score": 24,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 1420,
+                        "y": 1320
+                    }
+                },
+                {
+                    "name": "drop_goldenium"
                 }
             ]
         }

@@ -1,0 +1,100 @@
+{
+    "start": {
+        "x": 600,
+            "y": 225,
+            "theta": "pi"
+    },
+        "actions": {
+            "goto_xy_with_avoid": {
+                "service": "trajman",
+                "id": "pal",
+                "fct": "goto_xy"
+            },
+            "goto_xy_without_avoid": {
+                "service": "trajman",
+                "id": "pal",
+                "fct": "goto_xy",
+                "avoid": false
+
+            },
+            "goto_theta_with_avoid": {
+                "service": "trajman",
+                "id": "pal",
+                "fct": "goto_theta"
+            },
+            "goto_theta_without_avoid": {
+                "service": "trajman",
+                "id": "pal",
+                "fct": "goto_theta",
+                "avoid": false
+            },
+            "free": {
+                "service": "trajman",
+                "id": "pal",
+                "fct": "free"
+            },
+            "unfree": {
+                "service": "trajman",
+                "id": "pal",
+                "fct": "unfree"
+            }
+        },
+        "goals": [
+        {
+            "x": 600,
+            "y": 225,
+            "score": 0,
+            "actions": [
+            {
+                "name": "goto_xy_without_avoid",
+                "args": {
+                    "x": 120,
+                    "y": 225
+                }
+            }
+            ]
+        },
+        {
+            "x": 1325,
+            "y": 225,
+            "score": 0,
+            "actions": [
+            {
+                "name": "goto_xy_with_avoid",
+                "args": {
+                    "x": 1325,
+                    "y": 500
+                }
+            },
+            {
+                "name": "goto_xy_with_avoid",
+                "args": {
+                    "x": 850,
+                    "y": 500
+                }
+            }
+            ]
+        },
+        {
+            "x": 750,
+            "y": 1350,
+            "score": 0,
+            "actions": [
+            {
+                "name": "goto_xy_without_avoid",
+                "args": {
+                    "x": 1200,
+                    "y": 1350
+                }
+            },
+            {
+                "name": "goto_xy_with_avoid",
+                "args": {
+                    "x": 575,
+                    "y": 375
+                }
+            }
+            ]
+        }
+]
+}
