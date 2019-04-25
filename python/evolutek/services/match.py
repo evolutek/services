@@ -43,7 +43,7 @@ class Match(Service):
         self.color = None
         self.match_status = 'unstarted'
         self.score = 0
-        self.timer = Timer(self.match_time - 5, self.match_end)
+        self.timer = Timer(self.match_time, self.match_end)
         self.interface_status = InterfaceStatus.init
 
         # PAL status
@@ -282,7 +282,7 @@ class Match(Service):
         print('Reset match')
         self.match_status = 'unstarted'
         self.score = 0
-        self.timer = Timer(self.match_time - 5, self.match_end)
+        self.timer = Timer(self.match_time, self.match_end)
 
         if not self.set_color(color):
             self.interface_status = InterfaceStatus.init
