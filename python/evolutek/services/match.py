@@ -1,3 +1,4 @@
+import socket
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
@@ -275,7 +276,9 @@ class Match(Service):
         self.timer.start()
         self.match_status = 'started'
         print('Match start')
+
         self.start_experiment()
+        self.score += 40
 
     """ Action """
 
