@@ -42,8 +42,7 @@ class Map(Service):
         #self.map.add_circle_obstacle(1000, 1500, 150, "robot", ObstacleType.robot)
 
         # Example
-        self.path = None
-        #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
+        self.path = []
 
         # TIM
         self.lock = Lock()
@@ -52,6 +51,7 @@ class Map(Service):
         self.robots = []
         self.line_of_sight = []
         self.pal_telem = None
+        self.goal = None
         self.color = None
         self.tim = None
 
@@ -95,6 +95,10 @@ class Map(Service):
             if not status is None:
                 self.publish("pal_near_wall", status=status)
 
+    @Service.event
+    def pal_goal(self, point):
+        self.goal = point
+
     @Service.thread
     def loop_scan(self):
         while True:
@@ -126,8 +130,16 @@ class Map(Service):
                     self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'], type=ObstacleType.robot)
                 self.publish('opponents', robots=self.robots)
 
-            #self.path = self.map.get_path(Point(1650, 225), Point(1650, 2775))
             sleep(self.refresh)
+
+    @Service.thread
+    def loop_path(self):
+        while True:
+            if not self.goal is None:
+                self.path = self.map.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
+            else:
+                self.path = []
+            sleep(0.5)
 
     @Service.action
     def is_facing_wall(self, telemetry):
