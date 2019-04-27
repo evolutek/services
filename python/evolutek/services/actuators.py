@@ -106,14 +106,14 @@ class Actuators(Service):
         self.open_arms()
         self.enable_suction_arms()
 
-        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
+        self.trajman.move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
 
         self.close_arms()
         self.disable_suction_arms()
 
-        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
+        self.trajman.move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -136,13 +136,13 @@ class Actuators(Service):
         self.open_arm_goldenium()
         self.enable_suction_goldenium()
 
-        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=1)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
 
         self.close_arms()
 
-        self.trajman.move_trsl(dest=40, acc=100, dec=100, maxspeed=500, sens=0)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -150,7 +150,7 @@ class Actuators(Service):
     def drop_goldenium(self):
         self.open_arm_goldenium()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=1)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
 
@@ -158,9 +158,6 @@ class Actuators(Service):
 
         self.close_arms()
 
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=500, sens=0)
-        while self.trajman.is_moving():
-            sleep(0.1)
 
     """ CLAPET """
     @Service.action
@@ -176,10 +173,10 @@ class Actuators(Service):
     @Service.action
     def drop_palet(self):
         self.lower_palet()
-        self.trajman.move_trsl(dest=100, acc=400, dec=400, maxspeed=600, sens=1)
+        self.trajman.move_trsl(dest=100, acc=200, dec=200, maxspeed=600, sens=1)
         while self.trajman.is_moving():
             sleep(0.1)
-        self.trajman.move_trsl(dest=100, acc=4000, dec=400, maxspeed=600, sens=0)
+        self.trajman.move_trsl(dest=100, acc=200, dec=200, maxspeed=400, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
             
@@ -192,8 +189,7 @@ class Actuators(Service):
     """ Ejecteur """
     ##TODO: Use PWM fct instead of write_gpio
 
-    @Service.action
-    def reset_ejecteur(self):
+    def reset_ejecteur_func(self):
         contact = None
 
         if self.color == self.color1:
@@ -211,7 +207,11 @@ class Actuators(Service):
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
 
     @Service.action
-    def push_ejecteur(self):
+    def reset_ejecteur(self):
+        thread = Thread(target=reset_ejecteur_func, args=(self))
+        thread.start()
+
+    def push_ejecteur_func(self):
         contact = None
 
         if self.color != self.color1:
@@ -227,6 +227,11 @@ class Actuators(Service):
             while int(self.cs.gpios['pal'].read_gpio(id=contact)) != 1:
                 sleep(0.1)
             self.cs.gpios['pal'].write_gpio(value=0, id=13)
+
+    @Service.action
+    def push_ejecteur(self):
+        thread = Thread(target=reset_ejecteur_func, args=(self))
+        thread.start()
 
     """ EXP """
     @Service.action

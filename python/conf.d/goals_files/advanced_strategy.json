@@ -89,27 +89,6 @@
     },
     "goals": [
         {
-            "x": 600,
-            "y": 225,
-            "score": 40,
-            "actions": [
-                {
-                    "name": "goto_xy_without_avoid",
-                    "args": {
-                        "x": 120,
-                        "y": 225
-                    }
-                },
-                {
-                    "name": "goto_xy_with_avoid",
-                    "args": {
-                        "x": 200,
-                        "y": 225
-                    }
-                }
-            ]
-        },
-        {
             "x": 800,
             "y": 1300,
             "score": 9,
@@ -131,7 +110,7 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "x": 1270,
+                        "x": 1210,
                         "y": 600
                     }
                 },
@@ -147,7 +126,7 @@
                 {
                     "name": "goto_xy_with_avoid",
                     "args": {
-                        "x": 1270,
+                        "x": 1210,
                         "y": 900
                     }
                 },
