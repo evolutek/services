@@ -41,6 +41,8 @@ class Map(Service):
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
         #self.map.add_circle_obstacle(1000, 1500, 150, "robot", ObstacleType.robot)
 
+        #self.debug = True
+
         # Example
         self.path = []
 
@@ -60,7 +62,6 @@ class Map(Service):
             self.match_color(color)
         except Exception as e:
             print('Failed to get color: %s' % str(e))
-            raise Exception()
 
         super().__init__()
 
@@ -91,13 +92,32 @@ class Map(Service):
     def pal_telemetry(self, status, telemetry):
         if status is not 'failed':
             self.pal_telem = telemetry
-            status = self.is_facing_wall(telemetry)
-            if not status is None:
-                self.publish("pal_near_wall", status=status)
 
     @Service.event
     def pal_goal(self, point):
         self.goal = point
+
+    # HACK
+    @Service.thread
+    def fake_robot(self):
+        robot = {'x': 250, 'y': 1500}
+        ascending = True
+        while True:
+            if ascending:
+                robot['x'] += 10
+                if robot['x'] > 1750:
+                    robot['x'] = 1749
+                    ascending = False
+            else:
+                robot['x'] -= 10
+                if robot['x'] < 250:
+                    robot['x'] = 251
+                    ascending = True
+
+            self.map.remove_obstacle('fake')
+            self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag='fake', type=ObstacleType.robot)
+
+            sleep(0.15)
 
     @Service.thread
     def loop_scan(self):
@@ -116,7 +136,6 @@ class Map(Service):
                 self.robots.clear()
 
                 i = 0
-                print(robots)
                 for point in robots:
                     # Check if point is not one of our robots
                     if self.pal_telem and point.dist(self.pal_telem) < self.delta_dist:
@@ -128,6 +147,7 @@ class Map(Service):
 
                 for robot in self.robots:
                     self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag=robot['tag'], type=ObstacleType.robot)
+
                 self.publish('opponents', robots=self.robots)
 
             sleep(self.refresh)
@@ -136,10 +156,11 @@ class Map(Service):
     def loop_path(self):
         while True:
             if not self.goal is None:
+                print('computing path')
                 self.path = self.map.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
             else:
                 self.path = []
-            sleep(0.5)
+            sleep(0.1)
 
     @Service.action
     def is_facing_wall(self, telemetry):
