@@ -96,6 +96,7 @@ class Gpios(Service):
         self.refresh = float(cs.config.get(section='gpios', option='refresh'))
         self.refresh = 1.0
         self.gpios = []
+        self.lcd_status = [None, None]
         GPIO.setmode(GPIO.BCM)
         super().__init__(ROBOT)
         self.lcd = lcd()
@@ -163,9 +164,11 @@ class Gpios(Service):
     def write_status(self, score=None, status=None):
         self.lcd.lcd_display_string(" " * 16, 1)
         self.lcd.lcd_display_string(" " * 16, 2)
-        if not score is None:
+        if not score is None and self.lcd_status[0] != score:
+            self.lcd_status[0] = score
             self.lcd.lcd_display_string("Score: %s" % score, 2)
-        if not status is None:
+        if not status is None and self.lcd_status[1] != status :
+            self.lcd_status[1] = status
             self.lcd.lcd_display_string("Status: %s" % status, 1)
 
     @Service.action
