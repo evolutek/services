@@ -173,6 +173,31 @@ class Gpios(Service):
             return True
         return False
 
+<<<<<<< HEAD
+=======
+    """ LCD """
+    @Service.action
+    def write_lcd(self, string, line):
+        if isinstance(line, str):
+            line = int(line)
+        self.lcd.lcd_display_string(string, line)
+
+    @Service.action
+    def write_status(self, score=None, status=None):
+        self.lcd.lcd_display_string(" " * 16, 1)
+        self.lcd.lcd_display_string(" " * 16, 2)
+        if not score is None and self.lcd_status[0] != score:
+            self.lcd_status[0] = score
+            self.lcd.lcd_display_string("Score: %s" % score, 2)
+        if not status is None and self.lcd_status[1] != status :
+            self.lcd_status[1] = status
+            self.lcd.lcd_display_string("Status: %s" % status, 1)
+
+    @Service.action
+    def clear_lcd(self):
+        self.lcd.lcd_clear()
+
+>>>>>>> Patch lcd
     """ GPIOS """
     @Service.action
     def print_gpios(self):
