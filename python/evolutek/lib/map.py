@@ -178,6 +178,17 @@ class Map:
                 return True
         return False
 
+    def is_inside_obstacle(self, point):
+        for obstacle in self.obstacles:
+            if isinstance(obstacle, RectangleObstacle):
+                if point.x >= obstacle.x1 and point.x <= obstacle.x2 and\
+                    point.y >= obstacle.y1 and point.y <= obstacle.y2:
+                    return True
+            elif isinstance(obstacle, CircleObstacle):
+                if point.dist(obstacle.center) <= obstacle.radius:
+                    return True
+        return False
+
     def print_map(self):
         print('-' * (self.width + 2))
         for x in range(self.height + 1):
@@ -306,6 +317,11 @@ class Map:
 
     def is_correct_trajectory(self, p1, p2):
 
+        print(p1, p2)
+
+        if p1 == p2:
+            return True
+
         # Compute 2nd degree equation between two points
         dy = False
         a = 0
@@ -337,10 +353,11 @@ class Map:
             else:
                 x = start.x + i
                 y = x * a + b
+
             p = self.convert_point(x, y)
 
             # Check if the current point is empty
-            if not self.map[p.x][p.y].is_empty():
+            if self.is_inside_obstacle(p):
                 return False
         return True
 
