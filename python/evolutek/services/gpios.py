@@ -162,12 +162,12 @@ class Gpios(Service):
 
     @Service.action
     def write_status(self, score=None, status=None):
-        self.lcd.lcd_display_string(" " * 16, 1)
-        self.lcd.lcd_display_string(" " * 16, 2)
         if not score is None and self.lcd_status[0] != score:
+            self.lcd.lcd_display_string(" " * 16, 2)
             self.lcd_status[0] = score
             self.lcd.lcd_display_string("Score: %s" % score, 2)
         if not status is None and self.lcd_status[1] != status :
+            self.lcd.lcd_display_string(" " * 16, 1)
             self.lcd_status[1] = status
             self.lcd.lcd_display_string("Status: %s" % status, 1)
 
