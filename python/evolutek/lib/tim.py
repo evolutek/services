@@ -105,7 +105,7 @@ class Tim:
 
 
     def scan(self):
-        print("Send a scan request to the TIM")
+        #("Send a scan request to the TIM")
         self.socket.sendall("\x02sRN LMDscandata\x03\0".encode())
         data = ""
         while 1:
@@ -124,9 +124,7 @@ class Tim:
         clean_points = self.cleanup(raw_points)
         shapes = self.split_raw_data(clean_points)
         robots = self.compute_center(shapes)
-        for a in robots:
-          print(a)
-        print("End scanning")
+        #print("End scanning")
         return clean_points, shapes, robots
 
     def loop_scan(self):
@@ -134,10 +132,8 @@ class Tim:
           sleep(.1)
           new_data = self.scan()
           self.lock.acquire()
-          print("window size: %d" % len(self.window))
           if len(self.window) == self.window_size:
               self.window.pop(0)
-          print("window size: %d" % len(self.window))
 
           self.window.append(self.scan())
           self.lock.release()
@@ -148,12 +144,12 @@ class Tim:
         return robots
 
 
-
     def get_scan(self):
         if self.window == []:
           return None
         self.lock.acquire()
-        robots = self.merge_window()[-1]
+        scan = self.window[-1]
+        raw_data, shapes, robots = scan[0], scan[1], scan[2]
         self.lock.release()
         #raw_data = self.scan()
         #print(robots)
