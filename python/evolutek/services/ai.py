@@ -69,6 +69,12 @@ class Ai(Service):
         super().__init__(ROBOT)
         self.setup(recalibration=False)
 
+    """ TIMER """
+    @Service.thread
+    def timer(self):
+        sleep(1)
+        timer += 1
+
     """ SETUP """
     @Service.event('%s_reset' % ROBOT)
     @Service.action
@@ -346,18 +352,30 @@ class Ai(Service):
     """ WAIT FOR END OF DETECTION """
     def wait_until_detection_end(self):
         current_time = self.time
+<<<<<<< HEAD
         avoid_stat = self.cs.avoid[ROBOT].status()
         if self.side is not None and avoid_stat is not None:
+=======
+        self.avoid_stat = self.avoid.status()
+        if self.side is not None and self.avoid_stat is not None:
+>>>>>>> [AI] Add timeout in avoid
             field = ''
             if self.side == 'front':
                 field = 'front_detected'
             else:
                 field = 'back_detected'
+<<<<<<< HEAD
             while not self.ending.isSet() and not self.timeout_event.isSet()\
                 and avoid_stat[field] is not None and len(avoid_stat[field]) > 0:
                 if current_time - self.time > 2:
                     print('[AI] Timeout, need to backup') #TODO backup
                 avoid_stat = self.cs.avoid[ROBOT].status()
+=======
+            while not self.ending.isSet() and self.avoid_stat[field] is not None and len(self.avoid_stat[field]) > 0:
+                if current_time - self.time > 2:
+                    print('[AI] Timeout, need to backup') #TODO backup
+                self.avoid_stat = self.avoid.status()
+>>>>>>> [AI] Add timeout in avoid
                 print('-----avoiding-----')
                 sleep(0.1)
             if not self.timeout_event.isSet():
