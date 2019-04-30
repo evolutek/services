@@ -3,7 +3,6 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.settings import ROBOT
-from evolutek.lib.zone import Zone
 
 import os
 from time import sleep
@@ -13,7 +12,6 @@ from time import sleep
 class Avoid(Service):
     def __init__(self):
         self.cs = CellaservProxy()
-        self.trajman = self.cs.trajman[ROBOT]
         self.refresh = float(self.cs.config.get(section='avoid', option='refresh'))
 
         self.telemetry = None
@@ -21,8 +19,6 @@ class Avoid(Service):
         self.back_detected = []
         self.avoid = False
         self.enabled = True
-
-        self.zones = Zone.parse('/etc/conf.d/zones.json')
 
         super().__init__(ROBOT)
 
@@ -60,16 +56,16 @@ class Avoid(Service):
     @Service.action
     def stop_robot(self, side=None):
         print('----- Aborting: %s ---' % side)
-        self.trajman.stop_asap(1500, 30)
-        self.avoid = True
-        print('[AVOID] Stopping robot, %s detection triggered' % side)
 
         ##TODO: compute pos of tmp robot
-
         try:
+            self.cs.trajman[ROBOT].stop_asap(1500, 30)
             self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:
             print('Failed to abort ai of %s: %s' % (ROBOT, str(e)))
+            return
+        self.avoid = True
+        print('[AVOID] Stopping robot, %s detection triggered' % side)
 
     @Service.action
     def enable(self):
