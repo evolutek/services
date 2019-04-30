@@ -2,7 +2,6 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from enum import Enum
 from evolutek.lib.settings import ROBOT
-from evolutek.lib.lcddriver import lcd
 from threading import Lock, Thread
 from time import sleep
 import RPi.GPIO as GPIO
@@ -82,10 +81,7 @@ class Gpio(Io):
             return False
         if isinstance(value, str):
             value = value == "true"
-        if value:
-            GPIO.output(self.id, GPIO.HIGH)
-        else:
-            GPIO.output(self.id, GPIO.LOW)
+        GPIO.output(self.id, GPIO.HIGH if value else GPIO.LOW)
         return True
 
 @Service.require('config')
@@ -96,11 +92,12 @@ class Gpios(Service):
         self.refresh = float(cs.config.get(section='gpios', option='refresh'))
         self.refresh = 1.0
         self.gpios = []
-        self.lcd_status = [None, None]
-        GPIO.setmode(GPIO.BCM)
+        try:
+            GPIO.setmode(GPIO.BCM)
+        except Exception as e:
+            print('Failed to gpio mode: %s' % str(e))
+            raise Exception('[GPIOS] Failed to start gpios service')
         super().__init__(ROBOT)
-        self.lcd = lcd()
-        self.clear_lcd()
 
     """ Action """
 
@@ -108,14 +105,22 @@ class Gpios(Service):
     @Service.action
     def add_gpio(self, id, name, dir=False, event=None, update=True, edge=None, default_value=False):
         if self.get_gpio(id, name) is None:
-            self.gpios.append(Gpio(id, name, dir=dir, event=event, update=update, edge=edge, default_value=default_value))
+            try:
+                self.gpios.append(Gpio(id, name, dir=dir, event=event, update=update, edge=edge, default_value=default_value))
+            except Exception as e:
+                print("[GPIOS] Failed to add gpio %s,%s: %s" % (name, str(id), str(e)))
 
     @Service.action
     def read_gpio(self, id=None, name=None):
         gpio = self.get_gpio(id, name)
         if gpio is None or not hasattr(gpio, 'read'):
             return None
-        return gpio.read()
+        value = None
+        try:
+            value = gpio.read()
+        except Exception as e:
+            print("[GPIOS] Failed to read gpio %s,%s: %s" % (gpio.name, str(gpio.id), str(e)))
+        return value
 
     @Service.action
     def write_gpio(self, value, id=None, name=None):
@@ -123,7 +128,11 @@ class Gpios(Service):
         if gpio is None:
             return False
         if hasattr(gpio, 'write'):
-            gpio.write(value)
+            try:
+                gpio.write(value)
+            except Exception as e:
+                print("[GPIOS] Failed to write gpio %s,%s: %s" % (gpio.name, str(gpio.id), str(e)))
+                return False
             return True
         return False
 
@@ -131,7 +140,10 @@ class Gpios(Service):
     @Service.action
     def add_pwm(self, id, name, dc=0, freq=0):
         if self.get_gpio(id, name) is None:
-            self.gpios.append(Pwm(id, name, dc=dc, freq=freq))
+            try:
+                self.gpios.append(Pwm(id, name, dc=dc, freq=freq))
+            except Exception as e:
+                print("[GPIOS] Failed to add pwm %s,%s: %s" % (name, str(id), str(e)))
 
     @Service.action
     def start_pwm(self, dc, id=None, name=None):
@@ -139,7 +151,11 @@ class Gpios(Service):
         if gpio is None:
             return False
         if hasattr(gpio, 'start'):
-            gpio.start(dc)
+            try:
+                gpio.start(dc)
+            except Exception as e:
+                print("[GPIOS] Failed to start pwm %s,%s: %s" % (gpio.name, str(gpio.id), str(e)))
+                return False
             return True
         return False
 
@@ -149,31 +165,13 @@ class Gpios(Service):
         if gpio is None:
             return False
         if hasattr(gpio, 'stop'):
-            gpio.stop()
+            try:
+                gpio.sttop()
+            except Exception as e:
+                print("[GPIOS] Failed to stop pwm %s,%s: %s" % (gpio.name, str(gpio.id), str(e)))
+                return False
             return True
         return False
-
-    """ LCD """
-    @Service.action
-    def write_lcd(self, string, line):
-        if isinstance(line, str):
-            line = int(line)
-        self.lcd.lcd_display_string(string, line)
-
-    @Service.action
-    def write_status(self, score=None, status=None):
-        if not score is None and self.lcd_status[0] != score:
-            self.lcd.lcd_display_string(" " * 16, 2)
-            self.lcd_status[0] = score
-            self.lcd.lcd_display_string("Score: %s" % score, 2)
-        if not status is None and self.lcd_status[1] != status :
-            self.lcd.lcd_display_string(" " * 16, 1)
-            self.lcd_status[1] = status
-            self.lcd.lcd_display_string("Status: %s" % status, 1)
-
-    @Service.action
-    def clear_lcd(self):
-        self.lcd.lcd_clear()
 
     """ GPIOS """
     @Service.action
