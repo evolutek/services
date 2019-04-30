@@ -159,6 +159,38 @@ class Actuators(Service):
 
         self.close_arms()
 
+    @Service.action
+    def get_blue_palet(self):
+        self.cs.ax['2'].move(goal=492)
+        sleep(0.5)
+        self.enable_suction_arms()
+
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
+        while self.trajman.is_moving():
+            sleep(0.1)
+
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.trajman.is_moving():
+            sleep(0.1)
+
+        self.cs.ax['2'].move(goal=250)
+        sleep(0.5)
+
+    @Service.action
+    def drop_blue_palet(self):
+        self.cs.ax['2'].move(goal=492)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=1)
+        while self.trajman.is_moving():
+            sleep(0.1)
+
+        self.disable_suction_arms()
+        sleep(0.2)
+
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.trajman.is_moving():
+            sleep(0.1)
+
+        self.close_arms()
 
     """ CLAPET """
     @Service.action
@@ -180,7 +212,7 @@ class Actuators(Service):
         self.trajman.move_trsl(dest=100, acc=200, dec=200, maxspeed=400, sens=0)
         while self.trajman.is_moving():
             sleep(0.1)
-            
+
         self.open_clapet()
         self.push_ejecteur()
         self.reset_ejecteur()
@@ -210,7 +242,7 @@ class Actuators(Service):
 
     #@Service.action
     #def reset_ejecteur(self):
-    #    thread = Thread(target=self.reset_ejecteur_func, args=()) 
+    #    thread = Thread(target=self.reset_ejecteur_func, args=())
     #    thread.daemon = True
     #    thread.start()
 
