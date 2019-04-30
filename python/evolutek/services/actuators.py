@@ -3,7 +3,6 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 from evolutek.lib.settings import ROBOT
-from evolutek.lib.watchdog import Watchdog
 from math import pi
 from time import sleep
 import os
