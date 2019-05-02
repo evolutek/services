@@ -4,6 +4,7 @@ from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 from evolutek.lib.goals import Goals
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.watchdog import Watchdog
 
 from enum import Enum
 from math import sqrt
@@ -17,7 +18,8 @@ class State(Enum):
     Selecting = 3
     Making = 4
     Ending = 5
-    Error = 6
+    Aborting = 6
+    Error = 42
 
 ##TODO: Check errors and set to Error State
 @Service.require('avoid', ROBOT)
@@ -57,7 +59,8 @@ class Ai(Service):
         self.tmp_robot = None
 
         # Timer
-        self.timer = 0
+        self.timeout_watchdog = Watchdog(5, self.timeout_handler)
+        self.timeout_event = Event()
 
         # Match config
         self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
@@ -65,12 +68,6 @@ class Ai(Service):
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
         self.setup(recalibration=False)
-
-    """ TIMER """
-    @Service.thread
-    def timer(self):
-        sleep(1)
-        timer += 1
 
     """ SETUP """
     @Service.event('%s_reset' % ROBOT)
@@ -131,6 +128,8 @@ class Ai(Service):
 
         self.aborting.clear()
         self.ending.clear()
+        self.timeout_event.clear()
+        self.timeout_watchdog = Watchdog(5, timeout_handler)
 
         self.state = State.Waiting
         print('[AI] Waiting')
@@ -190,8 +189,24 @@ class Ai(Service):
                 return
 
             if self.aborting.isSet():
+                print("[AI][MAKING] Aborted")
+                self.state = State.Aborting
+                self.timeout_watchdog.reset()
                 self.wait_until_detection_end()
+                self.timeout_watchdog.stop()
+                self.timeout_watchdog = Watchdog(5, timeout_handler)
 
+            if self.ending.isSet():
+                return
+
+            tmp_pos = pos = self.cs.trajman[ROBOT].get_position()
+            if self.side is not None and sqrt((pos['x'] - tmp_pos['x'])**2 + (pos['y'] - tmp_pos['y'])**2) >= 50:
+                self.cs.trajman[ROBOT].move_trsl(50, 100, 100, 500, self.side=='front')
+
+            if self.ending.isSet():
+                return
+
+            self.state = State.Making
             pos = self.cs.trajman[ROBOT].get_position()
 
         """ Goto theta if there is one """
@@ -206,8 +221,17 @@ class Ai(Service):
                     return
 
                 if self.aborting.isSet():
+                    print("[AI][MAKING] Aborted")
+                    self.state = State.Aborting
+                    self.timeout_watchdog.reset()
                     self.wait_until_detection_end()
+                    self.timeout_watchdog.stop()
+                    self.timeout_watchdog = Watchdog(5, timeout_handler)
 
+                if self.ending.isSet():
+                    return
+
+                self.state = State.Making
                 pos = self.cs.trajman[ROBOT].get_position()
 
         """ Make all actions """
@@ -242,7 +266,12 @@ class Ai(Service):
 
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
+                self.state = State.Aborting
+                self.timeout_watchdog.reset()
                 self.wait_until_detection_end()
+                self.timeout_watchdog.stop()
+                self.timeout_watchdog = Watchdog(5, timeout_handler)
+                self.state = State.Making
                 continue
 
             if self.ending.isSet():
@@ -324,14 +353,21 @@ class Ai(Service):
                 field = 'front_detected'
             else:
                 field = 'back_detected'
-            while not self.ending.isSet() and avoid_stat[field] is not None and len(avoid_stat[field]) > 0:
+            while not self.ending.isSet() and not self.timeout_event.isSet()\
+                and avoid_stat[field] is not None and len(avoid_stat[field]) > 0:
                 if current_time - self.time > 2:
                     print('[AI] Timeout, need to backup') #TODO backup
                 avoid_stat = self.cs.avoid[ROBOT].status()
                 print('-----avoiding-----')
                 sleep(0.1)
-            side = None
+            if not self.timeout_event.isSet():
+                self.side = None
         self.aborting.clear()
+        self.timeout_event.clear()
+
+    """ Timeout handler """
+    def timeout_handler(self):
+        self.timeout_event.set()
 
 def main():
     ai = Ai()
