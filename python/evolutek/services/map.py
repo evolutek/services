@@ -98,7 +98,7 @@ class Map(Service):
         self.goal = point
 
     # HACK
-    @Service.thread
+    #@Service.thread
     def fake_robot(self):
         robot = {'x': 250, 'y': 1500}
         ascending = True
