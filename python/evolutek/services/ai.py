@@ -64,6 +64,7 @@ class Ai(Service):
 
         # Match config
         self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.current_path = None
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -136,10 +137,7 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
-        # TODO: patch
         # WAIT FOR END OF DETECTION """
-        self.wait_until_detection_end()
-
         if self.ending.isSet():
             return
 
@@ -155,8 +153,6 @@ class Ai(Service):
             self.end()
 
         self.making()
-
-        # TODO: Select a goal
 
     """ MAKING """
     def making(self):
@@ -174,10 +170,8 @@ class Ai(Service):
             self.avoid_disable = False
             self.cs.avoid[ROBOT].enable()
 
-        #Goto x y
-        self.goto_xy_theta()
-
-        #TODO: use path
+        #Goto x y with path
+        self.goto_xy_theta_with_path()
 
         #Make all actions
         self.make_actions()
@@ -270,7 +264,6 @@ class Ai(Service):
     """ Going Back """
     def going_back(self, last_point):
         print('-----Going back-----')
-        #TODO Check dist with previous point (path)
         tmp_pos = self.cs.trajman[ROBOT].get_position()
         dist = min(Point.dist_dict(tmp_pos, last_point), 250)
         self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
@@ -308,8 +301,9 @@ class Ai(Service):
     """ Goto with path """
     def goto_xy_theta_with_path(self):
         for i in range(1, len(self.goal.path)):
-            p = self.goal.path[i]
-            print("[AI] Going to x : " + p.x + ", y : " + p.y + ", theta : " + p.theta)
+            if self.current_path is None:
+                self.current_path = self.goal.path[i]
+            print("[AI] Going to x : " + self.current_path.x + ", y : " + self.current_path.y)
             pos = self.cs.trajman[ROBOT].get_position()
             while p.dist(pos) > 5:
                 self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
@@ -329,9 +323,18 @@ class Ai(Service):
                 if self.side is not None:
                     self.going_back(self.goal.path[i - 1])
                     self.side = None
-                    # TODO: we can be in avoiding state
+                    if self.aborting.isSet():
+                        self.side = None
+                        # TODO: Recompute path
+                        try:
+                            self.current_path = self.cs.map.get_path(start_x, start_y, dest_x, dest_y)
+                            break
+                        except Exception as e:
+                            # TODO: manage error
 
-                # TODO: Recompute path
+                    else:
+                        self.current_path = None
+
 
                 if self.ending.isSet():
                     return
