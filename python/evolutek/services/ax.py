@@ -3,6 +3,7 @@ import ctypes
 import os
 
 from cellaserv.service import Service
+from evolutek.lib.settings import ROBOT
 
 LIBDXL_PATH = [".", "/usr/lib"]
 
@@ -120,7 +121,10 @@ def wait_for_beacon():
 
 def main():
     wait_for_beacon()
-    axs = [Ax(ax=i) for i in [1, 2, 3, 4]]  # MAIN
+    if ROBOT == 'pal':
+        axs = [Ax(ax=i) for i in [1, 2, 3, 4]]  # MAIN
+    elif ROBOT == 'pmi':
+        axs = [Ax(ax=i) for i in [11, 12]]  # MAIN
     Service.loop()
 
 if __name__ == "__main__":
