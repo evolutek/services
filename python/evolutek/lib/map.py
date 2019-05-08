@@ -246,6 +246,9 @@ class Map:
                 cur = pred[cur]
                 path.insert(0, cur)
             path.insert(0, start)
+            print('Complete Dijkstra')
+        else:
+            print("Target obstructed")
 
         path  = self.path_opti(self.smooth(path))
         #path = self.smooth(path)
