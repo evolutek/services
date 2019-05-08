@@ -268,11 +268,11 @@ class Ai(Service):
         self.timeout_event.clear()
 
     """ Going Back """
-    def going_back(self, pos):
+    def going_back(self, last_point):
         print('-----Going back-----')
         #TODO Check dist with previous point (path)
         tmp_pos = self.cs.trajman[ROBOT].get_position()
-        dist = min(Point.dist_dict(tmp_pos, pos), 250)
+        dist = min(Point.dist_dict(tmp_pos, last_point), 250)
         self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
@@ -307,7 +307,8 @@ class Ai(Service):
 
     """ Goto with path """
     def goto_xy_theta_with_path(self):
-        for p in self.goal.path:
+        for i in range(1, len(self.goal.path)):
+            p = self.goal.path[i]
             print("[AI] Going to x : " + p.x + ", y : " + p.y + ", theta : " + p.theta)
             pos = self.cs.trajman[ROBOT].get_position()
             while p.dist(pos) > 5:
@@ -326,7 +327,7 @@ class Ai(Service):
                     return
 
                 if self.side is not None:
-                    self.going_back(pos)
+                    self.going_back(self.goal.path[i - 1])
                     self.side = None
                     # TODO: we can be in avoiding state
 
