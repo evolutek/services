@@ -35,6 +35,8 @@ class Match(Service):
         self.timeout_robot = float(self.cs.config.get(section='match', option='timeout_robot'))
         self.interface_refresh = int(self.cs.config.get(section='match', option='interface_refresh'))
         self.interface_ratio = float(self.cs.config.get(section='match', option='interface_ratio'))
+
+        # Robots config
         self.pal_size_x = int(self.cs.config.get(section='pal', option='robot_size_x'))
         self.pal_size_y = int(self.cs.config.get(section='pal', option='robot_size_y'))
         self.pmi_size_x = int(self.cs.config.get(section='pmi', option='robot_size_x'))
@@ -50,23 +52,24 @@ class Match(Service):
         # PAL status
         self.pal_ai_s = None
         self.pal_telem = None
+        self.pal_path = []
         self.pal_watchdog = Watchdog(self.timeout_robot, self.reset_pal_status)
 
         # PMI status
-        #self.pmi_ai_s = None
-        #self.pmi_avoid_s = None
-        #self.pmi_telem = None
-        #self.pmi_watchdog = Watchdog(self.timeout_robot, self.reset_pmi_status)
+        self.pmi_ai_s = None
+        self.pmi_telem = None
+        self.pmi_path = []
+        self.pmi_watchdog = Watchdog(self.timeout_robot, self.reset_pmi_status)
 
         # Oppenents positions
         self.robots = []
         self.robots_watchdog = Watchdog(self.timeout_robot, self.reset_robots)
 
         super().__init__()
-        print('Match ready')
+        print('[MATCH] Match ready')
 
 
-    """ Interface """
+    """ INTERFACE """
 
     def close(self):
         self.window.destroy()
@@ -74,31 +77,55 @@ class Match(Service):
 
     def set_color_interface(self):
         close_button = Button(self.window, text='Close', command=self.close)
-        green_button = Button(self.window, text=self.color1,
+        color1_button = Button(self.window, text=self.color1,
             command=lambda: self.set_color(self.color1), bg=self.color1, height=10, width=20)
-        orange_button = Button(self.window, text=self.color2,
+        color2_button = Button(self.window, text=self.color2,
             command=lambda: self.set_color(self.color2), bg=self.color2, height=10, width=20)
         close_button.grid(row=1, column=2)
-        green_button.grid(row=3, column=1)
-        orange_button.grid(row=3, column=3)
+        color1_button.grid(row=3, column=1)
+        color2_button.grid(row=3, column=3)
 
     def set_match_interface(self):
+
+        # Close button
         close_button = Button(self.window, text='Close', command=self.close)
         close_button.grid(row=1, column=1)
+
+        # Reset Button
         reset_button = Button(self.window, text='Reset Match', command=self.reset_match)
         reset_button.grid(row=1, column=3)
+
+        # Map
         self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
         self.canvas.grid(row=4, column=1, columnspan=3)
-        self.pal_ai_status_label = Label(self.window,
-            text="PAL status: %s" % (self.pal_ai_s if self.pal_ai_s is not None else 'PAL not connected'))
+
+        # PAL AI STATUS
+        text = 'PAL not connected'
+        if not self.pal_ai_s is None:
+            text = self.pal_ai_s
+        elif not self.pal_telem is None:
+            text = 'AI not launched'
+        self.pal_ai_status_label = Label(self.window, text="PAL status: %s" % text)
         self.pal_ai_status_label.grid(row=2, column=1)
-        #self.pmi_ai_status_label = Label(self.window,
-        #    text="PMI status: %s" % (self.pmi_ai_s if self.pmi_ai_s is not None else 'PMI not connected'))
-        #self.pmi_ai_status_label.grid(row=3, column=1)
+
+        # PMI AI STATUS
+        text = 'PMI not connected'
+        if not self.pal_ai_s is None:
+            text = self.pal_ai_s
+        elif not self.pal_telem is None:
+            text = 'AI not launched'
+        self.pmi_ai_status_label = Label(self.window, text="PMI status: %s" % text)
+        self.pmi_ai_status_label.grid(row=3, column=1)
+
+        # Color
         self.color_label = Label(self.window, text="Color: %s" % self.color, fg=self.color)
         self.color_label.grid(row=2, column=3)
+
+        # Score
         self.score_label = Label(self.window, text="Score: %d" % self.score)
         self.score_label.grid(row=3, column=3)
+
+        # Match status
         self.match_status_label = Label(self.window, text="Match status: %s" % self.match_status)
         self.match_status_label.grid(row=2, column=2)
 
@@ -111,14 +138,6 @@ class Match(Service):
         score_label.grid(row=2, column=1, columnspan=3)
 
     def print_robot(self, robot, size, color):
-        if "shape" in robot and robot["shape"] == "circle":
-            self.canvas.create_oval(
-                (robot['y'] - size) * self.interface_ratio,
-                (robot['x'] - size) * self.interface_ratio,
-                (robot['y'] + size) * self.interface_ratio,
-                (robot['x'] + size) * self.interface_ratio,
-                width=2, fill=color)
-            return
         if 'theta' in robot:
             x = robot['y'] * self.interface_ratio
             y = robot['x'] * self.interface_ratio
@@ -142,12 +161,30 @@ class Match(Service):
 
             self.canvas.create_polygon(new_points, fill=color)
             return
+
         self.canvas.create_rectangle(
             (robot['y'] - size) * self.interface_ratio,
             (robot['x'] - size) * self.interface_ratio,
             (robot['y'] + size) * self.interface_ratio,
             (robot['x'] + size) * self.interface_ratio,
             width=2, fill=color)
+
+    def print_path(self, path, color_path, color_point):
+        for i in range(1, len(path)):
+            p1 = path[i - 1]
+            p2 = path[i]
+
+            size = 10 * self.interface_ratio
+
+            self.canvas.create_line(p1['y'] * self.interface_ratio, p1['x'] * self.interface_ratio,
+                p2['y'] * self.interface_ratio, p2['x'] * self.interface_ratio, width=size, fill=color_path)
+
+        for p in path:
+            x1 = (p['y'] - size) * self.interface_ratio
+            x2 = (p['y'] + size) * self.interface_ratio
+            y1 = (p['x'] - size) * self.interface_ratio
+            y2 = (p['x'] + size) * self.interface_ratio
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill=color_point)
 
 
     def update_interface(self):
@@ -177,15 +214,31 @@ class Match(Service):
             if self.pal_telem is not None:
                 self.print_robot(self.pal_telem, self.pal_size_y, 'orange')
 
-            #if self.pmi_telem is not None:
-            #    self.print_robot(self.pmi_telem, self.pmi_size_y, 'orange')
+            if self.pmi_telem is not None:
+                self.print_robot(self.pmi_telem, self.pmi_size_y, 'orange')
 
             for robot in self.robots:
-              print(robot)
-              self.print_robot(robot, self.robot_size, 'red')
+                print(robot)
+                self.print_robot(robot, self.robot_size, 'red')
 
-            self.pal_ai_status_label.config(text="PAL status: %s" % (self.pal_ai_s if self.pal_ai_s is not None else 'PAL not connected'))
-            #self.pmi_ai_status_label.config(text="PMI status: %s" % (self.pmi_ai_s if self.pmi_ai_s is not None else 'PMI not connected'))
+            self.print_path(self.pal_path, 'yellow', 'violet')
+            self.print_path(self.pmi_path, 'violet', 'yellow')
+
+            # PAL AI STATUS
+            text = 'PAL not connected'
+            if not self.pal_ai_s is None:
+                text = self.pal_ai_s
+            elif not self.pal_telem is None:
+                text = 'AI not launched'
+            self.pal_ai_status_label.config(text="PAL status: %s" % text)
+
+            # PMI AI STATUS
+            text = 'PMI not connected'
+            if not self.pmi_ai_s is None:
+                text = self.pmi_ai_s
+            elif not self.pmi_telem is None:
+                text = 'AI not launched'
+            self.pmi_ai_status_label.config(text="PMI status: %s" % text)
 
             self.color_label.config(text="Color: %s" % self.color)
             self.score_label.config(text="Score: %d" % self.score)
@@ -194,26 +247,30 @@ class Match(Service):
         self.window.after(self.interface_refresh, self.update_interface)
 
 
-    """ Match utilities """
+    """ MATCH UTILITIES """
 
     def reset_pal_status(self):
         self.pal_ai_s = None
         self.pal_telem = None
+        self.pmi_path = []
 
-    def start_experiment(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Ports : 4343=yellow; 4141=pink
-        s.connect(("192.168.8.10", 4343 if self.color == self.color1 else 4141))
-        s.close()
-
-    #def reset_pmi_status(self):
-    #    self.pmi_ai_s = None
-    #    self.pmi_telem = None
-    #    self.pmi_avoid_s = None
+    def reset_pmi_status(self):
+        self.pmi_ai_s = None
+        self.pmi_telem = None
+        self.pmi_path = []
 
     def reset_robots(self):
         self.robots = []
 
-    """ Event """
+    # Ports : 4343=yellow; 4141=pink
+    def start_experiment(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(("192.168.8.10", 4343 if self.color == self.color1 else 4141))
+        s.close()
+
+    # TODO: LCD on exp function
+
+    """ EVENT """
 
     """ Update score """
     @Service.event('score')
@@ -221,8 +278,7 @@ class Match(Service):
         if self.match_status != 'started':
             return
         self.score += int(value)
-        print('score is now: %d' % self.score)
-
+        print('[MATCH] score is now: %d' % self.score)
 
     """ PAL """
     @Service.event
@@ -232,7 +288,6 @@ class Match(Service):
             self.pal_telem = telemetry
         else:
             self.pal_telem = None
-            print("Could not read telemetry")
 
     @Service.event
     def pal_ai_status(self, status):
@@ -240,27 +295,20 @@ class Match(Service):
         self.pal_ai_s = status
 
     """ PMI """
-    """@Service.event
+    @Service.event
     def pmi_telemetry(self, status, telemetry):
         self.pmi_watchdog.reset()
         if status != 'failed':
             self.pmi_telem = telemetry
         else:
             self.pmi_telem = None
-            print("Could not read telemetry")
 
     @Service.event
     def pmi_ai_status(self, status):
         self.pmi_watchdog.reset()
         self.pmi_ai_s = status
 
-    @Service.event
-    def pmi_avoid_status(self, status):
-        self.pmi_watchdog.reset()
-        self.pmi_avoid_s = status"""
-
-
-    """ oppenents """
+    """ Oppenents """
     @Service.event
     def opponents(self, robots):
       self.robots = robots
@@ -275,7 +323,7 @@ class Match(Service):
         self.publish('match_start')
         self.timer.start()
         self.match_status = 'started'
-        print('Match start')
+        print('[MATCH] Match start')
 
         try:
             self.start_experiment()
@@ -283,7 +331,8 @@ class Match(Service):
         except:
             pass
 
-    """ Action """
+
+    """ ACTION """
 
     """ Reset match """
     @Service.action
@@ -310,19 +359,15 @@ class Match(Service):
     @Service.action
     def set_color(self, color):
         if color != self.color1 and color != self.color2:
-            print('Invalid color')
+            print('[MATCH] Invalid color')
             return False
 
         self.color = color
         self.interface_status = InterfaceStatus.set
 
-        #try:
-            #self.cs.ai['pal'].setup(color=self.color, recalibration=False)
-            #self.cs.ai['pmi'].setup(color=self.color, recalibration=False)
-        #except Exception as e:
-        #    print('Failed to reset robots: %s' % str(e))
-
         self.publish('match_color', color=self.color)
+
+        # TODO: Make AI listen to color
 
         return True
 
@@ -337,12 +382,10 @@ class Match(Service):
         match['score'] = self.score
 
         match['pal_ai_status'] = self.pal_ai_s
-        #match['pal_avoid_status'] = self.pal_avoid_s
         match['pal_telemetry'] = self.pal_telem
 
-        #match['pmi_ai_status'] = self.pmi_ai_s
-        #match['pmi_avoid_status'] = self.pmi_avoid_s
-        #match['pmi_telemetry'] = self.pmi_telem
+        match['pmi_ai_status'] = self.pmi_ai_s
+        match['pmi_avoid_status'] = self.pmi_avoid_s
 
         return match
 
@@ -352,16 +395,20 @@ class Match(Service):
         self.publish('match_end')
         self.match_status = 'ended'
         self.interface_status = InterfaceStatus.end
-        print('Match End')
+        print('[MATCH] Match End')
+
+
+    """ THREAD """
 
     """ Match status thread """
-    @Service.thread
+    #@Service.thread
     def match_status(self):
       while True:
         #Usefull ?
         #self.publish('match_status', match=self.get_match())
 
         # Update PAL LCD
+        # TODO: Use LCD on exp
         try:
             status = self.pal_ai_s
             if not status is None:
@@ -383,7 +430,7 @@ class Match(Service):
         img = img.resize((int(3000 * self.interface_ratio), int(2000 * self.interface_ratio)), Image.ANTIALIAS)
         self.map =  ImageTk.PhotoImage(img)
 
-        print('Window created')
+        print('[MATCH] Window created')
         self.window.after(self.interface_refresh, self.update_interface)
         self.window.mainloop()
 
