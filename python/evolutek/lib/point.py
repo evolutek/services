@@ -28,6 +28,14 @@ class Point:
         return Point((self.x + p.x) // 2, (self.y + p.y) // 2)
 
     @staticmethod
+    def from_dict(p):
+        return Point(p['x'], p['y'])
+
+    @staticmethod
+    def dist(p1, p2):
+        return sqrt((p1['x'] - p2['x'])**2 + (p1['y'] - p2['y'])**2)
+
+    @staticmethod
     def min(p1, p2):
         if p1.x == p2.x:
             return p1 if p1.y < p2.y else p2

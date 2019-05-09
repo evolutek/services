@@ -9,7 +9,6 @@ from evolutek.lib.settings import ROBOT
 from evolutek.lib.tim import Tim
 
 from math import pi, tan, sqrt
-from threading import Lock
 from time import sleep
 
 #TODO: Manage tmp robots
@@ -34,30 +33,27 @@ class Map(Service):
         height = int(self.cs.config.get(section='map', option='height'))
         map_unit = int(self.cs.config.get(section='map', option='map_unit'))
         self.debug = self.cs.config.get(section='map', option='debug') == 'true'
-        self.pal_size = int(self.cs.config.get(section='pal', option='robot_size_y'))
-        self.pal_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
+        self.pal_size = float(self.cs.config.get(section='pal', option='robot_size_y'))
+        self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
+        #self.pal_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
 
         self.map = Map_lib(width, height, map_unit, self.pal_size)
         """ Add obstacles """
         self.map.add_rectangle_obstacle(1622, 2000, 450, 2550)
         self.map.add_rectangle_obstacle(1422, 1622, 1475, 1525)
         self.map.add_rectangle_obstacle(0, 50, 500, 2500)
-        #self.map.add_circle_obstacle(1000, 1500, 150, "robot", ObstacleType.robot)
-
-        #self.debug = True
+        # TODO: configure zones with a json
 
         # Example
+        # TODO: to remove
         self.path = []
-        self.path_lock = Lock()
 
         # TIM
-        self.lock = Lock()
         self.raw_data = []
         self.shapes = []
         self.robots = []
-        self.line_of_sight = []
         self.pal_telem = None
-        self.goal = None
+        self.pmi_telem = None
         self.color = None
         self.tim = None
 
@@ -66,29 +62,39 @@ class Map(Service):
             self.match_color(color)
         except Exception as e:
             print('Failed to get color: %s\nUsing default Yellow' % str(e))
-            self.match_color("yellow")
+            # Default color
+            self.match_color(self.color1)
 
         super().__init__()
 
-    @Service.thread
-    def start_debug_interface(self):
-        self.interface = Interface(self.map, self)
+    """ Event """
 
     @Service.event
     def match_color(self, color):
         if color != self.color:
             self.color = color
         if self.color is not None:
+            # TODO: add zone with configuration
 #            self.map.remove_obstacle('zone')
 #            if self.color != self.color1:
 #                self.map.add_rectangle_obstacle(300, 1200, 0, 450, tag='zone')
 #            else:
 #                self.map.add_rectangle_obstacle(300, 1200, 2550, 3000, tag='zone')
+
+            # Make tim config
             config = self.tim_config
             if self.color != self.color1:
                 config['pos_y'] = 3000 - int(config['pos_y'])
                 config['angle'] = - int(config['angle'])
+
+            # Disconnected previous tim
+            if not self.tim is None:
+                self.tim.connected = False
+                sleep(0.5)
+
             self.tim = Tim(config, self.debug)
+            if not self.tim.connected:
+                self.tim = None
         else:
 #            self.map.remove_obstacle('zone')
             self.tim = None
@@ -99,30 +105,17 @@ class Map(Service):
             self.pal_telem = telemetry
 
     @Service.event
-    def pal_goal(self, point):
-        self.goal = point
+    def pmi_telemetry(self, status, telemetry):
+        if status is not 'failed':
+            self.pmi_telem = telemetry
 
-    # HACK
-    #@Service.thread
-    def fake_robot(self):
-        robot = {'x': 250, 'y': 1500}
-        ascending = True
-        while True:
-            if ascending:
-                robot['x'] += 10
-                if robot['x'] > 1750:
-                    robot['x'] = 1749
-                    ascending = False
-            else:
-                robot['x'] -= 10
-                if robot['x'] < 250:
-                    robot['x'] = 251
-                    ascending = True
 
-            self.map.remove_obstacle('fake')
-            self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag='fake', type=ObstacleType.robot)
+    """ THREAD """
 
-            sleep(0.15)
+    # TODO: Disable for beacon
+    @Service.thread
+    def start_debug_interface(self):
+        self.interface = Interface(self.map, self)
 
     @Service.thread
     def loop_scan(self):
@@ -135,6 +128,8 @@ class Map(Service):
                 self.raw_data, self.shapes, self.robots = self.tim.get_scan()
             else:
                 robots = self.tim.get_scan()
+
+                print(robots)
 
                 for robot in self.robots:
                     self.map.remove_obstacle(robot['tag'])
@@ -157,15 +152,16 @@ class Map(Service):
 
             sleep(self.refresh)
 
-    #@Service.thread
-    def loop_path(self):
-        while True:
-            if self.goal:
-                print('computing path')
-                self.path = self.map.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
-            else:
-                self.path = []
-            sleep(0.1)
+
+    """ ACTION """
+
+    @Service.action
+    def get_path(self, start_x, start_y, dest_x, dest_y):
+      print("path request received")
+      # TODO: Check types
+      # TODO: Remove self.path and make match display it
+      self.path = self.map.get_path(Point(int(start_x), int(start_y)), Point(int(dest_x), int(dest_y)))
+      return self.path
 
     @Service.action
     def is_facing_wall(self, telemetry):
@@ -240,7 +236,20 @@ class Map(Service):
 
         return  {'front': front, 'back': back}
 
-    @Service.thread
+
+    """ DEBUG """
+
+    #@Service.thread
+    def loop_path(self):
+        while True:
+            if self.goal:
+                print('computing path')
+                self.path = self.map.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
+            else:
+                self.path = []
+            sleep(0.1)
+
+    #@Service.thread
     def test_path(self):
         while True:
           if(self.pal_telem):
@@ -249,11 +258,26 @@ class Map(Service):
             self.path = self.cs.map.get_path(start_x=1500, start_y=2750, dest_x=500, dest_y=500)
           sleep(0.15)
 
-    @Service.action
-    def get_path(self, start_x, start_y, dest_x, dest_y):
-      print("path request received")
-      self.path = self.map.get_path(Point(int(start_x), int(start_y)), Point(int(dest_x), int(dest_y)))
-      return self.path
+    #@Service.thread
+    def fake_robot(self):
+        robot = {'x': 250, 'y': 1500}
+        ascending = True
+        while True:
+            if ascending:
+                robot['x'] += 10
+                if robot['x'] > 1750:
+                    robot['x'] = 1749
+                    ascending = False
+            else:
+                robot['x'] -= 10
+                if robot['x'] < 250:
+                    robot['x'] = 251
+                    ascending = True
+
+            self.map.remove_obstacle('fake')
+            self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag='fake', type=ObstacleType.robot)
+
+            sleep(0.15)
 
 if __name__ == '__main__':
   map = Map()
