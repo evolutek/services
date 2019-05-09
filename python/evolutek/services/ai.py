@@ -7,7 +7,6 @@ from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
 from enum import Enum
-from math import sqrt
 from threading import Event, Thread
 from time import sleep
 
@@ -271,8 +270,9 @@ class Ai(Service):
     """ Going Back """
     def going_back(self, pos):
         print('-----Going back-----')
+        #TODO Check dist with previous point (path)
         tmp_pos = self.cs.trajman[ROBOT].get_position()
-        dist = min(sqrt((pos['x'] - tmp_pos['x'])**2 + (pos['y'] - tmp_pos['y'])**2), 250)
+        dist = min(Point.dist(tmp_pos, pos), 250)
         self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
@@ -280,7 +280,7 @@ class Ai(Service):
     """ Goto xy """
     def goto_xy(self):
         p = self.goal.path[0]
-        while sqrt((pos['x'] - p.x)**2 + (pos['y'] - p.y)**2) > 5:
+        while p.dist(pos) > 5:
             self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
@@ -310,7 +310,7 @@ class Ai(Service):
         for p in self.goal.path:
             print("[AI] Going to x : " + p.x + ", y : " + p.y + ", theta : " + p.theta)
             pos = self.cs.trajman[ROBOT].get_position()
-            while sqrt((pos['x'] - p.x)**2 + (pos['y'] - p.y)**2) > 5:
+            while p.dist(pos) > 5:
                 self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
                 while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                     sleep(0.1)
@@ -328,7 +328,9 @@ class Ai(Service):
                 if self.side is not None:
                     self.going_back(pos)
                     self.side = None
-                    # we can be in avoiding state
+                    # TODO: we can be in avoiding state
+
+                # TODO: Recompute path
 
                 if self.ending.isSet():
                     return
