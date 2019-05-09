@@ -5,12 +5,6 @@
         "theta": "0"
     },
     "actions": {
-        "exp": {
-            "service": "actuators",
-            "id": "pal",
-            "fct": "activate_exp",
-            "avoid": false
-        },
         "push_ejecteur": {
             "service": "actuators",
             "id": "pal",
@@ -35,18 +29,18 @@
             "fct": "get_goldenium",
             "avoid": false
         },
-	"get_blue_palet":{
-	    "service": "actuators",
-	    "id": "pal",
-	    "fct": "get_blue_palet",
-	    "avoid": false
-	},
-	"drop_blue_palet":{
-	    "service": "actuators",
-	    "id": "pal",
-	    "fct": "drop_blue_palet",
-	    "avoid": false
-	},
+    	"get_blue_palet":{
+    	    "service": "actuators",
+    	    "id": "pal",
+    	    "fct": "get_blue_palet",
+    	    "avoid": false
+    	},
+    	"drop_blue_palet":{
+    	    "service": "actuators",
+    	    "id": "pal",
+    	    "fct": "drop_blue_palet",
+    	    "avoid": false
+    	},
         "goto_xy_with_avoid": {
             "service": "trajman",
             "id": "pal",
@@ -70,30 +64,19 @@
             "fct": "goto_theta",
             "avoid": false
         },
-        "free": {
-            "service": "trajman",
-            "id": "pal",
-            "fct": "free"
-        },
-        "unfree": {
-            "service": "trajman",
-            "id": "pal",
-            "fct": "unfree"
-        },
         "move_trsl": {
             "service" : "trajman",
             "id": "pal",
             "fct": "move_trsl",
             "avoid": false
-
         }
     },
     "goals": [
         {
             "score": 0,
-	    "path" : [
-		{"x": 1325, "y": 225 }
-	    ],
+	        "path" : [
+		        {"x": 1325, "y": 225 }
+	        ],
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
@@ -113,9 +96,9 @@
         },
         {
             "score": 17,
-	    "path" : [
-		{"x": 750, "y": 1350 }
-	    ],
+	        "path" : [
+		        {"x": 750, "y": 1350 }
+	        ],
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
@@ -135,9 +118,9 @@
         },
         {
             "score": 20,
-	    "path" : [
-		{"x": 700, "y": 1625, "theta": 0 }
-	    ],
+	        "path" : [
+		        {"x": 700, "y": 1625, "theta": 0 }
+	        ],
             "actions": [
                 {
                     "name": "goto_xy_with_avoid",
@@ -190,9 +173,9 @@
         },
         {
             "score": 20,
-	    "path" : [
-		{"x": 500, "y": 2235, "theta": "pi" }
-	    ],
+	        "path" : [
+		        {"x": 500, "y": 2235, "theta": "pi" }
+	        ],
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
@@ -215,9 +198,9 @@
         },
         {
             "score": 24,
-	    "path" : [
-		{"x": 1050, "y": 1320, "theta": 0 }
-	    ],
+	        "path" : [
+		        {"x": 1050, "y": 1320, "theta": 0 }
+	        ],
             "actions": [
                 {
                     "name": "goto_xy_without_avoid",
@@ -229,54 +212,54 @@
                 {
                     "name": "drop_goldenium"
                 },
-		{
-		    "name": "goto_xy_with_avoid",
-		    "args" : {
-			"x": 1210,
-			"y" : 1320
-		    }
-		}
+        		{
+        		    "name": "goto_xy_with_avoid",
+        		    "args" : {
+        			"x": 1210,
+        			"y" : 1320
+        		    }
+        		}
             ]
         },
-	{
-		"score": 12,
-		"path" : [
-		    {"x": 1210, "y": 800, "theta": 0 }
-		],
-		"actions": [	
-		    {
-			"name" : "goto_theta_without_avoid",
-			"args": {
-				"theta": 0
-			}
-		    },
-		    {
-			"name": "get_blue_palet"
-		    },
-            {
-			"name": "goto_xy_without_avoid",
-			"args": {
-			    "x": 1160,
-			    "y": 1320
-			}
-		    },
-		    {
-			"name" : "goto_theta_without_avoid",
-			"args": {
-				"theta": 0
-			}
-		    },
-            {
-			"name": "goto_xy_without_avoid",
-			"args": {
-			    "x": 1260,
-			    "y": 1320
-			}
-		    },
-		    {
-			"name" : "drop_blue_palet"
-		    }
-		]
-	}
+	    {
+    		"score": 12,
+    		"path" : [
+    		    {"x": 1210, "y": 800, "theta": 0 }
+    		],
+    		"actions": [
+    		    {
+        			"name" : "goto_theta_without_avoid",
+        			"args": {
+        				"theta": 0
+        			}
+    		    },
+    		    {
+        			"name": "get_blue_palet"
+        		    },
+                    {
+        			"name": "goto_xy_without_avoid",
+        			"args": {
+        			    "x": 1160,
+        			    "y": 1320
+        			}
+    		    },
+        		    {
+        			"name" : "goto_theta_without_avoid",
+        			"args": {
+        				"theta": 0
+        			}
+    		    },
+                {
+        			"name": "goto_xy_without_avoid",
+        			"args": {
+        			    "x": 1260,
+        			    "y": 1320
+        			}
+    		    },
+    		    {
+    			    "name" : "drop_blue_palet"
+    		    }
+    		]
+	    }
     ]
 }
