@@ -1,0 +1,302 @@
+{
+    "actions": {
+        "goto_theta_without_avoid": {
+            "id": "pal",
+            "fct": "goto_theta",
+            "avoid": false,
+            "service": "trajman"
+        },
+        "reset_ejecteur": {
+            "id": "pal",
+            "fct": "reset_ejecteur",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "drop_blue_palet": {
+            "id": "pal",
+            "fct": "drop_blue_palet",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "get_goldenium": {
+            "id": "pal",
+            "fct": "get_goldenium",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "move_trsl": {
+            "id": "pal",
+            "fct": "move_trsl",
+            "avoid": false,
+            "service": "trajman"
+        },
+        "goto_theta_with_avoid": {
+            "id": "pal",
+            "fct": "goto_theta",
+            "avoid": true,
+            "service": "trajman"
+        },
+        "push_ejecteur": {
+            "id": "pal",
+            "fct": "push_ejecteur",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "goto_xy_without_avoid": {
+            "id": "pal",
+            "fct": "goto_xy",
+            "avoid": false,
+            "service": "trajman"
+        },
+        "drop_goldenium": {
+            "id": "pal",
+            "fct": "drop_goldenium",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "goto_xy_with_avoid": {
+            "id": "pal",
+            "fct": "goto_xy",
+            "avoid": true,
+            "service": "trajman"
+        },
+        "get_blue_palet": {
+            "id": "pal",
+            "fct": "get_blue_palet",
+            "avoid": false,
+            "service": "actuators"
+        }
+    },
+    "start": {
+        "y": 225,
+        "x": 600,
+        "theta": "pi"
+    },
+    "goals": [
+        {
+            "name": "Push Front Palet",
+            "path": [
+                {
+                    "y": 225,
+                    "x": 1325
+                }
+            ],
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 500,
+                        "x": 1325
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 500,
+                        "x": 850
+                    }
+                }
+            ],
+            "score": 0
+        },
+        {
+            "name": "Push Chaos Zone",
+            "path": [
+                {
+                    "y": 1350,
+                    "x": 800
+                }
+            ],
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "y": 1350,
+                        "x": 1200
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 375,
+                        "x": 600
+                    }
+                }
+            ],
+            "score": 17
+        },
+        {
+            "name": "Push Blue Palet",
+            "path": [
+                {
+                    "y": 1625,
+                    "x": 700,
+                    "theta": "0"
+                }
+            ],
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 1625,
+                        "x": 500
+                    }
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "0"
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "y": 1625,
+                        "x": 150
+                    }
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "acc": 100,
+                        "maxspeed": 500,
+                        "dec": 100,
+                        "sens": 0,
+                        "dest": 50
+                    }
+                },
+                {
+                    "name": "push_ejecteur"
+                },
+                {
+                    "name": "reset_ejecteur"
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "acc": 100,
+                        "maxspeed": 500,
+                        "dec": 100,
+                        "sens": 1,
+                        "dest": 50
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 1625,
+                        "x": 500
+                    }
+                }
+            ],
+            "score": 20
+        },
+        {
+            "name": "Get Goldenium",
+            "path": [
+                {
+                    "y": 2235,
+                    "x": 500,
+                    "theta": "pi"
+                }
+            ],
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "y": 2235,
+                        "x": 240
+                    }
+                },
+                {
+                    "avoid_strategy": "Avoid.Skip",
+                    "name": "get_goldenium",
+                    "score": 20
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "y": 2235,
+                        "x": 500
+                    }
+                }
+            ],
+            "score": 20
+        },
+        {
+            "name": "Drop Goldenium",
+            "path": [
+                {
+                    "y": 1320,
+                    "x": 1050,
+                    "theta": "0"
+                }
+            ],
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "y": 1320,
+                        "x": 1420
+                    }
+                },
+                {
+                    "name": "drop_goldenium"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 1320,
+                        "x": 1210
+                    }
+                }
+            ],
+            "score": 24
+        },
+        {
+            "name": "Get blue palet and drop it",
+            "path": [
+                {
+                    "y": 800,
+                    "x": 1210,
+                    "theta": "0"
+                }
+            ],
+            "actions": [
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "0"
+                    }
+                },
+                {
+                    "name": "get_blue_palet"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 1320,
+                        "x": 1160
+                    }
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "0"
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "y": 1320,
+                        "x": 1260
+                    }
+                },
+                {
+                    "name": "drop_blue_palet"
+                }
+            ],
+            "score": 12
+        }
+    ]
+}

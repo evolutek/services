@@ -97,6 +97,7 @@ class Ai(Service):
         # Make a recalibration
         if recalibration:
             self.cs.avoid[ROBOT].disable()
+
             sens = self.color != self.color1
             self.cs.actuators[ROBOT].recalibrate(sens_y=sens, init=True)
 
@@ -106,7 +107,6 @@ class Ai(Service):
             self.cs.trajman[ROBOT].goto_theta(self.goals.start_theta)
             while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
-            #self.recalibrate()
         else:
             # Set Default config
             self.cs.trajman[ROBOT].free()
@@ -125,40 +125,6 @@ class Ai(Service):
 
         self.state = State.Waiting
         print('[AI] Waiting')
-
-    def recalibrate(self):
-        self.cs.avoid[ROBOT].disable()
-        print('[AI] Recalibrating')
-        self.cs.trajman[ROBOT].free()
-        print('[AI] Going back')
-        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 500, 1)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-
-        self.cs.trajman[ROBOT].set_x(158)
-        self.cs.trajman[ROBOT].set_theta(3.1415)
-
-        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 0)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-        
-        self.cs.trajman[ROBOT].goto_xy(4.71)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-
-        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 500, 1)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-
-        self.cs.trajman[ROBOT].set_y(159)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-       
-        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 500, 0)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-
-
 
     """ SELECTING """
     def selecting(self):
@@ -326,88 +292,13 @@ class Ai(Service):
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
-            if 'theta' in point:
-                print('[AI] Turning to theta: ' + str(point['theta']))
-                self.cs.trajman[ROBOT].goto_theta(point['theta'])
-                while self.cs.trajman[ROBOT].is_moving():
-                    sleep(0.1)
-
             if self.ending.isSet():
                 return
 
             sleep(0.2)
             if self.aborting.isSet():
-
-                # Check if it's normal to be aborted
-                try:
-                    print('[AI] Calling isOk()')
-                    if self.cs.map.is_ok(self.cs.trajman[ROBOT].get_position(), point, self.side):
-                        print('[AI] IS OK')
-                        print('------ DISABLE BECAUSE IS OK ------')
-                        self.avoid_disable = True
-                        self.cs.avoid[ROBOT].disable()
-                        self.aborting.clear()
-                        self.side = None
-                        sleep(0.2)
-                        continue
-                except Exception as e:
-                    print('[AI] Could not check if current dest is viable : %s' % str(e))
-
                 print("[AI][GOING] Aborted")
-                self.wait_until_detection_end(timeout=True)
-
-            if self.ending.isSet():
-                return
-
-            # If we were abort and the robot is still there, we are going back
-            if self.side is not None:
-                tmp_point = self.current_path[i - 1]
-                if i == 0:
-                    tmp_point = pos
-
-                # Enable avoid again
-                if self.avoid_disable:
-                    print('------ ENABLE BEFORE GOING BACK ------')
-                    self.cs.avoid[ROBOT].enable()
-                    self.avoid_disable = False
-
-                self.going_back(tmp_point, 150)
-
-                # If we were aborted, we go back again in the other direction
-                sleep(0.2)
-                if self.aborting.isSet():
-                    self.going_back(self.current_path[i - 1], 50)
-
-                    # Clear abort
-                    sleep(0.2)
-                    if self.aborting.isSet():
-                        self.aborting.clear()
-                        self.side = None
-
-                # Compute new path
-                pos = self.cs.trajman[ROBOT].get_position()
-                try:
-                    # TODO: test
-                    tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
-                    print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
-                    self.cs.map.add_tmp_robot(tmp_robot)
-
-                    print("[AI] Computing new path")
-                    tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
-
-                    # Recompute path while we can't get another path
-                    # TODO: Critical map ?
-                    while tmp_path == []:
-                        sleep(1)
-                        tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
-
-                    # TODO: Clean tmp robot
-                    self.cs.map.clean_tmp_robot()
-                    print("[AI] New path = " + str(tmp_path))
-                    self.current_path = tmp_path
-                    i = 0
-                except Exception as e:
-                    print("[AI] Cannot compute new path: " + str(e))
+                self.wait_until_detection_end(timeout=False)
 
             if self.ending.isSet():
                 return
@@ -485,7 +376,7 @@ class Ai(Service):
                         continue
             else:
                 if action.score > 0:
-                    self.publish('score', value=action.score)
+                    self.publish('score', value=self.action.score)
                     self.goal.score -= action.score
 
             if self.ending.isSet():

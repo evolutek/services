@@ -10,16 +10,22 @@ from evolutek.lib.tim import Tim
 
 from math import pi, tan, sqrt
 from time import sleep
+import os
 
 #TODO: Check with robot_size
 @Service.require('config')
 class Map(Service):
 
     def __init__(self):
-
         self.cs = CellaservProxy()
+        ConfigDown = True
+        while ConfigDown:
+            try:
+                self.color1 = self.cs.config.get(section='match', option='color1')
+                ConfigDown = False
+            except:
+                print("error getting color")
 
-        self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
@@ -148,11 +154,15 @@ class Map(Service):
                         self.robots.append(robot)
 
                     print('[MAP] Detected %d robots' % len(self.robots))
-                    self.publish('opponents', robots=self.robots)
-            sleep(self.refresh * 2)
+                    #self.publish('opponents', robots=self.robots)
+            sleep(self.refresh)
 
 
     """ ACTION """
+
+    @Service.action
+    def get_opponnents(self):
+        return self.robots
 
     @Service.action
     def get_path(self, start_x, start_y, dest_x, dest_y):
@@ -289,6 +299,18 @@ class Map(Service):
 
             sleep(0.15)
 
-if __name__ == '__main__':
+def wait_for_beacon():
+    hostname = "pi"
+    while True:
+        r = os.system("ping -c 1 " + hostname)
+        if r == 0:
+            return
+        pass
+
+def main():
+  wait_for_beacon()
   map = Map()
   map.run()
+
+if __name__ == '__main__':
+  main()

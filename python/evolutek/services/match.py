@@ -224,6 +224,11 @@ class Match(Service):
             if self.pmi_telem is not None:
                 self.print_robot(self.pmi_telem, self.pmi_size_y, 'orange')
 
+            try:
+                self.robots = self.cs.map.get_opponnents()
+            except:
+                pass
+
             for robot in self.robots:
                 self.print_robot(robot, self.robot_size, 'red')
 
@@ -419,10 +424,7 @@ class Match(Service):
         # Update PAL LCD
         # TODO: Use LCD on exp
         try:
-            status = self.pal_ai_s
-            if not status is None:
-                status = status.split('.')[1]
-            self.cs.gpios['pal'].write_status(score=self.score, status=status)
+            pass
         except:
             pass
         sleep(self.refresh)
