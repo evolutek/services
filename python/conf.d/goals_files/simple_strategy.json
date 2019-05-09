@@ -73,6 +73,7 @@
     },
     "goals": [
         {
+            "name": "Push Front Palet",
             "score": 0,
 	        "path" : [
 		        {"x": 1325, "y": 225 }
@@ -95,6 +96,7 @@
             ]
         },
         {
+            "name": "Push Chaos Zone",
             "score": 17,
 	        "path" : [
 		        {"x": 750, "y": 1350 }
@@ -117,6 +119,7 @@
             ]
         },
         {
+            "name": "Push Blue Palet",
             "score": 20,
 	        "path" : [
 		        {"x": 700, "y": 1625, "theta": 0 }
@@ -172,6 +175,7 @@
             ]
         },
         {
+            "name": "Get Goldenium",
             "score": 20,
 	        "path" : [
 		        {"x": 500, "y": 2235, "theta": "pi" }
@@ -197,6 +201,7 @@
             ]
         },
         {
+            "name": "Drop Goldenium",
             "score": 24,
 	        "path" : [
 		        {"x": 1050, "y": 1320, "theta": 0 }
@@ -222,6 +227,7 @@
             ]
         },
 	    {
+            "name": "Get blue palet and drop it",
     		"score": 12,
     		"path" : [
     		    {"x": 1210, "y": 800, "theta": 0 }
