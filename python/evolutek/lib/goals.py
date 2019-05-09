@@ -227,7 +227,7 @@ class Goals:
             if 'actions' in goal:
                 for action in goal['actions']:
                     if action['name'] not in goals['actions']:
-                        print('Failed to get action in goal %s: Missing action' % goal['name'])
+                        print('Failed to get action in goal %s: Missing action: %s' % (goal['name'],action['name']))
                         return False
                     action_instance = dict(goals['actions'][action['name']])
                     if not 'fct' in action_instance:
