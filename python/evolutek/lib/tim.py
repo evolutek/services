@@ -26,7 +26,6 @@ class Tim:
         self.refresh = float(config['refresh'])
         self.window_size = float(config['window'])
         self.min_size = int(config['min_size'])
-        self.min_size = 4
         self.max_distance = int(config['max_distance'])
         self.window_size = int(config['window'])
         self.socket = socket(AF_INET, SOCK_STREAM)
