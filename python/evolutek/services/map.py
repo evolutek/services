@@ -97,6 +97,9 @@ class Map(Service):
                 self.tim = None
         else:
 #            self.map.remove_obstacle('zone')
+            if not self.tim is None:
+                self.tim.connected = False
+                sleep(0.5)
             self.tim = None
 
     @Service.event
