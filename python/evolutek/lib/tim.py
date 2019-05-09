@@ -128,7 +128,7 @@ class Tim:
         return clean_points, shapes, robots
 
     def loop_scan(self):
-        while 1:
+        while self.connected:
           sleep(.1)
           new_data = self.scan()
           self.lock.acquire()

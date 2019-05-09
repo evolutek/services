@@ -86,13 +86,13 @@ class Interface:
             (p['x'] - self.service.robot_size) * unit, (p['y'] + self.service.robot_size) * unit,
             (p['x'] + self.service.robot_size) * unit, fill='red')
 
-    def print_pal(self, pal):
-        if not pal:
+    def print_robot(self, robot, robot_size):
+        if not robot:
             return
 
-        x = pal['y'] * unit
-        y = pal['x'] * unit
-        size = self.service.pal_size * unit
+        x = robot['y'] * unit
+        y = robot['x'] * unit
+        size = robot_size * unit
 
         points = []
         points.append((x - size, y - size))
@@ -100,8 +100,8 @@ class Interface:
         points.append((x + size, y + size))
         points.append((x - size, y + size))
 
-        cos_val = cos(pi/2 - pal['theta'])
-        sin_val = sin(pi/2 - pal['theta'])
+        cos_val = cos(pi/2 - robot['theta'])
+        sin_val = sin(pi/2 - robot['theta'])
 
         new_points = []
         for point in points:
@@ -113,11 +113,11 @@ class Interface:
         self.canvas.create_polygon(new_points, fill='orange')
 
     def print_path(self, path):
-        if path is None:
-            print("no path to display")
-            return
-        print("displaying path: ")
-        print(path)
+        #if path is None:
+        #    print("no path to display")
+        #    return
+        #print("displaying path: ")
+        #print(path)
         for i in range(1, len(path)):
             p1 = path[i - 1]
             p2 = path[i]
@@ -145,11 +145,11 @@ class Interface:
         self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
         self.print_grid()
         self.print_obstacles()
-        self.print_pal(self.service.pal_telem)
+        self.print_robot(self.service.pal_telem, self.service.pal_size)
+        self.print_robot(self.service.pmi_telem, self.service.pmi_size)
         if self.service.debug:
             self.print_raw_data(self.service.raw_data)
             self.print_shapes(self.service.shapes)
-            self.print_line_of_sight(self.service.line_of_sight)
         self.print_robots(self.service.robots)
-        self.print_path(self.service.path)
+        #self.print_path(self.service.path)
         self.window.after(refresh, self.update)
