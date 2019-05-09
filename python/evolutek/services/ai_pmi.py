@@ -2,7 +2,7 @@
 
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
-from evolutek.lib.tasks import Tasks
+from evolutek.lib.goals import Goals
 from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
@@ -25,6 +25,7 @@ class State(Enum):
 @Service.require('ax', '11')
 @Service.require('ax', '12')
 @Service.require('trajman', ROBOT)
+@Service.require('actuators', ROBOT)
 class Ai(Service):
 
     """ STATES """
@@ -57,10 +58,12 @@ class Ai(Service):
         self.front_detected = []
         self.back_detected = []
 
-        self.tasks = Tasks(800, 50, pi/2, self.color!=self.color1)
+        #self.tasks = Tasks(800, 50, pi/2, self.color!=self.color1)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
+        
+        self.goals = Goals(file="homo_pmi.json", mirror=self.color!=self.color1, cs=self.cs)
         self.setup(recalibration=False)
 
 
@@ -79,33 +82,37 @@ class Ai(Service):
 
         self.cs.trajman[ROBOT].enable()
         print('open')
-        self.open_arms()
+        self.cs.actuators[ROBOT].half_close_arms()
         sleep(1)
         print('close')
-        self.close_arms()
+        self.cs.actuators[ROBOT].close_arms()
 
         self.match_thread = Thread(target=self.making)
         self.match_thread.deamon = True
 
         # Reset tasks
-        self.tasks.reset(self.color!=self.color1)
+        if not self.goals.reset(self.color!=self.color1):
+            print('[AI] Error')
+            self.state = State.Error
+            return
+
 
         if recalibration:
 
             sens = self.color != self.color1
             self.cs.actuators[ROBOT].recalibrate(sens_y=sens, init=True)
-            self.cs.trajman[ROBOT].goto_xy(x=self.tasks.start_x, y=self.tasks.start_y)
+            self.cs.trajman[ROBOT].goto_xy(x=self.goals.start_x, y=self.goals.start_y)
             while self.cs.trajman[ROBOT].is_moving():
                sleep(0.1)
-            self.cs.trajman[ROBOT].goto_theta(self.tasks.start_theta)
+            self.cs.trajman[ROBOT].goto_theta(self.goals.start_theta)
             while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
         else:
             # Set Default config
             self.cs.trajman[ROBOT].free()
-            self.cs.trajman[ROBOT].set_x(self.tasks.start_x)
-            self.cs.trajman[ROBOT].set_y(self.tasks.start_y)
-            self.cs.trajman[ROBOT].set_theta(self.tasks.start_theta)
+            self.cs.trajman[ROBOT].set_x(self.goals.start_x)
+            self.cs.trajman[ROBOT].set_y(self.goals.start_y)
+            self.cs.trajman[ROBOT].set_theta(self.goals.start_theta)
             self.cs.trajman[ROBOT].unfree()
 
         self.ending.clear()
@@ -123,6 +130,7 @@ class Ai(Service):
         if self.state != State.Waiting:
             return
 
+
         if self.ending.isSet():
             return
 
@@ -130,59 +138,70 @@ class Ai(Service):
         self.state = State.Making
 
         i = 0
-        while i < len(self.tasks.tasks):
-            pos = self.cs.trajman[ROBOT].get_position()
-            if Point.dist_dict(pos, {'x': tasks.tasks[i].x, 'y': tasks.tasks[i].y}) <= 5:
-                i += 1
+        while i < len(self.goals.goals):
+            print("i: %d" % i)
+            goal = self.goals.goals[i]
+            j = 0
+            while j < len(goal.path):
+                pos = self.cs.trajman[ROBOT].get_position()
+                path = goal.path[j]
+                if Point.dist_dict(pos, {'x': path['x'], 'y': path['y']}) <= 5:
+                    j += 1
+                    continue
 
-            task = tasks.tasks[i]
-
-            if task.not_avoid and self.avoid_enabled:
-                self.avoid_enabled = False
-                sleep(0.1)
-            elif not task.not_avoid and not self.avoid_enabled:
-                self.avoid_enabled = True
-                sleep(0.1)
-
-            self.goto_xy(task.x, task.y)
-            while not self.ending.isSet()  and not self.avoiding.isSet() and self.cs.trajman[ROBOT].is_moving():
-                sleep(0.1)
-
-            if self.ending.isSet():
-                return
-
-            if self.avoiding.isSet():
-                self.wait_until()
-
-            if not task.theta is None:
-                self.cs.trajman[ROBOT].goto_theta(task.theta)
-                while not self.ending.isSet() and self.cs.trajman[ROBOT].is_moving():
-                    sleep(0.1)
-
-                if self.ending.isSet():
-                    return
-
-                sleep(0.1)
-                if self.avoiding.isSet():
-                    self.wait_until()
-
-            if not task.action is None:
-                task.action_make()
-
+                self.cs.trajman[ROBOT].goto_xy(path['x'], path['y'])
                 while self.cs.trajman[ROBOT].is_moving():
                     sleep(0.1)
 
                 if self.ending.isSet():
                     return
 
-                sleep(0.1)
+                sleep(0.5)
                 if self.avoiding.isSet():
                     self.wait_until()
 
-            if task.score > 0:
-                self.publish('score', value=task.score)
+                if 'theta' in path:
+                    self.cs.trajman[ROBOT].goto_theta(path['theta'])
+                    while self.cs.trajman[ROBOT].is_moving():
+                        sleep(0.1)
 
-        print("[AI] Maked all actions")
+                    if self.ending.isSet():
+                        return
+
+                    sleep(0.5)
+                    if self.avoiding.isSet():
+                        self.wait_until()
+
+            k = 0
+            while k < len(goal.actions):
+                print("k: %d" % k)
+                if k - 1 > len(goal.actions):
+                    break
+                print('[AI] ======= Making actions')
+                action = goal.actions[k]
+                action.make()
+                while not self.ending.isSet() and not self.avoiding.isSet() and self.cs.trajman[ROBOT].is_moving():
+                    print('MAKING')
+                    sleep(0.1)
+
+                sleep(0.5)
+                if self.ending.isSet():
+                    return
+
+                if self.avoiding.isSet():
+                    self.wait_until()
+                    print('AI AVOIDED, NOT GOING TO NEXT ACTION')
+                    continue
+
+                print('MADE')
+
+                if self.ending.isSet():
+                    return
+                
+                k += 1
+            i += 1
+
+        print("[AI] Made all goals")
 
         self.end()
 
@@ -197,7 +216,7 @@ class Ai(Service):
         # STOP ROBOT[ROBOT]_
         self.cs.trajman[ROBOT].free()
         self.cs.trajman[ROBOT].disable()
-        self.open_arms()
+        self.cs.actuators[ROBOT].open_arms()
         self.cs.ax['11'].free()
         self.cs.ax['12'].free()
 
@@ -216,20 +235,26 @@ class Ai(Service):
         while True:
 
             sleep(0.1)
+            #print('[AI] AVOID STATUS')
+            #print(self.front_detected)
+            #print(self.back_detected)
 
             if self.telemetry is None or not self.avoid_enabled:
                 continue
 
             if self.telemetry['speed'] > 0 and len(self.front_detected) > 0:
-                self.stop_asap(1000, 20)
+                print('AVOID FROOOOONT')
+                self.cs.trajman[ROBOT].stop_asap(500, 15)
                 self.side = 'front'
                 self.avoiding.set()
             elif self.telemetry['speed'] < 0 and len(self.back_detected) > 0:
-                self.stop_asap(1000, 20)
+                print('AVOID BAAAACCCCKKKK')
+                self.cs.trajman[ROBOT].stop_asap(500, 15)
                 self.side = 'back'
                 self.avoiding.set()
 
     def wait_until(self):
+        print('WAIT UNTIL')
         side = []
         if self.side == 'front':
             side = self.front_detected
@@ -237,11 +262,13 @@ class Ai(Service):
             side = self.back_detected
 
         while not self.ending.isSet() and len(side) > 0:
+            print(side)
             print('----- Avoiding ---')
             sleep(0.1)
 
         self.avoiding.clear()
         self.side = None
+        print('DONE AVOIDING')
 
     """ Match Color """
     @Service.event('match_color')
@@ -269,7 +296,7 @@ class Ai(Service):
     def start(self):
         if self.state != State.Waiting:
             return
-
+        sleep(5)
         print('[AI] Starting')
         self.match_thread.start()
         return
@@ -289,30 +316,6 @@ class Ai(Service):
             self.back_detected.append(name)
         elif not int(value) and name in self.back_detected:
             self.back_detected.remove(name)
-
-    """ Open Arms """
-    @Service.action
-    def open_arms(self):
-        self.cs.ax['11'].move(goal=350)
-        sleep(0.5)
-        self.cs.ax['12'].move(goal=600)
-        sleep(0.5)
-
-    """ Open Arms """
-    @Service.action
-    def half_close_arms(self):
-        self.cs.ax['11'].move(goal=650)
-        sleep(0.5)
-        self.cs.ax['12'].move(goal=250)
-        sleep(0.5)
-
-    """ Close Arms """
-    @Service.action
-    def close_arms(self):
-        self.cs.ax['12'].move(goal=70)
-        sleep(0.5)
-        self.cs.ax['11'].move(goal=780)
-        sleep(0.5)
 
 def main():
     ai = Ai()
