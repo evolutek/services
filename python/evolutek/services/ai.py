@@ -27,6 +27,8 @@ class State(Enum):
 @Service.require('actuators', ROBOT)
 class Ai(Service):
 
+    """ STATES """
+
     """ INIT """
     def __init__(self):
 
@@ -99,7 +101,7 @@ class Ai(Service):
         self.match_thread = Thread(target=self.selecting)
         self.match_thread.deamon = True
 
-        
+        # Make a recalibration
         if recalibration:
             self.cs.avoid[ROBOT].disable()
 
@@ -113,7 +115,7 @@ class Ai(Service):
             while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
         else:
-            """ Set Default config """
+            # Set Default config
             self.cs.trajman[ROBOT].free()
             self.cs.trajman[ROBOT].set_x(self.goals.start_x)
             self.cs.trajman[ROBOT].set_y(self.goals.start_y)
@@ -135,31 +137,30 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
-        """ WAIT FOR END OF DETECTION """
-        ##TODO: patch
-
+        # TODO: patch
+        # WAIT FOR END OF DETECTION """
         self.wait_until_detection_end()
 
         if self.ending.isSet():
             return
 
-        """ Clear abort event """
+        # Clear abort event
         self.aborting.clear()
 
         print('[AI] Selecting')
         self.state = State.Selecting
 
-        goal = self.goals.get_goal()
+        self.goal = self.goals.get_goal()
 
-        if goal is None:
+        if self.goal is None:
             self.end()
 
-        self.making(goal)
+        self.making()
 
-        ##TODO: Select a goal
+        # TODO: Select a goal
 
     """ MAKING """
-    def making(self, goal=None, path=None):
+    def making(self):
 
         if self.state != State.Selecting:
             return
@@ -174,120 +175,21 @@ class Ai(Service):
             self.avoid_disable = False
             self.cs.avoid[ROBOT].enable()
 
-        """ Goto x y """
+        #Goto x y
         self.goto_xy_theta()
 
-        """ Make all actions """
+        #TODO: use path
+
+        #Make all actions
         self.make_actions()
 
         print("[AI] Finished goal")
         self.goals.finish_goal()
 
-        self.publish('score', value=goal.score) # Increment score variable in match
+        if self.goal.score > 0:
+            self.publish('score', value=self.goal.score) # Increment score variable in match
         self.selecting()
 
-    def goto_xy_theta_with_path(self):
-        for p in goal.path:
-            print("[AI] Going to x : " + p.x + ", y : " + p.y + ", theta : " + p.theta) 
-            pos = self.cs.trajman[ROBOT].get_position()
-            while sqrt((pos['x'] - p.x)**2 + (pos['y'] - p.y)**2) > 5:
-                self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
-                while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                    sleep(0.1)
-
-                if self.ending.isSet():
-                    return
-
-                if self.aborting.isSet():
-                    print("[AI][MAKING] Aborted")
-                    self.wait_until_detection_end(timeout=True)
-
-                if self.ending.isSet():
-                    return
-
-                if self.side is not None:
-                    self.going_back(pos)
-                    self.side = None
-                    # we can be in avoiding state
-
-                sleep(2)
-
-                if self.ending.isSet():
-                    return
-
-                pos = self.cs.trajman[ROBOT].get_position()
-
-            """ Goto theta if there is one """
-            if p.theta is not None:
-
-                while abs(pos['theta'] - p.theta) > 0.5:
-                    self.cs.trajman[ROBOT].goto_theta(p.theta)
-                    while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                        sleep(0.1)
-
-                    if self.ending.isSet():
-                        return
-
-                    if self.aborting.isSet():
-                        print("[AI][MAKING] Aborted")
-                        self.wait_until_detection_end()
-
-                    if self.ending.isSet():
-                        return
-
-                    pos = self.cs.trajman[ROBOT].get_position()
-
-        
-
-    """ MAKE ACTIONS """
-    def make_actions(self):
-        print("[AI] Making actions")
-        i = 0
-        while i < len(goal.actions):
-
-            if self.ending.isSet():
-                return
-
-            action = goal.actions[i]
-
-            """ Set parameters """
-            if action.trsl_speed is not None:
-                self.cs.trajman[ROBOT].set_trsl_max_speed(action.trsl_speed)
-            if action.rot_speed is not None:
-                self.cs.trajman[ROBOT].set_rot_max_speed(action.rot_speed)
-
-            if not action.avoid and not self.avoid_disable:
-                self.avoid_disable = True
-                self.cs.avoid[ROBOT].disable()
-            elif action.avoid and self.avoid_disable:
-                self.avoid_disable = False
-                self.cs.avoid[ROBOT].enable()
-
-            """ Make action """
-            action.make()
-            while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                sleep(0.1)
-
-            if self.ending.isSet():
-                return
-
-            if self.aborting.isSet():
-                print("[AI][MAKING] Aborted")
-                self.wait_until_detection_end()
-                continue
-
-            if self.ending.isSet():
-                return
-
-            """ Make things back """
-            if action.trsl_speed is not None:
-                self.cs.trajman[ROBOT].set_trsl_max_speed(self.max_trsl_speed)
-            if action.rot_speed is not None:
-                self.cs.trajman[ROBOT].set_rot_max_speed(self.max_rot_speed)
-
-            i += 1
-
-        
 
     """ END """
     @Service.event('match_end')
@@ -304,6 +206,8 @@ class Ai(Service):
 
 
     """ UTILITIES """
+
+    """ Publish AI status """
     #@Service.thread
     def status(self):
         while True:
@@ -311,6 +215,7 @@ class Ai(Service):
             sleep(self.refresh)
 
 
+    """ Match Start """
     @Service.event('match_start')
     @Service.action
     def start(self):
@@ -321,7 +226,7 @@ class Ai(Service):
         self.match_thread.start()
         return
 
-    """ ABORT """
+    """ Abort """
     @Service.action
     def abort(self, robot=None, side=None):
 
@@ -339,7 +244,7 @@ class Ai(Service):
         ##TODO Give tmp robot to the map
         ##TODO: Manage tmp robots
 
-    """ WAIT FOR END OF DETECTION """
+    """ Wait for end detection """
     def wait_until_detection_end(self, timeout=False):
         avoid_stat = self.cs.avoid[ROBOT].status()
         if self.side is not None and avoid_stat is not None:
@@ -363,6 +268,7 @@ class Ai(Service):
         self.aborting.clear()
         self.timeout_event.clear()
 
+    """ Going Back """
     def going_back(self, pos):
         print('-----Going back-----')
         tmp_pos = self.cs.trajman[ROBOT].get_position()
@@ -370,6 +276,140 @@ class Ai(Service):
         self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
+
+    """ Goto xy """
+    def goto_xy(self):
+        p = self.goal.path[0]
+        while sqrt((pos['x'] - p.x)**2 + (pos['y'] - p.y)**2) > 5:
+            self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
+            while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+                sleep(0.1)
+
+            if self.ending.isSet():
+                return
+
+            if self.aborting.isSet():
+                print("[AI][MAKING] Aborted")
+                self.wait_until_detection_end(timeout=True)
+
+            if self.ending.isSet():
+                return
+
+            if self.side is not None:
+                self.going_back(pos)
+                self.side = None
+                # we can be in avoiding state
+
+            if self.ending.isSet():
+                return
+
+            pos = self.cs.trajman[ROBOT].get_position()
+
+    """ Goto with path """
+    def goto_xy_theta_with_path(self):
+        for p in self.goal.path:
+            print("[AI] Going to x : " + p.x + ", y : " + p.y + ", theta : " + p.theta)
+            pos = self.cs.trajman[ROBOT].get_position()
+            while sqrt((pos['x'] - p.x)**2 + (pos['y'] - p.y)**2) > 5:
+                self.cs.trajman[ROBOT].goto_xy(x = p.x, y = p.y)
+                while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+                    sleep(0.1)
+
+                if self.ending.isSet():
+                    return
+
+                if self.aborting.isSet():
+                    print("[AI][MAKING] Aborted")
+                    self.wait_until_detection_end(timeout=True)
+
+                if self.ending.isSet():
+                    return
+
+                if self.side is not None:
+                    self.going_back(pos)
+                    self.side = None
+                    # we can be in avoiding state
+
+                if self.ending.isSet():
+                    return
+
+                pos = self.cs.trajman[ROBOT].get_position()
+
+            # TODO: Remove theta
+            # Goto theta if there is one
+            if p.theta is not None:
+
+                while abs(pos['theta'] - p.theta) > 0.5:
+                    self.cs.trajman[ROBOT].goto_theta(p.theta)
+                    while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+                        sleep(0.1)
+
+                    if self.ending.isSet():
+                        return
+
+                    if self.aborting.isSet():
+                        print("[AI][MAKING] Aborted")
+                        self.wait_until_detection_end()
+
+                    if self.ending.isSet():
+                        return
+
+                    pos = self.cs.trajman[ROBOT].get_position()
+
+    """ Make actions """
+    def make_actions(self):
+        print("[AI] Making actions")
+        i = 0
+        while i < len(self.goal.actions):
+
+            if self.ending.isSet():
+                return
+
+            action = self.goal.actions[i]
+
+            # Set parameters
+            if action.trsl_speed is not None:
+                self.cs.trajman[ROBOT].set_trsl_max_speed(action.trsl_speed)
+            if action.rot_speed is not None:
+                self.cs.trajman[ROBOT].set_rot_max_speed(action.rot_speed)
+
+            if not action.avoid and not self.avoid_disable:
+                self.avoid_disable = True
+                self.cs.avoid[ROBOT].disable()
+            elif action.avoid and self.avoid_disable:
+                self.avoid_disable = False
+                self.cs.avoid[ROBOT].enable()
+
+            # TODO: check if we are asking trajman to move
+            # Make action
+            action.make()
+            while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
+                sleep(0.1)
+
+            if self.ending.isSet():
+                return
+
+            # TODO: Manage avoid strategy
+
+            if self.aborting.isSet():
+                print("[AI][MAKING] Aborted")
+                self.wait_until_detection_end()
+                continue
+
+            if self.ending.isSet():
+                return
+
+            if action.score > 0:
+                self.publish('score', value=self.action.score)
+                self.goal.score -= action.score
+
+            # Make things back
+            if action.trsl_speed is not None:
+                self.cs.trajman[ROBOT].set_trsl_max_speed(self.max_trsl_speed)
+            if action.rot_speed is not None:
+                self.cs.trajman[ROBOT].set_rot_max_speed(self.max_rot_speed)
+
+            i += 1
 
     """ Timeout handler """
     def timeout_handler(self):

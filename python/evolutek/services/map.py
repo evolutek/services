@@ -12,6 +12,9 @@ from math import pi, tan, sqrt
 from threading import Lock
 from time import sleep
 
+#TODO: Manage tmp robots
+#TODO: Add PMI to map for get_path for the PAL
+
 @Service.require('config')
 class Map(Service):
 

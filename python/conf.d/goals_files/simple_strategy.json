@@ -189,7 +189,9 @@
                     }
                 },
                 {
-                    "name": "get_goldenium"
+                    "name": "get_goldenium",
+                    "avoid_strategy": "Avoid.Skip",
+                    "score": 20
                 },
                 {
                     "name": "goto_xy_with_avoid",

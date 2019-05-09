@@ -53,7 +53,12 @@ class Action:
             self.fct()
 
     def __str__(self):
-        return str(self.fct)
+        s = str(self.fct)
+        s += '\n    -> args: ' + str(self.args)
+        s += '\n    -> avoid: ' + str(self.avoid)
+        s += '\n    -> avoid_strategy: ' + str(self.avoid_strategy)
+        s += '\n    -> score: ' + str(self.score)
+        return s
 
 class Goal:
 
@@ -175,7 +180,7 @@ class Goals:
         s += "->y: %d\n" % self.start_y
         s += "->theta: %f\n" % self.start_theta
         for goal in self.goals:
-            s += "goal:\n%s" % str(goal)
+            s += str(goal)
         return s
 
     def parse(self, mirror=False):
