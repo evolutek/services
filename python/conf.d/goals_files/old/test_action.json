@@ -1,0 +1,137 @@
+{
+    "goals": [
+        {
+            "name": "Push Blue Palet",
+            "path": [
+                {
+                    "x": 700,
+                    "y": 1625,
+                    "theta": "0"
+                }
+            ],
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 500,
+                        "y": 1625
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 150,
+                        "y": 1625
+                    }
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "maxspeed": 500,
+                        "sens": 0,
+                        "dec": 100,
+                        "acc": 100,
+                        "dest": 40
+                    }
+                },
+                {
+                    "name": "push_ejecteur"
+                },
+                {
+                    "name": "reset_ejecteur"
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "maxspeed": 500,
+                        "sens": 1,
+                        "dec": 100,
+                        "acc": 100,
+                        "dest": 40
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 500,
+                        "y": 1625
+                    }
+                }
+            ],
+            "score": 20
+        }
+    ],
+    "actions": {
+        "push_ejecteur": {
+            "fct": "push_ejecteur",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "get_blue_palet": {
+            "fct": "get_blue_palet",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "goto_theta_with_avoid": {
+            "fct": "goto_theta",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": true
+        },
+        "goto_theta_without_avoid": {
+            "fct": "goto_theta",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "drop_blue_palet": {
+            "fct": "drop_blue_palet",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "drop_goldenium": {
+            "fct": "drop_goldenium",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "goto_xy_without_avoid": {
+            "fct": "goto_xy",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "goto_xy_with_avoid": {
+            "fct": "goto_xy",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": true
+        },
+        "move_trsl": {
+            "fct": "move_trsl",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "reset_ejecteur": {
+            "fct": "reset_ejecteur",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "get_goldenium": {
+            "fct": "get_goldenium",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        }
+    },
+    "start": {
+        "x": 600,
+        "y": 225,
+        "theta": "pi"
+    }
+}
