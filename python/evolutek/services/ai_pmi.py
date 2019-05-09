@@ -174,29 +174,32 @@ class Ai(Service):
 
             k = 0
             while k < len(goal.actions):
-                print("k: %d" % k)
-                if k - 1 > len(goal.actions):
-                    break
-                print('[AI] ======= Making actions')
-                action = goal.actions[k]
-                action.make()
-                while not self.ending.isSet() and not self.avoiding.isSet() and self.cs.trajman[ROBOT].is_moving():
-                    print('MAKING')
-                    sleep(0.1)
+                try:
+                    print("k: %d" % k)
+                    if k - 1 > len(goal.actions):
+                        break
+                    print('[AI] ======= Making actions')
+                    action = goal.actions[k]
+                    action.make()
+                    while not self.ending.isSet() and not self.avoiding.isSet() and self.cs.trajman[ROBOT].is_moving():
+                        print('MAKING')
+                        sleep(0.1)
 
-                sleep(0.5)
-                if self.ending.isSet():
-                    return
+                    sleep(0.5)
+                    if self.ending.isSet():
+                        return
 
-                if self.avoiding.isSet():
-                    self.wait_until()
-                    print('AI AVOIDED, NOT GOING TO NEXT ACTION')
-                    continue
+                    if self.avoiding.isSet():
+                        self.wait_until()
+                        print('AI AVOIDED, NOT GOING TO NEXT ACTION')
+                        continue
 
-                print('MADE')
+                    print('MADE')
 
-                if self.ending.isSet():
-                    return
+                    if self.ending.isSet():
+                        return
+                except Exception as e:
+                    print('AI : EXCEPTION: ' + e.message)
                 
                 k += 1
             i += 1
@@ -243,15 +246,19 @@ class Ai(Service):
                 continue
 
             if self.telemetry['speed'] > 0 and len(self.front_detected) > 0:
+                self.avoiding.set()
                 print('AVOID FROOOOONT')
                 self.cs.trajman[ROBOT].stop_asap(500, 15)
                 self.side = 'front'
-                self.avoiding.set()
+                print('--- front ---')
+                sleep(0.5)
             elif self.telemetry['speed'] < 0 and len(self.back_detected) > 0:
+                self.avoiding.set()
                 print('AVOID BAAAACCCCKKKK')
                 self.cs.trajman[ROBOT].stop_asap(500, 15)
                 self.side = 'back'
-                self.avoiding.set()
+                print('--- back ---')
+                sleep(0.5)
 
     def wait_until(self):
         print('WAIT UNTIL')
