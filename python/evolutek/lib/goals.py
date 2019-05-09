@@ -66,7 +66,7 @@ class Goal:
         self.name = name
         self.path = []
         for point in path:
-            self.path.append(Point(point['x'], 3000 - point['y'] if mirror else point['y']))
+            self.path.append({"x" : point['x'], "y": 3000 - point['y'] if mirror else point['y']})
         #lcl_theta = path.theta
         #if isinstance(theta, str):
         #    lcl_theta = eval(theta)

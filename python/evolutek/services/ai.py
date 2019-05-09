@@ -307,21 +307,18 @@ class Ai(Service):
 
     @Service.action
     def get_path(self):
-        l = []
-        for p in self.current_path:
-            l.append({'x' : p.x, 'y': p.y})
-        return l
+        return self.current_path
 
     """ Goto with path """
-    def goto_xy_theta_with_path(self, path):
-        self.current_path = path
-        dest = path[len(path) - 1]
-        for i in range(1, len(path)):
+    def goto_xy_theta_with_path(self):
+        dest = self.current_path[-1]
+        break_out = False
+        while len(self.current_path) > 0:
             point = self.current_path[i]
-            print("[AI] Going to x : " + str(point.x) + ", y : " + str(point.y))
+            print("[AI] Going to x : " + str(point['x') + ", y : " + str(point['y']))
             pos = self.cs.trajman[ROBOT].get_position()
-            while point.dist(pos) > 5:
-                self.cs.trajman[ROBOT].goto_xy(x = point.x, y = point.y)
+            while Point.dist_dict(point, pos) > 5:
+                self.cs.trajman[ROBOT].goto_xy(x = point['x'], y = point['y'])
                 while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                     sleep(0.1)
 
@@ -352,9 +349,12 @@ class Ai(Service):
                     #Compute new path
                     try:
                         print("[AI] Computing new path")
-                        tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest.x, dest_y=dest.y)
+                        tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+                        self.current_path = tmp_path
+                        #TODO : check if path is empty
+                        point = tmp_path[0]
                         print("NEW PATH = " + str(tmp_path))
-                        self.goto_xy_theta_with_path(tmp_path)
+                        break_out = True
                         break
                     except Exception as e:
                         print("[AI] Cannot compute new path: " + str(e))
@@ -367,7 +367,8 @@ class Ai(Service):
 
                 pos = self.cs.trajman[ROBOT].get_position()
 
-        self.current_path = []
+            if break_out:
+                break
 
     """ Make actions """
     def make_actions(self):
