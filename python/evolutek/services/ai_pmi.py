@@ -253,7 +253,7 @@ class Ai(Service):
     """ Reset button """
     @Service.event('%s_reset' % ROBOT)
     def reset_button(self, **kwargs):
-        self.reset(recalibration=False)
+        self.setup(recalibration=False)
 
     """ PMI Telemetry """
     @Service.event('%s_telemetry' % ROBOT)
