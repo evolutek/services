@@ -4,7 +4,7 @@ from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
 from math import cos, sin, pi
 from os import _exit
-from threading import Timer
+from threading import Timer, Thread
 from tkinter import *
 from PIL import Image
 from PIL import ImageTk
@@ -26,27 +26,30 @@ class Match(Service):
         self.cs = CellaservProxy()
 
         # Match Params
-        self.color1 = self.cs.config.get(section='match', option='color1')
-        self.color2 = self.cs.config.get(section='match', option='color2')
-        self.match_time = int(self.cs.config.get(section='match', option='time'))
-        self.refresh = float(self.cs.config.get(section='match', option='refresh'))
-        self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
-        self.interface_enabled = self.cs.config.get(section='match', option='interface_enabled') == 'True'
-        self.timeout_robot = float(self.cs.config.get(section='match', option='timeout_robot'))
-        self.interface_refresh = int(self.cs.config.get(section='match', option='interface_refresh'))
-        self.interface_ratio = float(self.cs.config.get(section='match', option='interface_ratio'))
+        match_config = self.cs.config.get_section('match')
+        self.color1 = match_config['color1']
+        self.color2= match_config['color2']
+        self.match_time = int(match_config['time'])
+        self.refresh = float(match_config['refresh'])
+        self.robot_size = float(match_config['robot_size'])
+        self.interface_enabled = match_config['interface_enabled']
+        self.timeout_robot = float(match_config['timeout_robot'])
+        self.interface_refresh = int(match_config['interface_refresh'])
+        self.interface_ratio = float(match_config['interface_ratio'])
 
         # Robots config
-        self.pal_size_x = int(self.cs.config.get(section='pal', option='robot_size_x'))
-        self.pal_size_y = int(self.cs.config.get(section='pal', option='robot_size_y'))
-        self.pmi_size_x = int(self.cs.config.get(section='pmi', option='robot_size_x'))
-        self.pmi_size_y = int(self.cs.config.get(section='pmi', option='robot_size_y'))
+        self.pal_size_x = float(self.cs.config.get(section='pal', option='robot_size_x'))
+        self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
+        self.pmi_size_x = float(self.cs.config.get(section='pmi', option='robot_size_x'))
+        self.pmi_size_y = float(self.cs.config.get(section='pmi', option='robot_size_y'))
 
         # Match Status
         self.color = None
         self.match_status = 'unstarted'
         self.score = 0
         self.timer = Timer(self.match_time, self.match_end)
+        self.match_time = 0
+        self.match_time_thread = Thread(target=self.match_time_loop)
         self.interface_status = InterfaceStatus.init
 
         # PAL status
@@ -110,9 +113,9 @@ class Match(Service):
 
         # PMI AI STATUS
         text = 'PMI not connected'
-        if not self.pal_ai_s is None:
-            text = self.pal_ai_s
-        elif not self.pal_telem is None:
+        if not self.pmi_ai_s is None:
+            text = self.pmi_ai_s
+        elif not self.pmi_telem is None:
             text = 'AI not launched'
         self.pmi_ai_status_label = Label(self.window, text="PMI status: %s" % text)
         self.pmi_ai_status_label.grid(row=3, column=1)
@@ -128,6 +131,10 @@ class Match(Service):
         # Match status
         self.match_status_label = Label(self.window, text="Match status: %s" % self.match_status)
         self.match_status_label.grid(row=2, column=2)
+
+        # Match time
+        self.match_time_label = Label(self.window, text="Match time: %d" % self.match_time)
+        self.match_time_label.grid(row=3, column=2)
 
     def set_score_interface(self):
         close_button = Button(self.window, text='Close', command=self.close)
@@ -243,6 +250,7 @@ class Match(Service):
             self.color_label.config(text="Color: %s" % self.color)
             self.score_label.config(text="Score: %d" % self.score)
             self.match_status_label.config(text="Match status: %s" % self.match_status)
+            self.match_time_label.config(text="Match time: %d" % self.match_time)
 
         self.window.after(self.interface_refresh, self.update_interface)
 
@@ -324,6 +332,7 @@ class Match(Service):
         self.timer.start()
         self.match_status = 'started'
         print('[MATCH] Match start')
+        self.match_time_thread.start()
 
         try:
             self.start_experiment()
@@ -344,6 +353,8 @@ class Match(Service):
         self.match_status = 'unstarted'
         self.score = 0
         self.timer = Timer(self.match_time, self.match_end)
+        self.match_time = 0
+        self.match_time_thread = Thread(target=self.match_time_loop)
 
         if not self.set_color(color):
             self.interface_status = InterfaceStatus.init
@@ -433,6 +444,11 @@ class Match(Service):
         print('[MATCH] Window created')
         self.window.after(self.interface_refresh, self.update_interface)
         self.window.mainloop()
+
+    def match_time_loop(self):
+        while self.match_status == 'started':
+            self.match_time += 1
+            sleep(1)
 
 def main():
     match = Match()
