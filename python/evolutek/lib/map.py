@@ -3,6 +3,7 @@
 from collections import deque
 from copy import deepcopy
 from enum import Enum
+import json
 from math import ceil, sqrt, inf
 from evolutek.lib.point import Point
 
@@ -51,18 +52,18 @@ class Square:
 
 class Obstacle:
 
-    def __init__(self, tag=None, color="black"):
+    def __init__(self, tag=None, type=ObstacleType.obstacle):
         self.points = []
         self.tag = tag
-        self.color = color
+        self.type = type
 
-    def __eq__(self, tag):
-        return self.tag == tag
+    def __eq__(self, tag, type=ObstacleType.obstacle):
+        return self.tag == tag and self.type == type
 
 class CircleObstacle(Obstacle):
 
-    def __init__(self, center, radius, tag=None):
-        super().__init__(tag)
+    def __init__(self, center, radius, tag=None, type=ObstacleType.obstacle):
+        super().__init__(tag, type)
         self.center = center
         self.radius = radius
 
@@ -77,8 +78,8 @@ class CircleObstacle(Obstacle):
 
 class RectangleObstacle(Obstacle):
 
-    def __init__(self, x1, x2, y1, y2, tag=None):
-        super().__init__(tag)
+    def __init__(self, x1, x2, y1, y2, tag=None, type=ObstacleType.obstacle):
+        super().__init__(tag, type)
         self.x1 = x1
         self.x2 = x2
         self.y1 = y1
@@ -112,8 +113,14 @@ class Map:
 
         self.add_boundaries()
 
+
+    """ UTILITIES """
+
     def is_real_point_outside(self, x, y):
         return x < 0 or y < 0 or x > self.real_height or y > self.real_width
+
+    def is_real_point_outside_point(self, p):
+        return self.is_point_inside(p.x, p.y)
 
     def is_point_inside(self, p):
         return p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width
@@ -121,43 +128,59 @@ class Map:
     def convert_point(self, x, y):
         return Point(int(x/self.unit), int(y/self.unit))
 
+    def convert_point_point(self, p):
+        return self.convert_point(p.x, p.y)
+
+    def print_map(self):
+        print('-' * (self.width + 2))
+        for x in range(self.height + 1):
+            s = "|"
+            for y in range(self.width + 1):
+                s += self.map[x][y]
+            s += "|"
+            print(s)
+        print('-' * (self.width + 2))
+
+    """ OBSTACLES """
+
+    def add_obstacle(self, obstacle):
+        added = False
+        for p in obstacle.points:
+            if self.is_point_inside(p):
+                added = True
+                self.map[p.x][p.y].add_obstacle(obstacle.tag, obstacle.type)
+        if added:
+            self.obstacles.append(obstacle)
+        return added
+
     def add_point_obstacle(self, x, y, tag=None, type=ObstacleType.obstacle):
         if self.is_real_point_outside(x, y):
             return False
-        obs = Obstacle(tag)
-        x = int(x / self.unit)
-        y = int(y / self.unit)
-        obs.points.append(Point(x, y))
-        self.map[x][y].add_obstacle(tag, type)
-        self.obstacles.append(obs)
+        obs = Obstacle(tag, type)
+        p = self.convert_point(x, y)
+        obs.points.append(p)
+        return self.add_obstacle(obs)
 
     def add_circle_obstacle(self, x, y, radius=0, tag=None, type=ObstacleType.obstacle):
         if self.is_real_point_outside(x, y):
             return False
-        obs = CircleObstacle(self.convert_point(x, y), int((radius + self.robot_radius)/self.unit), tag=tag)
-        for p in obs.points:
-            if self.is_point_inside(p):
-                self.map[p.x][p.y].add_obstacle(tag, type)
-        self.obstacles.append(obs)
-        return True
+        obs = CircleObstacle(self.convert_point(x, y), int((radius + self.robot_radius)/self.unit), tag=tag, type=type)
+        return self.add_obstacle(obs)
+
+    def add_circle_obstacle_point(self, p, radius=0, tag=None, type=ObstacleType.obstacle):
+        return self.add_circle_obstacle(p.x, p.y, radius=radius, tag=tag, type=type)
 
     def add_rectangle_obstacle(self, x1, x2, y1, y2, tag=None, type=ObstacleType.obstacle):
         if self.is_real_point_outside(x1, y1) or self.is_real_point_outside(x2, y2):
             return False
-        if x1 > x2:
-            x1, x2 = x2, x1
-        if y1 > y2:
-            y1, y2 = y2, y1
-        x1 = int((x1 - self.robot_radius) /self.unit)
-        x2 = int((x2 + self.robot_radius) /self.unit)
-        y1 = int((y1 - self.robot_radius) /self.unit)
-        y2 = int((y2 + self.robot_radius) /self.unit)
-        obs = RectangleObstacle(x1, x2, y1, y2, tag=tag)
-        for p in obs.points:
-            if self.is_point_inside(p):
-                self.map[p.x][p.y].add_obstacle(tag, type)
-        self.obstacles.append(obs)
-        return True
+        _x1 = int((min(x1, x2) - self.robot_radius) /self.unit)
+        _x2 = int((max(x1, x2) + self.robot_radius) /self.unit)
+        _y1 = int((min(y1, y2) - self.robot_radius) /self.unit)
+        _y2 = int((max(y1, y2) + self.robot_radius) /self.unit)
+        return self.add_obstacle(RectangleObstacle(_x1, _x2, _y1, _y2, tag=tag, type=type))
+
+    def add_rectangle_obstacle_point(self, p1, p2, tag=None, type=ObstacleType.obstacle):
+        return self.add_rectangle_obstacle(p1.x, p2.x, p1.y, p2.y, tag=tag, type=type)
 
     def add_boundaries(self):
         radius = int(self.robot_radius / self.unit)
@@ -189,15 +212,59 @@ class Map:
                     return True
         return False
 
-    def print_map(self):
-        print('-' * (self.width + 2))
-        for x in range(self.height + 1):
-            s = "|"
-            for y in range(self.width + 1):
-                s += self.map[x][y]
-            s += "|"
-            print(s)
-        print('-' * (self.width + 2))
+    @staticmethod
+    def parse_obstacle_file(file):
+        with open(file, 'r') as obstacle_file:
+            data = obstacle_file.read()
+
+        data = json.loads(data)
+
+        fixed = data['fixed_obstacles']
+        color = data['color_obstacles']
+
+        return fixed, color
+
+    def add_obstacles(self, obstacles, mirror=False):
+        obstacles = deepcopy(obstacles)
+        for obstacle in obstacles:
+
+            if 'type' in obstacle:
+                try:
+                    obstacle['type'] = eval(obstacle['type'])
+                except Exception as e:
+                    print('Bad obstacle type: %s' % (str(e)))
+                    continue
+
+            if not 'form' in obstacle:
+                print('No form in obstacle')
+                continue
+            form = obstacle['form']
+            del obstacle['form']
+
+            if form == 'rectangle':
+                if not 'p1' in obstacle or not 'p2' in obstacle:
+                    print('Bad rectangle obstacle in parsing')
+                    continue
+                obstacle['p1'] = Point.from_dict(obstacle['p1'])
+                obstacle['p2'] = Point.from_dict(obstacle['p2'])
+                if mirror:
+                    obstacle['p1'].y = 3000 - obstacle['p1'].y
+                    obstacle['p2'].y = 3000 - obstacle['p2'].y
+                self.add_rectangle_obstacle_point(**obstacle)
+            elif form == 'circle':
+                if not 'p' in obstacle:
+                    print('Bad circle obstacle in parsing')
+                    continue
+                obstacle['p'] = Point.from_dict(obstacle['p'])
+                if mirror:
+                    obstacle['p'].y = 3000 - obstacle['p'].y
+                self.add_circle_obstacle_point(**obstacle)
+
+            else:
+                print('Obstacle from not found')
+
+
+    """ PATHFNDING """
 
     def get_path(self, p1, p2):
         if self.is_real_point_outside(p1.x, p1.y) or self.is_real_point_outside(p2.x, p2.y):
@@ -236,8 +303,6 @@ class Map:
                     queue.append(neighbour)
                     pred[neighbour] = cur
 
-        #print('Complete Dijkstra')
-
         path = []
         if end in pred:
             cur = end
@@ -251,7 +316,6 @@ class Map:
             print("Target obstructed")
 
         path  = self.path_opti(self.smooth(path))
-        #path = self.smooth(path)
         return self.convert_path(path)
 
     def smooth(self,path):
@@ -275,20 +339,13 @@ class Map:
         if (len(path)<=2):
             print("lenpath<2")
             return path
-       
-        #for i in range(2,len(path)):
-        print(self.is_correct_trajectory(path[-3],path[-1]))
+
         n1 = path[0]
         n2 = path[1]
         n3 = path[2]
-        neww=[]
-        #for i in range(5):
-        #    neww.append(path[i])
-        #path = neww
-
-        new = []
-        new.append(n1)
+        new = [n1]
         i=2
+
         while (i<len(path)):
             n3 = path[i]
             mini = n2
@@ -302,10 +359,9 @@ class Map:
             n2 = path[i]
             n1 = mini
             i+=1
+
         new.append(n3)
-
         return new
-
 
     def neighbours(self, p, map):
         l = [
@@ -327,7 +383,6 @@ class Map:
         return p1.dist(p2)
 
     def is_correct_trajectory(self, p1, p2):
-
 
         if p1 == p2:
             return True

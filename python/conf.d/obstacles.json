@@ -1,0 +1,61 @@
+{
+    "fixed_obstacles": [
+        {
+            "p1": {
+                "x": 1622,
+                "y": 450
+            },
+            "p2": {
+                "x": 2000,
+                "y": 2550
+            },
+            "form": "rectangle"
+        },
+        {
+            "p1": {
+                "x": 1422,
+                "y": 1475
+            },
+            "p2": {
+                "x": 1622,
+                "y": 1525
+            },
+            "form": "rectangle"
+        },
+        {
+            "p1": {
+                "x": 0,
+                "y": 500
+            },
+            "p2": {
+                "x": 50,
+                "y": 2500
+            },
+            "form": "rectangle"
+        }
+    ],
+
+    "color_obstacles": [
+        {
+            "p1": {
+                "x": 300,
+                "y": 2550
+            },
+            "p2": {
+                "x": 1200,
+                "y": 3000
+            },
+            "tag": "starting_zone",
+            "form": "rectangle"
+        },
+        {
+            "p": {
+                "x": 1050,
+                "y": 1000
+            },
+            "radius": 300,
+            "tag": "chaos_zone",
+            "form": "circle"
+        }
+    ]
+}
