@@ -272,7 +272,7 @@ class Ai(Service):
         print('-----Going back-----')
         #TODO Check dist with previous point (path)
         tmp_pos = self.cs.trajman[ROBOT].get_position()
-        dist = min(Point.dist(tmp_pos, pos), 250)
+        dist = min(Point.dist_dict(tmp_pos, pos), 250)
         self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)

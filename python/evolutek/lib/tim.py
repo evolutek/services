@@ -17,6 +17,8 @@ def parse_num(s):
 # min_size is the min size of a shape : float
 # max_distance is the max distance between two points for a robot : float
 
+# TODO: Make TIM pos configurable
+
 class Tim:
 
     def __init__(self, config, debug):
