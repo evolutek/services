@@ -29,10 +29,10 @@ class Point:
 
     @staticmethod
     def from_dict(p):
-        return Point(p['x'], p['y'])
+        return Point(int(p['x']), int(p['y']))
 
     @staticmethod
-    def dist(p1, p2):
+    def dist_dict(p1, p2):
         return sqrt((p1['x'] - p2['x'])**2 + (p1['y'] - p2['y'])**2)
 
     @staticmethod

@@ -53,7 +53,7 @@
                 "x": 1050,
                 "y": 1000
             },
-            "radius": 300,
+            "radius": 150,
             "tag": "chaos_zone",
             "form": "circle"
         }

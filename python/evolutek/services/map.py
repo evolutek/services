@@ -141,7 +141,7 @@ class Map(Service):
 
                     tag = "robot%d" % i
                     # Check if we can put in in the map
-                    if self.map.add_circle_obstacle(point, self.robot_size, tag=robot['tag'], type=ObstacleType.robot):
+                    if self.map.add_circle_obstacle_point(point, self.robot_size, tag=tag, type=ObstacleType.robot):
                         robot = point.to_dict()
                         robot['tag'] = tag
                         i += 1
@@ -159,7 +159,10 @@ class Map(Service):
       print("[MAP] path request received")
       # TODO: Check types
       # TODO: Remove self.path and make match display it
+      if self.pmi_telem is not None:
+          self.map.add_circle_obstacle_point(Point.from_dict(self.pmi_telem), self.pmi_size, 'pmi', ObstacleType.robot)
       self.path = self.map.get_path(Point(int(start_x), int(start_y)), Point(int(dest_x), int(dest_y)))
+      self.map.remove_obstacle('pmi')
       return self.path
 
     @Service.action
@@ -251,10 +254,10 @@ class Map(Service):
     #@Service.thread
     def test_path(self):
         while True:
-          if(self.pal_telem):
-            self.path = self.cs.map.get_path(dict(self.pal_telem),{'x': 1000, 'y':500})
+          if self.pal_telem:
+            self.path = self.cs.map.get_path(self.pal_telem['x'], self.pal_telem['y'], 1500, 2750)
           else:
-            self.path = self.cs.map.get_path(start_x=1500, start_y=2750, dest_x=500, dest_y=500)
+            self.path = self.cs.map.get_path(start_x=1500, start_y=2750, dest_x=1500, dest_y=250)
           sleep(0.15)
 
     #@Service.thread

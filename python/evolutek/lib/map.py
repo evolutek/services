@@ -57,8 +57,8 @@ class Obstacle:
         self.tag = tag
         self.type = type
 
-    def __eq__(self, tag, type=ObstacleType.obstacle):
-        return self.tag == tag and self.type == type
+    def __eq__(self, tag):
+        return self.tag == tag
 
 class CircleObstacle(Obstacle):
 
@@ -192,6 +192,8 @@ class Map:
             self.map[self.height - radius][y].add_obstacle('boundaries', ObstacleType.obstacle)
 
     def remove_obstacle(self, tag):
+        if tag is None:
+            return False
         for obs in self.obstacles:
             if obs == tag:
                 for p in obs.points:
@@ -297,7 +299,7 @@ class Map:
 
             neighbours = self.neighbours(cur, map)
             for neighbour in neighbours:
-                distance = dist[cur.x][cur.y] + self.distance(cur, neighbour)
+                distance = dist[cur.x][cur.y] + cur.dist(neighbour)
                 if distance < dist[neighbour.x][neighbour.y]:
                     dist[neighbour.x][neighbour.y] = distance
                     queue.append(neighbour)
@@ -382,6 +384,8 @@ class Map:
         #TODO: COST
         return p1.dist(p2)
 
+
+    # FIXME: can cross line
     def is_correct_trajectory(self, p1, p2):
 
         if p1 == p2:
