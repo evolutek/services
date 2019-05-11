@@ -6,11 +6,12 @@ import sys
 class PostDevelopCommand(develop):
     def run(self):
         check_call(("cp -r evolutek/ /usr/lib/python3.%d/site-packages/" % sys.version_info.minor).split())
+        check_call("cp -r conf.d /etc/".split())
         develop.run(self)
 
 setup(
     name = "services",
-    version = "2018",
+    version = "2019",
     packages = find_packages(),
     namespace_packages = ['evolutek'],
 
@@ -26,7 +27,6 @@ setup(
     entry_points = {
         'console_scripts': [
             'ax = evolutek.services.ax:main',
-            'config = evolutek.services.config:main',
             'trajman = evolutek.services.trajman:main',
         ],
     },
