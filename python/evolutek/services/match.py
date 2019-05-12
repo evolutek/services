@@ -177,11 +177,10 @@ class Match(Service):
             width=2, fill=color)
 
     def print_path(self, path, color_path, color_point):
+        size = 10 * self.interface_ratio
         for i in range(1, len(path)):
             p1 = path[i - 1]
             p2 = path[i]
-
-            size = 10 * self.interface_ratio
 
             self.canvas.create_line(p1['y'] * self.interface_ratio, p1['x'] * self.interface_ratio,
                 p2['y'] * self.interface_ratio, p2['x'] * self.interface_ratio, width=size, fill=color_path)
@@ -225,8 +224,12 @@ class Match(Service):
                 self.print_robot(self.pmi_telem, self.pmi_size_y, 'orange')
 
             for robot in self.robots:
-                print(robot)
                 self.print_robot(robot, self.robot_size, 'red')
+
+            try:
+                self.pal_path = self.cs.ai['pal'].get_path()
+            except:
+                pass
 
             self.print_path(self.pal_path, 'yellow', 'violet')
             self.print_path(self.pmi_path, 'violet', 'yellow')
@@ -396,7 +399,7 @@ class Match(Service):
         match['pal_telemetry'] = self.pal_telem
 
         match['pmi_ai_status'] = self.pmi_ai_s
-        match['pmi_avoid_status'] = self.pmi_avoid_s
+        match['pmi_telemetry'] = self.pmi_telem
 
         return match
 
