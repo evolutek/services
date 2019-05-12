@@ -149,7 +149,7 @@ class Map(Service):
 
                 print('[MAP] Detected %d robots' % len(self.robots))
                 self.publish('opponents', robots=self.robots)
-            sleep(self.refresh)
+            sleep(self.refresh * 4)
 
 
     """ ACTION """
