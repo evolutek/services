@@ -19,7 +19,7 @@ class Config(Service):
     @Service.action
     def get_section(self, name : str) -> dict:
         """
-        Return section from config file. If the section does not exists, a 
+        Return section from config file. If the section does not exists, a
         KeyError is raised
         """
         try:
