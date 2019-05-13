@@ -37,7 +37,7 @@ class Map(Service):
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
         #self.pal_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
 
-        self.map = Map_lib(width, height, map_unit, self.pal_size)
+        self.map = Map_lib(width, height, map_unit, self.pal_size + 25)
         # Load obstacles
         fixed_obstacles, self.color_obstacles = Map_lib.parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map.add_obstacles(fixed_obstacles)
@@ -70,34 +70,19 @@ class Map(Service):
     def match_color(self, color):
         if color != self.color:
             self.color = color
-        if self.color is not None:
 
+        if self.color is not None:
             # Change color obstacles position
             for obstacle in self.color_obstacles:
                 if 'tag' in obstacle:
                     self.map.remove_obstacle(obstacle['tag'])
             self.map.add_obstacles(self.color_obstacles, self.color != self.color1)
 
-            # Make tim config
-            config = self.tim_config
-            if self.color != self.color1:
-                config['pos_y'] = 3000 - int(config['pos_y'])
-                config['angle'] = - int(config['angle'])
-
-            # Disconnected previous tim
-            if not self.tim is None:
-                self.tim.connected = False
-                sleep(0.5)
-
-            self.tim = Tim(config, self.debug)
-            if not self.tim.connected:
-                self.tim = None
+        # Connected to the tim or change the pos if it is already connected
+        if not self.tim is None and self.tim.connected:
+            self.tim.change_pos(self.color != self.color1)
         else:
-#            self.map.remove_obstacle('zone')
-            if not self.tim is None:
-                self.tim.connected = False
-                sleep(0.5)
-            self.tim = None
+            self.tim = Tim(self.tim_config, self.debug, self.color != self.color1)
 
     @Service.event
     def pal_telemetry(self, status, telemetry):
@@ -120,9 +105,10 @@ class Map(Service):
     @Service.thread
     def loop_scan(self):
         while True:
-            if self.tim is None:
+            if not self.tim.connected:
                 print('[MAP] TIM not connected')
                 sleep(self.refresh * 10)
+                self.tim.try_connection()
                 continue
             if self.debug:
                 self.raw_data, self.shapes, self.robots = self.tim.get_scan()
