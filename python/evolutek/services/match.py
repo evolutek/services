@@ -36,6 +36,7 @@ class Match(Service):
         self.timeout_robot = float(match_config['timeout_robot'])
         self.interface_refresh = int(match_config['interface_refresh'])
         self.interface_ratio = float(match_config['interface_ratio'])
+        self.interface_ratio = 0.5
 
         # Robots config
         self.pal_size_x = float(self.cs.config.get(section='pal', option='robot_size_x'))
@@ -66,7 +67,7 @@ class Match(Service):
 
         # Oppenents positions
         self.robots = []
-        self.robots_watchdog = Watchdog(self.timeout_robot, self.reset_robots)
+        self.robots_watchdog = Watchdog(self.timeout_robot * 2, self.reset_robots)
 
         super().__init__()
         print('[MATCH] Match ready')
@@ -226,11 +227,6 @@ class Match(Service):
             for robot in self.robots:
                 self.print_robot(robot, self.robot_size, 'red')
 
-            try:
-                self.pal_path = self.cs.ai['pal'].get_path()
-            except:
-                pass
-
             self.print_path(self.pal_path, 'yellow', 'violet')
             self.print_path(self.pmi_path, 'violet', 'yellow')
 
@@ -301,9 +297,10 @@ class Match(Service):
             self.pal_telem = None
 
     @Service.event
-    def pal_ai_status(self, status):
+    def pal_ai_status(self, status, path):
         self.pal_watchdog.reset()
         self.pal_ai_s = status
+        self.pal_path = path
 
     """ PMI """
     @Service.event

@@ -78,7 +78,7 @@ class Map(Service):
             for obstacle in self.color_obstacles:
                 if 'tag' in obstacle:
                     self.map.remove_obstacle(obstacle['tag'])
-            self.map.add_obstacles(self.color_obstacles, self.color != self.color1)
+            self.map.add_obstacles(self.color_obstacles, self.color != self.color1, type=ObstacleType.color)
 
         # Connected to the tim or change the pos if it is already connected
         if not self.tim is None and self.tim.connected:
@@ -137,7 +137,7 @@ class Map(Service):
 
                 print('[MAP] Detected %d robots' % len(self.robots))
                 self.publish('opponents', robots=self.robots)
-            sleep(self.refresh * 4)
+            sleep(self.refresh * 2)
 
 
     """ ACTION """
