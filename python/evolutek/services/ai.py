@@ -163,6 +163,7 @@ class Ai(Service):
         #Goto x y with path
         self.current_path = self.goal.path
         self.goto_xy_with_path()
+        self.current_path.clear()
 
         #Make all actions
         self.make_actions()

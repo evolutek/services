@@ -60,7 +60,12 @@ class Interface:
                     x2 = (y * self.map.unit + self.map.unit/2) * unit
                     y1 = (x * self.map.unit - self.map.unit/2) * unit
                     y2 = (x * self.map.unit + self.map.unit/2) * unit
-                    self.canvas.create_rectangle(x1, y1, x2, y2, fill='red' if self.map.map[x][y].is_robot() else 'black')
+                    color = 'red'
+                    if self.map.map[x][y].is_obstacle():
+                        color = 'black'
+                        if self.map.map[x][y].is_color():
+                            color = self.service.color if not self.service.color is None else 'yellow'
+                    self.canvas.create_rectangle(x1, y1, x2, y2, fill=color)
 
     def print_raw_data(self, raw_data):
       #print("data points: %d" % len(raw_data))
