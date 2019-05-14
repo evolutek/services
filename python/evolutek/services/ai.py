@@ -46,9 +46,9 @@ class Ai(Service):
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color = None
         try:
-            self.color = self.cs.match.get_match()['color']
+            self.color = self.cs.match.get_color()
         except Exception as e:
-            print('Failed to set color: %s' % (str(e)))
+            print('[AI] Failed to set color: %s' % (str(e)))
 
         self.refresh = float(self.cs.config.get(section='ai', option='refresh'))
 
@@ -67,15 +67,15 @@ class Ai(Service):
         #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
         self.goals = Goals(file="test_ai.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
+        # FIXME: Utile ?
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
         self.setup(recalibration=False)
 
     """ SETUP """
-    @Service.event('%s_reset' % ROBOT)
     @Service.action
-    def setup(self, color=None, recalibration=True, **kwargs):
+    def setup(self, recalibration=True):
 
         if self.state != State.Init and self.state != State.Waiting and self.state != State.Ending:
             return
@@ -86,11 +86,6 @@ class Ai(Service):
 
         print('[AI] Setup')
 
-        try:
-            self.color = self.cs.match.get_match()['color']
-        except Exception as e:
-            print('Failed to set color: %s' % (str(e)))
-
         if not self.goals.reset(self.color!=self.color1):
             print('[AI] Error')
             self.state = State.Error
@@ -99,9 +94,6 @@ class Ai(Service):
         self.cs.trajman[ROBOT].enable()
         self.cs.actuators[ROBOT].reset(self.color)
         self.cs.avoid[ROBOT].disable()
-
-        self.match_thread = Thread(target=self.selecting)
-        self.match_thread.deamon = True
 
         # Make a recalibration
         if recalibration:
@@ -125,6 +117,7 @@ class Ai(Service):
             self.cs.trajman[ROBOT].unfree()
 
         self.cs.avoid[ROBOT].enable()
+        self.side = None
         self.avoid_disable = False
 
         self.aborting.clear()
@@ -139,11 +132,9 @@ class Ai(Service):
         if self.state != State.Waiting and self.state != State.Making:
             return
 
-        # WAIT FOR END OF DETECTION """
         if self.ending.isSet():
             return
 
-        # Clear abort event
         self.aborting.clear()
 
         print('[AI] Selecting')
@@ -159,10 +150,7 @@ class Ai(Service):
     """ MAKING """
     def making(self):
 
-        if self.state != State.Selecting:
-            return
-
-        if self.ending.isSet():
+        if self.state != State.Selecting or self.ending.isSet():
             return
 
         print('[AI] Making')
@@ -174,7 +162,7 @@ class Ai(Service):
 
         #Goto x y with path
         self.current_path = self.goal.path
-        self.goto_xy_theta_with_path()
+        self.goto_xy_with_path()
 
         #Make all actions
         self.make_actions()
@@ -207,9 +195,20 @@ class Ai(Service):
     #@Service.thread
     def status(self):
         while True:
-            self.publish(ROBOT + '_ai_status', status=str(self.state))
+            self.publish(ROBOT + '_ai_status', status=str(self.state), path=self.current_path)
             sleep(self.refresh)
 
+    """ Match Color """
+    @Service.event('match_color')
+    def color(self, color):
+        if not color is None and color != self.color:
+            self.color = color
+            self.reset(recalibration=False)
+
+    """ Reset button """
+    @Service.event('%s_reset' % ROBOT)
+    def reset_button(self, **kwargs):
+        self.reset(recalibration=True)
 
     """ Match Start """
     @Service.event('match_start')
@@ -217,9 +216,10 @@ class Ai(Service):
     def start(self):
         if self.state != State.Waiting:
             return
-
+        match_thread = Thread(target=self.selecting)
+        match_thread.deamon = True
         print('[AI] Starting')
-        self.match_thread.start()
+        match_thread.start()
         return
 
     """ Abort """
@@ -244,24 +244,19 @@ class Ai(Service):
     def wait_until_detection_end(self, timeout=False):
         avoid_stat = self.cs.avoid[ROBOT].status()
         if self.side is not None and avoid_stat is not None:
-            field = ''
-            if self.side == 'front':
-                field = 'front_detected'
-            else:
-                field = 'back_detected'
             state = self.state
             self.state = State.Aborting
             watchdog = None
             if timeout:
                 watchdog = Watchdog(5, self.timeout_handler)
                 watchdog.reset()
-            while not self.ending.isSet() and not self.timeout_event.isSet()\
-                and avoid_stat[field] is not None and len(avoid_stat[field]) > 0:
+            while not self.ending.isSet() and not self.timeout_event.isSet() and len(avoid_stat[side]) > 0:
                 avoid_stat = self.cs.avoid[ROBOT].status()
                 print('-----Avoiding-----')
                 sleep(0.1)
             if watchdog is not None:
                 watchdog.stop()
+                sleep(0.1)
             if not self.timeout_event.isSet():
                 self.side = None
             self.state = state
@@ -273,7 +268,10 @@ class Ai(Service):
         print('-----Going back-----')
         tmp_pos = self.cs.trajman[ROBOT].get_position()
         dist = min(Point.dist_dict(tmp_pos, last_point), max_dist)
-        self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(self.side!='front'))
+        side = self.side
+        self.side = None
+        self.aborting.clear()
+        self.cs.trajman[ROBOT].move_trsl(dist, 400, 400, 600, int(side!='front'))
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
@@ -306,62 +304,60 @@ class Ai(Service):
 
             pos = self.cs.trajman[ROBOT].get_position()
 
-    @Service.action
-    def get_path(self):
-        return self.current_path
-
     """ Goto with path """
-    def goto_xy_theta_with_path(self):
+    def goto_xy_with_path(self):
         dest = self.current_path[-1]
         i = 0
         while i < len(self.current_path):
-            i += 1
             pos = self.cs.trajman[ROBOT].get_position()
-            #if Point.dist_dict(pos, self.current_path[i]) <= 5:
+            if Point.dist_dict(pos, self.current_path[i]) <= 5:
+                i += 1
             point = self.current_path[i]
-            print("##### i : " + str(i) + "/" + str(len(self.current_path)) + " #####")
             print("[AI] Going to x : " + str(point['x']) + ", y : " + str(point['y']))
             self.cs.trajman[ROBOT].goto_xy(x = point['x'], y = point['y'])
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
-            
-            print("LOOOL")
+
             if self.ending.isSet():
                 return
 
             if self.aborting.isSet():
+
+                # Check if it's normal to be aborted
+                try:
+                    if self.cs.map.is_ok(self.cs.trajman[ROBOT].get_position(), point, side):
+                        continue
+                except Exception as e:
+                    print('[AI] Could not check if current dest is viable')
+
                 print("[AI][GOING] Aborted")
                 self.wait_until_detection_end(timeout=True)
 
             if self.ending.isSet():
                 return
-            print("self.side =  " + str(self.side))
+
             if self.side is not None:
                 self.going_back(self.goal.path[i - 1], 250)
-                #Abort when going back
-                if self.aborting.isSet():
-                    self.aborting.clear()
-                    self.going_back(self.goal.path[i - 1], 50)
-                    self.side = None
+
 
                 if self.aborting.isSet():
-                    self.aborting.clear()
-                    self.side = None
+                    self.going_back(self.goal.path[i - 1], 50)
+
+                    if self.aborting.isSet():
+                        self.aborting.clear()
+                        self.side = None
 
                 pos = self.cs.trajman[ROBOT].get_position()
                 #Compute new path
                 try:
                     print("[AI] Computing new path")
                     tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
-                    #TODO : check if path is empty
-                    #while tmp_path == []:
-                    #    tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
-                    #    sleep(1)
+                    while tmp_path == []:
+                        sleep(1)
+                        tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
                     print("[AI] New path = " + str(tmp_path))
                     self.current_path = tmp_path
                     i = 0
-                    self.avoid_disable = True
-                    self.cs.avoid[ROBOT].disable()
                 except Exception as e:
                     print("[AI] Cannot compute new path: " + str(e))
 

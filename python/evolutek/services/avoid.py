@@ -25,8 +25,8 @@ class Avoid(Service):
     @Service.action
     def status(self):
         status = {
-            'front_detected' : self.front_detected,
-            'back_detected' : self.back_detected,
+            'front' : self.front_detected,
+            'back' : self.back_detected,
             'avoid' : self.avoid,
             'enabled' : self.enabled
         }
@@ -62,7 +62,7 @@ class Avoid(Service):
             self.cs.trajman[ROBOT].stop_asap(1000, 20)
             self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:
-            print('Failed to abort ai of %s: %s' % (ROBOT, str(e)))
+            print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
             return
         self.avoid = True
         print('[AVOID] Stopping robot, %s detection triggered' % side)
