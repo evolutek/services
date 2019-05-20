@@ -2,7 +2,7 @@
 
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
-from evolutek.lib.goals import Goals
+from evolutek.lib.goals import Goals, Avoid
 from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
@@ -33,7 +33,7 @@ class Ai(Service):
     def __init__(self):
 
         self.state = State.Init
-        print('Init')
+        print('[AI] Init')
 
         # Cellaserv
         self.cs = CellaservProxy()
@@ -310,25 +310,24 @@ class Ai(Service):
         dest = self.current_path[-1]
         i = 0
         while i < len(self.current_path):
+
+            # Check if we are already on the point
             pos = self.cs.trajman[ROBOT].get_position()
             if Point.dist_dict(pos, self.current_path[i]) <= 5:
                 i += 1
                 if i >= len(self.current_path):
                     break
-            
+
             point = self.current_path[i]
             print("[AI] Going to x : " + str(point['x']) + ", y : " + str(point['y']))
             self.cs.trajman[ROBOT].goto_xy(x = point['x'], y = point['y'])
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
-            if self.avoid_disable:
-                self.cs.avoid[ROBOT].enable()
-                self.cs.avoid_disable = False
-
             if self.ending.isSet():
                 return
 
+            # Check of we were abort
             avoid_stat = self.cs.avoid[ROBOT].status()
             if self.side is not None and avoid_stat is not None and not self.aborting.isSet():
                 self.aborting.set()
@@ -350,22 +349,35 @@ class Ai(Service):
             if self.ending.isSet():
                 return
 
+            # Enable avoid again
+            if self.avoid_disable:
+                self.cs.avoid[ROBOT].enable()
+                self.cs.avoid_disable = False
+
+            # If we were abort and the robot is still there, we are going back
             if self.side is not None:
-                self.going_back(self.goal.path[i - 1], 150)
+                tmp_point = self.goal.path[i - 1]
+                if i == 0:
+                    tmp_point = pos
+                self.going_back(tmp_pos, 150)
 
-
+                # If we were aborted, we go back again in the other direction
                 if self.aborting.isSet():
                     self.going_back(self.goal.path[i - 1], 50)
 
+                    # Clear abort
                     if self.aborting.isSet():
                         self.aborting.clear()
                         self.side = None
 
+                # Compute new path
                 pos = self.cs.trajman[ROBOT].get_position()
-                #Compute new path
                 try:
                     print("[AI] Computing new path")
                     tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+
+                    # Recompute path while we can't get another path
+                    # TODO: Critical map ?
                     while tmp_path == []:
                         sleep(1)
                         tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
@@ -413,17 +425,41 @@ class Ai(Service):
 
             # TODO: Manage avoid strategy
 
+            avoid_stat = self.cs.avoid[ROBOT].status()
+            if self.side is not None and avoid_stat is not None and not self.aborting.isSet():
+                self.aborting.set()
+
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
-                self.wait_until_detection_end()
-                continue
+
+                # Avoid staretgy is Wait
+                if action.avoid_strategy == Avoid.Wait:
+                    self.wait_until_detection_end()
+                    continue
+                else:
+                    # Avoid strategy is timeout or skip
+                    self.wait_until_detection_end(timeout=True)
+                    if self.ending.isSet():
+                        return
+
+                    # Go back
+                    if self.side is not None:
+                        self.going_back(self.goal.path[-1], 150)
+                    # Clear abort
+                    if self.aborting.isSet():
+                        self.aborting.clear()
+                        self.side = None
+
+                    if avoid.strategy != Avoid.Skip:
+                        # Continue if we don't skip action
+                        continue
+            else:
+                if action.score > 0:
+                    self.publish('score', value=self.action.score)
+                    self.goal.score -= action.score
 
             if self.ending.isSet():
                 return
-
-            if action.score > 0:
-                self.publish('score', value=self.action.score)
-                self.goal.score -= action.score
 
             # Make things back
             if action.trsl_speed is not None:
