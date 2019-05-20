@@ -47,15 +47,6 @@
             },
             "tag": "starting_zone",
             "form": "rectangle"
-        },
-        {
-            "p": {
-                "x": 1050,
-                "y": 1000
-            },
-            "radius": 150,
-            "tag": "chaos_zone",
-            "form": "circle"
         }
     ]
 }

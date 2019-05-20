@@ -63,7 +63,7 @@ class Tim:
             self.connected = False
 
     def change_pos(self, mirror=False):
-        self.point = Point(self.default_pos.x, 3000 - self.default_pos.y if mirror else self.default_pos.y)
+        self.pos = Point(self.default_pos.x, 3000 - self.default_pos.y if mirror else self.default_pos.y)
         self.angle = self.default_angle * -1 if mirror else self.default_angle
         if not self.connected:
             self.try_connection()
@@ -130,11 +130,11 @@ class Tim:
 
     def scan(self):
 
-        if self.point is None or self.angle is None:
+        if self.pos is None or self.angle is None:
             print('[TIM] Pos or angle not configured')
             return None
 
-        print('[TIM] Scanning')
+        #print('[TIM] Scanning')
 
         #("Send a scan request to the TIM")
         try:
@@ -175,14 +175,14 @@ class Tim:
         # Compute robots center
         robots = self.compute_center(shapes)
 
-        print("[TIM] End scanning")
+        #print("[TIM] End scanning")
         return clean_points, shapes, robots
 
     def loop_scan(self):
         while self.connected:
           sleep(.1)
           new_data = self.scan()
-          if scan is None:
+          if new_data is None:
               print('[TIM] Failed to get scan')
               continue
           self.lock.acquire()

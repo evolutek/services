@@ -37,7 +37,7 @@ class Map(Service):
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
         self.robot_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
 
-        self.map = Map_lib(width, height, map_unit, self.pal_size + 25)
+        self.map = Map_lib(width, height, map_unit, 210)
         # Load obstacles
         fixed_obstacles, self.color_obstacles = Map_lib.parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map.add_obstacles(fixed_obstacles)
@@ -129,7 +129,18 @@ class Map(Service):
 
                     tag = "robot%d" % i
                     # Check if we can put in in the map
-                    if self.map.add_circle_obstacle_point(point, self.robot_size, tag=tag, type=ObstacleType.robot):
+                    """x1 = point.x - 240
+                    x2 = point.x + 240
+                    y1 = point.y - 240
+                    y2 = point.y + 240
+
+                    if self.map.add_rectangle_obstacle(x1, x2, y1, y2, tag=tag, type=ObstacleType.robot):
+                        robot = point.to_dict()
+                        robot['tag'] = tag
+                        i += 1
+                        self.robots.append(robot)"""
+
+                    if self.map.add_circle_obstacle_point(point, 210, tag=tag, type=ObstacleType.robot):
                         robot = point.to_dict()
                         robot['tag'] = tag
                         i += 1
