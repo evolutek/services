@@ -12,7 +12,7 @@ from math import pi, tan, sqrt
 from time import sleep
 
 #TODO: Manage tmp robots
-#TODO: Add PMI to map for get_path for the PAL
+#TODO: Correct robot_size
 
 @Service.require('config')
 class Map(Service):
@@ -124,7 +124,8 @@ class Map(Service):
                 i = 0
                 for point in robots:
                     # Check if point is not one of our robots
-                    if self.pal_telem and point.dist(self.pal_telem) < self.delta_dist:
+                    if (self.pal_telem and point.dist(self.pal_telem) < self.delta_dist)\
+                        or (self.pmi_telem and point.dist(self.pmi_telem) < self.delta_dist):
                         continue
 
                     tag = "robot%d" % i
@@ -162,6 +163,7 @@ class Map(Service):
           self.map.add_circle_obstacle_point(Point.from_dict(self.pmi_telem), self.pmi_size, 'pmi', ObstacleType.robot)
       self.path = self.map.get_path(Point(int(start_x), int(start_y)), Point(int(dest_x), int(dest_y)))
       self.map.remove_obstacle('pmi')
+      self.map.remove_obstacle('tmp')
       return self.path
 
     @Service.action
@@ -229,6 +231,47 @@ class Map(Service):
 
         return ok
 
+    @Service.action
+    def add_tmp_robot(self, pos, theta, side):
+
+        # We use theta between 0 and 2pi
+        if theta < 0:
+            theta += 2 * pi
+
+        y = False
+        m = 0
+        n = 0
+        delta = 0.1
+        if abs(pi/2 - theta) < delta or abs(3*pi/2 - theta) < delta:
+            y = True
+            m = tan((pi/2) - theta)
+            n = pos['x'] - (m * pos['y'])
+        else:
+            m = tan(theta)
+            n = pos['y'] - (m * pos['x'])
+
+        sens = theta > pi / 2 and theta < 3 * pi / 2 if not y else theta > pi
+
+        dist = (self.robot_dist_sensor / 2 + 210) / sqrt(1 + m ** 2)
+
+        if sens ^ (side != 'front'):
+            dist *= -1
+
+        new_x = 0
+        new_y = 0
+        if y:
+            new_y = int(pos['y'] + dist)
+            new_x = int(new_y * m + n)
+        else:
+            new_x = int(pos['x'] + dist)
+            new_y = int(new_x * m + n)
+
+        point = Point(new_x, new_y)
+
+        for robot in self.robots:
+            if point.dist(robot) < self.delta_dist:
+                return False
+        return self.map.add_circle_obstacle_point(point, 210, tag='tmp', type=ObstacleType.robot)
 
     """ DEBUG """
 
