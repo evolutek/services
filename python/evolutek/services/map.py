@@ -189,9 +189,8 @@ class Map(Service):
         y = False
         m = 0
         n = 0
-        delta = 0.75
-        if round(theta % pi, 3) > delta\
-            and round(theta % (pi/2), 3) < delta:
+        delta = 0.1
+        if abs(pi/2 - theta) < delta or abs(3*pi/2 - theta) < delta:
             y = True
             m = tan((pi/2) - theta)
             n = telemetry['x'] - (m * telemetry['y'])
@@ -199,13 +198,15 @@ class Map(Service):
             m = tan(theta)
             n = telemetry['y'] - (m * telemetry['x'])
 
-        sens = abs((pi/2) - theta) < abs((3*pi/2) - theta) if y else abs(0 - theta) < abs(pi - theta)
+        sens = theta > pi / 2 and theta < 3 * pi / 2 if not y else theta > pi
 
         ok = False
         for i in range(int(self.robot_dist_sensor / self.map.unit) + 2):
             dist = i * self.map.unit / sqrt(1 + m ** 2)
-            if side != 'front':
+
+            if sens ^ (side != 'front'):
                 dist *= -1
+
             new_x = 0
             new_y = 0
             if y:
