@@ -212,6 +212,7 @@ class Actuators(Service):
         self.cs.ax['4'].move(goal=780)
         sleep(0.25)
 
+    # TODO: Update
     @Service.action
     def drop_palet(self):
         self.lower_palet()
@@ -250,7 +251,7 @@ class Actuators(Service):
             self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
             watchdog.stop()
             self.ejecteur_event.clear()
-        
+
 
     @Service.action
     def reset_ejecteur(self):
@@ -297,6 +298,7 @@ class Actuators(Service):
             watchdog.stop()
             self.ejecteur_event.clear()
 
+    # TODO: test and if it's not working, make a custom with move_trsl
     """ Recalibration """
     @Service.action
     def recalibrate(self, x=True, y=True, side=False, sens_x=False, sens_y=False, decal_x=0, decal_y=0, init=False):

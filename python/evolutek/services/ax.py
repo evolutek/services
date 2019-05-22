@@ -121,6 +121,7 @@ def wait_for_beacon():
 
 def main():
     wait_for_beacon()
+    # TODO: ax mapping with json
     if ROBOT == 'pal':
         axs = [Ax(ax=i) for i in [1, 2, 3, 4]]  # MAIN
     elif ROBOT == 'pmi':

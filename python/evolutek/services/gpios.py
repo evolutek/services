@@ -231,7 +231,7 @@ def wait_for_beacon():
             return
         pass
 
-### TODO: Add gpio config in json for robots
+# TODO: Add gpio config in json for robots
 def main():
     wait_for_beacon()
     gpios = Gpios()
