@@ -58,7 +58,6 @@ class Ai(Service):
         # Parameters
         self.aborting = Event()
         self.ending = Event()
-        self.tmp_robot = None
 
         # Timer
         self.timeout_event = Event()
@@ -225,7 +224,7 @@ class Ai(Service):
 
     """ Abort """
     @Service.action
-    def abort(self, tmp_robot=None, side=None):
+    def abort(self, side=None):
 
         if self.state != State.Making:
             return
@@ -234,12 +233,6 @@ class Ai(Service):
 
         print('[AI] Aborting')
         self.aborting.set()
-
-        if tmp_robot is not None:
-            self.tmp_robot = robot
-
-        ##TODO Give tmp robot to the map
-        ##TODO: Manage tmp robots
 
     """ Wait for end detection """
     def wait_until_detection_end(self, timeout=False):
@@ -276,35 +269,6 @@ class Ai(Service):
         while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
-    """ Goto xy """
-    def goto_xy(self):
-        pos = self.cs.trajman[ROBOT].get_position()
-        p = self.goal.path[0]
-        while Point.dist_dict(point, pos) > 5:
-            self.cs.trajman[ROBOT].goto_xy(x = p["x"], y = p["y"])
-            while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
-                sleep(0.1)
-
-            if self.ending.isSet():
-                return
-
-            if self.aborting.isSet():
-                print("[AI][MAKING] Aborted")
-                self.wait_until_detection_end(timeout=True)
-
-            if self.ending.isSet():
-                return
-
-            if self.side is not None:
-                self.going_back(pos)
-                self.side = None
-                # we can be in avoiding state
-
-            if self.ending.isSet():
-                return
-
-            pos = self.cs.trajman[ROBOT].get_position()
-
     """ Goto with path """
     def goto_xy_with_path(self):
         if len(self.current_path) == 0:
@@ -329,11 +293,7 @@ class Ai(Service):
             if self.ending.isSet():
                 return
 
-            # Check of we were abort
-            avoid_stat = self.cs.avoid[ROBOT].status()
-            if self.side is not None and avoid_stat is not None and not self.aborting.isSet():
-                self.aborting.set()
-
+            sleep(0.1)
             if self.aborting.isSet():
 
                 # Check if it's normal to be aborted
@@ -361,18 +321,22 @@ class Ai(Service):
                 tmp_point = self.goal.path[i - 1]
                 if i == 0:
                     tmp_point = pos
+
                 # TODO: test
                 #try:
-                    #self.cs.map.add_tmp_robot(self.tmp_robot)
+                    #self.cs.map.add_tmp_robot(self.cs.avoid[ROBOT].get_tmp_robot())
                 #except:
                 #    pass
+
                 self.going_back(tmp_pos, 150)
 
                 # If we were aborted, we go back again in the other direction
+                sleep(0.1)
                 if self.aborting.isSet():
                     self.going_back(self.goal.path[i - 1], 50)
 
                     # Clear abort
+                    sleep(0.1)
                     if self.aborting.isSet():
                         self.aborting.clear()
                         self.side = None
@@ -388,6 +352,8 @@ class Ai(Service):
                     while tmp_path == []:
                         sleep(1)
                         tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+
+                    # TODO: Clean tmp robot
                     #self.cs.map.clean_tmp_robot()
                     print("[AI] New path = " + str(tmp_path))
                     self.current_path = tmp_path
@@ -432,15 +398,10 @@ class Ai(Service):
             if self.ending.isSet():
                 return
 
-            # TODO: Manage avoid strategy
-
-            avoid_stat = self.cs.avoid[ROBOT].status()
-            if self.side is not None and avoid_stat is not None and not self.aborting.isSet():
-                self.aborting.set()
-
+            sleep(0.1)
             if self.aborting.isSet():
                 print("[AI][MAKING] Aborted")
-                print("Strategy is " + str(action.avoid_strategy))
+                print("[AI] Avoid strategy is " + str(action.avoid_strategy))
 
                 # Avoid staretgy is Wait
                 if action.avoid_strategy == Avoid.Wait:
@@ -455,7 +416,9 @@ class Ai(Service):
                     # Go back
                     if self.side is not None:
                         self.going_back(pos, 20)
+
                     # Clear abort
+                    sleep(0.1)
                     if self.aborting.isSet():
                         self.aborting.clear()
                         self.side = None

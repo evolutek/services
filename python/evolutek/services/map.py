@@ -11,9 +11,7 @@ from evolutek.lib.tim import Tim
 from math import pi, tan, sqrt
 from time import sleep
 
-#TODO: Manage tmp robots
-#TODO: Correct robot_size
-
+#TODO: Check with robot_size
 @Service.require('config')
 class Map(Service):
 
@@ -33,11 +31,12 @@ class Map(Service):
         height = int(self.cs.config.get(section='map', option='height'))
         map_unit = int(self.cs.config.get(section='map', option='map_unit'))
         self.debug = self.cs.config.get(section='map', option='debug') == 'true'
-        self.pal_size = float(self.cs.config.get(section='pal', option='robot_size_y'))
+        self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
+        self.pal_size = float(self.cs.config.get(section='pal', option='robot_size'))
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
         self.robot_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
 
-        self.map = Map_lib(width, height, map_unit, 210)
+        self.map = Map_lib(width, height, map_unit, self.pal_size)
         # Load obstacles
         fixed_obstacles, self.color_obstacles = Map_lib.parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map.add_obstacles(fixed_obstacles)
@@ -104,6 +103,7 @@ class Map(Service):
     def start_debug_interface(self):
         self.interface = Interface(self.map, self)
 
+    # TODO: cdebug mode not getting oppenents
     @Service.thread
     def loop_scan(self):
         while True:
@@ -141,7 +141,7 @@ class Map(Service):
                         i += 1
                         self.robots.append(robot)"""
 
-                    if self.map.add_circle_obstacle_point(point, 210, tag=tag, type=ObstacleType.robot):
+                    if self.map.add_circle_obstacle_point(point, self.robot_size, tag=tag, type=ObstacleType.robot):
                         robot = point.to_dict()
                         robot['tag'] = tag
                         i += 1
@@ -240,7 +240,7 @@ class Map(Service):
         for robot in self.robots:
             if point.dist(robot) < self.delta_dist:
                 return False
-        return self.map.add_circle_obstacle_point(point, 210, tag='tmp', type=ObstacleType.robot)
+        return self.map.add_circle_obstacle_point(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
 
     @Service.action
     def clean_tmp_robot(self):
