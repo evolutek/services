@@ -322,12 +322,6 @@ class Ai(Service):
                 if i == 0:
                     tmp_point = pos
 
-                # TODO: test
-                #try:
-                    #self.cs.map.add_tmp_robot(self.cs.avoid[ROBOT].get_tmp_robot())
-                #except:
-                #    pass
-
                 self.going_back(tmp_pos, 150)
 
                 # If we were aborted, we go back again in the other direction
@@ -344,6 +338,11 @@ class Ai(Service):
                 # Compute new path
                 pos = self.cs.trajman[ROBOT].get_position()
                 try:
+                    # TODO: test
+                    #tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
+                    #print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
+                    #self.cs.map.add_tmp_robot(tmp_robot)
+
                     print("[AI] Computing new path")
                     tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
 
