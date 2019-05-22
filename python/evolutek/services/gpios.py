@@ -236,28 +236,42 @@ def main():
     wait_for_beacon()
     gpios = Gpios()
 
-    gpios.add_gpio(5, "tirette", False, edge=Edge.FALLING)
-    gpios.add_gpio(6, "%s_reset" % ROBOT, False, edge=Edge.RISING)
+    if ROBOT == 'pal':
+        gpios.add_gpio(5, "tirette", False, edge=Edge.FALLING)
+        gpios.add_gpio(6, "%s_reset" % ROBOT, False, edge=Edge.RISING)
 
-    # Front gtb
-    gpios.add_gpio(18, "gtb1", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
-    gpios.add_gpio(23, "gtb2", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
-    gpios.add_gpio(24, "gtb3", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
+        # Front gtb
+        gpios.add_gpio(18, "gtb1", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
+        gpios.add_gpio(23, "gtb2", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
+        gpios.add_gpio(24, "gtb3", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
 
-    # Back gtb
-    gpios.add_gpio(16, "gtb4", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
-    gpios.add_gpio(20, "gtb5", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
-    gpios.add_gpio(21, "gtb6", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
+        # Back gtb
+        gpios.add_gpio(16, "gtb4", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
+        gpios.add_gpio(20, "gtb5", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
+        gpios.add_gpio(21, "gtb6", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
 
-    gpios.add_gpio(17, "relayGold", True, default_value=True)
-    gpios.add_gpio(27, "relayArms", True, default_value=True)
+        gpios.add_gpio(17, "relayGold", True, default_value=True)
+        gpios.add_gpio(27, "relayArms", True, default_value=True)
 
-    # Ejecteur
-    gpios.add_pwm(13, "ejecteur", 0, 1.0)
-    gpios.add_gpio(19, "hbridge1", True)
-    gpios.add_gpio(26, "hbridge2", True)
-    gpios.add_gpio(4, "ejecteur_contact1", False, update=False)
-    gpios.add_gpio(22, "ejecteur_contact2", False, update=False)
+        # Ejecteur
+        gpios.add_pwm(13, "ejecteur", 0, 1.0)
+        gpios.add_gpio(19, "hbridge1", True)
+        gpios.add_gpio(26, "hbridge2", True)
+        gpios.add_gpio(4, "ejecteur_contact1", False, update=False)
+        gpios.add_gpio(22, "ejecteur_contact2", False, update=False)
+
+    elif ROBOT == 'pmi':
+
+        # Front gtb
+        gpios.add_gpio(18, "gtb1", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
+        gpios.add_gpio(23, "gtb2", False, event='%s_front' % ROBOT, edge=Edge.BOTH)
+
+        # Back gtb
+        gpios.add_gpio(16, "gtb4", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
+        gpios.add_gpio(20, "gtb5", False, event='%s_back' % ROBOT, edge=Edge.BOTH)
+
+        # Reset button
+        gpios.add_gpio(26, "%s_reset" % ROBOT, False, edge=Edge.RISING)
 
     gpios.run()
 
