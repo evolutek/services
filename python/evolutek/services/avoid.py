@@ -12,6 +12,7 @@ from time import sleep
 dist_sensor_x = 115
 dist_sensor_y = 125
 
+# TODO: map sensors
 sensors = {
     'gtb1': {'x': dist_sensor_x, 'y': -dist_sensor_y},
     'gtb2': {'x': dist_sensor_x, 'y': 0},
@@ -35,6 +36,7 @@ class Avoid(Service):
         self.back_detected = []
         self.avoid = False
         self.enabled = True
+        self.tmp_robot = None
 
         super().__init__(ROBOT)
 
@@ -73,9 +75,9 @@ class Avoid(Service):
 
         try:
             self.cs.trajman[ROBOT].stop_asap(1000, 20)
+            self.cs.ai[ROBOT].abort(side=side)
             sensor = self.compute_sensor_pos(side)
-            tmp_robot = self.compute_tmp_robot(sensor.to_dict(), side)
-            self.cs.ai[ROBOT].abort(side=side, tmp_robot=tmp_robot.to_dict())
+            self.tmp_robot = self.compute_tmp_robot(sensor.to_dict(), side)
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
             return
@@ -90,6 +92,7 @@ class Avoid(Service):
     def disable(self):
         self.enabled = False
         self.telemetry = None
+        self.tmp_robot = None
 
     @Service.event('%s_front' % ROBOT)
     def front_detection(self, name, id, value):
@@ -173,6 +176,12 @@ class Avoid(Service):
             new_y = int(new_x * m + n)
 
         return Point(new_x, new_y)
+
+    @Service.action
+    def get_tmp_robot(self):
+        if self.tmp_robot is None:
+            return
+        return self.tmp_robot.to_dict()
 
 def wait_for_beacon():
     hostname = "pi"
