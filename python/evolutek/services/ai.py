@@ -225,7 +225,7 @@ class Ai(Service):
 
     """ Abort """
     @Service.action
-    def abort(self, robot=None, side=None):
+    def abort(self, tmp_robot=None, side=None):
 
         if self.state != State.Making:
             return
@@ -235,7 +235,7 @@ class Ai(Service):
         print('[AI] Aborting')
         self.aborting.set()
 
-        if robot is not None:
+        if tmp_robot is not None:
             self.tmp_robot = robot
 
         ##TODO Give tmp robot to the map
@@ -361,6 +361,11 @@ class Ai(Service):
                 tmp_point = self.goal.path[i - 1]
                 if i == 0:
                     tmp_point = pos
+                # TODO: test
+                #try:
+                    #self.cs.map.add_tmp_robot(self.tmp_robot)
+                #except:
+                #    pass
                 self.going_back(tmp_pos, 150)
 
                 # If we were aborted, we go back again in the other direction
@@ -383,6 +388,7 @@ class Ai(Service):
                     while tmp_path == []:
                         sleep(1)
                         tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+                    #self.cs.map.clean_tmp_robot()
                     print("[AI] New path = " + str(tmp_path))
                     self.current_path = tmp_path
                     i = 0
