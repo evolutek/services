@@ -150,7 +150,7 @@ class Interface:
         self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
         self.print_grid()
         self.print_obstacles()
-        self.print_robot(self.service.pal_telem, self.service.pal_size)
+        self.print_robot(self.service.pal_telem, self.service.pal_size_y)
         self.print_robot(self.service.pmi_telem, self.service.pmi_size)
         if self.service.debug:
             self.print_raw_data(self.service.raw_data)

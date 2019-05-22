@@ -57,17 +57,17 @@ class Match(Service):
         self.pal_ai_s = None
         self.pal_telem = None
         self.pal_path = []
-        self.pal_watchdog = Watchdog(self.timeout_robot, self.reset_pal_status)
+        self.pal_watchdog = Watchdog(self.timeout_robot * 1.5, self.reset_pal_status)
 
         # PMI status
         self.pmi_ai_s = None
         self.pmi_telem = None
         self.pmi_path = []
-        self.pmi_watchdog = Watchdog(self.timeout_robot, self.reset_pmi_status)
+        self.pmi_watchdog = Watchdog(self.timeout_robot * 1.5, self.reset_pmi_status)
 
         # Oppenents positions
         self.robots = []
-        self.robots_watchdog = Watchdog(self.timeout_robot * 2, self.reset_robots)
+        self.robots_watchdog = Watchdog(self.timeout_robot * 3, self.reset_robots)
 
         super().__init__()
         print('[MATCH] Match ready')
@@ -377,8 +377,6 @@ class Match(Service):
         self.interface_status = InterfaceStatus.set
 
         self.publish('match_color', color=self.color)
-
-        # TODO: Make AI listen to color
 
         return True
 
