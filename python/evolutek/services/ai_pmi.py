@@ -78,14 +78,17 @@ class Ai(Service):
         print('[AI] Setup')
 
         self.cs.trajman[ROBOT].enable()
+        print('open')
         self.open_arms()
+        sleep(1)
+        print('close')
         self.close_arms()
 
         self.match_thread = Thread(target=self.making)
         self.match_thread.deamon = True
 
         # Reset tasks
-        self.tasks.reset(self.color!=selfcolor1)
+        self.tasks.reset(self.color!=self.color1)
 
         if recalibration:
 
@@ -282,7 +285,6 @@ class Ai(Service):
     """ Back sensor """
     @Service.event('%s_back' % ROBOT)
     def back_detection(self, name, id, value):
-        print(id)
         if int(value) and not name in self.back_detected:
             self.back_detected.append(name)
         elif not int(value) and name in self.back_detected:
@@ -291,17 +293,25 @@ class Ai(Service):
     """ Open Arms """
     @Service.action
     def open_arms(self):
-        self.cs.ax['11'].move(goal=662)
+        self.cs.ax['11'].move(goal=350)
         sleep(0.5)
-        self.cs.ax['12'].move(goal=462)
+        self.cs.ax['12'].move(goal=600)
+        sleep(0.5)
+
+    """ Open Arms """
+    @Service.action
+    def half_close_arms(self):
+        self.cs.ax['11'].move(goal=650)
+        sleep(0.5)
+        self.cs.ax['12'].move(goal=250)
         sleep(0.5)
 
     """ Close Arms """
     @Service.action
     def close_arms(self):
-        self.cs.ax['12'].move(goal=812)
+        self.cs.ax['12'].move(goal=70)
         sleep(0.5)
-        self.cs.ax['11'].move(goal=212)
+        self.cs.ax['11'].move(goal=780)
         sleep(0.5)
 
 def main():
