@@ -66,14 +66,22 @@ fg.add_action("goto_theta_with_avoid", "trajman", "pal", "goto_theta")
 fg.add_action("goto_theta_without_avoid", "trajman", "pal", "goto_theta", False)
 fg.add_action("move_trsl", "trajman", "pal", "move_trsl", False)
 
-fg.add_goal("Test", 0)\
-    .add_goto_xy_subaction(1000, 500, True, avoid_strategy="Avoid.Skip")\
-    .add_goto_xy_subaction(1000, 1350, True, avoid_strategy="Avoid.Skip")\
-    .add_goto_xy_subaction(1000, 500, True, avoid_strategy="Avoid.Skip")\
-    .add_goto_xy_subaction(1000, 1350, True, avoid_strategy="Avoid.Skip")\
-    .add_goto_xy_subaction(1000, 500, True, avoid_strategy="Avoid.Timeout")\
-    .add_goto_xy_subaction(1000, 1350, True)\
-    .add_goto_xy_subaction(1000, 500, True)
+#fg.add_goal("Test", 0)\
+#    .add_path(600, 1200)\
+#    .add_path(1300, 1200)\
+#    .add_path(500, 1200)\
+#    .add_path(1300, 1200)\
+#    .add_path(500, 1200)\
+#    .add_path(1300, 1200)
+
+#fg.add_goal("Test", 0)\
+#    .add_goto_xy_subaction(1000, 500, True, avoid_strategy="Avoid.Skip")\
+#    .add_goto_xy_subaction(1000, 1350, True, avoid_strategy="Avoid.Skip")\
+#    .add_goto_xy_subaction(1000, 500, True, avoid_strategy="Avoid.Skip")\
+#    .add_goto_xy_subaction(1000, 1350, True, avoid_strategy="Avoid.Skip")\
+#    .add_goto_xy_subaction(1000, 500, True, avoid_strategy="Avoid.Timeout")\
+#    .add_goto_xy_subaction(1000, 1350, True)\
+#    .add_goto_xy_subaction(1000, 500, True)
 
 #fg.add_goal("Push Front Palet", 0)\
 #    .add_path(1325, 225)\
@@ -85,15 +93,15 @@ fg.add_goal("Test", 0)\
 #    .add_goto_xy_subaction(1200, 1350, False)\
 #    .add_goto_xy_subaction(600, 375, True)
 
-#fg.add_goal("Push Blue Palet", 20)\
-#    .add_path(700, 1625, "0")\
-#    .add_goto_xy_subaction(500, 1625, True)\
-#    .add_goto_xy_subaction(150, 1625, False)\
-#    .add_subaction("move_trsl", {"dest": 40, "acc": 100, "dec": 100, "maxspeed":500, "sens": 0})\
-#    .add_subaction("push_ejecteur")\
-#    .add_subaction("reset_ejecteur")\
-#    .add_subaction("move_trsl", {"dest": 40, "acc": 100, "dec": 100, "maxspeed":500, "sens": 1})\
-#    .add_goto_xy_subaction(500, 1625, True)
+fg.add_goal("Push Blue Palet", 20)\
+    .add_path(700, 1625, "0")\
+    .add_goto_xy_subaction(500, 1625, True)\
+    .add_goto_xy_subaction(150, 1625, False)\
+    .add_subaction("move_trsl", {"dest": 40, "acc": 100, "dec": 100, "maxspeed":500, "sens": 0})\
+    .add_subaction("push_ejecteur")\
+    .add_subaction("reset_ejecteur")\
+    .add_subaction("move_trsl", {"dest": 40, "acc": 100, "dec": 100, "maxspeed":500, "sens": 1})\
+    .add_goto_xy_subaction(500, 1625, True)
 
 #fg.add_goal("Get Goldenium", 20)\
 #    .add_path(500, 2235, "pi")\

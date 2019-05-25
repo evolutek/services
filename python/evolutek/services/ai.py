@@ -298,7 +298,9 @@ class Ai(Service):
 
                 # Check if it's normal to be aborted
                 try:
+                    print('[AI] Calling isOk()')
                     if self.cs.map.is_ok(self.cs.trajman[ROBOT].get_position(), point, self.side):
+                        print('[AI] IS OK')
                         self.avoid_disable = True
                         self.cs.avoid[ROBOT].disable()
                         continue
@@ -318,16 +320,16 @@ class Ai(Service):
 
             # If we were abort and the robot is still there, we are going back
             if self.side is not None:
-                tmp_point = self.goal.path[i - 1]
+                tmp_point = self.current_path[i - 1]
                 if i == 0:
                     tmp_point = pos
 
-                self.going_back(tmp_pos, 150)
+                self.going_back(tmp_point, 150)
 
                 # If we were aborted, we go back again in the other direction
                 sleep(0.1)
                 if self.aborting.isSet():
-                    self.going_back(self.goal.path[i - 1], 50)
+                    self.going_back(self.current_path[i - 1], 50)
 
                     # Clear abort
                     sleep(0.1)
@@ -339,9 +341,9 @@ class Ai(Service):
                 pos = self.cs.trajman[ROBOT].get_position()
                 try:
                     # TODO: test
-                    #tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
-                    #print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
-                    #self.cs.map.add_tmp_robot(tmp_robot)
+                    tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
+                    print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
+                    self.cs.map.add_tmp_robot(tmp_robot)
 
                     print("[AI] Computing new path")
                     tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
@@ -353,7 +355,7 @@ class Ai(Service):
                         tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
 
                     # TODO: Clean tmp robot
-                    #self.cs.map.clean_tmp_robot()
+                    self.cs.map.clean_tmp_robot()
                     print("[AI] New path = " + str(tmp_path))
                     self.current_path = tmp_path
                     i = 0
