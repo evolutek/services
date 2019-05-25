@@ -148,11 +148,15 @@ class Map(Service):
                         self.robots.append(robot)
 
                     print('[MAP] Detected %d robots' % len(self.robots))
-                    self.publish('opponents', robots=self.robots)
-            sleep(self.refresh * 2)
+                    #self.publish('opponents', robots=self.robots)
+            sleep(self.refresh)
 
 
     """ ACTION """
+
+    @Service.action
+    def get_opponnents(self):
+        return self.robots
 
     @Service.action
     def get_path(self, start_x, start_y, dest_x, dest_y):
