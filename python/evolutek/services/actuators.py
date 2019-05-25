@@ -208,6 +208,11 @@ class Actuators(Service):
         sleep(0.5)
 
     @Service.action
+    def half_open_clapet(self):
+        self.cs.ax['4'].move(goal=650)
+        sleep(0.25)
+
+    @Service.action
     def open_clapet(self):
         self.cs.ax['4'].move(goal=780)
         sleep(0.25)
@@ -215,17 +220,18 @@ class Actuators(Service):
     # TODO: Update
     @Service.action
     def drop_palet(self):
+        self.reset_ejecteur()
         self.lower_palet()
         self.cs.trajman[ROBOT].move_trsl(dest=100, acc=200, dec=200, maxspeed=600, sens=1)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
+        self.half_open_clapet()
         self.cs.trajman[ROBOT].move_trsl(dest=100, acc=200, dec=200, maxspeed=400, sens=0)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
         self.open_clapet()
         self.push_ejecteur()
-        self.reset_ejecteur()
         self.close_clapet()
 
     """ Ejecteur """
