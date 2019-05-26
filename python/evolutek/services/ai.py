@@ -64,7 +64,7 @@ class Ai(Service):
 
         # Match config
         #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.goals = Goals(file="test_action.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="startegy.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?
 
