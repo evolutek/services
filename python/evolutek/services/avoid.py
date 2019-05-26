@@ -59,47 +59,44 @@ class Avoid(Service):
         while True:
             front = False
             back = False
-            with self.lock:
-                if self.telemetry is None:
-                    continue
-                if not self.enabled:
-                    continue
+            if self.telemetry is None:
+                continue
+            if not self.enabled:
+                continue
 
-                if self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
-                    front = True
-                    print("[AVOID] Front detection")
-                elif self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
-                    back = True
-                    print("[AVOID] Back detection")
-                else:
-                    self.avoid = False
-                sleep(0.1)
-            if front:
+            if self.telemetry['speed'] > 0.0 and len(self.front_detected) > 0:
                 self.stop_robot('front')
-            elif back:
+                print("[AVOID] Front detection")
+            elif self.telemetry['speed'] < 0.0 and len(self.back_detected) > 0:
                 self.stop_robot('back')
+                print("[AVOID] Back detection")
+            else:
+                self.avoid = False
+            sleep(0.1)
 
     @Service.action
     def stop_robot(self, side=None):
-        with self.lock:
-            print('----- Aborting: %s ---' % side)
+        print('----- Aborting: %s ---' % side)
 
-            try:
-                self.cs.trajman[ROBOT].stop_asap(1000, 20)
-                self.cs.ai[ROBOT].abort(side=side)
-            except Exception as e:
-                print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
-            self.avoid = True
-            sensor = self.compute_sensor_pos(side)
-            self.tmp_robot = self.compute_tmp_robot(sensor.to_dict(), side)
-            print('[AVOID] Stopping robot, %s detection triggered' % side)
+        try:
+            self.cs.trajman[ROBOT].stop_asap(1000, 20)
+            self.cs.ai[ROBOT].abort(side=side)
+        except Exception as e:
+            print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
+        self.avoid = True
+        sensor = self.compute_sensor_pos(side)
+        self.tmp_robot = self.compute_tmp_robot(sensor.to_dict(), side)
+        print('[AVOID] Stopping robot, %s detection triggered' % side)
+        sleep(0.5)
 
     @Service.action
     def enable(self):
+        print('----- ENABLE -----')
         self.enabled = True
 
     @Service.action
     def disable(self):
+        print('----- DISABLE -----')
         self.enabled = False
         self.telemetry = None
         self.tmp_robot = None
