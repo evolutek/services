@@ -157,7 +157,7 @@ class Ai(Service):
 
         if self.avoid_disable:
             self.avoid_disable = False
-            print('---- enable ----')
+            print('---- ENABLE BEFORE MOVING ----')
             self.cs.avoid[ROBOT].enable()
 
         #Goto x y with path
@@ -227,7 +227,7 @@ class Ai(Service):
     @Service.action
     def abort(self, side=None):
 
-        if self.state != State.Making:
+        if self.state != State.Making or self.avoid_disable:
             return
 
         self.side = side
@@ -303,11 +303,11 @@ class Ai(Service):
                     print('[AI] Calling isOk()')
                     if self.cs.map.is_ok(self.cs.trajman[ROBOT].get_position(), point, self.side):
                         print('[AI] IS OK')
+                        print('------ DISABLE BECAUSE IS OK ------')
                         self.avoid_disable = True
-                        print('------ DISABLE ------')
                         self.cs.avoid[ROBOT].disable()
                         self.aborting.clear()
-                        print('ok')
+                        self.side = None
                         sleep(0.2)
                         continue
                 except Exception as e:
@@ -319,17 +319,17 @@ class Ai(Service):
             if self.ending.isSet():
                 return
 
-            # Enable avoid again
-            if self.avoid_disable:
-                print('------ ENABLE ------')
-                self.cs.avoid[ROBOT].enable()
-                self.avoid_disable = False
-
             # If we were abort and the robot is still there, we are going back
             if self.side is not None:
                 tmp_point = self.current_path[i - 1]
                 if i == 0:
                     tmp_point = pos
+
+                # Enable avoid again
+                if self.avoid_disable:
+                    print('------ ENABLE BEFORE GOING BACK ------')
+                    self.cs.avoid[ROBOT].enable()
+                    self.avoid_disable = False
 
                 self.going_back(tmp_point, 150)
 
@@ -372,6 +372,11 @@ class Ai(Service):
             if self.ending.isSet():
                 return
 
+            if self.avoid_disable:
+                print('------ ENABLE BEFORE GOING to the next point ------')
+                self.cs.avoid[ROBOT].enable()
+                self.avoid_disable = False
+
     """ Make actions """
     def make_actions(self):
         print("[AI] Making actions")
@@ -390,14 +395,13 @@ class Ai(Service):
             if action.rot_speed is not None:
                 self.cs.trajman[ROBOT].set_rot_max_speed(action.rot_speed)
 
-            print(action.avoid)
             if not action.avoid and not self.avoid_disable:
-                print('------ DISABLE --------')
+                print('------ DISABLE BEFORE MAKING AN ACTION --------')
                 self.avoid_disable = True
                 self.cs.avoid[ROBOT].disable()
                 sleep(0.2)
             elif action.avoid and self.avoid_disable:
-                print('------ Enable --------')
+                print('------ ENABLE BEFORE MAKING AN ACTION--------')
                 self.avoid_disable = False
                 self.cs.avoid[ROBOT].enable()
 
@@ -437,6 +441,7 @@ class Ai(Service):
 
                     if action.avoid_strategy != Avoid.Skip:
                         # Continue if we don't skip action
+                        self.goal.score -= action.score
                         continue
             else:
                 if action.score > 0:
