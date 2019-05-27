@@ -243,7 +243,7 @@ class Ai(Service):
     """ Reset button """
     @Service.event('%s_reset' % ROBOT)
     def reset_button(self, **kwargs):
-        self.setup(recalibration=True)
+        self.setup(recalibration=False)
 
     """ Match Start """
     @Service.event('match_start')
@@ -251,6 +251,7 @@ class Ai(Service):
     def start(self):
         if self.state != State.Waiting:
             return
+        sleep(3)
         match_thread = Thread(target=self.selecting)
         match_thread.deamon = True
         print('[AI] Starting')
@@ -390,6 +391,7 @@ class Ai(Service):
                 # Compute new path
                 pos = self.cs.trajman[ROBOT].get_position()
                 try:
+                    count_path_computation = 0
                     # TODO: test
                     #tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
                     #print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
@@ -400,9 +402,13 @@ class Ai(Service):
 
                     # Recompute path while we can't get another path
                     # TODO: Critical map ?
-                    while tmp_path == []:
+                    while tmp_path == [] and count_path_computation < 10:
                         sleep(1)
                         tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+                        count_path_computation += 1
+
+                    if count_path_computation >= 10:
+                        continue
 
                     # TODO: Clean tmp robot
                     #self.cs.map.clean_tmp_robot()
