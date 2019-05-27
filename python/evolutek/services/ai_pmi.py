@@ -202,6 +202,8 @@ class Ai(Service):
                     print('AI : EXCEPTION: ' + e.message)
                 
                 k += 1
+            if goal.score > 0:
+                self.publish('score', value=goal.score)
             i += 1
 
         print("[AI] Made all goals")
@@ -303,7 +305,6 @@ class Ai(Service):
     def start(self):
         if self.state != State.Waiting:
             return
-        sleep(5)
         print('[AI] Starting')
         self.match_thread.start()
         return
