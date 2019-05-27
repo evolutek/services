@@ -326,11 +326,14 @@ class Ai(Service):
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
+            """
             if 'theta' in point:
                 print('[AI] Turning to theta: ' + str(point['theta']))
                 self.cs.trajman[ROBOT].goto_theta(point['theta'])
                 while self.cs.trajman[ROBOT].is_moving():
                     sleep(0.1)
+            """
+
 
             if self.ending.isSet():
                 return
@@ -388,9 +391,9 @@ class Ai(Service):
                 pos = self.cs.trajman[ROBOT].get_position()
                 try:
                     # TODO: test
-                    tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
-                    print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
-                    self.cs.map.add_tmp_robot(tmp_robot)
+                    #tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
+                    #print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
+                    #self.cs.map.add_tmp_robot(tmp_robot)
 
                     print("[AI] Computing new path")
                     tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
@@ -402,7 +405,7 @@ class Ai(Service):
                         tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
 
                     # TODO: Clean tmp robot
-                    self.cs.map.clean_tmp_robot()
+                    #self.cs.map.clean_tmp_robot()
                     print("[AI] New path = " + str(tmp_path))
                     self.current_path = tmp_path
                     i = 0
