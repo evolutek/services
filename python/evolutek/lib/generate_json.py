@@ -53,7 +53,7 @@ class FileGenerator():
             f.write(raw)
 
 fg = FileGenerator()
-fg.add_start(600, 225, theta="pi")
+fg.add_start(750, 225, theta="0")
 fg.add_action("push_ejecteur", "actuators", "pal", "push_ejecteur", False)
 fg.add_action("reset_ejecteur", "actuators", "pal", "reset_ejecteur", False)
 fg.add_action("drop_goldenium", "actuators", "pal", "drop_goldenium", False)
@@ -86,12 +86,17 @@ fg.add_action("move_trsl", "trajman", "pal", "move_trsl", False)
 fg.add_goal("Push Front Palet", 0)\
     .add_path(1325, 225)\
     .add_goto_xy_subaction(1325, 500, True)\
-    .add_goto_xy_subaction(850, 500, True)
+    .add_goto_xy_subaction(875, 500, True)
 
-fg.add_goal("Push Chaos Zone", 17)\
-    .add_path(800, 1350)\
-    .add_goto_xy_subaction(1200, 1350, False)\
-    .add_goto_xy_subaction(600, 375, True)
+#fg.add_goal("Push Front Homo", 0)\
+#    .add_path(1325, 225)\
+#    .add_goto_xy_subaction(1325, 500, True)\
+#    .add_goto_xy_subaction(800, 225, True)
+
+#fg.add_goal("Push Chaos Zone", 17)\
+#    .add_path(800, 1350)\
+#    .add_goto_xy_subaction(1200, 1350, False)\
+#    .add_goto_xy_subaction(600, 375, True)
 
 #fg.add_goal("Push Blue Palet", 20)\
 #    .add_path(700, 1625, "0")\
@@ -117,13 +122,14 @@ fg.add_goal("Push Chaos Zone", 17)\
 #    .add_subaction("drop_goldenium")\
 #    .add_goto_xy_subaction(1210, 1320, True)
 
-#fg.add_goal("Get blue palet and drop it", 12)\
-#    .add_path(1210, 800, "0")\
-#    .add_goto_theta_subaction("0", False)\
-#    .add_subaction("get_blue_palet")\
-#    .add_goto_xy_subaction(1160, 1320)\
-#    .add_goto_theta_subaction("0", False)\
-#    .add_goto_xy_subaction(1260, 1320, False)\
-#    .add_subaction("drop_blue_palet")
+fg.add_goal("Get blue palet and drop it", 12)\
+    .add_path(1000, 500)\
+    .add_path(1235, 800, "0")\
+    .add_goto_theta_subaction("0", False)\
+    .add_subaction("get_blue_palet")\
+    .add_goto_xy_subaction(1160, 1320)\
+    .add_goto_theta_subaction("0", False)\
+    .add_goto_xy_subaction(1270, 1320, False)\
+    .add_subaction("drop_blue_palet")
 
 fg.generate_file("test.json")
