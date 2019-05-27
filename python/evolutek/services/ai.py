@@ -97,7 +97,6 @@ class Ai(Service):
         # Make a recalibration
         if recalibration:
             self.cs.avoid[ROBOT].disable()
-
             sens = self.color != self.color1
             self.cs.actuators[ROBOT].recalibrate(sens_y=sens, init=True)
 
@@ -107,6 +106,7 @@ class Ai(Service):
             self.cs.trajman[ROBOT].goto_theta(self.goals.start_theta)
             while self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
+            #self.recalibrate()
         else:
             # Set Default config
             self.cs.trajman[ROBOT].free()
@@ -125,6 +125,40 @@ class Ai(Service):
 
         self.state = State.Waiting
         print('[AI] Waiting')
+
+    def recalibrate(self):
+        self.cs.avoid[ROBOT].disable()
+        print('[AI] Recalibrating')
+        self.cs.trajman[ROBOT].free()
+        print('[AI] Going back')
+        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 500, 1)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+
+        self.cs.trajman[ROBOT].set_x(158)
+        self.cs.trajman[ROBOT].set_theta(3.1415)
+
+        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 0)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+        
+        self.cs.trajman[ROBOT].goto_xy(4.71)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+
+        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 500, 1)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+
+        self.cs.trajman[ROBOT].set_y(159)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+       
+        self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 500, 0)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+
+
 
     """ SELECTING """
     def selecting(self):
@@ -292,6 +326,12 @@ class Ai(Service):
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
+            if 'theta' in point:
+                print('[AI] Turning to theta: ' + str(point['theta']))
+                self.cs.trajman[ROBOT].goto_theta(point['theta'])
+                while self.cs.trajman[ROBOT].is_moving():
+                    sleep(0.1)
+
             if self.ending.isSet():
                 return
 
@@ -445,7 +485,7 @@ class Ai(Service):
                         continue
             else:
                 if action.score > 0:
-                    self.publish('score', value=self.action.score)
+                    self.publish('score', value=action.score)
                     self.goal.score -= action.score
 
             if self.ending.isSet():
