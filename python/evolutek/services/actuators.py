@@ -185,9 +185,18 @@ class Actuators(Service):
             sleep(0.1)
 
         self.disable_suction_goldenium()
+        sleep(0.2)
+
+        self.cs.ax['2'].move(goal=400)
+        sleep(0.2)
+
+        self.disable_suction_arms()
+        sleep(0.2)
 
         self.cs.ax['2'].move(goal=214)
         sleep(0.5)
+        
+        self.enable_suction_arms()
 
     @Service.action
     def get_blue_palet(self):
@@ -220,6 +229,49 @@ class Actuators(Service):
         sleep(0.2)
         self.cs.ax['2'].move(goal=128)
         sleep(0.5)
+
+    @Service.action
+    def drop_palet_rampe(self):
+        if self.color == self.color1:
+            self.cs.ax['1'].move(goal=494)
+        else:
+            self.cs.ax['3'].move(goal=494)
+        
+        sleep(0.5)
+
+        self.cs.trajman[ROBOT].move_trsl(dest=30, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+        
+        if self.color == self.color1:
+            self.cs.ax['1'].move(goal=494)
+        else:
+            self.cs.ax['3'].move(goal=494)
+        
+        sleep(0.1)
+
+        self.disable_suction_arms()
+        
+        sleep(0.2)
+
+        self.cs.trajman[ROBOT].move_trsl(dest=20, acc=100, dec=100, maxspeed=400, sens=1)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+
+        sleep(0.2)
+
+        self.cs.trajman[ROBOT].move_trsl(dest=40, acc=100, dec=100, maxspeed=400, sens=0)
+        while self.cs.trajman[ROBOT].is_moving():
+            sleep(0.1)
+        
+        if self.color == self.color1:
+            self.cs.ax['1'].move(goal=214)
+        else:
+            self.cs.ax['3'].move(goal=214)
+       
+        sleep(0.5)
+
+        self.enable_suction_arms()
 
     """ CLAPET """
     @Service.action
