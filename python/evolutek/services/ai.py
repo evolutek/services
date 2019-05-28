@@ -3,7 +3,7 @@
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 from evolutek.lib.goals import Goals, Avoid
-from evolutek.lib.gpio import Gpio
+from evolutek.lib.gpio import Edge, Gpio
 from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog

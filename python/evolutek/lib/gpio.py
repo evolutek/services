@@ -103,9 +103,9 @@ class Gpio(Io):
                 if not self.edge or self.edge == Edge.BOTH:
                     self.callback_gpio(service)
                 else:
-                    if gpio.edge == Edge.RISING and gpio.value == 1:
+                    if self.edge == Edge.RISING and self.value == 1:
                         self.callback_gpio(service)
-                    elif gpio.edge == Edge.FALLING and gpio.value == 0:
+                    elif self.edge == Edge.FALLING and self.value == 0:
                         self.callback_gpio(service)
 
             sleep(refresh)
