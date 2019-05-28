@@ -64,6 +64,7 @@ fg.add_action("get_blue_palet", "actuators", "pal", "get_blue_palet", False)
 fg.add_action("get_palet", "actuators", "pal", "get_palet", False)
 fg.add_action("drop_blue_palet", "actuators", "pal", "drop_blue_palet", False)
 fg.add_action("drop_palet", "actuators", "pal", "drop_palet", False)
+fg.add_action("drop_palet_rampe", "actuators", "pal", "drop_palet_rampe", False)
 fg.add_action("goto_xy_with_avoid", "trajman", "pal", "goto_xy", True)
 fg.add_action("goto_xy_without_avoid", "trajman", "pal", "goto_xy", False)
 fg.add_action("goto_theta_with_avoid", "trajman", "pal", "goto_theta")
@@ -142,9 +143,9 @@ fg.add_goal("Get palets", 0)\
 
     #.add_path(1265, 800)\
 fg.add_goal("Get blue palet and drop it", 0)\
-    .add_path(1360, 1320)\
+    .add_path(1360, 1350)\
     .add_goto_theta_subaction("-pi/2", False)\
-    .add_subaction("move_trsl", {"dest": 60, "acc": 100, "dec": 100, "maxspeed":500, "sens": 0})\
+    .add_subaction("move_trsl", {"dest": 70, "acc": 100, "dec": 100, "maxspeed":500, "sens": 0})\
     .add_subaction("free")\
     .add_subaction("set_y", {"y": 1360})\
     .add_subaction("set_theta", {"theta": "-pi/2"})\
@@ -171,24 +172,27 @@ fg.add_goal("Push Blue Palet", 20)\
 #    .add_goto_xy_subaction(800, 225, True)
 
 
-fg.add_goal("Get Goldenium", 20)\
+fg.add_goal("Get Goldenium", 30)\
     .add_path(350, 2225)\
     .add_goto_theta_subaction("pi", False)\
+    .add_goto_xy_subaction(260, 2225, False)\
+    .add_goto_theta_subaction("pi", False)\
+    .add_subaction("drop_palet_rampe")\
     .add_goto_xy_subaction(235, 2225, False)\
     .add_goto_theta_subaction("pi", False)\
     .add_subaction("get_goldenium", avoid="Avoid.Skip", score=20)\
     .add_goto_xy_subaction(350, 2225, True)
 
-fg.add_goal("Drop Goldenium", 24)\
+fg.add_goal("Drop Goldenium", 32)\
     .add_path(1050, 1315)\
     .add_goto_theta_subaction("0", False)\
     .add_goto_xy_subaction(1400, 1315, False)\
     .add_subaction("drop_goldenium")\
 
 
-fg.add_goal("Push leftover palets", 8)\
+fg.add_goal("Push leftover palets", 6)\
     .add_path(1050, 1315)\
-    .add_path(660, 600)\
+    .add_path(550, 600)\
     .add_goto_theta_subaction("-pi/2")\
     .add_subaction("drop_palet")\
 
