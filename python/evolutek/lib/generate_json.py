@@ -93,36 +93,37 @@ fg.add_goal("Push Chaos Zone", 17)\
     .add_goto_xy_subaction(1200, 1350, False)\
     .add_goto_xy_subaction(600, 375, True)
 
-fg.add_goal("Push Blue Palet", 20)\
-    .add_path(700, 1625, "0")\
-    .add_goto_xy_subaction(500, 1625, True)\
-    .add_goto_theta_subaction("0", False)\
-    .add_goto_xy_subaction(150, 1625, False)\
-    .add_subaction("move_trsl", {"dest": 50, "acc": 100, "dec": 100, "maxspeed":500, "sens": 0})\
-    .add_subaction("push_ejecteur")\
-    .add_subaction("reset_ejecteur")\
-    .add_subaction("move_trsl", {"dest": 50, "acc": 100, "dec": 100, "maxspeed":500, "sens": 1})\
-    .add_goto_xy_subaction(500, 1625, True)
+#fg.add_goal("Push Blue Palet", 20)\
+#    .add_path(700, 1625, "0")\
+#    .add_goto_xy_subaction(500, 1625, True)\
+#    .add_goto_xy_subaction(150, 1625, False)\
+#    .add_subaction("move_trsl", {"dest": 40, "acc": 100, "dec": 100, "maxspeed":500, "sens": 0})\
+#    .add_subaction("push_ejecteur")\
+#    .add_subaction("reset_ejecteur")\
+#    .add_subaction("move_trsl", {"dest": 40, "acc": 100, "dec": 100, "maxspeed":500, "sens": 1})\
+#   .add_goto_xy_subaction(500, 1625, True)
 
-fg.add_goal("Get Goldenium", 20)\
-    .add_path(500, 2235, "pi")\
-    .add_goto_xy_subaction(240, 2235, False)\
-    .add_subaction("get_goldenium", avoid="Avoid.Skip", score=20)\
-    .add_goto_xy_subaction(500, 2235, False)
+#fg.add_goal("Get Goldenium", 20)\
+#    .add_path(500, 2235)\
+#    .add_goto_theta_subaction("0", False)\
+#    .add_goto_xy_subaction(240, 2235, False)\
+#    .add_subaction("get_goldenium", avoid="Avoid.Skip", score=20)\
+#    .add_goto_xy_subaction(500, 2235, False)
 
-fg.add_goal("Drop Goldenium", 24)\
-    .add_path(1050, 1320, "0")\
-    .add_goto_xy_subaction(1420, 1320, False)\
-    .add_subaction("drop_goldenium")\
-    .add_goto_xy_subaction(1210, 1320, True)
+#fg.add_goal("Drop Goldenium", 24)\
+#    .add_path(1050, 1320)\
+#    .add_goto_theta_subaction("pi", False)\
+#    .add_goto_xy_subaction(1420, 1320, False)\
+#    .add_subaction("drop_goldenium")\
+#    .add_goto_xy_subaction(1210, 1320, True)
 
-fg.add_goal("Get blue palet and drop it", 12)\
-    .add_path(1210, 800, "0")\
-    .add_goto_theta_subaction("0", False)\
-    .add_subaction("get_blue_palet")\
-    .add_goto_xy_subaction(1160, 1320)\
-    .add_goto_theta_subaction("0", False)\
-   .add_goto_xy_subaction(1260, 1320, False)\
-    .add_subaction("drop_blue_palet")
+#fg.add_goal("Get blue palet and drop it", 12)\
+#    .add_path(1210, 800, "0")\
+#    .add_goto_theta_subaction("0", False)\
+#    .add_subaction("get_blue_palet")\
+#    .add_goto_xy_subaction(1160, 1320)\
+#    .add_goto_theta_subaction("0", False)\
+#    .add_goto_xy_subaction(1260, 1320, False)\
+#    .add_subaction("drop_blue_palet")
 
-fg.generate_file("strategy.json")
+fg.generate_file("test.json")
