@@ -1,0 +1,102 @@
+{
+    "actions": {
+        "goto_theta_without_avoid": {
+            "id": "pal",
+            "fct": "goto_theta",
+            "avoid": false,
+            "service": "trajman"
+        },
+        "reset_ejecteur": {
+            "id": "pal",
+            "fct": "reset_ejecteur",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "drop_blue_palet": {
+            "id": "pal",
+            "fct": "drop_blue_palet",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "get_goldenium": {
+            "id": "pal",
+            "fct": "get_goldenium",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "get_palet": {
+            "id": "pal",
+            "fct": "get_palet",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "move_trsl": {
+            "id": "pal",
+            "fct": "move_trsl",
+            "avoid": false,
+            "service": "trajman"
+        },
+        "goto_theta_with_avoid": {
+            "id": "pal",
+            "fct": "goto_theta",
+            "avoid": true,
+            "service": "trajman"
+        },
+        "push_ejecteur": {
+            "id": "pal",
+            "fct": "push_ejecteur",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "goto_xy_without_avoid": {
+            "id": "pal",
+            "fct": "goto_xy",
+            "avoid": false,
+            "service": "trajman"
+        },
+        "drop_goldenium": {
+            "id": "pal",
+            "fct": "drop_goldenium",
+            "avoid": false,
+            "service": "actuators"
+        },
+        "goto_xy_with_avoid": {
+            "id": "pal",
+            "fct": "goto_xy",
+            "avoid": true,
+            "service": "trajman"
+        },
+        "get_blue_palet": {
+            "id": "pal",
+            "fct": "get_blue_palet",
+            "avoid": false,
+            "service": "actuators"
+        }
+    },
+    "start": {
+        "y": 225,
+        "x": 750,
+        "theta": "pi/2"
+    },
+    "goals": [
+        {
+            "name": "GetPalet",
+            "path": [
+                {
+                    "y": 225,
+                    "x": 750
+                },
+                {
+                    "y": 1000,
+                    "x": 750
+                }
+            ],
+            "actions": [
+                {
+                    "name": "get_palet"
+                }
+            ],
+            "score": 0
+        }
+    ]
+}

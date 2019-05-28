@@ -1,0 +1,99 @@
+{
+    "actions": {
+        "goto_theta_with_avoid": {
+            "id": "pal",
+                "service": "trajman",
+                "fct": "goto_theta",
+                "avoid": true
+        },
+            "push_ejecteur": {
+                "id": "pal",
+                "service": "actuators",
+                "fct": "push_ejecteur",
+                "avoid": false
+            },
+            "goto_theta_without_avoid": {
+                "id": "pal",
+                "service": "trajman",
+                "fct": "goto_theta",
+                "avoid": false
+            },
+            "goto_xy_with_avoid": {
+                "id": "pal",
+                "service": "trajman",
+                "fct": "goto_xy",
+                "avoid": true
+            },
+            "get_goldenium": {
+                "id": "pal",
+                "service": "actuators",
+                "fct": "get_goldenium",
+                "avoid": false
+            },
+            "get_blue_palet": {
+                "id": "pal",
+                "service": "actuators",
+                "fct": "get_blue_palet",
+                "avoid": false
+            },
+            "goto_xy_without_avoid": {
+                "id": "pal",
+                "service": "trajman",
+                "fct": "goto_xy",
+                "avoid": false
+            },
+            "drop_goldenium": {
+                "id": "pal",
+                "service": "actuators",
+                "fct": "drop_goldenium",
+                "avoid": false
+            },
+            "reset_ejecteur": {
+                "id": "pal",
+                "service": "actuators",
+                "fct": "reset_ejecteur",
+                "avoid": false
+            },
+            "drop_blue_palet": {
+                "id": "pal",
+                "service": "actuators",
+                "fct": "drop_blue_palet",
+                "avoid": false
+            },
+            "move_trsl": {
+                "id": "pal",
+                "service": "trajman",
+                "fct": "move_trsl",
+                "avoid": false
+            }
+    },
+        "start": {
+            "x": 750,
+            "y": 225,
+            "theta": "0"
+        },
+        "goals": [
+        {
+            "actions": [
+            {
+                "name": "reset_ejecteur"
+            }
+            ],
+            "score": 18,
+            "name": "Push Front Homo",
+            "path": [
+            ]
+        },
+        {
+            "actions": [
+            {
+                "name": "reset_ejecteur"
+            }
+            ],
+            "score": 40,
+            "name": "Push Front Homo",
+            "path": [
+            ]
+        }
+    ]
+}

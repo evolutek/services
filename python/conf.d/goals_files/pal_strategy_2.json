@@ -1,0 +1,405 @@
+{
+    "goals": [
+        {
+            "path": [
+                {
+                    "x": 1325,
+                    "y": 225
+                }
+            ],
+            "score": 0,
+            "name": "Push Front Palet",
+            "actions": [
+                {
+                    "args": {
+                        "x": 1325,
+                        "y": 500
+                    },
+                    "name": "goto_xy_without_avoid"
+                },
+                {
+                    "args": {
+                        "x": 850,
+                        "y": 500
+                    },
+                    "name": "goto_xy_without_avoid"
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "x": 750,
+                    "y": 1400
+                }
+            ],
+            "score": 17,
+            "name": "Push Chaos Zone",
+            "actions": [
+                {
+                    "args": {
+                        "x": 1200,
+                        "y": 1400
+                    },
+                    "name": "goto_xy_with_avoid"
+                },
+                {
+                    "args": {
+                        "x": 1200,
+                        "y": 1200
+                    },
+                    "name": "goto_xy_without_avoid"
+                },
+                {
+                    "args": {
+                        "x": 615,
+                        "y": 375
+                    },
+                    "name": "goto_xy_with_avoid"
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "x": 1265,
+                    "y": 800
+                }
+            ],
+            "score": 12,
+            "name": "Get blue palet and drop it",
+            "actions": [
+                {
+                    "args": {
+                        "theta": "0"
+                    },
+                    "name": "goto_theta_without_avoid"
+                },
+                {
+                    "name": "get_blue_palet"
+                },
+                {
+                    "args": {
+                        "x": 1380,
+                        "y": 1320
+                    },
+                    "name": "goto_xy_without_avoid"
+                },
+                {
+                    "args": {
+                        "theta": "pi/2"
+                    },
+                    "name": "goto_theta_without_avoid"
+                },
+                {
+                    "args": {
+                        "maxspeed": 500,
+                        "dest": 60,
+                        "sens": 1,
+                        "dec": 100,
+                        "acc": 100
+                    },
+                    "name": "move_trsl"
+                },
+                {
+                    "name": "free"
+                },
+                {
+                    "args": {
+                        "y": 1360
+                    },
+                    "name": "set_y"
+                },
+                {
+                    "args": {
+                        "theta": "pi/2"
+                    },
+                    "name": "set_theta"
+                },
+                {
+                    "args": {
+                        "maxspeed": 500,
+                        "dest": 70,
+                        "sens": 0,
+                        "dec": 100,
+                        "acc": 100
+                    },
+                    "name": "move_trsl"
+                },
+                {
+                    "args": {
+                        "theta": "pi/6"
+                    },
+                    "name": "goto_theta_without_avoid"
+                },
+                {
+                    "name": "drop_blue_palet"
+                },
+                {
+                    "args": {
+                        "maxspeed": 500,
+                        "dest": 75,
+                        "sens": 0,
+                        "dec": 100,
+                        "acc": 100
+                    },
+                    "name": "move_trsl"
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "x": 1000,
+                    "y": 1320
+                }
+            ],
+            "score": 70,
+            "name": "Push Blue Palet",
+            "actions": [
+                {
+                    "args": {
+                        "x": 600,
+                        "y": 1620
+                    },
+                    "name": "goto_xy_with_avoid"
+                },
+                {
+                    "args": {
+                        "x": 150,
+                        "y": 1620
+                    },
+                    "name": "goto_xy_without_avoid"
+                },
+                {
+                    "args": {
+                        "maxspeed": 500,
+                        "dest": 60,
+                        "sens": 0,
+                        "dec": 100,
+                        "acc": 100
+                    },
+                    "name": "move_trsl"
+                },
+                {
+                    "name": "push_ejecteur"
+                },
+                {
+                    "name": "reset_ejecteur"
+                },
+                {
+                    "name": "free"
+                },
+                {
+                    "args": {
+                        "x": 150
+                    },
+                    "name": "set_x"
+                },
+                {
+                    "args": {
+                        "theta": "0"
+                    },
+                    "name": "set_theta"
+                },
+                {
+                    "args": {
+                        "maxspeed": 500,
+                        "dest": 60,
+                        "sens": 1,
+                        "dec": 100,
+                        "acc": 100
+                    },
+                    "name": "move_trsl"
+                },
+                {
+                    "args": {
+                        "x": 500,
+                        "y": 1625
+                    },
+                    "name": "goto_xy_with_avoid"
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "x": 450,
+                    "y": 2240
+                }
+            ],
+            "score": 20,
+            "name": "Get Goldenium",
+            "actions": [
+                {
+                    "args": {
+                        "theta": "pi"
+                    },
+                    "name": "goto_theta_without_avoid"
+                },
+                {
+                    "args": {
+                        "x": 235,
+                        "y": 2225
+                    },
+                    "name": "goto_xy_without_avoid"
+                },
+                {
+                    "avoid_strategy": "Avoid.Skip",
+                    "score": 20,
+                    "name": "get_goldenium"
+                },
+                {
+                    "args": {
+                        "x": 500,
+                        "y": 2225
+                    },
+                    "name": "goto_xy_with_avoid"
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "x": 1050,
+                    "y": 1330
+                }
+            ],
+            "score": 24,
+            "name": "Drop Goldenium",
+            "actions": [
+                {
+                    "args": {
+                        "theta": "0"
+                    },
+                    "name": "goto_theta_without_avoid"
+                },
+                {
+                    "args": {
+                        "x": 1425,
+                        "y": 1330
+                    },
+                    "name": "goto_xy_without_avoid"
+                },
+                {
+                    "name": "drop_goldenium"
+                }
+            ]
+        }
+    ],
+    "actions": {
+        "set_x": {
+            "avoid": false,
+            "fct": "set_x",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "move_trsl": {
+            "avoid": false,
+            "fct": "move_trsl",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "get_palet": {
+            "avoid": false,
+            "fct": "get_palet",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "push_ejecteur": {
+            "avoid": false,
+            "fct": "push_ejecteur",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "goto_theta_without_avoid": {
+            "avoid": false,
+            "fct": "goto_theta",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "drop_palet": {
+            "avoid": false,
+            "fct": "drop_palet",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "get_goldenium": {
+            "avoid": false,
+            "fct": "get_goldenium",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "drop_blue_palet": {
+            "avoid": false,
+            "fct": "drop_blue_palet",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "goto_xy_with_avoid": {
+            "avoid": true,
+            "fct": "goto_xy",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "init_ejecteur": {
+            "avoid": false,
+            "fct": "init_ejecteur",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "drop_goldenium": {
+            "avoid": false,
+            "fct": "drop_goldenium",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "free": {
+            "avoid": false,
+            "fct": "free",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "reset_ejecteur": {
+            "avoid": false,
+            "fct": "reset_ejecteur",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "set_theta": {
+            "avoid": false,
+            "fct": "set_theta",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "get_blue_palet": {
+            "avoid": false,
+            "fct": "get_blue_palet",
+            "id": "pal",
+            "service": "actuators"
+        },
+        "goto_theta_with_avoid": {
+            "avoid": true,
+            "fct": "goto_theta",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "goto_xy_without_avoid": {
+            "avoid": false,
+            "fct": "goto_xy",
+            "id": "pal",
+            "service": "trajman"
+        },
+        "set_y": {
+            "avoid": false,
+            "fct": "set_y",
+            "id": "pal",
+            "service": "trajman"
+        }
+    },
+    "start": {
+        "theta": "0",
+        "x": 750,
+        "y": 225
+    }
+}

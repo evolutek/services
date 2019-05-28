@@ -1,12 +1,116 @@
 {
+    "actions": {
+        "goto_theta_without_avoid": {
+            "fct": "goto_theta",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "drop_goldenium": {
+            "fct": "drop_goldenium",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "set_theta": {
+            "fct": "set_theta",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "get_palet": {
+            "fct": "get_palet",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "drop_palet": {
+            "fct": "drop_palet",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "set_x": {
+            "fct": "set_x",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "init_ejecteur": {
+            "fct": "init_ejecteur",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "free": {
+            "fct": "free",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "drop_blue_palet": {
+            "fct": "drop_blue_palet",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "get_goldenium": {
+            "fct": "get_goldenium",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "goto_xy_without_avoid": {
+            "fct": "goto_xy",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "push_ejecteur": {
+            "fct": "push_ejecteur",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "set_y": {
+            "fct": "set_y",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "get_blue_palet": {
+            "fct": "get_blue_palet",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        },
+        "move_trsl": {
+            "fct": "move_trsl",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": false
+        },
+        "goto_xy_with_avoid": {
+            "fct": "goto_xy",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": true
+        },
+        "goto_theta_with_avoid": {
+            "fct": "goto_theta",
+            "service": "trajman",
+            "id": "pal",
+            "avoid": true
+        },
+        "reset_ejecteur": {
+            "fct": "reset_ejecteur",
+            "service": "actuators",
+            "id": "pal",
+            "avoid": false
+        }
+    },
     "goals": [
         {
-            "path": [
-                {
-                    "y": 225,
-                    "x": 1325
-                }
-            ],
             "name": "Push Front Palet",
             "actions": [
                 {
@@ -24,15 +128,48 @@
                     }
                 }
             ],
-            "score": 0
-        },
-        {
+            "score": 0,
             "path": [
                 {
-                    "y": 800,
-                    "x": 1260
+                    "y": 225,
+                    "x": 1325
+                }
+            ]
+        },
+        {
+            "name": "Push Chaos Zone",
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 1400,
+                        "x": 1200
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "y": 1200,
+                        "x": 1200
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 375,
+                        "x": 615
+                    }
                 }
             ],
+            "score": 20,
+            "path": [
+                {
+                    "y": 1400,
+                    "x": 750
+                }
+            ]
+        },
+        {
             "name": "Get blue palet and drop it",
             "actions": [
                 {
@@ -45,7 +182,7 @@
                     "name": "get_blue_palet"
                 },
                 {
-                    "name": "goto_xy_with_avoid",
+                    "name": "goto_xy_without_avoid",
                     "args": {
                         "y": 1320,
                         "x": 1380
@@ -61,9 +198,9 @@
                     "name": "move_trsl",
                     "args": {
                         "maxspeed": 500,
-                        "dec": 100,
-                        "dest": 50,
                         "sens": 1,
+                        "dec": 100,
+                        "dest": 60,
                         "acc": 100
                     }
                 },
@@ -86,9 +223,9 @@
                     "name": "move_trsl",
                     "args": {
                         "maxspeed": 500,
+                        "sens": 0,
                         "dec": 100,
                         "dest": 70,
-                        "sens": 0,
                         "acc": 100
                     }
                 },
@@ -105,22 +242,22 @@
                     "name": "move_trsl",
                     "args": {
                         "maxspeed": 500,
+                        "sens": 0,
                         "dec": 100,
                         "dest": 75,
-                        "sens": 0,
                         "acc": 100
                     }
                 }
             ],
-            "score": 12
-        },
-        {
+            "score": 12,
             "path": [
                 {
-                    "y": 1320,
-                    "x": 1000
+                    "y": 800,
+                    "x": 1265
                 }
-            ],
+            ]
+        },
+        {
             "name": "Push Blue Palet",
             "actions": [
                 {
@@ -141,14 +278,17 @@
                     "name": "move_trsl",
                     "args": {
                         "maxspeed": 500,
+                        "sens": 0,
                         "dec": 100,
                         "dest": 60,
-                        "sens": 0,
                         "acc": 100
                     }
                 },
                 {
                     "name": "push_ejecteur"
+                },
+                {
+                    "name": "reset_ejecteur"
                 },
                 {
                     "name": "free"
@@ -169,9 +309,9 @@
                     "name": "move_trsl",
                     "args": {
                         "maxspeed": 500,
+                        "sens": 1,
                         "dec": 100,
                         "dest": 60,
-                        "sens": 1,
                         "acc": 100
                     }
                 },
@@ -183,15 +323,15 @@
                     }
                 }
             ],
-            "score": 70
-        },
-        {
+            "score": 70,
             "path": [
                 {
-                    "y": 2240,
-                    "x": 450
+                    "y": 1320,
+                    "x": 1000
                 }
-            ],
+            ]
+        },
+        {
             "name": "Get Goldenium",
             "actions": [
                 {
@@ -220,15 +360,15 @@
                     }
                 }
             ],
-            "score": 20
-        },
-        {
+            "score": 20,
             "path": [
                 {
-                    "y": 1340,
-                    "x": 1050
+                    "y": 2240,
+                    "x": 450
                 }
-            ],
+            ]
+        },
+        {
             "name": "Drop Goldenium",
             "actions": [
                 {
@@ -240,130 +380,63 @@
                 {
                     "name": "goto_xy_without_avoid",
                     "args": {
-                        "y": 1350,
+                        "y": 1330,
                         "x": 1425
                     }
                 },
                 {
                     "name": "drop_goldenium"
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "maxspeed": 500,
+                        "sens": 0,
+                        "dec": 100,
+                        "dest": 60,
+                        "acc": 100
+                    }
                 }
             ],
-            "score": 24
+            "score": 24,
+            "path": [
+                {
+                    "y": 1330,
+                    "x": 1050
+                }
+            ]
+        },
+        {
+            "name": "Push leftover palets",
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 575,
+                        "x": 750
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "y": 575,
+                        "x": 575
+                    }
+                },
+                {
+                    "name": "goto_theta_with_avoid",
+                    "args": {
+                        "theta": "pi/2"
+                    }
+                }
+            ],
+            "score": 0,
+            "path": []
         }
     ],
     "start": {
         "y": 225,
         "theta": "0",
         "x": 750
-    },
-    "actions": {
-        "get_blue_palet": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "get_blue_palet"
-        },
-        "set_y": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": false,
-            "fct": "set_y"
-        },
-        "goto_xy_without_avoid": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": false,
-            "fct": "goto_xy"
-        },
-        "drop_goldenium": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "drop_goldenium"
-        },
-        "move_trsl": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": false,
-            "fct": "move_trsl"
-        },
-        "set_x": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": false,
-            "fct": "set_x"
-        },
-        "set_theta": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": false,
-            "fct": "set_theta"
-        },
-        "get_goldenium": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "get_goldenium"
-        },
-        "goto_theta_with_avoid": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": true,
-            "fct": "goto_theta"
-        },
-        "get_palet": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "get_palet"
-        },
-        "free": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": false,
-            "fct": "free"
-        },
-        "drop_blue_palet": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "drop_blue_palet"
-        },
-        "goto_xy_with_avoid": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": true,
-            "fct": "goto_xy"
-        },
-        "reset_ejecteur": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "reset_ejecteur"
-        },
-        "push_ejecteur": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "push_ejecteur"
-        },
-        "init_ejecteur": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "init_ejecteur"
-        },
-        "drop_palet": {
-            "service": "actuators",
-            "id": "pal",
-            "avoid": false,
-            "fct": "drop_palet"
-        },
-        "goto_theta_without_avoid": {
-            "service": "trajman",
-            "id": "pal",
-            "avoid": false,
-            "fct": "goto_theta"
-        }
     }
 }
