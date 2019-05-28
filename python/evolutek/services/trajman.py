@@ -693,6 +693,7 @@ class TrajMan(Service):
 
                 elif tab[1] == Commands.MOVE_BEGIN.value:
                     self.log_serial("Robot started to move!")
+                    self.publish(ROBOT + '_started')
                     self.has_stopped.clear()
 
                 elif tab[1] == Commands.MOVE_END.value:
