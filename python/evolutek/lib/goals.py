@@ -75,6 +75,8 @@ class Goal:
         #lcl_theta = path.y if not mirror else 3000 - path.y
         #self.path.append(Point(path.x, path.y, theta=lcl_theta))
 
+
+        self.theta = theta
         self.actions = [] if actions is None else actions
         self.score = score
         self.robot_proximity = robot_proximity
@@ -200,7 +202,7 @@ class Goals:
             print('Failed to parse start point: %s' % str(e))
             return False
         if mirror:
-            self.start_y = 3000 - self.start_y
+            self.start_y = 3000 - self.start_y - 10
             self.start_theta = 0 - self.start_theta
 
         # Parse goals

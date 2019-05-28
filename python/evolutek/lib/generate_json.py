@@ -98,7 +98,7 @@ fg.add_goal("Push Front Palet", 0)\
 fg.add_goal("Push Chaos Zone", 20)\
     .add_path(750, 1400)\
     .add_goto_xy_subaction(1200, 1400, True)\
-    .add_goto_xy_subaction(1200, 1200, False)\
+    .add_goto_xy_subaction(1200, 1175, False)\
     .add_goto_xy_subaction(615, 375, True)
 
 """
@@ -120,6 +120,7 @@ fg.add_goal("Get palets", 0)\
     .add_goto_xy_subaction(1285, 225, False)\
 """
 
+    #.add_path(1265, 800)\
 fg.add_goal("Get blue palet and drop it", 12)\
     .add_path(1265, 800)\
     .add_goto_theta_subaction("0", False)\
@@ -145,7 +146,7 @@ fg.add_goal("Push Blue Palet", 70)\
     .add_subaction("free")\
     .add_subaction("set_x", {"x": 150})\
     .add_subaction("set_theta", {"theta": "0"})\
-    .add_subaction("move_trsl", {"dest": 60, "acc": 100, "dec": 100, "maxspeed":500, "sens": 1})\
+    .add_subaction("move_trsl", {"dest": 60, "acc": 500, "dec": 500, "maxspeed":500, "sens": 1})\
     .add_goto_xy_subaction(500, 1625, True)
 
 
@@ -163,13 +164,13 @@ fg.add_goal("Get Goldenium", 20)\
     .add_goto_xy_subaction(500, 2225, True)
 
 fg.add_goal("Drop Goldenium", 24)\
-    .add_path(1050, 1330)\
+    .add_path(1050, 1325)\
     .add_goto_theta_subaction("0", False)\
     .add_goto_xy_subaction(1425, 1330, False)\
     .add_subaction("drop_goldenium")\
-    .add_subaction("move_trsl", {"dest": 60, "acc": 100, "dec": 100, "maxspeed":500, "sens": 0})\
 
 fg.add_goal("Push leftover palets", 0)\
+    .add_goto_xy_subaction(1050, 1330)\
     .add_goto_xy_subaction(750, 575)\
     .add_goto_xy_subaction(575, 575)\
     .add_goto_theta_subaction("pi/2")

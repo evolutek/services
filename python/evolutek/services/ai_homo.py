@@ -63,10 +63,8 @@ class Ai(Service):
         self.timeout_event = Event()
 
         # Match config
-        #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.goals = Goals(file="strategy.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="homo_pal.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
-        # FIXME: Utile ?
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
