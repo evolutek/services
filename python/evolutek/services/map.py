@@ -293,6 +293,10 @@ class Map(Service):
 
             sleep(0.15)
 
+def main():
+  map = Map()
+  map.run()
+
 if __name__ == '__main__':
   map = Map()
   map.run()
