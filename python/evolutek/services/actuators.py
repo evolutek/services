@@ -30,7 +30,7 @@ class Actuators(Service):
         self.relayGold = Gpio(17, "relayGold", True, default_value=True)
         self.relayArms = Gpio(27, "relayArms", True, default_value=True)
 
-        sefl.ejecteur = Pwm(13, "ejecteur", 0, 1.0)
+        self.ejecteur = Pwm(13, "ejecteur", 0, 1.0)
         self.hbridge1 = Gpio(19, "hbridge1", True)
         self.hbridge2 = Gpio(26, "hbridge2", True)
         self.ejecteur_contact1 = Gpio(4, "ejecteur_contact1", False)
@@ -306,7 +306,6 @@ class Actuators(Service):
         self.disable_suction_arms()
 
     """ Ejecteur """
-    ##TODO: Use PWM fct instead of write_gpio
     @Service.action
     def init_ejecteur(self):
         contact = None
@@ -319,13 +318,14 @@ class Actuators(Service):
             self.hbridge1.write(value=False)
             self.hbridge2.write(value=True)
             contact = self.ejecteur_contact1
-        if contact and contact.read():
+        
+        if contact and not contact.read():
             watchdog = Watchdog(1, self.handler_timeout_ejecteur)
             watchdog.reset()
-            self.ejecteur(value=100)
-            while not self.ejecteur_event.isSet() and self.contact.read() != 1:
+            self.ejecteur.start(dc=100)
+            while not self.ejecteur_event.isSet() and contact.read() != 1:
                 sleep(0.1)
-            self.ejecteur.write(value=0)
+            self.ejecteur.stop()
             watchdog.stop()
             self.ejecteur_event.clear()
 
@@ -342,13 +342,13 @@ class Actuators(Service):
             self.hbridge1.write(value=True)
             self.hbridge2.write(value=False)
             contact = self.ejecteur_contact2
-        if contact and contact.read():
+        if contact and not contact.read():
             watchdog = Watchdog(1, self.handler_timeout_ejecteur)
             watchdog.reset()
-            self.ejecteur(value=100)
-            while not self.ejecteur_event.isSet() and self.contact.read() != 1:
+            self.ejecteur.start(dc=100)
+            while not self.ejecteur_event.isSet() and contact.read() != 1:
                 sleep(0.1)
-            self.ejecteur.write(value=0)
+            self.ejecteur.stop()
             watchdog.stop()
             self.ejecteur_event.clear()
 
@@ -365,13 +365,13 @@ class Actuators(Service):
             self.hbridge2.write(value=False)
             contact = self.ejecteur_contact2
 
-        if contact and contact.read():
+        if contact and not contact.read():
             watchdog = Watchdog(1, self.handler_timeout_ejecteur)
             watchdog.reset()
-            self.ejecteur(value=100)
-            while not self.ejecteur_event.isSet() and self.contact.read() != 1:
+            self.ejecteur.start(dc=100)
+            while not self.ejecteur_event.isSet() and contact.read() != 1:
                 sleep(0.1)
-            self.ejecteur.write(value=0)
+            self.ejecteur.stop()
             watchdog.stop()
             self.ejecteur_event.clear()
 
