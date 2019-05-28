@@ -2,6 +2,7 @@ import socket
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
+from evolutek.lib.waiter import waitBeacon, waitConfig
 from math import cos, sin, pi
 from os import _exit
 from threading import Timer, Thread
@@ -24,7 +25,7 @@ class Match(Service):
     def __init__(self):
 
         self.cs = CellaservProxy()
-
+        waitConfig(self.cs)
         # Match Params
         match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
@@ -52,6 +53,7 @@ class Match(Service):
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
         self.interface_status = InterfaceStatus.init
+        self.score_socket = None
 
         # PAL status
         self.pal_ai_s = None
@@ -366,6 +368,10 @@ class Match(Service):
 
         return True
 
+    def connect_to_expirement(self):
+        self.score_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.score_socket.connect(("192.168.8.10", 4249)
+
     """ Get color """
     @Service.action
     def get_color(self):
@@ -382,7 +388,8 @@ class Match(Service):
         self.interface_status = InterfaceStatus.set
 
         self.publish('match_color', color=self.color)
-
+        if self.score_socket is None:
+            self.connect_to_expirement()
         return True
 
     """ Get match """
@@ -429,6 +436,11 @@ class Match(Service):
             pass
         sleep(self.refresh)
 
+    @Service.thread
+    def score_exp(self):
+        self.score_socket.send(chr(self.score))
+        sleep(2)
+
     """ Interface thread """
     @Service.thread
     def launch_interface(self):
@@ -451,6 +463,7 @@ class Match(Service):
             sleep(1)
 
 def main():
+    waitBeacon()
     match = Match()
     match.run()
 
