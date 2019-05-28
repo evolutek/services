@@ -152,7 +152,7 @@ class Robot:
         updated = False
         try:
             tmp_path = self.cs.map.get_path(path[0].to_dict(), path[-1].to_dict())
-            if len(tmp_path) >= 2 and Point.from_dict(tmp_path[1]) != path[1]):
+            if len(tmp_path) >= 2 and Point.from_dict(tmp_path[1]) != path[1]:
                 print('[ROBOT] Update Path')
                 updated = True
                 path.clear()
@@ -163,17 +163,15 @@ class Robot:
             return False
         return updated
 
-    # TODO: goto with path
+    # TODO: manage if destination is unreachable
+    # TODO: debug move back
     def goto_with_path(self, x, y):
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
         delta = 5
         end = Point(x, y)
-        pos = Point.from_dict(self.tm.get_position())
-        path = [pos, end]
+        path = [Point.from_dict(self.tm.get_position()), end]
         while len(path) >= 2:
-            print('[ROBOT] Current pos is x: %d y: %d' % (pos.x, pos.y))
-            if pos.dist(path[1]) < delta:
-                path.pop(0)
+            print('[ROBOT] Current pos is x: %d y: %d' % (path[0].x, path[0].y))
             self.update_path(path)
             self.is_stopped.clear()
             if not self.tm.disabled:
@@ -182,6 +180,7 @@ class Robot:
             self.tm.goto_xy(x=path[1].x, y=path[1].y)
             while not self.is_stopped.is_set():
                 if self.update_path(path):
+                    self.tm.stop_asap(1000, 20)
                     break;
                 sleep(0.2)
             if self.has_avoid.is_set():
@@ -189,12 +188,14 @@ class Robot:
                 self.wait_until(timeout=3)
                 if not self.end_avoid.is_set():
                     print('[ROBOT] Is going back')
-                    if self.move_trsl_block(acc=200, dec=200, dest=150,
-                        sens=int(self.tm.avoid_status['front'])):
+                    if self.move_trsl_block(acc=200, dec=200, dest=150, maxspeed=400,
+                        sens=int(not self.tm.avoid_status()['front'])):
                         print('[ROBOT] Going back again')
-                        self.move_trsl_block(acc=200, dec=200, dest=50,
-                            sens=int(self.tm.avoid_status['front']))
-            pos = Point.from_dict(self.tm.get_position())
+                        self.move_trsl_block(acc=200, dec=200, dest=50, maxspeed=400,
+                            sens=int(not self.tm.avoid_status()['front']))
+            path[0] = Point.from_dict(self.tm.get_position())
+            if path[0].dist(path[1]) < delta:
+                path.pop(0)
         print('[ROBOT] Robot reach destination')
 
 
