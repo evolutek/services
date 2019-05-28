@@ -64,7 +64,7 @@ class Ai(Service):
         self.timeout_event = Event()
 
         # Match config
-        self.goals = Goals(file="pal_strategy_3.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="coffee.json", mirror=self.color!=self.color1, cs=self.cs)
         #self.goals = Goals(file="pal_strategy_2.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?

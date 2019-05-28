@@ -1,0 +1,446 @@
+{
+    "actions": {
+        "reset_ejecteur": {
+            "fct": "reset_ejecteur",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "set_x": {
+            "fct": "set_x",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": false
+        },
+        "drop_goldenium": {
+            "fct": "drop_goldenium",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "drop_palet": {
+            "fct": "drop_palet",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "set_y": {
+            "fct": "set_y",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": false
+        },
+        "set_theta": {
+            "fct": "set_theta",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": false
+        },
+        "goto_theta_with_avoid": {
+            "fct": "goto_theta",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": true
+        },
+        "push_ejecteur": {
+            "fct": "push_ejecteur",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "goto_theta_without_avoid": {
+            "fct": "goto_theta",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": false
+        },
+        "get_blue_palet": {
+            "fct": "get_blue_palet",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "goto_xy_without_avoid": {
+            "fct": "goto_xy",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": false
+        },
+        "move_trsl": {
+            "fct": "move_trsl",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": false
+        },
+        "goto_xy_with_avoid": {
+            "fct": "goto_xy",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": true
+        },
+        "wait": {
+            "fct": "wait",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "get_palet": {
+            "fct": "get_palet",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "init_ejecteur": {
+            "fct": "init_ejecteur",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "get_goldenium": {
+            "fct": "get_goldenium",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "drop_blue_palet": {
+            "fct": "drop_blue_palet",
+            "id": "pal",
+            "service": "actuators",
+            "avoid": false
+        },
+        "free": {
+            "fct": "free",
+            "id": "pal",
+            "service": "trajman",
+            "avoid": false
+        }
+    },
+    "goals": [
+        {
+            "score": 0,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 250,
+                        "y": 225
+                    }
+                },
+                {
+                    "name": "wait",
+                    "args": {
+                        "time": 4
+                    }
+                }
+            ],
+            "name": "Wait for coffee",
+            "path": [
+                {
+                    "x": 450,
+                    "y": 225
+                }
+            ]
+        },
+        {
+            "score": 0,
+            "actions": [
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 1860,
+                        "y": 225
+                    }
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "dest": 60,
+                        "maxspeed": 500,
+                        "dec": 100,
+                        "sens": 1,
+                        "acc": 100
+                    }
+                },
+                {
+                    "name": "free"
+                },
+                {
+                    "name": "set_x",
+                    "args": {
+                        "x": 1880
+                    }
+                },
+                {
+                    "name": "set_theta",
+                    "args": {
+                        "theta": 0
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 1680,
+                        "y": 225
+                    }
+                },
+                {
+                    "name": "get_palet"
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 1360,
+                        "y": 225
+                    }
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "-pi/2"
+                    }
+                }
+            ],
+            "name": "Get 3 palets",
+            "path": [
+                {
+                    "x": 250,
+                    "y": 225
+                }
+            ]
+        },
+        {
+            "score": 0,
+            "actions": [
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "-pi/2"
+                    }
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "dest": 60,
+                        "maxspeed": 500,
+                        "dec": 100,
+                        "sens": 0,
+                        "acc": 100
+                    }
+                },
+                {
+                    "name": "free"
+                },
+                {
+                    "name": "set_y",
+                    "args": {
+                        "y": 1360
+                    }
+                },
+                {
+                    "name": "set_theta",
+                    "args": {
+                        "theta": "-pi/2"
+                    }
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "dest": 70,
+                        "maxspeed": 500,
+                        "dec": 100,
+                        "sens": 1,
+                        "acc": 100
+                    }
+                }
+            ],
+            "name": "Get blue palet and drop it",
+            "path": [
+                {
+                    "x": 1360,
+                    "y": 1320
+                }
+            ]
+        },
+        {
+            "score": 20,
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 600,
+                        "y": 1620
+                    }
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": 0
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 150,
+                        "y": 1625
+                    }
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "dest": 60,
+                        "maxspeed": 500,
+                        "dec": 100,
+                        "sens": 0,
+                        "acc": 100
+                    }
+                },
+                {
+                    "name": "push_ejecteur"
+                },
+                {
+                    "name": "reset_ejecteur"
+                },
+                {
+                    "name": "free"
+                },
+                {
+                    "name": "set_x",
+                    "args": {
+                        "x": 150
+                    }
+                },
+                {
+                    "name": "set_theta",
+                    "args": {
+                        "theta": "0"
+                    }
+                },
+                {
+                    "name": "move_trsl",
+                    "args": {
+                        "dest": 60,
+                        "maxspeed": 500,
+                        "dec": 500,
+                        "sens": 1,
+                        "acc": 500
+                    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 350,
+                        "y": 1625
+                    }
+                }
+            ],
+            "name": "Push Blue Palet",
+            "path": [
+                {
+                    "x": 1000,
+                    "y": 1320
+                }
+            ]
+        },
+        {
+            "score": 20,
+            "actions": [
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "pi"
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 235,
+                        "y": 2225
+                    }
+                },
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "pi"
+                    }
+                },
+                {
+                    "score": 20,
+                    "name": "get_goldenium",
+                    "avoid_strategy": "Avoid.Skip"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 350,
+                        "y": 2225
+                    }
+                }
+            ],
+            "name": "Get Goldenium",
+            "path": [
+                {
+                    "x": 350,
+                    "y": 2225
+                }
+            ]
+        },
+        {
+            "score": 24,
+            "actions": [
+                {
+                    "name": "goto_theta_without_avoid",
+                    "args": {
+                        "theta": "0"
+                    }
+                },
+                {
+                    "name": "goto_xy_without_avoid",
+                    "args": {
+                        "x": 1400,
+                        "y": 1315
+                    }
+                },
+                {
+                    "name": "drop_goldenium"
+                }
+            ],
+            "name": "Drop Goldenium",
+            "path": [
+                {
+                    "x": 1050,
+                    "y": 1315
+                }
+            ]
+        },
+        {
+            "score": 8,
+            "actions": [
+                {
+                    "name": "goto_theta_with_avoid",
+                    "args": {
+                        "theta": "-pi/2"
+                    }
+                },
+                {
+                    "name": "drop_palet"
+                }
+            ],
+            "name": "Push leftover palets",
+            "path": [
+                {
+                    "x": 1050,
+                    "y": 1315
+                },
+                {
+                    "x": 660,
+                    "y": 600
+                }
+            ]
+        }
+    ],
+    "start": {
+        "x": 450,
+        "y": 225,
+        "theta": "0"
+    }
+}
