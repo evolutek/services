@@ -7,6 +7,7 @@ from evolutek.lib.map import ObstacleType, Map as Map_lib
 from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.tim import Tim
+from evolutek.lib.waiter import waitBeacon, waitConfig
 
 from math import pi, tan, sqrt
 from time import sleep
@@ -18,14 +19,8 @@ class Map(Service):
 
     def __init__(self):
         self.cs = CellaservProxy()
-        ConfigDown = True
-        while ConfigDown:
-            try:
-                self.color1 = self.cs.config.get(section='match', option='color1')
-                ConfigDown = False
-            except:
-                print("error getting color")
-
+        waitConfig(self.cs)
+        self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
@@ -308,7 +303,7 @@ def wait_for_beacon():
         pass
 
 def main():
-  wait_for_beacon()
+  waitBeacon()
   map = Map()
   map.run()
 

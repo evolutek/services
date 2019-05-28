@@ -2,6 +2,7 @@ import socket
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
+from evolutek.lib.waiter import waitBeacon, waitConfig
 from math import cos, sin, pi
 from os import _exit
 from threading import Timer, Thread
@@ -24,7 +25,7 @@ class Match(Service):
     def __init__(self):
 
         self.cs = CellaservProxy()
-
+        waitConfig(self.cs)
         # Match Params
         match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
@@ -451,6 +452,7 @@ class Match(Service):
             sleep(1)
 
 def main():
+    waitBeacon()
     match = Match()
     match.run()
 
