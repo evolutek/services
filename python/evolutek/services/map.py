@@ -18,8 +18,14 @@ class Map(Service):
 
     def __init__(self):
         self.cs = CellaservProxy()
+        ConfigDown = True
+        while ConfigDown:
+            try:
+                self.color1 = self.cs.config.get(section='match', option='color1')
+                ConfigDown = False
+            except:
+                print("error getting color")
 
-        self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
