@@ -55,6 +55,7 @@ class Ai(Service):
         self.max_trsl_speed = self.cs.config.get(section=ROBOT, option='trsl_max')
         self.max_rot_speed = self.cs.config.get(section=ROBOT, option='rot_max')
 
+
         # Parameters
         self.aborting = Event()
         self.ending = Event()
@@ -63,8 +64,8 @@ class Ai(Service):
         self.timeout_event = Event()
 
         # Match config
-        #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.goals = Goals(file="pal_strategy_1.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="pal_strategy_3.json", mirror=self.color!=self.color1, cs=self.cs)
+        #self.goals = Goals(file="pal_strategy_2.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?
 
@@ -251,7 +252,7 @@ class Ai(Service):
     def start(self):
         if self.state != State.Waiting:
             return
-        sleep(3)
+        #sleep(3)
         match_thread = Thread(target=self.selecting)
         match_thread.deamon = True
         print('[AI] Starting')
