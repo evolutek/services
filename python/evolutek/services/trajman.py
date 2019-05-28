@@ -199,8 +199,6 @@ class TrajMan(Service):
         self.set_robot_size_x(self.robot_size_x())
         self.set_robot_size_y(self.robot_size_y())
 
-        print(self.telemetry_refresh())
-
         self.set_telemetry(self.telemetry_refresh())
         self.set_telemetry(500)
 
@@ -217,10 +215,10 @@ class TrajMan(Service):
             back = False
 
             for sensor in self.front_sensors:
-                front = self.front or sensor.read()
+                front = front or sensor.read()
 
             for sensor in self.back_sensors:
-                back = self.back or sensor.read()
+                back = back or sensor.read()
 
             # Change the values after the read to avoid race conflict
             self.front = front
@@ -250,8 +248,8 @@ class TrajMan(Service):
     @Service.action
     def stop_robot(self, side=None):
         try:
-            self.cs.trajman[ROBOT].stop_asap(1000, 20)
-            self.cs.ai[ROBOT].abort(side=side)
+            self.stop_asap(1000, 20)
+            #self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
         self.avoid = True
@@ -775,11 +773,11 @@ class TrajMan(Service):
                 elif tab[1] == TELEMETRY_MESSAGE:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
                     self.telemetry = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
-                    try:
+                    """try:
                         self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry)
                     except:
                         self.publish(ROBOT + '_telemetry', status='failed', telemetry = None)
-
+                    """
                 elif tab[1] == ERROR:
                     self.log("CM returned an error")
                     if tab[2] == COULD_NOT_READ:

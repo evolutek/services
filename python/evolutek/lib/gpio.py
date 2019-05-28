@@ -76,6 +76,7 @@ class Gpio(Io):
             return None
 
         self.value = GPIO.input(self.id)
+
         return self.value
 
     def write(self, value):
