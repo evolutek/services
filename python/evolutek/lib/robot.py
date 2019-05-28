@@ -37,7 +37,7 @@ class Robot:
 
     def __init__(self, robot=None):
 
-        self.cs = proxy if proxy is not None else CellaservProxy()
+        self.cs = CellaservProxy()
 
         # Current robot
         self.robot = robot if not robot is None else ROBOT
