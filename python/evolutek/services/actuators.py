@@ -70,6 +70,10 @@ class Actuators(Service):
         for n in [1, 2, 3, 4]:
             self.cs.ax[str(n)].free()
 
+    @Service.action
+    def wait(self, time):
+        sleep(float(time))
+
     """ ARMS """
     @Service.action
     def close_arms(self):
@@ -88,16 +92,16 @@ class Actuators(Service):
     """ ARMS """
     @Service.action
     def close_arms_off(self):
-        self.cs.ax['1'].moving_speed(128)
-        self.cs.ax['2'].moving_speed(128)
-        self.cs.ax['3'].moving_speed(128)
-        self.cs.ax['1'].move(goal=314)
-        self.cs.ax['2'].move(goal=314)
-        self.cs.ax['3'].move(goal=314)
-        sleep(1.5)
-        self.cs.ax['1'].moving_speed(314)
-        self.cs.ax['2'].moving_speed(314)
-        self.cs.ax['3'].moving_speed(314)
+        self.cs.ax['1'].moving_speed(256)
+        self.cs.ax['2'].moving_speed(256)
+        self.cs.ax['3'].moving_speed(256)
+        self.cs.ax['1'].move(goal=214)
+        self.cs.ax['2'].move(goal=214)
+        self.cs.ax['3'].move(goal=214)
+        sleep(1)
+        self.cs.ax['1'].moving_speed(512)
+        self.cs.ax['2'].moving_speed(512)
+        self.cs.ax['3'].moving_speed(512)
 
     @Service.action
     def open_arms(self):
@@ -134,13 +138,11 @@ class Actuators(Service):
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
-        self.disable_suction_arms()
-
         self.cs.trajman[ROBOT].move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=0)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
         
-        self.close_arms()
+        self.close_arms_off()
 
     """ GOLDENIUM """
     @Service.action
@@ -165,7 +167,10 @@ class Actuators(Service):
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
 
-        self.close_arms()
+        self.cs.ax['2'].moving_speed(256)
+        self.cs.ax['2'].move(goal=214)
+        self.cs.ax['2'].moving_speed(512)
+        sleep(0.5)
 
         self.cs.trajman[ROBOT].move_trsl(dest=50, acc=100, dec=100, maxspeed=400, sens=0)
         while self.cs.trajman[ROBOT].is_moving():
@@ -181,7 +186,8 @@ class Actuators(Service):
 
         self.disable_suction_goldenium()
 
-        self.close_arms()
+        self.cs.ax['2'].move(goal=214)
+        sleep(0.5)
 
     @Service.action
     def get_blue_palet(self):
@@ -210,10 +216,10 @@ class Actuators(Service):
     @Service.action
     def drop_blue_palet(self):
         self.cs.ax['2'].move(goal=492)
-        self.cs.ax['2'].move(goal=492)
         self.disable_suction_arms()
         sleep(0.2)
-        self.close_arms()
+        self.cs.ax['2'].move(goal=128)
+        sleep(0.5)
 
     """ CLAPET """
     @Service.action
@@ -234,19 +240,8 @@ class Actuators(Service):
     # TODO: Update
     @Service.action
     def drop_palet(self):
-        self.reset_ejecteur()
-        self.lower_palet()
-        self.cs.trajman[ROBOT].move_trsl(dest=100, acc=200, dec=200, maxspeed=600, sens=1)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-        self.half_open_clapet()
-        self.cs.trajman[ROBOT].move_trsl(dest=100, acc=200, dec=200, maxspeed=400, sens=0)
-        while self.cs.trajman[ROBOT].is_moving():
-            sleep(0.1)
-
-        self.open_clapet()
-        self.push_ejecteur()
-        self.close_clapet()
+        self.open_arms()
+        self.disable_suction_arms()
 
     """ Ejecteur """
     ##TODO: Use PWM fct instead of write_gpio

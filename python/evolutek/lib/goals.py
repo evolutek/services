@@ -202,7 +202,7 @@ class Goals:
             print('Failed to parse start point: %s' % str(e))
             return False
         if mirror:
-            self.start_y = 3000 - self.start_y - 10
+            self.start_y = 3000 - self.start_y
             self.start_theta = 0 - self.start_theta
 
         # Parse goals
