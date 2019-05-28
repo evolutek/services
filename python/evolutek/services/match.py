@@ -37,7 +37,6 @@ class Match(Service):
         self.timeout_robot = float(match_config['timeout_robot'])
         self.interface_refresh = int(match_config['interface_refresh'])
         self.interface_ratio = float(match_config['interface_ratio'])
-        self.interface_ratio = 0.5
 
         # Robots config
         self.pal_size_x = float(self.cs.config.get(section='pal', option='robot_size_x'))
@@ -388,8 +387,11 @@ class Match(Service):
         self.interface_status = InterfaceStatus.set
 
         self.publish('match_color', color=self.color)
+<<<<<<< HEAD
         if self.score_socket is None:
             self.connect_to_expirement()
+=======
+>>>>>>> d10b1367e06f3ca6b03101a6351fb2065c6542e9
         return True
 
     """ Get match """
