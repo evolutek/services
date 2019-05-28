@@ -26,6 +26,7 @@ setup(
 
     entry_points = {
         'console_scripts': [
+            'actuators_pmi = evolutek.services.actuators_pmi:main',
             'ax = evolutek.services.ax:main',
             'gpios = evolutek.services.gpios:main',
             'trajman = evolutek.services.trajman:main',

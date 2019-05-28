@@ -29,9 +29,9 @@ class Avoid(Service):
     def __init__(self):
         self.cs = CellaservProxy()
 
-        self.refresh = float(self.cs.config.get(section='avoid', option='refresh'))
-        self.robot_dist_sensor = int(self.cs.config.get(section=ROBOT, option='dist_detection'))
-        self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
+        #self.refresh = float(self.cs.config.get(section='avoid', option='refresh'))
+        #self.robot_dist_sensor = int(self.cs.config.get(section=ROBOT, option='dist_detection'))
+        #self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
         self.telemetry = None
         self.front_detected = []
@@ -39,7 +39,6 @@ class Avoid(Service):
         self.avoid = False
         self.enabled = True
         self.tmp_robot = None
-        self.lock = Lock()
 
         super().__init__(ROBOT)
 
@@ -57,8 +56,6 @@ class Avoid(Service):
     @Service.thread
     def loop_avoid(self):
         while True:
-            front = False
-            back = False
             if self.telemetry is None:
                 continue
             if not self.enabled:
@@ -84,8 +81,8 @@ class Avoid(Service):
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
         self.avoid = True
-        sensor = self.compute_sensor_pos(side)
-        self.tmp_robot = self.compute_tmp_robot(sensor.to_dict(), side)
+        #sensor = self.compute_sensor_pos(side)
+        #self.tmp_robot = self.compute_tmp_robot(sensor.to_dict(), side)
         print('[AVOID] Stopping robot, %s detection triggered' % side)
         sleep(0.5)
 

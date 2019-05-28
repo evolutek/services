@@ -64,7 +64,7 @@ class Ai(Service):
 
         # Match config
         #self.goals = Goals(file="simple_strategy.json", mirror=self.color!=self.color1, cs=self.cs)
-        self.goals = Goals(file="strategy.json", mirror=self.color!=self.color1, cs=self.cs)
+        self.goals = Goals(file="pal_strategy_1.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?
 
@@ -243,7 +243,7 @@ class Ai(Service):
     """ Reset button """
     @Service.event('%s_reset' % ROBOT)
     def reset_button(self, **kwargs):
-        self.setup(recalibration=True)
+        self.setup(recalibration=False)
 
     """ Match Start """
     @Service.event('match_start')
@@ -251,6 +251,7 @@ class Ai(Service):
     def start(self):
         if self.state != State.Waiting:
             return
+        sleep(3)
         match_thread = Thread(target=self.selecting)
         match_thread.deamon = True
         print('[AI] Starting')
@@ -326,11 +327,14 @@ class Ai(Service):
             while not self.ending.isSet() and not self.aborting.isSet() and self.cs.trajman[ROBOT].is_moving():
                 sleep(0.1)
 
+            """
             if 'theta' in point:
                 print('[AI] Turning to theta: ' + str(point['theta']))
                 self.cs.trajman[ROBOT].goto_theta(point['theta'])
                 while self.cs.trajman[ROBOT].is_moving():
                     sleep(0.1)
+            """
+
 
             if self.ending.isSet():
                 return
@@ -387,22 +391,27 @@ class Ai(Service):
                 # Compute new path
                 pos = self.cs.trajman[ROBOT].get_position()
                 try:
+                    count_path_computation = 0
                     # TODO: test
-                    tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
-                    print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
-                    self.cs.map.add_tmp_robot(tmp_robot)
+                    #tmp_robot = self.cs.avoid[ROBOT].get_tmp_robot()
+                    #print("[AI] Add tmp robot %s to the map" % str(tmp_robot))
+                    #self.cs.map.add_tmp_robot(tmp_robot)
 
                     print("[AI] Computing new path")
                     tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
 
                     # Recompute path while we can't get another path
                     # TODO: Critical map ?
-                    while tmp_path == []:
+                    while tmp_path == [] and count_path_computation < 10:
                         sleep(1)
                         tmp_path = self.cs.map.get_path(start_x=pos['x'], start_y=pos['y'], dest_x=dest['x'], dest_y=dest['y'])
+                        count_path_computation += 1
+
+                    if count_path_computation >= 10:
+                        continue
 
                     # TODO: Clean tmp robot
-                    self.cs.map.clean_tmp_robot()
+                    #self.cs.map.clean_tmp_robot()
                     print("[AI] New path = " + str(tmp_path))
                     self.current_path = tmp_path
                     i = 0

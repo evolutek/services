@@ -182,7 +182,7 @@ class TrajMan(Service):
         print(self.telemetry_refresh())
 
         self.set_telemetry(self.telemetry_refresh())
-        self.set_telemetry(200)
+        self.set_telemetry(500)
 
     #@Service.thread
     def telemetry(self):

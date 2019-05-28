@@ -1,0 +1,112 @@
+{
+    "goals": [
+        {
+            "name": "Push Front PMI",
+            "actions": [
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 600,
+                        "y": 500
+                    }
+                },
+                {
+                    "name": "open_arms"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 1150,
+                        "y": 1100
+                    }
+                },
+                {
+                    "name": "half_close_arms"
+                },
+                {
+                    "name": "goto_theta_with_avoid",
+                    "args": {
+                        "theta": "pi"
+		    }
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 850,
+                        "y": 1100
+                    }
+                },
+                {
+                    "name": "open_arms"
+                },
+                {
+                    "name": "goto_xy_with_avoid",
+                    "args": {
+                        "x": 600,
+                        "y": 275
+                    }
+                },
+                {
+                    "name": "half_close_arm"
+                }
+            ],
+            "path": [],
+            "score": 21
+        }
+    ],
+    "actions": {
+        "goto_theta_with_avoid": {
+            "avoid": true,
+            "service": "trajman",
+            "fct": "goto_theta",
+            "id": "pmi"
+        },
+        "half_close_arms": {
+            "avoid": false,
+            "service": "actuators",
+            "fct": "half_close_arms",
+            "id": "pmi"
+        },
+        "move_trsl": {
+            "avoid": false,
+            "service": "trajman",
+            "fct": "move_trsl",
+            "id": "pmi"
+        },
+        "goto_theta_without_avoid": {
+            "avoid": false,
+            "service": "trajman",
+            "fct": "goto_theta",
+            "id": "pmi"
+        },
+        "goto_xy_with_avoid": {
+            "avoid": true,
+            "service": "trajman",
+            "fct": "goto_xy",
+            "id": "pmi"
+        },
+        "open_arms": {
+            "avoid": false,
+            "service": "actuators",
+            "fct": "open_arms",
+            "id": "pmi"
+        },
+        "goto_xy_without_avoid": {
+            "avoid": false,
+            "service": "trajman",
+            "fct": "goto_xy",
+            "id": "pmi"
+        },
+        "close_arms": {
+            "avoid": false,
+            "service": "actuatos",
+            "fct": "close_arms",
+            "id": "pmi"
+        }
+    },
+    "start": {
+        "theta": "1.5707",
+        "x": 470,
+        "y": 150
+    }
+}
