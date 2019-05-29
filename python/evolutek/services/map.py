@@ -297,10 +297,18 @@ class Map(Service):
 
             sleep(0.15)
 
+def wait_for_beacon():
+    hostname = "pi"
+    while True:
+        r = os.system("ping -c 1 " + hostname)
+        if r == 0:
+            return
+        pass
+
 def main():
+  wait_for_beacon()
   map = Map()
   map.run()
 
 if __name__ == '__main__':
-  map = Map()
-  map.run()
+  main()
