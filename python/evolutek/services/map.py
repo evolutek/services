@@ -16,26 +16,30 @@ from time import sleep
 class Map(Service):
 
     def __init__(self):
+        while self.robot_dist_sensor is none:
+            try:
+                self.cs = CellaservProxy()
 
-        self.cs = CellaservProxy()
+                self.color1 = self.cs.config.get(section='match', option='color1')
+                self.color2 = self.cs.config.get(section='match', option='color2')
+                self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
-        self.color1 = self.cs.config.get(section='match', option='color1')
-        self.color2 = self.cs.config.get(section='match', option='color2')
-        self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
+                self.delta_dist = float(self.cs.config.get(section='tim', option='delta_dist')) * 2
+                self.refresh = float(self.cs.config.get(section='tim', option='refresh'))
 
-        self.delta_dist = float(self.cs.config.get(section='tim', option='delta_dist')) * 2
-        self.refresh = float(self.cs.config.get(section='tim', option='refresh'))
-
-        self.tim_config = self.cs.config.get_section('tim')
-        width = int(self.cs.config.get(section='map', option='width'))
-        height = int(self.cs.config.get(section='map', option='height'))
-        map_unit = int(self.cs.config.get(section='map', option='map_unit'))
-        self.debug = self.cs.config.get(section='map', option='debug') == 'true'
-        self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
-        self.pal_size = float(self.cs.config.get(section='pal', option='robot_size'))
-        self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
-        self.robot_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
-
+                self.tim_config = self.cs.config.get_section('tim')
+                width = int(self.cs.config.get(section='map', option='width'))
+                height = int(self.cs.config.get(section='map', option='height'))
+                map_unit = int(self.cs.config.get(section='map', option='map_unit'))
+                self.debug = self.cs.config.get(section='map', option='debug') == 'true'
+                self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
+                self.pal_size = float(self.cs.config.get(section='pal', option='robot_size'))
+                self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
+                self.robot_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
+            except:
+                print(error in setup)
+                sleep(1)
+        
         self.map = Map_lib(width, height, map_unit, self.pal_size)
         # Load obstacles
         fixed_obstacles, self.color_obstacles = Map_lib.parse_obstacle_file('/etc/conf.d/obstacles.json')
