@@ -199,7 +199,7 @@ class Tim:
 
     def get_scan(self):
         if self.window == []:
-          return None
+          return []
         self.lock.acquire()
         scan = self.window[-1]
         raw_data, shapes, robots = scan[0], scan[1], scan[2]
