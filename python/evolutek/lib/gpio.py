@@ -1,8 +1,7 @@
 from enum import Enum
-from random import randint
 from threading import Thread
 from time import sleep
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 class Edge(Enum):
         RISING = 0
@@ -18,11 +17,11 @@ class Io():
         self.event = event
         self.value = None
 
-        """try:
+        try:
             GPIO.setmode(GPIO.BCM)
         except Exception as e:
             print('Failed to gpio mode: %s' % str(e))
-            raise Exception('[GPIO] Failed to set gpio mode')"""
+            raise Exception('[GPIO] Failed to set gpio mode')
 
     def __eq__(self, ident):
         return (ident[0] is not None and self.id == int(ident[0])) or self.name == ident[1]
@@ -66,25 +65,26 @@ class Gpio(Io):
         super().__init__(id, name, dir, event)
         self.edge = edge
 
-        """if dir:
+        if dir:
             GPIO.setup(id,  GPIO.OUT, initial=GPIO.LOW)
             self.write(default_value)
         else:
-            GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)"""
+            GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
     def read(self):
         if self.dir:
             return None
-        self.value = randint(0, 1)
-        return self.value
+
         self.value = GPIO.input(self.id)
         return self.value
 
     def write(self, value):
         if not self.dir:
             return False
+
         if isinstance(value, str):
             value = value == "true"
+
         GPIO.output(self.id, GPIO.HIGH if value else GPIO.LOW)
         return True
 
