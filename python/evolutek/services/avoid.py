@@ -15,10 +15,17 @@ class Avoid(Service):
 
         self.cs = CellaservProxy()
 
+        # TODO : check float response from config
         #self.refresh = float(self.cs.config.get(section='avoid', option='refresh'))
 
         self.telemetry = None
+        self.avoid = False
+        self.enabled = True
+        self.front = False
+        self.back = False
 
+        # init sensors
+        # TODO: Config file ?
         self.front_sensors = [
             Gpio(18, "gtb1", False),
             Gpio(23, "gtb2", False),
@@ -31,20 +38,21 @@ class Avoid(Service):
             Gpio(21, "gtb6", False)
         ]
 
-        self.avoid = False
-        self.enabled = True
-
         super().__init__(ROBOT)
 
     def update_sensors(self):
-        self.front = False
-        self.back = False
+        front = False
+        back = False
 
         for sensor in self.front_sensors:
-            self.front = self.front or sensor.read()
+            front = self.front or sensor.read()
 
         for sensor in self.back_sensors:
-            self.back = self.back or sensor.read()
+            back = self.back or sensor.read()
+
+        # Change the values after the read to avoid race conflict
+        self.front = front
+        self.back = back
 
     @Service.action
     def status(self):
@@ -65,7 +73,7 @@ class Avoid(Service):
             if not self.enabled:
                 continue
 
-            elf.update_sensors()
+            self.update_sensors()
 
             if self.telemetry['speed'] > 0.0 and self.front:
                 self.stop_robot('front')
@@ -79,8 +87,6 @@ class Avoid(Service):
 
     @Service.action
     def stop_robot(self, side=None):
-        print('----- Aborting: %s ---' % side)
-
         try:
             self.cs.trajman[ROBOT].stop_asap(1000, 20)
             self.cs.ai[ROBOT].abort(side=side)
@@ -100,6 +106,8 @@ class Avoid(Service):
         print('----- DISABLE -----')
         self.enabled = False
         self.telemetry = None
+        self.front = False
+        self.back = False
 
     @Service.event('%s_telemetry' % ROBOT)
     def telemetry(self, status, telemetry):
