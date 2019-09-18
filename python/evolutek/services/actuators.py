@@ -2,6 +2,7 @@
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
+from evolutek.lib.gpio import Gpio, Pwm
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 from threading import Event
@@ -16,7 +17,6 @@ import os
 @Service.require("ax", "2")
 @Service.require("ax", "3")
 @Service.require("ax", "4")
-@Service.require("gpios", ROBOT)
 @Service.require("trajman", ROBOT)
 class Actuators(Service):
 
@@ -26,6 +26,16 @@ class Actuators(Service):
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
+
+        self.relayGold = Gpio(17, "relayGold", True, default_value=True)
+        self.relayArms = Gpio(27, "relayArms", True, default_value=True)
+
+        self.ejecteur = Pwm(13, "ejecteur", 0, 1.0)
+        self.hbridge1 = Gpio(19, "hbridge1", True)
+        self.hbridge2 = Gpio(26, "hbridge2", True)
+        self.ejecteur_contact1 = Gpio(4, "ejecteur_contact1", False)
+        self.ejecteur_contact2 = Gpio(22, "ejecteur_contact2", False)
+
         self.enabled = True
         self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) + 50
         self.color = 'yellow'
@@ -123,11 +133,11 @@ class Actuators(Service):
 
     @Service.action
     def enable_suction_arms(self):
-        self.cs.gpios[ROBOT].write_gpio(value=False, name="relayArms")
+        self.relayArms.write(value=False)
 
     @Service.action
     def disable_suction_arms(self):
-        self.cs.gpios[ROBOT].write_gpio(value=True, name="relayArms")
+        self.relayArms.write(value=True)
 
     @Service.action
     def get_palet(self):
@@ -141,7 +151,7 @@ class Actuators(Service):
         self.cs.trajman[ROBOT].move_trsl(dest=100, acc=100, dec=100, maxspeed=400, sens=0)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
-        
+
         self.close_arms_off()
 
     """ GOLDENIUM """
@@ -152,11 +162,11 @@ class Actuators(Service):
 
     @Service.action
     def enable_suction_goldenium(self):
-        self.cs.gpios[ROBOT].write_gpio(value=False, name="relayGold")
+        self.relayGold.write(value=False)
 
     @Service.action
     def disable_suction_goldenium(self):
-        self.cs.gpios[ROBOT].write_gpio(value=True, name="relayGold")
+        self.relayGold.write(value=True)
 
     @Service.action
     def get_goldenium(self):
@@ -195,7 +205,7 @@ class Actuators(Service):
 
         self.cs.ax['2'].move(goal=214)
         sleep(0.5)
-        
+
         self.enable_suction_arms()
 
     @Service.action
@@ -236,22 +246,22 @@ class Actuators(Service):
             self.cs.ax['1'].move(goal=494)
         else:
             self.cs.ax['3'].move(goal=494)
-        
+
         sleep(0.5)
 
         self.cs.trajman[ROBOT].move_trsl(dest=30, acc=100, dec=100, maxspeed=400, sens=0)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
-        
+
         if self.color == self.color1:
             self.cs.ax['1'].move(goal=494)
         else:
             self.cs.ax['3'].move(goal=494)
-        
+
         sleep(0.1)
 
         self.disable_suction_arms()
-        
+
         sleep(0.2)
 
         self.cs.trajman[ROBOT].move_trsl(dest=20, acc=100, dec=100, maxspeed=400, sens=1)
@@ -263,12 +273,12 @@ class Actuators(Service):
         self.cs.trajman[ROBOT].move_trsl(dest=40, acc=100, dec=100, maxspeed=400, sens=0)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
-        
+
         if self.color == self.color1:
             self.cs.ax['1'].move(goal=214)
         else:
             self.cs.ax['3'].move(goal=214)
-       
+
         sleep(0.5)
 
         self.enable_suction_arms()
@@ -296,26 +306,26 @@ class Actuators(Service):
         self.disable_suction_arms()
 
     """ Ejecteur """
-    ##TODO: Use PWM fct instead of write_gpio
     @Service.action
     def init_ejecteur(self):
         contact = None
 
-        if int(self.cs.gpios[ROBOT].read_gpio(id=4)) == 1:
-            self.cs.gpios[ROBOT].write_gpio(value=True, id=19)
-            self.cs.gpios[ROBOT].write_gpio(value=False, id=26)
-            contact = 22
+        if self.ejecteur_contact1.read() == 1:
+            self.hbridge1.write(value=True)
+            self.hbridge2.write(value=False)
+            contact = self.ejecteur_contact2
         else:
-            self.cs.gpios[ROBOT].write_gpio(value=False, id=19)
-            self.cs.gpios[ROBOT].write_gpio(value=True, id=26)
-            contact = 4
-        if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
+            self.hbridge1.write(value=False)
+            self.hbridge2.write(value=True)
+            contact = self.ejecteur_contact1
+        
+        if contact and not contact.read():
             watchdog = Watchdog(1, self.handler_timeout_ejecteur)
             watchdog.reset()
-            self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
-            while not self.ejecteur_event.isSet() and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
+            self.ejecteur.start(dc=100)
+            while not self.ejecteur_event.isSet() and contact.read() != 1:
                 sleep(0.1)
-            self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
+            self.ejecteur.stop()
             watchdog.stop()
             self.ejecteur_event.clear()
 
@@ -325,20 +335,20 @@ class Actuators(Service):
         contact = None
 
         if self.color == self.color1:
-            self.cs.gpios[ROBOT].write_gpio(value=False, id=19)
-            self.cs.gpios[ROBOT].write_gpio(value=True, id=26)
-            contact = 4
+            self.hbridge1.write(value=False)
+            self.hbridge2.write(value=True)
+            contact = self.ejecteur_contact1
         else:
-            self.cs.gpios[ROBOT].write_gpio(value=True, id=19)
-            self.cs.gpios[ROBOT].write_gpio(value=False, id=26)
-            contact = 22
-        if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
-            watchdog = Watchdog(self.timeout_ejecteur, self.handler_timeout_ejecteur)
+            self.hbridge1.write(value=True)
+            self.hbridge2.write(value=False)
+            contact = self.ejecteur_contact2
+        if contact and not contact.read():
+            watchdog = Watchdog(1, self.handler_timeout_ejecteur)
             watchdog.reset()
-            self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
-            while not self.ejecteur_event.isSet() and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
+            self.ejecteur.start(dc=100)
+            while not self.ejecteur_event.isSet() and contact.read() != 1:
                 sleep(0.1)
-            self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
+            self.ejecteur.stop()
             watchdog.stop()
             self.ejecteur_event.clear()
 
@@ -347,21 +357,21 @@ class Actuators(Service):
         contact = None
 
         if self.color != self.color1:
-            self.cs.gpios[ROBOT].write_gpio(value=False, id=19)
-            self.cs.gpios[ROBOT].write_gpio(value=True, id=26)
-            contact = 4
+            self.hbridge1.write(value=False)
+            self.hbridge2.write(value=True)
+            contact = self.ejecteur_contact1
         else:
-            self.cs.gpios[ROBOT].write_gpio(value=True, id=19)
-            self.cs.gpios[ROBOT].write_gpio(value=False, id=26)
-            contact = 22
+            self.hbridge1.write(value=True)
+            self.hbridge2.write(value=False)
+            contact = self.ejecteur_contact2
 
-        if int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
-            watchdog = Watchdog(self.timeout_ejecteur, self.handler_timeout_ejecteur)
+        if contact and not contact.read():
+            watchdog = Watchdog(1, self.handler_timeout_ejecteur)
             watchdog.reset()
-            self.cs.gpios[ROBOT].write_gpio(value=100, id=13)
-            while not self.ejecteur_event.isSet() and int(self.cs.gpios[ROBOT].read_gpio(id=contact)) != 1:
+            self.ejecteur.start(dc=100)
+            while not self.ejecteur_event.isSet() and contact.read() != 1:
                 sleep(0.1)
-            self.cs.gpios[ROBOT].write_gpio(value=0, id=13)
+            self.ejecteur.stop()
             watchdog.stop()
             self.ejecteur_event.clear()
 
