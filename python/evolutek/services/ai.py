@@ -3,6 +3,7 @@
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 from evolutek.lib.goals import Goals, Avoid
+from evolutek.lib.gpio import Gpio
 from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
@@ -55,7 +56,6 @@ class Ai(Service):
         self.max_trsl_speed = self.cs.config.get(section=ROBOT, option='trsl_max')
         self.max_rot_speed = self.cs.config.get(section=ROBOT, option='rot_max')
 
-
         # Parameters
         self.aborting = Event()
         self.ending = Event()
@@ -68,6 +68,9 @@ class Ai(Service):
         #self.goals = Goals(file="pal_strategy_2.json", mirror=self.color!=self.color1, cs=self.cs)
         self.current_path = []
         # FIXME: Utile ?
+
+        Gpio(5, "tirette", False, edge=Edge.FALLING).auto_refresh(service=self)
+        Gpio(6, "%s_reset" % ROBOT, False, edge=Edge.RISING).auto_refresh(service=self)
 
         print('[AI] Initial Setup')
         super().__init__(ROBOT)
@@ -142,7 +145,7 @@ class Ai(Service):
         self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 0)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
-        
+
         self.cs.trajman[ROBOT].goto_xy(4.71)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
@@ -154,7 +157,7 @@ class Ai(Service):
         self.cs.trajman[ROBOT].set_y(159)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
-       
+
         self.cs.trajman[ROBOT].move_trsl(50, 500, 500, 500, 0)
         while self.cs.trajman[ROBOT].is_moving():
             sleep(0.1)
@@ -243,7 +246,7 @@ class Ai(Service):
 
     """ Reset button """
     @Service.event('%s_reset' % ROBOT)
-    def reset_button(self, **kwargs):
+    def reset_event(self, **kwargs):
         self.setup(recalibration=False)
 
     """ Match Start """
