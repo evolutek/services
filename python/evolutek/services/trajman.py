@@ -15,7 +15,10 @@ make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
+from evolutek.lib.gpio import Gpio
 from evolutek.lib.settings import ROBOT
+
+ROBOT = 'pal'
 
 #######################
 # All the commands ID #
@@ -151,10 +154,27 @@ class TrajMan(Service):
         self.thread = Thread(target=self.async_read)
         self.thread.daemon = True
         self.thread.start()
-        
-        #self.thread2 = Thread(target=self.telemetry)
-        #self.thread2.daemon = True
-        #self.thread2.start()
+
+        """ AVOID """
+        self.telemetry = None
+        self.avoid = False
+        self.enabled = True
+        self.front = False
+        self.back = False
+
+        # init sensors
+        # TODO: Config file ?
+        self.front_sensors = [
+            Gpio(18, "gtb1", False),
+            Gpio(23, "gtb2", False),
+            Gpio(24, "gtb3", False)
+        ]
+
+        self.back_sensors = [
+            Gpio(16, "gtb4", False),
+            Gpio(20, "gtb5", False),
+            Gpio(21, "gtb6", False)
+        ]
 
         self.init_sequence()
         self.set_telemetry(0)
@@ -178,26 +198,78 @@ class TrajMan(Service):
 
         self.set_robot_size_x(self.robot_size_x())
         self.set_robot_size_y(self.robot_size_y())
-        
+
         print(self.telemetry_refresh())
 
         self.set_telemetry(self.telemetry_refresh())
         self.set_telemetry(500)
 
-    #@Service.thread
-    def telemetry(self):
-        sleep(5)
+    """ AVOID """
+    @Service.thread
+    def loop_avoid(self):
         while True:
-            position = self.get_position()
-            vector_trsl = self.get_vector_trsl()
-            telemetry = {
-                'x': position['x'],
-                'y': position['y'],
-                'theta': position['theta'],
-                'speed': vector_trsl['trsl_vector']
-            }
-            self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry)
-            sleep(1)
+            if self.telemetry is None:
+                continue
+            if not self.enabled:
+                continue
+
+            front = False
+            back = False
+
+            for sensor in self.front_sensors:
+                front = self.front or sensor.read()
+
+            for sensor in self.back_sensors:
+                back = self.back or sensor.read()
+
+            # Change the values after the read to avoid race conflict
+            self.front = front
+            self.back = back
+
+            if self.telemetry['speed'] > 0.0 and self.front:
+                self.stop_robot('front')
+                print("[AVOID] Front detection")
+            elif self.telemetry['speed'] < 0.0 and self.back:
+                self.stop_robot('back')
+                print("[AVOID] Back detection")
+            else:
+                self.avoid = False
+            sleep(0.1)
+
+    @Service.action
+    def avoid_status(self):
+        status = {
+            'front' : self.front,
+            'back' : self.back,
+            'avoid' : self.avoid,
+            'enabled' : self.enabled
+        }
+
+        return status
+
+    @Service.action
+    def stop_robot(self, side=None):
+        try:
+            self.cs.trajman[ROBOT].stop_asap(1000, 20)
+            self.cs.ai[ROBOT].abort(side=side)
+        except Exception as e:
+            print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
+        self.avoid = True
+        print('[AVOID] Stopping robot, %s detection triggered' % side)
+        sleep(0.5)
+
+    @Service.action
+    def enable_avoid(self):
+        print('----- ENABLE -----')
+        self.enabled = True
+
+    @Service.action
+    def disable_avoid(self):
+        print('----- DISABLE -----')
+        self.enabled = False
+        self.telemetry = None
+        self.front = False
+        self.back = False
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -702,11 +774,11 @@ class TrajMan(Service):
 
                 elif tab[1] == TELEMETRY_MESSAGE:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
-                    telem = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
+                    self.telemetry = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
                     try:
-                        self.publish(ROBOT + '_telemetry', status='successful', telemetry = telem)
+                        self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry)
                     except:
-                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = telem)
+                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = None)
 
                 elif tab[1] == ERROR:
                     self.log("CM returned an error")
