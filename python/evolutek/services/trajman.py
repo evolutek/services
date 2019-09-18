@@ -140,6 +140,7 @@ class TrajMan(Service):
         self.ack_recieved = Event()
 
         self.has_stopped = Event()
+        self.has_avoid = Event()
 
         # Used to generate debug
         self.debug_file = None
@@ -153,8 +154,7 @@ class TrajMan(Service):
 
         """ AVOID """
         self.telemetry = None
-        self.avoid = False
-        self.enabled = True
+        self.avoid_disabled = Event()
         self.front = False
         self.back = False
 
@@ -204,7 +204,7 @@ class TrajMan(Service):
         while True:
             if self.telemetry is None:
                 continue
-            if not self.enabled:
+            if self.avoid_disabled.isSet():
                 continue
 
             front = False
@@ -220,14 +220,16 @@ class TrajMan(Service):
             self.front = front
             self.back = back
 
+            if self.has_avoid.isSet() or self.has_stopped.isSet():
+                continue
+
             if self.telemetry['speed'] > 0.0 and self.front:
                 self.stop_robot('front')
                 print("[AVOID] Front detection")
             elif self.telemetry['speed'] < 0.0 and self.back:
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
-            else:
-                self.avoid = False
+            # TODO: else if speed == 0: waht do we do
             sleep(0.1)
 
     @Service.action
@@ -235,35 +237,38 @@ class TrajMan(Service):
         status = {
             'front' : self.front,
             'back' : self.back,
-            'avoid' : self.avoid,
-            'enabled' : self.enabled
+            'avoid' : self.has_avoid.isSet(),
+            'enabled' : not self.avoid_disabled.isSet()
         }
 
         return status
 
     @Service.action
     def stop_robot(self, side=None):
+        stopped = False
         try:
             self.stop_asap(1000, 20)
+            stopped = True
             #self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
-        self.avoid = True
+        self.has_avoid.set()
         print('[AVOID] Stopping robot, %s detection triggered' % side)
         sleep(0.5)
 
     @Service.action
     def enable_avoid(self):
         print('----- ENABLE -----')
-        self.enabled = True
+        self.avoid_disabled.clear()
 
     @Service.action
     def disable_avoid(self):
         print('----- DISABLE -----')
-        self.enabled = False
         self.telemetry = None
         self.front = False
         self.back = False
+        self.has_avoid.clear()
+        self.avoid_disabled.set()
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -685,7 +690,8 @@ class TrajMan(Service):
                 elif tab[1] == Commands.MOVE_END.value:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish(ROBOT + '_stopped')
+                    self.publish(ROBOT + '_stopped', avoid=self.has_avoid.isSet())
+                    self.has_avoid.clear()
 
                 elif tab[1] == Commands.GET_SPEEDS.value:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
