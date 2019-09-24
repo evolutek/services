@@ -690,7 +690,7 @@ class TrajMan(Service):
                 elif tab[1] == Commands.MOVE_END.value:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish(ROBOT + '_stopped', avoid=self.has_avoid.isSet())
+                    self.publish(ROBOT + '_stopped', has_avoid=self.has_avoid.isSet())
                     self.has_avoid.clear()
 
                 elif tab[1] == Commands.GET_SPEEDS.value:

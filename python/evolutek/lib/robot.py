@@ -10,9 +10,7 @@ from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
-import evolutek.lib.settings
-from evolutek.lib.match import get_side
-
+from evolutek.lib.settings import ROBOT
 
 class Robot:
 
@@ -20,73 +18,49 @@ class Robot:
     _instance = None
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls, robot=None):
         if cls._instance is None:
-            cls._instance = Robot()
+            cls._instance = Robot(robot)
         return cls._instance
 
-    # Wrappers
-
+    # Wrapper
     def wrap_block(self, f):
         @wraps(f)
         def _f(*args, **kwargs):
             self.is_stopped.clear()
             f(*args, **kwargs)
             self.is_stopped.wait()
-
+            self.cs('log.robot', is_stopped=self.is_stopped.is_set(),
+                        has_avoid=self.has_avoid.is_set())
+            self.has_avoid.clear()
         return _f
 
-    def wrap_block_avoid(self, f):
-        """Avoid no. 1"""
+    def __init__(self, robot=None):
 
-        @wraps(f)
-        def _f(*args, **kwargs):
-            self.is_stopped.clear()
-            f(*args, **kwargs)
-            while not self.is_stopped.is_set():
-                self.robot_must_stop.wait()
-                self.cs('log.robot', is_stopped=self.is_stopped.is_set(),
-                        robot_must_stop=self.robot_must_stop.is_set(),
-                        robot_near=self.robot_near_event.is_set())
-
-                if not self.robot_near_event.is_set():
-                    # The robot stopped because it completed the move
-                    break
-                else:
-                    self.cs('log.robot', msg='Robot evitement')
-                    self.tm.free()
-                    # Wait for the other robot to leave
-                    self.robot_far_event.wait()
-                    # Then retry the operation
-                    f(*args, **kwargs)
-        return _f
-
-    def __init__(self, robot=None, proxy=None):
-        """
-        Create a new robot object.
-
-        :param str robot: The name of the robot you want to control
-        """
-
-        self.robot = robot if robot is not None else evolutek.lib.settings.ROBOT
         self.cs = proxy if proxy is not None else CellaservProxy()
+
+        # Current robot
+        self.robot = robot if not robot is None else ROBOT
         self.tm = self.cs.trajman[self.robot]
-        self.side = get_side(proxy=self.cs)
+
+        # Side config
+        self.color1 = self.cs.config.get(section='match', option='color1')
+        self.side = False
+        try:
+            self.side = self.cs.match.get_color() != self.color1
+        except Exception as e:
+            print('[ROBOT] Failed to set color: %s' % (str(e)))
 
         # Events
-
         self.is_stopped = Event()
-        self.robot_near_event = Event()
-        self.robot_far_event = Event()
-        self.robot_must_stop = Event()
+        self.has_avoid = Event()
 
+        # AsynClient
         self.client = AsynClient(get_socket())
-        self.client.add_subscribe_cb(self.robot + '_stopped', self.robot_stopped)
-        self.client.add_subscribe_cb(self.robot + '_near', self.robot_near)
-        self.client.add_subscribe_cb(self.robot + '_far', self.robot_far)
+        self.client.add_subscribe_cb(ROBOT + '_stopped', self.robot_stopped)
+        self.client.add_subscribe_cb('match_color', self.color_change)
 
-        # Blocking wrappers
-
+        # Blocking wrapper
         self.recalibration_block = self.wrap_block(self.recalibration)
         self.goto_xy_block = self.wrap_block(self.tm.goto_xy)
         self.goto_theta_block = self.wrap_block(self.tm.goto_theta)
@@ -94,13 +68,7 @@ class Robot:
         self.move_rot_block = self.wrap_block(self.tm.move_rot)
         self.move_trsl_block = self.wrap_block(self.tm.move_trsl)
 
-        self.goto_xy_block_avoid = self.wrap_block_avoid(self.tm.goto_xy)
-        self.goto_theta_block_avoid = self.wrap_block_avoid(self.tm.goto_theta)
-        self.move_rot_block_avoid = self.wrap_block_avoid(self.tm.move_rot)
-        self.move_trsl_block_avoid = self.wrap_block_avoid(self.tm.move_trsl)
-
         # Start the event listening thread
-
         self.client_thread = Thread(target=asyncore.loop)
         self.client_thread.daemon = True
         self.client_thread.start()
@@ -109,24 +77,19 @@ class Robot:
     # Events #
     ##########
 
-    def robot_stopped(self):
+    def robot_stopped(self, has_avoid=False):
+        if has_avoid:
+            self.has_avoid.set()
         self.is_stopped.set()
-        self.robot_must_stop.set()
 
-    def robot_near(self):
-        self.robot_near_event.set()
-        self.robot_must_stop.set()
-        self.robot_far_event.clear()
-
-    def robot_far(self):
-        self.robot_far_event.set()
-        self.robot_near_event.clear()
-        self.robot_must_stop.clear()
+    def color_change(self, color):
+        self.side = color != self.color1
 
     #########
     # Moves #
     #########
 
+    # TODO: GET ACTUATORS RECALIBRATION
     def recalibration(self, sens):
         try:
             self.tm.recalibration(sens=sens)
@@ -138,3 +101,5 @@ class Robot:
 
     def goth(self, th):
         return self.goto_theta_block(th * -self.side)
+
+    # TODO: Add other trajman actions
