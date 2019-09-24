@@ -157,6 +157,7 @@ class TrajMan(Service):
         self.avoid_disabled = Event()
         self.front = False
         self.back = False
+        self.side = None
 
         # init sensors
         # TODO: Config file ?
@@ -216,6 +217,10 @@ class TrajMan(Service):
             for sensor in self.back_sensors:
                 back = back or sensor.read()
 
+            if (side == 'front' and not front) or (self.side == 'back' and not back):
+                self.side = None
+                self.publish(ROBOT + '_end_avoid')
+
             # Change the values after the read to avoid race conflict
             self.front = front
             self.back = back
@@ -238,7 +243,8 @@ class TrajMan(Service):
             'front' : self.front,
             'back' : self.back,
             'avoid' : self.has_avoid.isSet(),
-            'enabled' : not self.avoid_disabled.isSet()
+            'enabled' : not self.avoid_disabled.isSet(),
+            'side' : self.side
         }
 
         return status
@@ -246,6 +252,7 @@ class TrajMan(Service):
     @Service.action
     def stop_robot(self, side=None):
         stopped = False
+        self.side = side
         try:
             self.stop_asap(1000, 20)
             stopped = True
@@ -267,6 +274,7 @@ class TrajMan(Service):
         self.telemetry = None
         self.front = False
         self.back = False
+        self.side = None
         self.has_avoid.clear()
         self.avoid_disabled.set()
 
@@ -482,7 +490,7 @@ class TrajMan(Service):
     @Service.action
     def set_theta(self, theta):
         tab = pack('B', 6)
-        tab += pack('B', Comamnds.SET_THETA.value)
+        tab += pack('B', Commands.SET_THETA.value)
         tab += pack('f', float(theta))
         self.command(bytes(tab))
 
