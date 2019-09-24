@@ -217,7 +217,7 @@ class TrajMan(Service):
             for sensor in self.back_sensors:
                 back = back or sensor.read()
 
-            if (side == 'front' and not front) or (self.side == 'back' and not back):
+            if (self.side == 'front' and not front) or (self.side == 'back' and not back):
                 self.side = None
                 self.publish(ROBOT + '_end_avoid')
 
@@ -698,7 +698,7 @@ class TrajMan(Service):
                 elif tab[1] == Commands.MOVE_END.value:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish(ROBOT + '_stopped', has_avoid=self.has_avoid.isSet())
+                    self.publish(ROBOT + '_stopped', has_avoid=self.has_avoid.is_set())
                     self.has_avoid.clear()
 
                 elif tab[1] == Commands.GET_SPEEDS.value:

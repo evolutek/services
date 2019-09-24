@@ -30,9 +30,11 @@ class Robot:
             self.is_stopped.clear()
             f(*args, **kwargs)
             self.is_stopped.wait()
+            has_avoid = self.has_avoid.is_set()
             self.cs('log.robot', is_stopped=self.is_stopped.is_set(),
-                        has_avoid=self.has_avoid.is_set())
+                        has_avoid=has_avoid)
             self.has_avoid.clear()
+            return has_avoid
         return _f
 
     def __init__(self, robot=None):
@@ -54,11 +56,13 @@ class Robot:
         # Events
         self.is_stopped = Event()
         self.has_avoid = Event()
+        self.end_avoid = Event()
 
         # AsynClient
         self.client = AsynClient(get_socket())
-        self.client.add_subscribe_cb(ROBOT + '_stopped', self.robot_stopped)
+        self.client.add_subscribe_cb(self.robot + '_stopped', self.robot_stopped)
         self.client.add_subscribe_cb('match_color', self.color_change)
+        self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_event)
 
         # Blocking wrapper
         self.recalibration_block = self.wrap_block(self.recalibration)
@@ -78,12 +82,15 @@ class Robot:
     ##########
 
     def robot_stopped(self, has_avoid=False):
-        if has_avoid:
+        if has_avoid.decode().split(' ')[1][0] == 't':
             self.has_avoid.set()
         self.is_stopped.set()
 
     def color_change(self, color):
         self.side = color != self.color1
+
+    def end_avoid_event(self):
+        self.end_avoid.set()
 
     #########
     # Moves #
@@ -97,9 +104,16 @@ class Robot:
             pass
 
     def goto(self, x, y):
-        return self.goto_xy_block(x, 1500 + (1500 - y) * self.side)
+        return self.goto_xy_block(x, 1500 + (1500 - y) * -1 if self.side else 1)
 
     def goth(self, th):
         return self.goto_theta_block(th * -self.side)
 
     # TODO: Add other trajman actions
+
+    #########
+    # Avoid #
+    #########
+    def wait_until(self):
+        self.end_avoid.wait()
+        self.end_avoid.clear()
