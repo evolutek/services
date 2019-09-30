@@ -10,7 +10,10 @@ from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
+
+from evolutek.lib.point import Point
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.watchdog import Watchdog
 
 class Robot:
 
@@ -28,6 +31,8 @@ class Robot:
         @wraps(f)
         def _f(*args, **kwargs):
             self.is_stopped.clear()
+            if not self.tm.disabled:
+                return
             f(*args, **kwargs)
             self.is_stopped.wait()
             has_avoid = self.has_avoid.is_set()
@@ -57,15 +62,16 @@ class Robot:
         self.is_stopped = Event()
         self.has_avoid = Event()
         self.end_avoid = Event()
+        self.timeout = Event()
 
         # AsynClient
         self.client = AsynClient(get_socket())
         self.client.add_subscribe_cb(self.robot + '_stopped', self.robot_stopped)
         self.client.add_subscribe_cb('match_color', self.color_change)
-        self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_event)
+        self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
 
         # Blocking wrapper
-        self.recalibration_block = self.wrap_block(self.recalibration)
+        #self.recalibration_block = self.wrap_block(self.recalibration)
         self.goto_xy_block = self.wrap_block(self.tm.goto_xy)
         self.goto_theta_block = self.wrap_block(self.tm.goto_theta)
         self.curve_block = self.wrap_block(self.tm.curve)
@@ -89,31 +95,58 @@ class Robot:
     def color_change(self, color):
         self.side = color != self.color1
 
-    def end_avoid_event(self):
+    def end_avoid_handler(self):
         self.end_avoid.set()
+
+    def timeout_handler(self):
+        self.timeout.set()
 
     #########
     # Moves #
     #########
 
-    # TODO: GET ACTUATORS RECALIBRATION
-    def recalibration(self, sens):
-        try:
-            self.tm.recalibration(sens=sens)
-        except RequestTimeout:  # Recalibration will timeout
-            pass
-
     def goto(self, x, y):
         return self.goto_xy_block(x, 1500 + (1500 - y) * -1 if self.side else 1)
 
     def goth(self, th):
-        return self.goto_theta_block(th * -self.side)
+        return self.goto_theta_block(th * 1 if self.side else -1)
 
-    # TODO: Add other trajman actions
+    def goto_avoid(self, x, y, timeout=0.0):
+        while self.goto(x, y):
+            self.wait_until(timeout=timeout)
+
+    def goth_avoid(self, th, timeout=0.0):
+        while self.goth(th):
+            self.wait_until(timeout=timeout)
+
+    def goto_with_path(self, x, y):
+        delta = 5
+        end = Point(x, y)
+        pos = Point.from_dict(self.tm.get_position())
+        path = [pos, end]
+        while start.dist(pos) < delta:
+
+
+    # TODO: recalibration
+    """
+    def recalibration(self, x=True, y=True, side=False, side_x=False, side_y=False,
+                      decal_x=0, decal_y=0, init=False):"""
+
 
     #########
     # Avoid #
     #########
-    def wait_until(self):
-        self.end_avoid.wait()
+    def wait_until(self, timeout=0.0):
+        watchdog = None
+
+        if timeout > 0.0:
+            watchdog = Watchdog(timeout, self.timeout_handler)
+            watchdog.reset()
+
+        while not end_avoid.is_set() and not self.timeout.is_set():
+            sleep(0.1)
+
+        if not watchdog is None:
+            watchdog.stop()
+            self.timeout.clear()
         self.end_avoid.clear()
