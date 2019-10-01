@@ -26,7 +26,8 @@ class Robot:
             cls._instance = Robot(robot)
         return cls._instance
 
-    # Wrapper
+    # wrapper
+    # TODO: update watchod timer
     def wrap_block(self, f):
         @wraps(f)
         def _f(*args, **kwargs):
@@ -124,14 +125,55 @@ class Robot:
         while self.goth(th):
             self.wait_until(timeout=timeout)
 
-    # TODO: pgoto with path
-    """
+    def update_path(self, path):
+        updated = False
+        try:
+            tmp_path = self.cs.map.get_path(path[0].to_dict(), path[-1].to_dict())
+            if len(tmp_path) >= 2 and Point.from_dict(tmp_path[1]) != path[1]):
+                print('[ROBOT] Update Path')
+                updated = True
+                path.clear()
+                for point in tmp_path:
+                    path.append(Point.from_dict(point))
+        except Exception as e:
+            print('[ROBOT] Failed to update path: %s' % str(e))
+            return False
+        return updated
+
+    # TODO: goto with path
     def goto_with_path(self, x, y):
+        print('[ROBOT] Destination x: %d y: %d' % (x, y))
         delta = 5
         end = Point(x, y)
         pos = Point.from_dict(self.tm.get_position())
         path = [pos, end]
-        while start.dist(pos) < delta:"""
+        while len(path) >= 2:
+            print('[ROBOT] Current pos is x: %d y: %d' % (pos.x, pos.y))
+            if pos.dist(path[1]) < delta:
+                path.pop(0)
+            self.update_path(path)
+            self.is_stopped.clear()
+            if not self.tm.disabled:
+                return
+            print('[ROBOT] Going to %s' % str(path[1]))
+            self.tm.goto_xy(x=path[1].x, y=path[1].y)
+            while not self.is_stopped.is_set():
+                if self.update_path(path):
+                    break;
+                sleep(0.2)
+            if self.has_avoid.is_set():
+                print('[ROBOT] Robot has avoid')
+                self.wait_until(timeout=3)
+                if not self.end_avoid.is_set():
+                    print('[ROBOT] Is going back')
+                    if self.move_trsl_block(acc=200, dec=200, dest=150,
+                        sens=int(self.tm.avoid_status['front'])):
+                        print('[ROBOT] Going back again')
+                        self.move_trsl_block(acc=200, dec=200, dest=50,
+                            sens=int(self.tm.avoid_status['front']))
+            pos = Point.from_dict(self.tm.get_position())
+        print('[ROBOT] Robot reach destination')
+
 
     # TODO: Manage avoid
     def recalibration(self,
@@ -162,7 +204,7 @@ class Robot:
             print('[ROBOT] Recalibration X')
             self.goth(pi if side_x(0) ^ side_x(1) else 0)
             pos = self.recalibration_block(sens=int(side_x(0)), decal=float(decal_x))
-            print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
+            print('[ROBOT] Robot position is x: %f y: %f theta: %f' %
                 (pos['recal_xpos'], pos['recal_ypos'], pos['recal_theta']))
             self.goto(
                 x = pos['recal_xpos'] + dist * -1 if abs(pos['recal_theta'] - pi) < 0.1 else 1,
@@ -173,7 +215,7 @@ class Robot:
             theta = pi/2 if side_x(0) ^ side_y(0) else -pi/2
             self.goth(theta * -1 if self.side else 1)
             pos = self.recalibration_block(sens=int(side_x(0)), decal=float(decal_x))
-            print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
+            print('[ROBOT] Robot position is x: %f y: %f theta: %f' %
                 (pos['recal_xpos'], pos['recal_ypos'], pos['recal_theta']))
             self.goto(
                 x = pos['recal_xpos'],

@@ -265,12 +265,12 @@ class TrajMan(Service):
 
     @Service.action
     def enable_avoid(self):
-        print('----- ENABLE -----')
+        print('[AVOID] Enable')
         self.avoid_disabled.clear()
 
     @Service.action
     def disable_avoid(self):
-        print('----- DISABLE -----')
+        print('[AVOID] Disable')
         self.avoid_disabled.set()
         self.front = False
         self.back = False

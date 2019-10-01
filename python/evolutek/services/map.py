@@ -104,7 +104,7 @@ class Map(Service):
     def start_debug_interface(self):
         self.interface = Interface(self.map, self)
 
-    # TODO: cdebug mode not getting oppenents
+    # TODO: debug mode not getting oppenents
     @Service.thread
     def loop_scan(self):
         while True:
@@ -160,12 +160,12 @@ class Map(Service):
         return self.robots
 
     @Service.action
-    def get_path(self, start_x, start_y, dest_x, dest_y):
+    def get_path(self, origin, dest):
       print("[MAP] path request received")
       # TODO: Remove self.path and make match display it
       if self.pmi_telem is not None:
           self.map.add_circle_obstacle_point(Point.from_dict(self.pmi_telem), self.pmi_size, 'pmi', ObstacleType.robot)
-      self.path = self.map.get_path(Point(int(start_x), int(start_y)), Point(int(dest_x), int(dest_y)))
+      self.path = self.map.get_path(Point.from_dict(origin), Point.from_dict(dest))
       self.map.remove_obstacle('pmi')
       return self.path
 
