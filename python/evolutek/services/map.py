@@ -148,7 +148,7 @@ class Map(Service):
                         i += 1
                         self.robots.append(robot)
 
-                    print('[MAP] Detected %d robots' % len(self.robots))
+                    #print('[MAP] Detected %d robots' % len(self.robots))
                     #self.publish('opponents', robots=self.robots)
             sleep(self.refresh)
 
@@ -267,10 +267,10 @@ class Map(Service):
     #@Service.thread
     def test_path(self):
         while True:
-          if self.pal_telem:
-            self.path = self.cs.map.get_path(self.pal_telem['x'], self.pal_telem['y'], 1500, 2750)
-          else:
-            self.path = self.cs.map.get_path(start_x=1500, start_y=2750, dest_x=1500, dest_y=250)
+          #if self.pal_telem:
+          # self.path = self.cs.map.get_path(self.pal_telem['x'], self.pal_telem['y'], 1500, 2750)
+          #else:
+          self.path = self.cs.map.get_path(origin={'x':750, 'y': 330}, dest={'x':750, 'y':2300})
           sleep(0.15)
 
     #@Service.thread
