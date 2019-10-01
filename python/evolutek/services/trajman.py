@@ -271,12 +271,11 @@ class TrajMan(Service):
     @Service.action
     def disable_avoid(self):
         print('----- DISABLE -----')
-        self.telemetry = None
+        self.avoid_disabled.set()
         self.front = False
         self.back = False
         self.side = None
         self.has_avoid.clear()
-        self.avoid_disabled.set()
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -637,10 +636,11 @@ class TrajMan(Service):
 
     @Service.action
     @if_enabled
-    def recalibration(self, sens):
-        tab = pack('B', 3)
+    def recalibration(self, sens, decal):
+        tab = pack('B', 7)
         tab += pack('B', Commands.RECALAGE.value)
         tab += pack('B', int(sens))
+        tab += pack('f', float(decal))
         return self.command(bytes(tab))
 
     # Thread 2

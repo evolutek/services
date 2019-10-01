@@ -4,7 +4,7 @@ from functools import wraps
 from threading import Event, Thread
 from time import sleep
 import asyncore
-import math
+from math import pi
 
 from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
@@ -50,6 +50,11 @@ class Robot:
         self.robot = robot if not robot is None else ROBOT
         self.tm = self.cs.trajman[self.robot]
 
+        # Size of the robot and min dist from wall
+        self.size_x = float(self.cs.config.get(section=self.robot, option='robot_size_x'))
+        self.size_y = float(self.cs.config.get(section=self.robot, option='robot_size_y'))
+        self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) + 50
+
         # Side config
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.side = False
@@ -71,7 +76,7 @@ class Robot:
         self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
 
         # Blocking wrapper
-        #self.recalibration_block = self.wrap_block(self.recalibration)
+        self.recalibration_block = self.wrap_block(self.tm.recalibration)
         self.goto_xy_block = self.wrap_block(self.tm.goto_xy)
         self.goto_theta_block = self.wrap_block(self.tm.goto_theta)
         self.curve_block = self.wrap_block(self.tm.curve)
@@ -106,10 +111,10 @@ class Robot:
     #########
 
     def goto(self, x, y):
-        return self.goto_xy_block(x, 1500 + (1500 - y) * -1 if self.side else 1)
+        return self.goto_xy_block(x, 1500 + (1500 - y) * -1 if not self.side else 1)
 
     def goth(self, th):
-        return self.goto_theta_block(th * 1 if self.side else -1)
+        return self.goto_theta_block(th * 1 if not self.side else -1)
 
     def goto_avoid(self, x, y, timeout=0.0):
         while self.goto(x, y):
@@ -119,19 +124,68 @@ class Robot:
         while self.goth(th):
             self.wait_until(timeout=timeout)
 
+    # TODO: pgoto with path
+    """
     def goto_with_path(self, x, y):
         delta = 5
         end = Point(x, y)
         pos = Point.from_dict(self.tm.get_position())
         path = [pos, end]
-        while start.dist(pos) < delta:
+        while start.dist(pos) < delta:"""
 
+    # TODO: Manage avoid
+    def recalibration(self,
+                        x=True,
+                        y=True,
+                        side_x=(False, False),
+                        side_y=(False, False),
+                        decal_x=0,
+                        decal_y=0,
+                        init=False):
 
-    # TODO: recalibration
-    """
-    def recalibration(self, x=True, y=True, side=False, side_x=False, side_y=False,
-                      decal_x=0, decal_y=0, init=False):"""
+        speeds = self.tm.get_speeds()
+        self.tm.free()
+        self.tm.disable_avoid()
 
+        # TODO: check speeds
+        self.tm.set_trsl_max_speed(200)
+        self.tm.set_trsl_acc(200)
+        self.tm.set_trsl_dec(200)
+
+        # init pos if necessary
+        if init:
+            self.tm.set_theta(0)
+            self.tm.set_x(1000)
+            self.tm.set_y(1000)
+
+        if x:
+            print('[ROBOT] Recalibration X')
+            self.goth(pi if side_x(0) ^ side_x(1) else 0)
+            pos = self.recalibration_block(sens=int(side_x(0)), decal=float(decal_x))
+            print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
+                (pos['recal_xpos'], pos['recal_ypos'], pos['recal_theta']))
+            self.goto(
+                x = pos['recal_xpos'] + dist * -1 if abs(pos['recal_theta'] - pi) < 0.1 else 1,
+                y = pos['recal_ypos']))pos['recal_xpos']
+
+        if y:
+            print('[ROBOT] Recalibration y
+            theta = pi/2 if side_x(0) ^ side_y(0) else -pi/2
+            self.goth(theta * -1 if self.side else 1)
+            pos = self.recalibration_block(sens=int(side_x(0)), decal=float(decal_x))
+            print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
+                (pos['recal_xpos'], pos['recal_ypos'], pos['recal_theta']))
+            self.goto(
+                x = pos['recal_xpos'],
+                y = pos['recal_ypos'] + dist * -1 if abs(pos['recal_theta'] + pi/2) < 0.1 else 1
+            )
+
+        self.tm.set_trsl_max_speed(speeds['trmax'])
+        self.tm.set_trsl_acc(speeds['tracc'])
+        self.tm.set_trsl_dec(speeds['trdec'])
+        self.tm.enable_avoid()
+
+    # TODO : Add other actions
 
     #########
     # Avoid #
