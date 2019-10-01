@@ -34,8 +34,24 @@ class Robot:
             self.is_stopped.clear()
             if not self.tm.disabled:
                 return
+
+            watchdog = Watchdog(1, self.timeout_handler)
+            watchdog.reset()
+
             f(*args, **kwargs)
+
+            while not self.is_started.is_set() and not self.timeout.is_set():
+                sleep(0.1)
+
+            self.timeout.clear()
+            if not self.is_started.is_set():
+                return
+
+            watchdog.stop()
+            self.is_started.clear()
+
             self.is_stopped.wait()
+
             has_avoid = self.has_avoid.is_set()
             self.cs('log.robot', is_stopped=self.is_stopped.is_set(),
                         has_avoid=has_avoid)
@@ -54,7 +70,7 @@ class Robot:
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=self.robot, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=self.robot, option='robot_size_y'))
-        self.dist = ((self.robot_size_x() ** 2 + self.robot_size_y() ** 2) ** (1 / 2.0)) + 50
+        self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
 
         # Side config
         self.color1 = self.cs.config.get(section='match', option='color1')
@@ -64,8 +80,11 @@ class Robot:
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % (str(e)))
 
+        self.side = False
+
         # Events
         self.is_stopped = Event()
+        self.is_started = Event()
         self.has_avoid = Event()
         self.end_avoid = Event()
         self.timeout = Event()
@@ -73,6 +92,7 @@ class Robot:
         # AsynClient
         self.client = AsynClient(get_socket())
         self.client.add_subscribe_cb(self.robot + '_stopped', self.robot_stopped)
+        self.client.add_subscribe_cb(self.robot + '_started', self.robot_started)
         self.client.add_subscribe_cb('match_color', self.color_change)
         self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
 
@@ -93,6 +113,9 @@ class Robot:
     # Events #
     ##########
 
+    def robot_started(self):
+        self.is_started.set()
+
     def robot_stopped(self, has_avoid=False):
         if has_avoid.decode().split(' ')[1][0] == 't':
             self.has_avoid.set()
@@ -112,10 +135,10 @@ class Robot:
     #########
 
     def goto(self, x, y):
-        return self.goto_xy_block(x, 1500 + (1500 - y) * -1 if not self.side else 1)
+        return self.goto_xy_block(x, 1500 + (1500 - y) * (-1 if not self.side else 1))
 
     def goth(self, th):
-        return self.goto_theta_block(th * 1 if not self.side else -1)
+        return self.goto_theta_block(th * (1 if not self.side else -1))
 
     def goto_avoid(self, x, y, timeout=0.0):
         while self.goto(x, y):
@@ -176,6 +199,7 @@ class Robot:
 
 
     # TODO: Manage avoid
+    # TODO remove sleep after recalibration
     def recalibration(self,
                         x=True,
                         y=True,
@@ -190,9 +214,9 @@ class Robot:
         self.tm.disable_avoid()
 
         # TODO: check speeds
-        self.tm.set_trsl_max_speed(200)
-        self.tm.set_trsl_acc(200)
-        self.tm.set_trsl_dec(200)
+        self.tm.set_trsl_max_speed(400)
+        self.tm.set_trsl_acc(400)
+        self.tm.set_trsl_dec(400)
 
         # init pos if necessary
         if init:
@@ -202,25 +226,25 @@ class Robot:
 
         if x:
             print('[ROBOT] Recalibration X')
-            self.goth(pi if side_x(0) ^ side_x(1) else 0)
-            pos = self.recalibration_block(sens=int(side_x(0)), decal=float(decal_x))
-            print('[ROBOT] Robot position is x: %f y: %f theta: %f' %
-                (pos['recal_xpos'], pos['recal_ypos'], pos['recal_theta']))
-            self.goto(
-                x = pos['recal_xpos'] + dist * -1 if abs(pos['recal_theta'] - pi) < 0.1 else 1,
-                y = pos['recal_ypos']))pos['recal_xpos']
+            theta = pi if side_x[0] ^ side_x[1] else 0
+            self.goth(theta)
+            self.recalibration_block(sens=int(side_x[0]), decal=float(decal_x))
+            sleep(2)
+            pos = self.tm.get_position()
+            print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
+                (pos['x'], pos['y'], pos['theta']))
+            self.move_trsl_block(dest=self.dist - self.size_x, acc=200, dec=200, maxspeed=200, sens=not side_x[0])
 
         if y:
-            print('[ROBOT] Recalibration y
-            theta = pi/2 if side_x(0) ^ side_y(0) else -pi/2
-            self.goth(theta * -1 if self.side else 1)
-            pos = self.recalibration_block(sens=int(side_x(0)), decal=float(decal_x))
-            print('[ROBOT] Robot position is x: %f y: %f theta: %f' %
-                (pos['recal_xpos'], pos['recal_ypos'], pos['recal_theta']))
-            self.goto(
-                x = pos['recal_xpos'],
-                y = pos['recal_ypos'] + dist * -1 if abs(pos['recal_theta'] + pi/2) < 0.1 else 1
-            )
+            print('[ROBOT] Recalibration Y')
+            theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
+            self.goth(theta * (-1 if self.side else 1))
+            self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
+            sleep(2)
+            pos = self.tm.get_position()
+            print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
+                (pos['x'], pos['y'], pos['theta']))
+            self.move_trsl_block(dest=self.dist - self.size_x, acc=200, dec=200, maxspeed=200, sens=not side_y[0])
 
         self.tm.set_trsl_max_speed(speeds['trmax'])
         self.tm.set_trsl_acc(speeds['tracc'])
@@ -239,7 +263,7 @@ class Robot:
             watchdog = Watchdog(timeout, self.timeout_handler)
             watchdog.reset()
 
-        while not end_avoid.is_set() and not self.timeout.is_set():
+        while not self.end_avoid.is_set() and not self.timeout.is_set():
             sleep(0.1)
 
         if not watchdog is None:

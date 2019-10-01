@@ -5,13 +5,12 @@ from evolutek.lib.robot import Robot
 def main():
 
     robot = Robot(robot='pal')
-    robot.tm.set_x(0)
-    robot.tm.set_y(0)
-    robot.tm.set_theta(0)
+
+    robot.recalibration(init=True)
 
     for i in range(10):
-        robot.goto_avoid(250, 0)
-        robot.goto_avoid(0, 0)
+        robot.goto_avoid(250, 250)
+        robot.goto_avoid(500, 250)
 
     print('End test')
 
