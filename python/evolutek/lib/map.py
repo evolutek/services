@@ -91,20 +91,18 @@ class CircleObstacle(Obstacle):
 
 class RectangleObstacle(Obstacle):
 
-    def __init__(self, x1, x2, y1, y2, tag=None, type=ObstacleType.fixed):
+    def __init__(self, p1, p2, tag=None, type=ObstacleType.fixed):
         super().__init__(tag, type)
-        self.x1 = x1
-        self.x2 = x2
-        self.y1 = y1
-        self.y2 = y2
-        for x in range(x1, x2 + 1):
-            self.points.append(Point(x, y1))
-        for y in range(y1 + 1, y2):
-            self.points.append(Point(x2, y))
-        for x in range(x2, x1 - 1, -1):
-            self.points.append(Point(x, y2))
-        for y in range(y2 - 1, y1, -1):
-            self.points.append(Point(x1, y))
+        self.p1 = p1
+        self.p2 = p2
+        for x in range(p1.x, p2.x + 1):
+            self.points.append(Point(x, p1.y))
+        for y in range(p1.y + 1, p2.y):
+            self.points.append(Point(p2.x, y))
+        for x in range(p2.x, p1.x - 1, -1):
+            self.points.append(Point(x, p2.y))
+        for y in range(p2.y - 1, p1.y, -1):
+            self.points.append(Point(p1.x, y))
 
 class Map:
 
@@ -129,20 +127,14 @@ class Map:
 
     """ UTILITIES """
 
-    def is_real_point_outside(self, x, y):
-        return x < 0 or y < 0 or x > self.real_height or y > self.real_width
-
-    def is_real_point_outside_point(self, p):
-        return self.is_point_inside(p.x, p.y)
+    def is_real_point_outside(self, p):
+        return p.x < 0 or p.y < 0 or p.x > self.real_height or p.y > self.real_width
 
     def is_point_inside(self, p):
         return p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width
 
-    def convert_point(self, x, y):
-        return Point(int(x/self.unit), int(y/self.unit))
-
-    def convert_point_point(self, p):
-        return self.convert_point(p.x, p.y)
+    def convert_point(self, p):
+        return Point(int(p.x/self.unit), int(p.y/self.unit))
 
     def print_map(self):
         print('-' * (self.width + 2))
@@ -166,34 +158,28 @@ class Map:
             self.obstacles.append(obstacle)
         return added
 
-    def add_point_obstacle(self, x, y, tag=None, type=ObstacleType.fixed):
-        if self.is_real_point_outside(x, y):
+    def add_point_obstacle(self, p, tag=None, type=ObstacleType.fixed):
+        if self.is_real_point_outside(p):
             return False
         obs = Obstacle(tag, type)
-        p = self.convert_point(x, y)
-        obs.points.append(p)
+        _p = self.convert_point(p)
+        obs.points.append(_p)
         return self.add_obstacle(obs)
 
-    def add_circle_obstacle(self, x, y, radius=0, tag=None, type=ObstacleType.fixed):
-        if self.is_real_point_outside(x, y):
+    def add_circle_obstacle(self, p, radius=0, tag=None, type=ObstacleType.fixed):
+        if self.is_real_point_outside(p):
             return False
-        obs = CircleObstacle(self.convert_point(x, y), int((radius + self.robot_radius)/self.unit), tag=tag, type=type)
+        obs = CircleObstacle(self.convert_point(p), int((radius + self.robot_radius)/self.unit), tag=tag, type=type)
         return self.add_obstacle(obs)
 
-    def add_circle_obstacle_point(self, p, radius=0, tag=None, type=ObstacleType.fixed):
-        return self.add_circle_obstacle(p.x, p.y, radius=radius, tag=tag, type=type)
-
-    def add_rectangle_obstacle(self, x1, x2, y1, y2, tag=None, type=ObstacleType.fixed):
-        if self.is_real_point_outside(x1, y1) or self.is_real_point_outside(x2, y2):
+    def add_rectangle_obstacle(self, p1, p2, tag=None, type=ObstacleType.fixed):
+        if self.is_real_point_outside(p1) or self.is_real_point_outside(p2):
             return False
-        _x1 = int((min(x1, x2) - self.robot_radius) /self.unit)
-        _x2 = int((max(x1, x2) + self.robot_radius) /self.unit)
-        _y1 = int((min(y1, y2) - self.robot_radius) /self.unit)
-        _y2 = int((max(y1, y2) + self.robot_radius) /self.unit)
-        return self.add_obstacle(RectangleObstacle(_x1, _x2, _y1, _y2, tag=tag, type=type))
-
-    def add_rectangle_obstacle_point(self, p1, p2, tag=None, type=ObstacleType.fixed):
-        return self.add_rectangle_obstacle(p1.x, p2.x, p1.y, p2.y, tag=tag, type=type)
+        _x1 = int((min(p1.x, p2.x) - self.robot_radius) / self.unit)
+        _x2 = int((max(p1.x, p2.x) + self.robot_radius) / self.unit)
+        _y1 = int((min(p1.y, p2.y) - self.robot_radius) / self.unit)
+        _y2 = int((max(p1.y, p2.y) + self.robot_radius) / self.unit)
+        return self.add_obstacle(RectangleObstacle(Point(_x1, _y1), Point(_x2, _y2), tag=tag, type=type))
 
     def add_boundaries(self):
         radius = int(self.robot_radius / self.unit)
@@ -278,7 +264,7 @@ class Map:
                 if mirror:
                     obstacle['p1'].y = 3000 - obstacle['p1'].y
                     obstacle['p2'].y = 3000 - obstacle['p2'].y
-                self.add_rectangle_obstacle_point(**obstacle, type=type)
+                self.add_rectangle_obstacle(**obstacle, type=type)
             elif form == 'circle':
                 if not 'p' in obstacle:
                     print('Bad circle obstacle in parsing')
@@ -286,7 +272,7 @@ class Map:
                 obstacle['p'] = Point.from_dict(obstacle['p'])
                 if mirror:
                     obstacle['p'].y = 3000 - obstacle['p'].y
-                self.add_circle_obstacle_point(**obstacle, type=type)
+                self.add_circle_obstacle(**obstacle, type=type)
 
             else:
                 print('Obstacle form not found')
@@ -298,12 +284,12 @@ class Map:
     """ PATHFNDING """
 
     def get_path(self, p1, p2):
-        if self.is_real_point_outside(p1.x, p1.y) or self.is_real_point_outside(p2.x, p2.y):
+        if self.is_real_point_outside(p1) or self.is_real_point_outside(p2):
             print('Out of map')
             return []
 
-        start = self.convert_point(p1.x, p1.y)
-        end = self.convert_point(p2.x, p2.y)
+        start = self.convert_point(p1)
+        end = self.convert_point(p2)
 
         if not self.map[start.x][start.y].is_empty() or not self.map[end.x][end.y].is_empty():
             print('Obstacle here')
@@ -452,7 +438,7 @@ class Map:
                 x = start.x + i
                 y = x * a + b
 
-            p = self.convert_point(x, y)
+            p = self.convert_point(Point(x, y))
 
             # Check if the current point is empty
             if self.is_inside_obstacle(p):

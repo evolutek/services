@@ -130,19 +130,8 @@ class Map(Service):
                         continue
 
                     tag = "robot%d" % i
-                    # Check if we can put in in the map
-                    """x1 = point.x - 240
-                    x2 = point.x + 240
-                    y1 = point.y - 240
-                    y2 = point.y + 240
 
-                    if self.map.add_rectangle_obstacle(x1, x2, y1, y2, tag=tag, type=ObstacleType.robot):
-                        robot = point.to_dict()
-                        robot['tag'] = tag
-                        i += 1
-                        self.robots.append(robot)"""
-
-                    if self.map.add_circle_obstacle_point(point, self.robot_size, tag=tag, type=ObstacleType.robot):
+                    if self.map.add_circle_obstacle(point, self.robot_size, tag=tag, type=ObstacleType.robot):
                         robot = point.to_dict()
                         robot['tag'] = tag
                         i += 1
@@ -221,7 +210,7 @@ class Map(Service):
                 new_x = int(telemetry['x'] + dist)
                 new_y = int(new_x * m + n)
 
-            p = self.map.convert_point(new_x, new_y)
+            p = self.map.convert_point(Point(new_x, new_y))
             if self.debug:
                 self.line_of_sight.append(Point(new_x, new_y))
 
@@ -245,7 +234,7 @@ class Map(Service):
         for robot in self.robots:
             if point.dist(robot) < self.delta_dist:
                 return False
-        return self.map.add_circle_obstacle_point(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
+        return self.map.add_circle_obstacle(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
 
     @Service.action
     def clean_tmp_robot(self):
@@ -290,7 +279,7 @@ class Map(Service):
                     ascending = True
 
             self.map.remove_obstacle('fake')
-            self.map.add_circle_obstacle(robot['x'], robot['y'], self.robot_size, tag='fake', type=ObstacleType.robot)
+            self.map.add_circle_obstacle(Point.from_dict(robot), self.robot_size, tag='fake', type=ObstacleType.robot)
 
             sleep(0.15)
 
