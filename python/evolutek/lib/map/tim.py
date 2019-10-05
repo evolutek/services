@@ -1,7 +1,7 @@
 from math import cos, sin, radians, sqrt
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
-from evolutek.lib.point import Point
+from evolutek.lib.map.point import Point
 from threading import Thread, Lock
 
 def parse_num(s):

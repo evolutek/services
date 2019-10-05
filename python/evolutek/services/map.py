@@ -2,11 +2,14 @@
 
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
+
 from evolutek.lib.debug_map import Interface
-from evolutek.lib.map import ObstacleType, Map as Map_lib
-from evolutek.lib.point import Point
+from evolutek.lib.map.map import Map as Map_lib
+from evolutek.lib.map.obstacle import parse_obstacle_file, ObstacleType
+from evolutek.lib.map.pathfinding import Pathfinding
+from evolutek.lib.map.point import Point
+from evolutek.lib.map.tim import Tim
 from evolutek.lib.settings import ROBOT
-from evolutek.lib.tim import Tim
 from evolutek.lib.waiter import waitBeacon, waitConfig
 
 from math import pi, tan, sqrt
@@ -39,21 +42,25 @@ class Map(Service):
 
         self.map = Map_lib(width, height, map_unit, self.pal_size)
         # Load obstacles
-        fixed_obstacles, self.color_obstacles = Map_lib.parse_obstacle_file('/etc/conf.d/obstacles.json')
+        fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map.add_obstacles(fixed_obstacles)
+
+        self.pathfinding = Pathfinding(self.map)
 
         # TODO: to remove
         self.path = []
-
         self.line_of_sight = []
 
-        # TIM
+        # Tim data: move to dict into tim
         self.raw_data = []
         self.shapes = []
         self.robots = []
+
         self.pal_telem = None
         self.pmi_telem = None
         self.color = None
+
+        # TODO: Create a list
         self.tim = None
 
         try:
@@ -81,6 +88,7 @@ class Map(Service):
             self.map.add_obstacles(self.color_obstacles, self.color != self.color1, type=ObstacleType.color)
 
         # Connected to the tim or change the pos if it is already connected
+        # TODO: managed multiple tim
         if not self.tim is None and self.tim.connected:
             self.tim.change_pos(self.color != self.color1)
         else:
@@ -150,11 +158,11 @@ class Map(Service):
 
     @Service.action
     def get_path(self, origin, dest):
-      print("[MAP] path request received")
+      print("[MAP] Path request received")
       # TODO: Remove self.path and make match display it
       if self.pmi_telem is not None:
           self.map.add_circle_obstacle_point(Point.from_dict(self.pmi_telem), self.pmi_size, 'pmi', ObstacleType.robot)
-      self.path = self.map.get_path(Point.from_dict(origin), Point.from_dict(dest))
+      self.path = self.pathfinding.get_path(Point.from_dict(origin), Point.from_dict(dest))
       self.map.remove_obstacle('pmi')
       return self.path
 
@@ -248,7 +256,7 @@ class Map(Service):
         while True:
             if self.goal:
                 print('[MAP] computing path')
-                self.path = self.map.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
+                self.path = self.pathfinding.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
             else:
                 self.path = []
             sleep(0.1)
