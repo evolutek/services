@@ -3,7 +3,7 @@
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
-from evolutek.lib.debug_map import Interface
+from evolutek.lib.map.debug_map import Interface
 from evolutek.lib.map.map import Map as Map_lib
 from evolutek.lib.map.obstacle import parse_obstacle_file, ObstacleType
 from evolutek.lib.map.pathfinding import Pathfinding
@@ -247,49 +247,6 @@ class Map(Service):
     @Service.action
     def clean_tmp_robot(self):
         self.map.remove_obstacle('tmp')
-
-
-    """ DEBUG """
-
-    #@Service.thread
-    def loop_path(self):
-        while True:
-            if self.goal:
-                print('[MAP] computing path')
-                self.path = self.pathfinding.get_path(Point(self.pal_telem['x'], self.pal_telem['y']), Point(self.goal['x'], self.goal['y']))
-            else:
-                self.path = []
-            sleep(0.1)
-
-    #@Service.thread
-    def test_path(self):
-        while True:
-          #if self.pal_telem:
-          # self.path = self.cs.map.get_path(self.pal_telem['x'], self.pal_telem['y'], 1500, 2750)
-          #else:
-          self.path = self.cs.map.get_path(origin={'x':750, 'y': 330}, dest={'x':750, 'y':2300})
-          sleep(0.15)
-
-    #@Service.thread
-    def fake_robot(self):
-        robot = {'x': 1000, 'y': 250}
-        ascending = True
-        while True:
-            if ascending:
-                robot['y'] += 10
-                if robot['y'] > 1750:
-                    robot['y'] = 1749
-                    ascending = False
-            else:
-                robot['y'] -= 10
-                if robot['y'] < 250:
-                    robot['y'] = 251
-                    ascending = True
-
-            self.map.remove_obstacle('fake')
-            self.map.add_circle_obstacle(Point.from_dict(robot), self.robot_size, tag='fake', type=ObstacleType.robot)
-
-            sleep(0.15)
 
 def wait_for_beacon():
     hostname = "pi"

@@ -123,9 +123,9 @@ class Pathfinding:
                 cur = pred[cur]
                 path.insert(0, cur)
             path.insert(0, start)
-            print('[MAP] Paht found')
+            print('[PATHFINDING] Path found')
         else:
-            print("[MAP] Desination unreachable")
+            print("[PATHFINDING] Destination unreachable")
 
         return path
 
