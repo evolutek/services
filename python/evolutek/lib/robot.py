@@ -11,9 +11,12 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
-from evolutek.lib.point import Point
+from evolutek.lib.map.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
+
+DELTA = 5
+TIMEOUT_PATH = 5
 
 class Robot:
 
@@ -80,8 +83,6 @@ class Robot:
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % (str(e)))
 
-        self.side = False
-
         # Events
         self.is_stopped = Event()
         self.is_started = Event()
@@ -121,7 +122,9 @@ class Robot:
             self.has_avoid.set()
         self.is_stopped.set()
 
+    # TODO: test color
     def color_change(self, color):
+        color = color.decode().split(' ')[1].split('}')[0]
         self.side = color != self.color1
 
     def end_avoid_handler(self):
@@ -149,57 +152,87 @@ class Robot:
             self.wait_until(timeout=timeout)
 
     def update_path(self, path):
-        updated = False
+        new = []
+
         try:
-            tmp_path = self.cs.map.get_path(path[0].to_dict(), path[-1].to_dict())
-            if len(tmp_path) >= 2 and Point.from_dict(tmp_path[1]) != path[1]:
-                print('[ROBOT] Update Path')
-                updated = True
-                path.clear()
-                for point in tmp_path:
-                    path.append(Point.from_dict(point))
+            tmp_path = []
+            computed = 0
+            while computed < TIMEOUT_PATH and len(tmp_path) < 2:
+                tmp_path = self.cs.map.get_path(self.tm.telemetry, path[-1].to_dict())
+                sleep(0.05)
+
+            if len(tmp_path) >= 2:
+                if Point.from_dict(new[1]) != path[1]:
+                     print('[ROBOT] Update Path')
+                     for point in tmp_path:
+                        new.append(Point.from_dict(point))
+                else:
+                    new = path
+
         except Exception as e:
             print('[ROBOT] Failed to update path: %s' % str(e))
-            return False
-        return updated
 
-    # TODO: manage if destination is unreachable
+        return new
+
+
     # TODO: debug move back
+    # TODO: Manage Avoid
     def goto_with_path(self, x, y):
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
-        delta = 5
         end = Point(x, y)
-        path = [Point.from_dict(self.tm.get_position()), end]
+        path = [Point.from_dict(self.tm.telemetry), end]
+
+        path = self.update_path(path)
+        if len(path) < 2:
+            print('[ROBOT] Destination unreachable')
+            return False
+
         while len(path) >= 2:
             print('[ROBOT] Current pos is x: %d y: %d' % (path[0].x, path[0].y))
-            self.update_path(path)
+
+            path = self.update_path(path)
+            if len(path) < 2:
+                print('[ROBOT] Destination unreachable')
+                return False
+
             self.is_stopped.clear()
             if not self.tm.disabled:
                 return
             print('[ROBOT] Going to %s' % str(path[1]))
             self.tm.goto_xy(x=path[1].x, y=path[1].y)
+
+            # Move loop
             while not self.is_stopped.is_set():
-                if self.update_path(path):
+                tmp_path = self.update_path(path)
+                if tmp_path[1::] != path[1::]:
                     self.tm.stop_asap(1000, 20)
+                    path = tmp_path
+                    # TODO: need break 2 ?
                     break;
-                sleep(0.2)
+                sleep(0.05)
+
             if self.has_avoid.is_set():
                 print('[ROBOT] Robot has avoid')
                 self.wait_until(timeout=3)
                 if not self.end_avoid.is_set():
                     print('[ROBOT] Is going back')
-                    if self.move_trsl_block(acc=200, dec=200, dest=150, maxspeed=400,
-                        sens=int(not self.tm.avoid_status()['front'])):
+                    side = self.tm.avoid_status()['back']
+                    if self.move_trsl_block(acc=200, dec=200, dest=150, maxspeed=400, sens=int(side)):
                         print('[ROBOT] Going back again')
-                        self.move_trsl_block(acc=200, dec=200, dest=50, maxspeed=400,
-                            sens=int(not self.tm.avoid_status()['front']))
-            path[0] = Point.from_dict(self.tm.get_position())
-            if path[0].dist(path[1]) < delta:
+                        self.move_trsl_block(acc=200, dec=200, dest=50, maxspeed=400, sens=int(not side))
+
+            if len(path) < 2:
+                print('[ROBOT] Destination unreachable')
+                return False
+
+            pos = Point.from_dict(self.tm.telemetry)
+            if pos.dist(path[1]) < delta:
                 path.pop(0)
-        print('[ROBOT] Robot reach destination')
+            path[0] = pos
 
+        print('[ROBOT] Robot near destination')
+        return self.goto(end.x, end.y)
 
-    # TODO: Manage avoid
     # TODO remove sleep after recalibration
     def recalibration(self,
                         x=True,
@@ -212,7 +245,6 @@ class Robot:
 
         speeds = self.tm.get_speeds()
         self.tm.free()
-        self.tm.disable_avoid()
 
         # TODO: check speeds
         self.tm.set_trsl_max_speed(400)
@@ -229,28 +261,31 @@ class Robot:
             print('[ROBOT] Recalibration X')
             theta = pi if side_x[0] ^ side_x[1] else 0
             self.goth(theta)
+            self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_x[0]), decal=float(decal_x))
             sleep(2)
-            pos = self.tm.get_position()
+            pos = self.tm.telemetry
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
+            self.tm.enable_avoid()
             self.move_trsl_block(dest=self.dist - self.size_x, acc=200, dec=200, maxspeed=200, sens=not side_x[0])
 
         if y:
             print('[ROBOT] Recalibration Y')
             theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
             self.goth(theta * (-1 if self.side else 1))
+            self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(2)
-            pos = self.tm.get_position()
+            pos = self.tm.telemetry
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
+            self.tm.enable_avoid()
             self.move_trsl_block(dest=self.dist - self.size_x, acc=200, dec=200, maxspeed=200, sens=not side_y[0])
 
         self.tm.set_trsl_max_speed(speeds['trmax'])
         self.tm.set_trsl_acc(speeds['tracc'])
         self.tm.set_trsl_dec(speeds['trdec'])
-        self.tm.enable_avoid()
 
     # TODO : Add other actions
 
