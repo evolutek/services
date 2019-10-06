@@ -8,13 +8,13 @@ from os import _exit
 
 colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
 unit = 1/2
-refresh = 100
+refresh = 50
 
 class Interface:
 
     def __init__(self, map, service):
 
-        print('Init interface')
+        print('[DEBUG_MAP] Init interface')
 
         self.window = Tk()
         self.map = map
@@ -32,7 +32,7 @@ class Interface:
         self.canvas.create_image(int(3000 * unit / 2), int(2000 * unit / 2), image=self.image)
 
         self.canvas.pack()
-        print('Window created')
+        print('[DEBUG_MAP] Window created')
         self.window.after(refresh, self.update)
         self.window.mainloop()
 
@@ -64,7 +64,11 @@ class Interface:
                     if self.map.map[x][y].is_obstacle():
                         color = 'black'
                         if self.map.map[x][y].is_color():
-                            color = self.service.color if not self.service.color is None else 'yellow'
+                            # TODO: get colors
+                            if hasattr(self.service, 'color'):
+                                color = self.service.color if not self.service.color is None else 'yellow'
+                            else:
+                                color = 'red'
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill=color)
 
     def print_raw_data(self, raw_data):
@@ -80,11 +84,11 @@ class Interface:
             self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill=color)
 
     def print_robots(self, robots):
-      #print("nb robots: %d" % len(robots))
+      #print("[DEBUG_MAP] nb robots: %d" % len(robots))
       for i in range(len(robots)):
         color = colors[i % len(colors)]
         p = robots[i]
-        if self.service.debug:
+        if hastattr(self.service, 'debug') and self.service.debug:
             self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 10, p.x * unit + 10, fill=color)
         else:
             self.canvas.create_rectangle((p['y'] - self.service.robot_size) * unit,
@@ -146,16 +150,21 @@ class Interface:
             self.canvas.create_rectangle(x1, y1, x2, y2, fill='orange')
 
     def update(self):
+        print('[DEBUG_MAP] Update interface')
         self.canvas.delete('all')
         self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
         self.print_grid()
         self.print_obstacles()
-        self.print_robot(self.service.pal_telem, self.service.pal_size_y)
-        self.print_robot(self.service.pmi_telem, self.service.pmi_size)
-        if self.service.debug:
+        if hasattr(self.service, 'pal_telem') and hasattr(self.service, 'pal_size_y'):
+            self.print_robot(self.service.pal_telem, self.service.pal_size_y)
+        if hasattr(self.service, 'pmi_telem') and hasattr(self.service, 'pmi_size_y'):
+            self.print_robot(self.service.pmi_telem, self.service.pmi_size)
+        if hasattr(self.service, 'debug') and self.service.debug:
             self.print_raw_data(self.service.raw_data)
             self.print_shapes(self.service.shapes)
             self.print_line_of_sight(self.service.line_of_sight)
-        self.print_robots(self.service.robots)
-        self.print_path(self.service.path)
+        if hasattr(self.service, 'robots') and hasattr(self.service, 'robot_size'):
+            self.print_robots(self.service.robots)
+        if hasattr(self.service, 'path'):
+            self.print_path(self.service.path)
         self.window.after(refresh, self.update)
