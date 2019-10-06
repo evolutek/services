@@ -176,7 +176,8 @@ class Pathfinding:
             n3 = _path[i]
             mini = n2
             for j in range(i + 1, len(_path)):
-                if self.is_correct_trajectory(n1, n3):
+                #if self.is_correct_trajectory(n1, n3):
+                if not self.map.is_colliding(n1, n3):
                     mini = n3
                     i = j
                 n2 = n3

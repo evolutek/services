@@ -132,28 +132,18 @@ class Map:
             self.map[radius][y].add_obstacle('add_boundaries', ObstacleType.fixed)
             self.map[self.height - radius][y].add_obstacle('boundaries', ObstacleType.fixed)
 
-    def is_inside_fixed_obstacle(self, point):
+    def is_inside_obstacle(self, point, is_fixed=False):
         for obstacle in self.obstacles:
-            if obstacle.type != ObstacleType.fixed:
+            if is_fixed and obstacle.type != ObstacleType.fixed:
                 continue
-            if isinstance(obstacle, RectangleObstacle):
-                if point.x >= obstacle.p1.x and point.x <= obstacle.p1.x and\
-                    point.y >= obstacle.p2.y and point.y <= obstacle.p2.y:
-                    return True
-            elif isinstance(obstacle, CircleObstacle):
-                if point.dist(obstacle.center) <= obstacle.radius:
-                    return True
+            if obstacle.is_inside(point):
+                return True
         return False
 
-    def is_inside_obstacle(self, point):
+    def is_colliding(self, p1, p2):
         for obstacle in self.obstacles:
-            if isinstance(obstacle, RectangleObstacle):
-                if point.x >= obstacle.p1.x and point.x <= obstacle.p2.x and\
-                    point.y >= obstacle.p1.y and point.y <= obstacle.p2.y:
-                    return True
-            elif isinstance(obstacle, CircleObstacle):
-                if point.dist(obstacle.center) <= obstacle.radius:
-                    return True
+            if obstacle.is_colliding(p1, p2):
+                return True
         return False
 
     def add_obstacles(self, obstacles, mirror=False, type=ObstacleType.fixed):
@@ -207,6 +197,7 @@ class Map:
         obs.points.append(_p)
         return self.add_obstacle(obs)
 
+    # TODO: Add a function in point lib for min/max
     def add_rectangle_obstacle(self, p1, p2, tag=None, type=ObstacleType.fixed):
         if self.is_real_point_outside(p1) or self.is_real_point_outside(p2):
             return False

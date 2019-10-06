@@ -30,11 +30,11 @@ class Test_Map:
 
     def loop_path(self):
         while True:
-          self.path = self.pathfinding.get_path(Point(750, 250), Point(750, 2300))
+          self.path = self.pathfinding.get_path(Point(250, 500), Point(1200, 2300))
           sleep(0.05)
 
     def fake_robot(self):
-        robot = {'x': 750, 'y': 750}
+        robot = {'x': 750, 'y': 500}
         ascending = True
         while True:
             if ascending:
@@ -44,8 +44,8 @@ class Test_Map:
                     ascending = False
             else:
                 robot['y'] -= 10
-                if robot['y'] < 750:
-                    robot['y'] = 751
+                if robot['y'] < 500:
+                    robot['y'] = 501
                     ascending = True
 
             self.map.remove_obstacle('fake')
