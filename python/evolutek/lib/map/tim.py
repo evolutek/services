@@ -51,7 +51,7 @@ class Tim:
 
     def try_connection(self):
         try:
-            print('[TIM] Connecting to the TIM')
+            print('[TIM] Connecting to the TIM: %s,%d' % (self.ip, self.port))
             self.socket.connect((self.ip, self.port))
             self.connected = True
             looper = Thread(target = self.loop_scan)
