@@ -25,13 +25,14 @@ class Test_Map:
 
         # Threads
         Thread(target=Interface, args=[self.map, self]).start()
-        Thread(target=self.loop_path).start()
         Thread(target=self.fake_robot).start()
+        sleep(0.5)
+        Thread(target=self.loop_path).start()
 
     def loop_path(self):
         while True:
           self.path = self.pathfinding.get_path(Point(250, 500), Point(1200, 2300))
-          sleep(0.05)
+          sleep(0.1)
 
     def fake_robot(self):
         robot = {'x': 750, 'y': 500}
@@ -49,8 +50,12 @@ class Test_Map:
                     ascending = True
 
             self.map.remove_obstacle('fake')
-            self.map.add_circle_obstacle(Point.from_dict(robot), self.robot_size, tag='fake', type=ObstacleType.robot)
-            sleep(0.05)
+            #self.map.add_circle_obstacle(Point.from_dict(robot), self.robot_size, tag='fake', type=ObstacleType.robot)
+            pos = Point.from_dict(robot)
+            #print(pos)
+            obstacle = self.map.add_rectangle_obstacle(Point(pos.x - self.robot_size, pos.y - self.robot_size), Point(pos.x + self.robot_size, pos.y + self.robot_size), tag='fake', type=ObstacleType.robot)
+            #self.map.replace_obstacle('fake', obstacle)
+            sleep(0.1)
 
 if __name__ == "__main__":
     print('[TEST_MAP] Starting test')
