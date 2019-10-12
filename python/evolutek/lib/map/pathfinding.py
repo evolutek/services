@@ -2,23 +2,20 @@ from evolutek.lib.map.point import Point
 
 from collections import deque
 from math import inf
+import heapq
 
-class Node:
+class PriorityQueue:
+    def __init__(self):
+        self.elements = []
 
-    def __init__(self, p, dist, heuristic, parent):
-        self.p = p
-        self.dist = dist
-        self.heuristic = heuristic
-        self.parent = parent
+    def empty(self):
+        return len(self.elements) == 0
 
-    def __eq__(self, p):
-        return self.p == p.p
+    def put(self, item, priority):
+        heapq.heappush(self.elements, (priority, item))
 
-    def cost(self):
-        return self.dist + self.heuristic
-
-    def __str__(self):
-        return str(self.p) + " g: %f, h:% f" % (self.dist, self.heuristic)
+    def get(self):
+        return heapq.heappop(self.elements)[1]
 
 class Pathfinding:
 
@@ -27,67 +24,45 @@ class Pathfinding:
 
     def a_star(self, start, end):
 
-        start_node = Node(start, 0, 0, None)
-        end_node = Node(end, 0, 0, None)
+        frontier = PriorityQueue()
+        cost = {}
+        pred = {}
 
-        closed = deque()
-        open = deque()
+        frontier.put(start, 0)
+        cost[start] = 0
+        pred[start] = None
 
-        open.append(start_node)
+        while not frontier.empty():
 
-        while len(open):
-            curr = open.popleft()
+            current = frontier.get()
 
-            if curr == end_node:
-                print('[MAP] Path found')
-                path = []
-                while curr:
-                    path.append[curr.p]
-                    curr = curr.parent
-                return path[::-1]
+            if current == end:
+                break
 
-            children = self.get_children(curr)
-            for child in children:
+            neighbours = self.neighbours(current)
+            for neighbour in neighbours:
 
-                node = None
-                for _node in open:
-                    if _node == child and child.dist < _node.dist:
-                        node = _node
-                if child in closed or (node is not None and node.dist < child.dist):
-                    continue
+                new_cost = cost[current] + current.dist(neighbour)
+                if neighbour not in cost or new_cost < cost[neighbour]:
+                    cost[neighbour] = new_cost
+                    frontier.put(neighbour, new_cost + self.heuristic(neighbour, end))
+                    pred[neighbour] = current
 
-                if node:
-                    node.dist = child.dist
-                    node.parent = curr
-                    node.heuristic = child.heuristic
-                else:
-                    open.append(child)
+        path = []
+        if end in pred:
+            current = end
+            path.append(end)
+            while current != start:
+                path.insert(0, current)
+                current = pred[current]
+            print('[PATHFINDING] Path found')
+        else:
+            print("[PATHFINDING] Destination unreachable")
 
-
-        print('[MAP] No path found')
-        return []
+        return path
 
     def heuristic(self, p1, p2):
         return abs(p1.x - p2.x) + abs(p1.y - p2.y)
-
-    def get_children(self, current):
-        l = [
-            (Point(current.p.x, current.p.y - 1), 1),
-            (Point(current.p.x, current.p.y + 1), 2),
-            (Point(current.p.x - 1, current.p.y), 1),
-            (Point(current.p.x + 1, current.p.y), 1),
-            (Point(current.p.x - 1, current.p.y - 1), 2),
-            (Point(current.p.x - 1, current.p.y + 1), 2),
-            (Point(current.p.x + 1, current.p.y - 1), 2),
-            (Point(current.p.x + 1, current.p.y + 1), 2)
-            ]
-
-        children = []
-        for point, dist in l:
-            if self.map.is_point_inside(point) and self.map.map[point.x][point.y].is_empty():
-                children.append(Node(point, dist, self.heuristic(current.p, point), current))
-
-        return children
 
     def dijkstra(self, start, end):
         dist = []
@@ -102,26 +77,26 @@ class Pathfinding:
 
         pred = {}
         while len(queue) > 0:
-            cur = queue.popleft()
+            current = queue.popleft()
 
-            if cur == end:
+            if current == end:
                 break
 
-            neighbours = self.neighbours(cur)
+            neighbours = self.neighbours(current)
             for neighbour in neighbours:
-                distance = dist[cur.x][cur.y] + cur.dist(neighbour)
+                distance = dist[current.x][current.y] + current.dist(neighbour)
                 if distance < dist[neighbour.x][neighbour.y]:
                     dist[neighbour.x][neighbour.y] = distance
                     queue.append(neighbour)
-                    pred[neighbour] = cur
+                    pred[neighbour] = current
 
         path = []
         if end in pred:
-            cur = end
+            current = end
             path.append(end)
-            while pred[cur] in pred:
-                cur = pred[cur]
-                path.insert(0, cur)
+            while pred[current] in pred:
+                current = pred[current]
+                path.insert(0, current)
             path.insert(0, start)
             print('[PATHFINDING] Path found')
         else:
@@ -134,13 +109,18 @@ class Pathfinding:
             Point(p.x - 1, p.y),
             Point(p.x + 1, p.y),
             Point(p.x, p.y - 1),
-            Point(p.x, p.y + 1)
+            Point(p.x, p.y + 1),
+            Point(p.x - 1, p.y - 1),
+            Point(p.x - 1, p.y + 1),
+            Point(p.x + 1, p.y - 1),
+            Point(p.x + 1, p.y + 1)
             ]
 
         neighbours = []
-        for point in l:
-            if self.map.is_point_inside(point) and self.map.map[point.x][point.y].is_empty():
-                neighbours.append(point)
+        with self.map.lock:
+            for point in l:
+                if self.map.is_point_inside(point) and self.map.map[point.x][point.y].is_empty():
+                    neighbours.append(point)
 
         return neighbours
 
@@ -166,28 +146,27 @@ class Pathfinding:
         if len(_path) <= 2:
             return _path
 
-        n1 = _path[0]
-        n2 = _path[1]
-        n3 = _path[2]
-        smooth = [n1]
-        i = 2
+        return _path
 
-        while (i < len(_path)):
-            n3 = _path[i]
-            mini = n2
-            for j in range(i + 1, len(_path)):
-                #if self.is_correct_trajectory(n1, n3):
-                if not self.map.is_colliding(n1, n3):
-                    mini = n3
-                    i = j
-                n2 = n3
-                n3 = _path[j]
-            smooth.append(mini)
-            n2 = _path[i]
-            n1 = mini
-            i += 1
+        # TODO: debug
+        # is_colliding not working
 
-        smooth.append(n3)
+        smooth = []
+        origin = 0
+        last_valid = 1
+
+        smooth.append(_path[origin])
+
+        while last_valid < len(_path) - 1:
+            if not self.map.is_colliding(_path[origin], _path[last_valid]):
+                last_valid += 1
+            else:
+                smooth.append(_path[last_valid])
+                origin = last_valid
+                last_valid = origin + 1
+
+        smooth.append(_path[-1])
+
         return smooth
 
     # FIXME: can cross line
@@ -253,5 +232,6 @@ class Pathfinding:
             print('[PATHFINDING] Destination unreachable')
             return []
 
-        path = self.dijkstra(start, end)
+        #path = self.dijkstra(start, end)
+        path = self.a_star(start, end)
         return self.convert_path(self.smooth(path))
