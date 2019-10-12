@@ -12,6 +12,9 @@ class Point:
     def __eq__(self, p):
         return self.x == p.x and self.y == p.y
 
+    def __lt__(self, p):
+        return self.x < p.x or self.y < p.y
+
     def __hash__(self):
         return hash(str(self))
 
@@ -56,3 +59,7 @@ class Point:
             tot_x += p.x
             tot_y += p.y
         return Point(int(tot_x / len(l)), int(tot_y / len(l)))
+
+    @staticmethod
+    def substract(p1, p2):
+        return Point(p1.x - p2.x, p1.y - p2.y)
