@@ -193,7 +193,7 @@ class MatchInterface:
     # Init score interface
     def set_score_interface(self):
 
-        status = self.match,get_match()
+        status = self.match.get_match()
 
         close_button = Button(self.window, text='Close', command=self.close)
         close_button.grid(row=1, column=1)
@@ -208,7 +208,7 @@ class MatchInterface:
 
         if self.interface_status != InterfaceStatus.waiting:
             if status['status'] == 'ended':
-                self.interface_status == InterfaceStatus.end
+                self.interface_status = InterfaceStatus.end
             elif status['status'] == 'unstarted':
                 if status['color'] == None:
                     self.interface_status = InterfaceStatus.init
