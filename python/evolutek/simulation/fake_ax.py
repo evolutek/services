@@ -87,5 +87,5 @@ def main():
         axs = [Ax(ax=i) for i in [11, 12]]  # MAIN
     Service.loop()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
