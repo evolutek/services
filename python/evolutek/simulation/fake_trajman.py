@@ -4,7 +4,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
 ROBOT = 'pal'
-RATIO_ROT = 10000
+RATIO_ROT = 100000
 RATIO_TRSL = 1000
 
 from enum import Enum
@@ -150,9 +150,13 @@ class TrajMan(Service):
             while self.theta < 0:
                 self.theta += 2 * pi
 
-            sens = self.theta < self.goal_theta
+            sens = atan2(sin(self.goal_theta - self.theta), cos(self.goal_theta - self.theta)) > 0
 
-            while not self.need_to_stop.is_set() and abs(self.goal_theta - self.theta) > 0.001:
+            while self.need_to_stop.is_set():
+                pass
+
+            while not self.need_to_stop.is_set()\
+                and abs(self.goal_theta - self.theta) > abs(self.goal_theta - (self.theta + (tmp_rotmax / RATIO_ROT) * (1 if sens else -1))):
                 if self.has_stopped.is_set():
                     self.has_stopped.clear()
                     self.publish(ROBOT + '_started')
@@ -183,7 +187,7 @@ class TrajMan(Service):
 
             dist = self.pos.dist(self.goal_pos)
 
-            while not self.need_to_stop.is_set() and dist > 2.5:
+            while not self.need_to_stop.is_set() and dist > tmp_tslmax / RATIO_TRSL:
                 if self.has_stopped.is_set():
                     self.has_stopped.clear()
                     self.publish(ROBOT + '_started')
@@ -206,7 +210,6 @@ class TrajMan(Service):
                 self.has_stopped.set()
                 self.publish(ROBOT + '_stopped')
             sleep(0.1)
-            self.need_to_stop.clear()
 
     @Service.thread
     def telemetry(self):
@@ -216,7 +219,8 @@ class TrajMan(Service):
                                    'y': self.pos.y,
                                    'theta': self.theta,
                                    'speed': self.speed})
-            sleep(self.telemetry_refresh / 200)
+            #sleep(self.telemetry_refresh / 200)
+            sleep(0.05)
 
     #######
     # Set #
@@ -248,15 +252,35 @@ class TrajMan(Service):
 
     @Service.action
     def set_x(self, x):
+        self.need_to_stop.set()
+        while not self.has_stopped.is_set():
+            pass
+
         self.pos.x, self.goal_pos.x = float(x), float(x)
+
+        self.need_to_stop.clear()
 
     @Service.action
     def set_y(self, y):
+        self.need_to_stop.set()
+        while not self.has_stopped.is_set():
+            pass
+
         self.pos.y, self.goal_pos.y = float(y), float(y)
+
+        self.need_to_stop.clear()
+
 
     @Service.action
     def set_theta(self, theta):
+        self.need_to_stop.set()
+        while not self.has_stopped.is_set():
+            pass
+
         self.theta, self.goal_theta = float(theta), float(theta)
+
+        self.need_to_stop.clear()
+
 
     #######
     # Get #
@@ -316,23 +340,27 @@ class TrajMan(Service):
     @if_enabled
     def goto_xy(self, x, y):
         self.need_to_stop.set()
-        while self.need_to_stop.is_set():
+        while not self.has_stopped.is_set():
             pass
 
         self.goal_pos = Point(float(x), float(y))
 
         angle = atan2(float(y) - self.pos.y, float(x) - self.pos.x) - atan2(0, 1)
-        if angle < 0:
-            angle += 2 * pi
 
-        self.sens = abs(angle - self.theta) < abs(angle - self.theta - pi)
-        self.goal_theta = angle + (0.0 if self.sens else pi)
+        dist1 = abs(atan2(sin(self.theta - angle), cos(self.theta - angle)))
+        dist2 = abs(atan2(sin(self.theta - angle - pi), cos(self.theta - angle - pi)))
+
+        self.sens = dist1 < dist2
+        self.goal_theta = angle if self.sens else (angle - pi)
+
+        self.need_to_stop.clear()
+        print('Gas Gas Gas')
 
     @Service.action
     @if_enabled
     def goto_theta(self, theta):
         self.need_to_stop.set()
-        while self.need_to_stop.is_set():
+        while not self.has_stopped.is_set():
             pass
 
         theta = float(theta)
@@ -340,11 +368,13 @@ class TrajMan(Service):
             theta -= 2 * pi
         self.goal_theta = theta
 
+        self.need_to_stop.clear()
+
     @Service.action
     @if_enabled
     def move_trsl(self, dest, acc, dec, maxspeed, sens):
         self.need_to_stop.set()
-        while self.need_to_stop.is_set():
+        while not self.has_stopped.is_set():
             pass
 
         angle = self.theta + (0 if int(sens) else pi)
@@ -356,11 +386,13 @@ class TrajMan(Service):
         self.goal_pos.x += float(dest) * cos(angle)
         self.goal_pos.y += float(dest) * sin(angle)
 
+        self.need_to_stop.clear()
+
     @Service.action
     @if_enabled
     def move_rot(self, dest, acc, dec, maxspeed, sens):
         self.need_to_stop.set()
-        while self.need_to_stop.is_set():
+        while not self.has_stopped.is_set():
             pass
 
         self.sens = bool(int(sens))
@@ -370,15 +402,18 @@ class TrajMan(Service):
 
         self.goal_theta = float(dest)
 
+        self.need_to_stop.clear()
+
     @Service.action
     @if_enabled
     def recalibration(self, sens, decal):
         self.move_trsl(1000, sens=sens, acc=0, dec=0, maxspeed=0)
         sleep(0.1)
-        print(self.pos)
+
         self.has_stopped.wait()
         decal = float(decal)
         sens = bool(int(sens))
+
         if pi/4 < self.theta < 3*pi/4:
             self.pos.y = (decal + self.robot_size_x) if not sens else (3000 - decal - self.robot_size_x)
         elif 3 * pi/4 < self.theta < 7 * pi/4 :
@@ -391,6 +426,9 @@ class TrajMan(Service):
     @Service.action
     def stop_asap(self, trsldec, rotdec):
         self.need_to_stop.set()
+        while not self.has_stopped.is_set():
+            pass
+        self.need_to_stop.clear()
 
 def main():
     fake_trajman = TrajMan()
