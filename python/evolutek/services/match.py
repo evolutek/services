@@ -16,7 +16,7 @@ class Match(Service):
         match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
-        self.match_time = int(match_config['time'])
+        self.match_duration = int(match_config['duration'])
         self.refresh = float(match_config['refresh'])
         self.interface_enabled = match_config['interface_enabled']
         self.timeout_robot = float(match_config['timeout_robot'])
@@ -25,7 +25,7 @@ class Match(Service):
         self.color = None
         self.match_status = 'unstarted'
         self.score = 0
-        self.timer = Timer(self.match_time, self.match_end)
+        self.timer = Timer(self.match_duration, self.match_end)
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
 
@@ -127,12 +127,13 @@ class Match(Service):
     @Service.action
     def reset_match(self, color=None):
         if self.match_status == 'started':
+            print("[MATCH] Can't reset match, match is running")
             return False
 
         print('[MATCH] Reset match')
         self.match_status = 'unstarted'
         self.score = 0
-        self.timer = Timer(self.match_time, self.match_end)
+        self.timer = Timer(self.match_duration, self.match_end)
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
 
@@ -152,6 +153,9 @@ class Match(Service):
         if color != self.color1 and color != self.color2:
             print('[MATCH] Invalid color')
             return False
+
+        if self.match_status == 'started':
+            print("[MATCH] Can't set color, match is running")
 
         self.color = color
 
@@ -206,7 +210,7 @@ class Match(Service):
     @Service.thread
     def launch_interface(self):
         if self.interface_enabled:
-            Thread(target=MatchInterface, args=[self]).start()
+            MatchInterface(self)
 
     def match_time_loop(self):
         while self.match_status == 'started':
