@@ -1,5 +1,5 @@
 from cellaserv.service import Service
-from evolutek.lib.settings import ROBOT
+from cellaserv.settings import ROBOT
 
 class Ax(Service):
 

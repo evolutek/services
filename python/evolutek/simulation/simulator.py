@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from importlib import import_module
+import json
 from os import _exit
 from signal import signal, SIGINT
 from threading import Thread
@@ -10,17 +11,39 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
 
-make_setting('ROBOT', 'pal', 'evolutek', 'robot', 'ROBOT')
 make_setting('SIMULATION', True, 'simulation', 'enable', 'SIMULATION')
 
 class Simulation:
 
-    def __init__(self, services):
+    def __init__(self, config):
 
-        for key in services:
-            Thread(target=self.launch_service, args=[services[key]]).start()
+        print('[SIMULATION] Starting simulation')
+
+        # Launch base services
+        for service in config['base_services']:
+            Thread(target=self.launch_service, args=[config['base_services'][service]]).start()
+        sleep(1)
+
+        # Launch all robots
+        for robot in config['robots']:
+            make_setting('ROBOT', robot, 'evolutek', 'robot', 'ROBOT')
+            for service in config[robot]:
+                Thread(target=self.launch_service, args=[config[robot][service]]).start()
+            sleep(1)
+
+        ennemies = {}
+        for ennemy in config['ennemies']:
+            ennemies[ennemy] = config['ennemies'][ennemy]
+            make_setting('ROBOT', ennemy, 'evolutek', 'robot', 'ROBOT')
+            Thread(target=self.launch_service, args=[config['ennemies'][ennemy]['service']]).start()
+            sleep(1)
+
+
+        # TODO: control interface
 
         signal(SIGINT, self.handler)
+
+        print('[SIMULATION] Simulation running')
 
     def launch_service(self, service):
         print('[SIMULATION] Lauching %s' % service)
@@ -35,14 +58,16 @@ class Simulation:
 def main():
     print("Evolutek<< Simulator")
 
-    services = {
-        'config' : 'evolutek.services.config',
-        'trajman' : 'evolutek.simulation.fake_trajman',
-        'ax' : 'evolutek.simulation.fake_ax',
-        'match' : 'evolutek.services.match'
-    }
+    with open('/etc/conf.d/simulation.json', 'r') as file:
+        data = file.read()
 
-    simulation = Simulation(services)
+    config = json.loads(data)
+
+    print('[SIMULATION] Config for simualtion')
+    print(config)
+
+
+    simulation = Simulation(config)
 
     while True:
         pass

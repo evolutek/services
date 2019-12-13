@@ -1,9 +1,9 @@
 from evolutek.lib.map.point import Point
-from evolutek.lib.settings import ROBOT
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
-ROBOT = 'pal'
+from cellaserv.settings import ROBOT
+
 RATIO_ROT = 100000
 RATIO_TRSL = 1000
 
