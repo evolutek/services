@@ -12,6 +12,11 @@ from enum import Enum
 from threading import Event, Thread
 from time import sleep
 
+## TODO: REWORK
+## - clean (robot, move)
+## - error state
+## - new features (change goal, timer on goal)
+
 class State(Enum):
     Init = 0
     Setup = 1

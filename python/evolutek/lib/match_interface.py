@@ -6,6 +6,8 @@ from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 
+## TODO: AI status
+
 class InterfaceStatus(Enum):
     init = 0
     set = 1

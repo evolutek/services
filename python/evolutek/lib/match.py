@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+## TODO: remove (use by robotctlshell)
+
 from cellaserv.proxy import CellaservProxy
 
 side_map = {

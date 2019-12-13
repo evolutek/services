@@ -11,7 +11,10 @@ from time import sleep
 import os
 
 
-##TODO: DISABLE not working
+##TODO: REWORK
+## - color change (event)
+## - disable/enable
+## - stop
 
 @Service.require("ax", "1")
 @Service.require("ax", "2")
