@@ -1,64 +1,13 @@
 from evolutek.lib.map.point import Point
+from evolutek.lib.map.utils import *
 
 from collections import deque
 from copy import deepcopy
-from enum import Enum
-import json
-from math import inf
 from planar import Polygon as PolygonPlanar
-from shapely.geometry import Polygon, MultiPolygon, LineString
+from shapely.geometry import Polygon, MultiPolygon
 
 # TODO: add lock
 # TODO : optimization
-
-class Node(Point):
-    def __init__(self, p, dist=0):
-        super().__init__(x=p.x, y=p.y)
-        self._dist = dist
-
-class ObstacleType(Enum):
-    fixed = 0
-    color = 1
-    robot = 2
-
-def parse_obstacle_file(file):
-    with open(file, 'r') as obstacle_file:
-        data = obstacle_file.read()
-        data = json.loads(data)
-        return data['fixed_obstacles'], data['color_obstacles']
-
-def is_colliding_with_polygon(p1, p2, poly):
-
-
-    line = LineString([p1, p2])
-
-    for i in range(0, len(poly.coords) - 1):
-        side = LineString([poly.coords[i], poly.coords[i + 1]])
-        if line.crosses(side):
-            return True
-
-    return False
-
-def merge_polygons(poly1, poly2):
-    # poly1 is a Polygon
-    if isinstance(poly1, Polygon):
-        return poly1.difference(poly2)
-
-    # poly1 is a MultiPolygon
-    l = []
-    for poly in poly1:
-        result = poly.difference(poly2)
-
-        if isinstance(result, Polygon):
-            # the result is just a Polygon, add it to the list
-            l.append(result)
-        else:
-            # the result is a MultiPolygon, add each Polygon
-            for r in result:
-                l.append(r)
-
-    # return a MultiPolygon
-    return MultiPolygon(l)
 
 class Map:
 
@@ -204,41 +153,9 @@ class Map:
             else:
                 print('[MAP] Obstacle form not found')
 
-    def get_path(self, start, end):
+    def compute_graph(self, start, end, obstacles):
 
-        obstacles = self.merged_obstacles
-        map = self.merged_map
-
-        zone = None
-        if isinstance(map, Polygon):
-            zone = map
-        else:
-            for poly in map:
-                if poly.contains(start):
-                    zone = poly
-                    break
-
-        if zone is None:
-            print('[MAP] Start point outside current map')
-            return []
-
-        if not zone.contains(end):
-            print('[MAP] End point outside current map')
-            return []
-
-        if isinstance(obstacles, Polygon):
-            obstacles = MultiPolygon(obstacles)
-
-        is_colliding = False
-        for poly in obstacles:
-            if is_colliding_with_polygon(start, end, poly.exterior):
-                is_colliding = True
-                break
-
-        # No obstacles on the trajectory
-        if not is_colliding:
-            return [start, end]
-
+        # Create a queue of all points
         d = deque()
         graph = {}
         d.append(start)
@@ -254,6 +171,7 @@ class Map:
         d.append(end)
         graph[end] = []
 
+        # Iterate over polygons to compute the vertexes
         for poly in obstacles:
             coords = poly.exterior.coords
             l = len(coords)
@@ -286,42 +204,50 @@ class Map:
                         graph[new].append(point)
                         graph[point].append(new)
 
-        #return graph
+        return graph
 
-        queue = deque()
-        queue.append(start)
+    def get_path(self, start, end):
 
-        pred = {}
-        dist = {}
-        for point in graph:
-            dist[point] = inf
-        dist[start] = 0
+        obstacles = deepcopy(self.merged_obstacles)
+        map = deepcopy(self.merged_map)
 
-        while len(queue) > 0:
-            i += 1
-            current = queue.popleft()
+        zone = None
+        if isinstance(map, Polygon):
+            zone = map
+        else:
+            for poly in map:
+                if poly.contains(start):
+                    zone = poly
+                    break
 
-            if current == end:
+        if zone is None:
+            print('[MAP] Start point outside current map')
+            return []
+
+        if not zone.contains(end):
+            print('[MAP] End point outside current map')
+            return []
+
+        if isinstance(obstacles, Polygon):
+            obstacles = MultiPolygon(obstacles)
+
+        is_colliding = False
+        for poly in obstacles:
+            if is_colliding_with_polygon(start, end, poly.exterior):
+                is_colliding = True
                 break
 
-            neighbours = graph[current]
-            for neighbour in neighbours:
-                distance = dist[current] + neighbour.dist(current)
-                if distance < dist[neighbour]:
-                    dist[neighbour] = distance
-                    queue.append(neighbour)
-                    pred[neighbour] = current
+        # No obstacles on the trajectory
+        if not is_colliding:
+            return [start, end]
 
-        path = []
-        if end in pred:
-            current = end
-            path.append(end)
-            while pred[current] in pred:
-                current = pred[current]
-                path.insert(0, current)
-            path.insert(0, start)
-            print('[PATHFINDING] Path found')
+        graph = self.compute_graph(start, end, obstacles)
+
+        path = dijkstra(start, end, graph)
+
+        if path == []:
+            print("[MAP] Path not found")
         else:
-            print("[PATHFINDING] Destination unreachable")
+            print("[MAP] Path found")
 
         return path
