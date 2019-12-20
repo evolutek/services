@@ -5,6 +5,9 @@ import os
 from cellaserv.service import Service
 from evolutek.lib.settings import ROBOT
 
+## TODO:
+## Launch ax 12 with id: robot-id
+
 LIBDXL_PATH = [".", "/usr/lib"]
 
 LIBDXL_PATH_ENV = os.environ.get("LIBDXL_PATH", None)

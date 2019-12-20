@@ -5,6 +5,11 @@ import json
 
 from evolutek.lib.point import Point
 
+##TODO: REWORK
+## - see ai.py
+## - remove mirror
+## - goal storage
+
 class Avoid(Enum):
     Wait = 0
     Timeout = 1

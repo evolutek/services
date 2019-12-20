@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+## TODO: goto_with path
+
 from functools import wraps
 from threading import Event, Thread
 from time import sleep
@@ -118,13 +120,12 @@ class Robot:
         self.is_started.set()
 
     def robot_stopped(self, has_avoid=False):
-        if has_avoid.decode().split(' ')[1][0] == 't':
+        if has_avoid:
             self.has_avoid.set()
         self.is_stopped.set()
 
     # TODO: test color
     def color_change(self, color):
-        color = color.decode().split(' ')[1].split('}')[0]
         self.side = color != self.color1
 
     def end_avoid_handler(self):
@@ -132,6 +133,25 @@ class Robot:
 
     def timeout_handler(self):
         self.timeout.set()
+
+    ########
+    # Sets #
+    ########
+
+    def set_x(self, x):
+        self.tm.set_x(x)
+
+    def set_y(self, y):
+        self.tm.set_y(1500 + (1500 - y) * (-1 if not self.side else 1))
+
+    def set_theta(self, theta):
+        self.tm.set_theta(theta * (1 if not self.side else -1))
+
+    def set_pos(self, x, y, theta=None):
+        self.set_x(x)
+        self.set_y(y)
+        if not theta is None:
+            self.set_theta(theta)
 
     #########
     # Moves #

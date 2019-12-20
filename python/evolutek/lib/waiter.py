@@ -1,6 +1,8 @@
 from time import sleep
 import os
 
+## TODO: remove
+
 def waitConfig(cs):
     Offline = True
     while Offline:
