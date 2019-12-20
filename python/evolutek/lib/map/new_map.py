@@ -1,11 +1,22 @@
 from evolutek.lib.map.point import Point
 
+from collections import deque
 from copy import deepcopy
 from enum import Enum
 import json
+from math import inf
 from planar import Polygon as PolygonPlanar
+from queue import Queue
 from shapely.geometry import Polygon, MultiPolygon, LineString
 from shapely.ops import cascaded_union
+
+# TODO: add lock
+# TODO : optimization
+
+class Node(Point):
+    def __init__(self, p, dist=0):
+        super().__init__(x=p.x, y=p.y)
+        self._dist = dist
 
 class ObstacleType(Enum):
     fixed = 0
@@ -18,69 +29,17 @@ def parse_obstacle_file(file):
         data = json.loads(data)
         return data['fixed_obstacles'], data['color_obstacles']
 
-# poly1 can be a Polygon or a MultiPolygon
-# Can return a Polygon or a MultiPolygon
-# Return the nearest collision if there is one else None
-def collision(p1, p2, map):
-    line = LineString([p1, p2])
+def is_colliding_with_polygon(p1, p2, poly):
 
-    polygon = None
-    closer = None
-    dist = 0
-
-    # Iterate over all interns polygons
-    for poly in map.interiors:
-        new_closer, new_dist = collision_with_polygon(p1, p2, poly)
-        if not new_closer is None and (closer is None or new_dist < dist):
-            closer = new_closer
-            dist = new_dist
-            polygon = poly
-
-    # Iterate over the exterior polygon
-    new_closer, new_dist = collision_with_polygon(p1, p2, map.exterior)
-    if not new_closer is None and (closer is None or new_dist < dist):
-        closer = new_closer
-        polygon = map.exterior
-
-    return closer, polygon
-
-def collision_with_polygon(p1, p2, poly):
 
     line = LineString([p1, p2])
-
-    closer = None
-    dist = 0
 
     for i in range(0, len(poly.coords) - 1):
         side = LineString([poly.coords[i], poly.coords[i + 1]])
-        new_dist = p1.distance(side)
-        if line.crosses(side) and (closer is None or dist > new_dist):
-            closer = side
-            dist = new_dist
+        if line.crosses(side):
+            return True
 
-    return closer, dist
-
-# TODO: poly[len(poly) -1] = poly[0]
-def compute_contour(p1, p2, poly, sens):
-
-    path = [p1]
-    index = 0
-    for point in poly.coords:
-        if (p1.x, p1.y) == point:
-            break
-        index += 1
-
-    line, _ = collision_with_polygon(path[-1], p2, poly)
-
-    while not line is None:
-        index = ((index + 1) % len(poly.coords)) if sens else (index - 1)
-        p = Point(tuple=poly.coords[index])
-        if p in path:
-            continue
-        path.append(p)
-        line, _ = collision_with_polygon(path[-1], p2, poly)
-
-    return path
+    return False
 
 def merge_polygons(poly1, poly2):
     # poly1 is a Polygon
@@ -103,10 +62,6 @@ def merge_polygons(poly1, poly2):
     # return a MultiPolygon
     return MultiPolygon(l)
 
-def is_on_polygon(p, poly):
-    l = LineString(poly)
-    return l.contains(p)
-
 class Map:
 
     def __init__(self, width, height, robot_radius):
@@ -121,23 +76,49 @@ class Map:
             (robot_radius, width - robot_radius)
         ])
 
+        self.obstacles = []
         self.color_obstacles = {}
         self.robots = {}
 
+        self.merged_obstacles = None
+        self.merge_obstacles()
+
         self.merged_map = None
         self.merge_map()
+
+    def merge_obstacles(self):
+        result = MultiPolygon()
+        for obstacle in self.obstacles:
+            result = result.union(obstacle)
+        for tag in self.color_obstacles:
+            result = result.union(self.color_obstacles[tag])
+        for tag in self.robots:
+            result = result.union(self.robots[tag])
+        self.merged_obstacles = result
+
+    # Return a Polygon or a MultiPolygon
+    # TODO: debug self.merged_map
+    def merge_map(self):
+        result = self.borders
+        merged_obstacles = self.merged_obstacles
+        if isinstance(merged_obstacles, Polygon):
+            merged_obstacles = [merged_obstacles]
+        for poly in merged_obstacles:
+            result = merge_polygons(result, poly)
+        self.merged_map = result
 
     def is_inside(self, p):
         return 0 <= p.x <= self.height and 0 <= p.y <= self.width
 
     def add_obstacle(self, poly, tag=None, type=ObstacleType.fixed):
         added = False
+
+        if tag is not None:
+            self.remove_obstacle(tag)
+
         if type == ObstacleType.fixed:
-            try:
-                self.borders = self.borders.difference(poly)
-                added = True
-            except Exception as e:
-                print('[MAP] Failed to compute new polygon: %s' % str(e))
+            self.obstacles.append(poly)
+            added = True
         elif type == ObstacleType.color and tag is not None:
             self.color_obstacles[tag] = poly
             added = True
@@ -146,20 +127,22 @@ class Map:
             added = True
 
         if added:
-            self.merged_map = self.merge_map()
+            self.merge_obstacles()
+            self.merge_map()
         return added
 
     def remove_obstacle(self, tag):
         removed = False
         if tag in self.color_obstacles:
+            removed = True
             del(self.color_obstacles[tag])
+        elif tag in self.robots:
             removed = True
-        if tag in self.robots:
             del(self.robots[tag])
-            removed = True
         if removed:
-            self.merged_map = self.merge_map()
-        return False
+            self.merge_obstacles()
+            self.merge_map()
+        return removed
 
     def add_rectangle_obstacle(self, p1, p2, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(p1) or not self.is_inside(p2):
@@ -224,118 +207,124 @@ class Map:
             else:
                 print('[MAP] Obstacle form not found')
 
-
-
-    # Return a Polygon or a MultiPolygon
-    # TODO: debug self.merged_map
-    def merge_map(self):
-        result = self.borders
-        for color_obstacle in self.color_obstacles:
-            result = merge_polygons(result, self.color_obstacles[color_obstacle])
-        for robot in self.robots:
-            result = merge_polygons(result, self.robots[robot])
-        self.merged_map = result
-        return result
-
-    # TODO: fix dist
-    # TODO: can go througt obstacle
-    def get_path_rec(self, p1, p2, map, i = 0):
-
-        #print('Computing between')
-        #print(p1)
-        #print(p2)
-
-        line, poly = collision(p1, p2, map)
-
-        if line is None:
-            #print('No collsion')
-            #print('Returning path')
-            return [p1, p2]
-
-        else:
-            #print('collision with: ' + str(line))
-            path1 = []
-            if is_on_polygon(p1, poly):
-                #print('Already on polygon')
-                path1 = compute_contour(p1, p2, poly, True)
-                del(path1[0])
-            else:
-                #print('Not on polygon')
-                path1 = compute_contour(Point(tuple=line.coords[1]), p2, poly, True)
-
-            #print('new path1')
-            #print(p1)
-            #for point in path1:
-            #    print(point)
-
-            patha = self.get_path_rec(p1, path1[0], map, 1)
-            pathb = self.get_path_rec(path1[-1], p2, map, 1)
-            path1 = patha + path1[1:-1] + pathb
-
-            path2 = []
-            if is_on_polygon(p1, poly):
-                path2 = compute_contour(p1, p2, poly, False)
-                del(path2[0])
-            else:
-                path2 = compute_contour(Point(tuple=line.coords[0]), p2, poly, False)
-
-            #print('new path2')
-            #print(p1)
-            #for point in path2:
-            #    print(point)
-
-            patha = self.get_path_rec(p1, path2[0], map)
-            pathb = self.get_path_rec(path2[-1], p2, map)
-            path2 = patha + path2[1:-1] + pathb
-
-            dist1 = 0
-            for i in range(0, len(path1) - 1):
-                dist1 += path1[i].dist(path1[i + 1])
-
-            dist2 = 0
-            for i in range(0, len(path2) - 1):
-                dist2 += path2[i].dist(path2[i + 1])
-
-            if dist1 < dist2:
-                #print('Returning path 1 with dist: ' + str(dist1))
-                return path1
-            else:
-                #print('Returning path 2 with dist: ' + str(dist2))
-                return path2
-
     def get_path(self, start, end):
-        map = None
 
-        merged_map = self.merge_map()
+        obstacles = self.merged_obstacles
+        map = self.merged_map
 
-        if isinstance(merged_map, Polygon):
-            # Only one polygon for the map
-            map = merged_map
+        zone = None
+        if isinstance(map, Polygon):
+            zone = map
         else:
-            # Get current map polygon
-            for poly in merged_map:
+            for poly in map:
                 if poly.contains(start):
-                    map = poly
+                    zone = poly
                     break
 
-        if map is None:
+        if zone is None:
             print('[MAP] Start point outside current map')
             return []
 
-        if not map.contains(end):
+        if not zone.contains(end):
             print('[MAP] End point outside current map')
             return []
 
-        path = self.get_path_rec(start, end, merged_map)
+        if isinstance(obstacles, Polygon):
+            obstacles = MultiPolygon(obstacles)
 
-        smooth = [path[0]]
-        current = 2
-        while current < len(path):
-            line, poly = collision(smooth[-1], path[current], merged_map)
-            if not line is None:
-                smooth.append(path[current - 1])
-            current += 1
-        smooth.append(path[-1])
+        is_colliding = False
+        for poly in obstacles:
+            if is_colliding_with_polygon(start, end, poly.exterior):
+                is_colliding = True
+                break
 
-        #print('[MAP] Path computed')
-        return smooth
+        # No obstacles on the trajectory
+        if not is_colliding:
+            return [start, end]
+
+        d = deque()
+        graph = {}
+        d.append(start)
+        graph[start] = []
+
+        for poly in obstacles:
+            for point in poly.exterior.coords:
+                new = Point(tuple=point)
+                if not new in d and self.borders.contains(new):
+                    d.append(new)
+                    graph[new] = []
+
+        d.append(end)
+        graph[end] = []
+
+        for poly in obstacles:
+            coords = poly.exterior.coords
+            l = len(coords)
+            for i in range(1, l):
+                new = Point(tuple=coords[i])
+                if not self.borders.contains(new):
+                    continue
+
+                d.remove(new)
+                p1 = Point(coords[i - 1])
+                p2 = Point(coords[(i + 1) % l])
+
+                if not p1 in graph[new] and self.borders.contains(p1):
+                    graph[new].append(p1)
+
+                if not p2 in graph[new] and self.borders.contains(p2):
+                    graph[new].append(p2)
+
+                points = list(d)
+                for point in points:
+                    if point in graph[new] or point.to_tuple() in coords:
+                        continue
+                    is_colliding = False
+                    for poly in obstacles:
+                        if is_colliding_with_polygon(point, new, poly.exterior):
+                            is_colliding = True
+                            break
+
+                    if not is_colliding:
+                        graph[new].append(point)
+                        graph[point].append(new)
+
+        #return graph
+
+        queue = deque()
+        queue.append(start)
+
+        pred = {}
+        dist = {}
+        for point in graph:
+            dist[point] = inf
+        dist[start] = 0
+
+        while len(queue) > 0:
+            i += 1
+            current = queue.popleft()
+
+            if current == end:
+                break
+
+            neighbours = graph[current]
+            for neighbour in neighbours:
+                distance = dist[current] + neighbour.dist(current)
+                if distance < dist[neighbour]:
+                    dist[neighbour] = distance
+                    queue.append(neighbour)
+                    pred[neighbour] = current
+
+        path = []
+        if end in pred:
+            current = end
+            path.append(end)
+            while pred[current] in pred:
+                current = pred[current]
+                path.insert(0, current)
+            path.insert(0, start)
+            print('[PATHFINDING] Path found')
+        else:
+            print("[PATHFINDING] Destination unreachable")
+
+        return path

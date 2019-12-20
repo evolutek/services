@@ -2,7 +2,7 @@ from evolutek.lib.map.debug_new_map import Interface
 from evolutek.lib.map.new_map import Map, ObstacleType, parse_obstacle_file
 from evolutek.lib.map.point import Point
 
-from threading import Thread
+from threading import Thread, Event
 from time import sleep, time
 
 class Test_Map:
@@ -20,27 +20,32 @@ class Test_Map:
         self.color = 'violet'
         self.path = []
 
+        self.compute_path = Event()
+
         self.map.add_rectangle_obstacle(Point(1000, 1400), Point(2000, 1600))
 
         # Threads
         Thread(target=Interface, args=[self.map, self]).start()
         Thread(target=self.fake_robot).start()
-        sleep(0.5)
         Thread(target=self.loop_path).start()
 
     def loop_path(self):
         while True:
-            #print('[TEST_MAP] Update path')
+            print('[TEST_MAP] Update path')
+            self.compute_path.wait()
             start = time()
             self.path = self.map.get_path(Point(250, 500), Point(1200, 2300))
             end = time()
+            self.compute_path.clear()
             print('Path compute in: ' + str(end-start))
-            sleep(0.3)
 
     def fake_robot(self):
-        robot = {'x': 750, 'y': 2129}
+        robot = {'x': 750, 'y': 2029}
         ascending = True
+
         while True:
+            while self.compute_path.isSet():
+                sleep(0.01)
             #print('[TEST_MAP] Update Fake Robot')
             if ascending:
                 robot['y'] += 50
@@ -53,11 +58,9 @@ class Test_Map:
                     robot['y'] = 201
                     ascending = True
 
-            #self.map.add_circle_obstacle(Point.from_dict(robot), self.robot_size, tag='fake', type=ObstacleType.robot)
             pos = Point(dict=robot)
             obstacle = self.map.add_octogon_obstacle(pos, self.robot_size, tag='fake', type=ObstacleType.robot)
-            #self.map.replace_obstacle('fake', obstacle)
-            sleep(0.3)
+            self.compute_path.set()
 
 if __name__ == "__main__":
     print('[TEST_MAP] Starting test')

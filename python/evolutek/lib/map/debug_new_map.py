@@ -43,14 +43,7 @@ class Interface:
         self.window.destroy()
         _exit(0)
 
-    def print_polygon(self, points, type=ObstacleType.fixed):
-
-        color = 'black'
-        if type == ObstacleType.color:
-            if hasattr(self.service, 'color'):
-                color = self.service.color if not self.service.color is None else 'black'
-        elif type == ObstacleType.robot:
-            color = 'red'
+    def print_polygon(self, points, color):
 
         for i in range(1, len(points)):
             p1 = Point(tuple=points[i - 1])
@@ -79,13 +72,17 @@ class Interface:
 
     def print_merged_map(self):
 
-        merged_map = self.map.merge_map()
+        #merged_map = self.map.merge_map()
+        merged_map = self.map.merged_map
         if isinstance(merged_map, Polygon):
             merged_map = [merged_map]
+
+        #self.print_polygon(self.map.borders.exterior.coords, 'black')
+
         for poly in merged_map:
-            self.print_polygon(poly.exterior.coords)
+            self.print_polygon(poly.exterior.coords, 'grey')
             for interior in poly.interiors:
-                self.print_polygon(interior.coords, ObstacleType.robot)
+                self.print_polygon(interior.coords, 'red')
 
     def print_path(self, path):
 
@@ -97,6 +94,22 @@ class Interface:
                 p2.y * unit, p2.x * unit, width=5, fill='yellow')
 
         for p in path:
+            x1 = (p.y - 10) * unit
+            x2 = (p.y + 10) * unit
+            y1 = (p.x - 10) * unit
+            y2 = (p.x + 10) * unit
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
+
+    def print_graph(self, graph):
+
+        for point in graph:
+
+            for p in graph[point]:
+
+                self.canvas.create_line(point.y * unit, point.x * unit,
+                    p.y * unit, p.x * unit, width=5, fill='yellow')
+
+        for p in graph:
             x1 = (p.y - 10) * unit
             x2 = (p.y + 10) * unit
             y1 = (p.x - 10) * unit
