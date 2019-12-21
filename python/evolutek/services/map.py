@@ -4,8 +4,7 @@ from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
 from evolutek.lib.map.debug_map import Interface
-from evolutek.lib.map.map import Map as Map_lib
-from evolutek.lib.map.obstacle import parse_obstacle_file, ObstacleType
+from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map as Map_lib
 from evolutek.lib.map.pathfinding import Pathfinding
 from evolutek.lib.map.point import Point
 from evolutek.lib.map.tim import Tim
@@ -14,9 +13,8 @@ from evolutek.lib.waiter import waitBeacon, waitConfig
 
 from math import pi, tan, sqrt
 from time import sleep
-import os
 
-#TODO: Check with robot_size
+# TODO: Check with robot_size
 @Service.require('config')
 class Map(Service):
 
@@ -40,12 +38,10 @@ class Map(Service):
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
         self.robot_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
 
-        self.map = Map_lib(width, height, map_unit, self.pal_size)
+        self.map = Map_lib(width, height, self.pal_size)
         # Load obstacles
         fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map.add_obstacles(fixed_obstacles)
-
-        self.pathfinding = Pathfinding(self.map)
 
         # TODO: to remove
         self.path = []
@@ -74,7 +70,6 @@ class Map(Service):
         super().__init__()
 
     """ Event """
-
     @Service.event
     def match_color(self, color):
         if color != self.color:
@@ -96,12 +91,12 @@ class Map(Service):
 
     @Service.event
     def pal_telemetry(self, status, telemetry):
-        if status is not 'failed':
+        if status != 'failed':
             self.pal_telem = telemetry
 
     @Service.event
     def pmi_telemetry(self, status, telemetry):
-        if status is not 'failed':
+        if status != 'failed':
             self.pmi_telem = telemetry
 
 
@@ -150,7 +145,6 @@ class Map(Service):
             #sleep(self.refresh)
             sleep(0.01)
 
-
     """ ACTION """
 
     @Service.action
@@ -162,75 +156,10 @@ class Map(Service):
       print("[MAP] Path request received")
       # TODO: Remove self.path and make match display it
       if self.pmi_telem is not None:
-          self.map.add_circle_obstacle_point(Point.from_dict(self.pmi_telem), self.pmi_size, 'pmi', ObstacleType.robot)
-      self.path = self.pathfinding.get_path(Point.from_dict(origin), Point.from_dict(dest))
+          self.map.add_circle_otcogon_point(Point(dict=self.pmi_telem), self.pmi_size, tag='pmi', type=ObstacleType.robot)
+      self.path = self.pathfinding.get_path(Point(dict=origin), Point(dict=dest))
       self.map.remove_obstacle('pmi')
       return self.path
-
-    @Service.action
-    def is_ok(self, telemetry, dest, side):
-
-        path_dist = Point.dist_dict(telemetry, dest)
-
-        if self.debug:
-            self.line_of_sight.clear()
-
-        if path_dist > self.robot_dist_sensor + 25:
-            return False
-
-        print('[MAP] Check if it is ok')
-
-        if self.map.is_real_point_outside(telemetry['x'], telemetry['y']):
-            print("[MAP] Error PAL out of map")
-            return
-
-        # We use theta between 0 and 2pi
-        theta = telemetry['theta']
-        if theta < 0:
-            theta += 2 * pi
-
-        y = False
-        m = 0
-        n = 0
-        delta = 0.1
-        if abs(pi/2 - theta) < delta or abs(3*pi/2 - theta) < delta:
-            y = True
-            m = tan((pi/2) - theta)
-            n = telemetry['x'] - (m * telemetry['y'])
-        else:
-            m = tan(theta)
-            n = telemetry['y'] - (m * telemetry['x'])
-
-        sens = theta > pi / 2 and theta < 3 * pi / 2 if not y else theta > pi
-
-        ok = False
-        for i in range(int(self.robot_dist_sensor / self.map.unit) + 2):
-            dist = i * self.map.unit / sqrt(1 + m ** 2)
-
-            if sens ^ (side != 'front'):
-                dist *= -1
-
-            new_x = 0
-            new_y = 0
-            if y:
-                new_y = int(telemetry['y'] + dist)
-                new_x = int(new_y * m + n)
-            else:
-                new_x = int(telemetry['x'] + dist)
-                new_y = int(new_x * m + n)
-
-            p = self.map.convert_point(Point(new_x, new_y))
-            if self.debug:
-                self.line_of_sight.append(Point(new_x, new_y))
-
-            if not self.map.is_point_inside(p) or not self.map.map[p.x][p.y].is_empty():
-                ok = True
-
-            if ok and abs(dist) < path_dist:
-                ok = False
-                break
-
-        return ok
 
     @Service.action
     def add_tmp_robot(self, pos):
@@ -249,16 +178,7 @@ class Map(Service):
     def clean_tmp_robot(self):
         self.map.remove_obstacle('tmp')
 
-def wait_for_beacon():
-    hostname = "pi"
-    while True:
-        r = os.system("ping -c 1 " + hostname)
-        if r == 0:
-            return
-        pass
-
 def main():
-  waitBeacon()
   map = Map()
   map.run()
 

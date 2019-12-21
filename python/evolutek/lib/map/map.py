@@ -7,7 +7,9 @@ from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
 # TODO: add lock
-# TODO : optimization
+# TODO: optimization
+# TODO: A* ?
+# TODO: exclusion zone for start point when computin pathfinding
 
 class Map:
 
