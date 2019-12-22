@@ -11,16 +11,16 @@ from evolutek.lib.map.tim import Tim
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.waiter import waitBeacon, waitConfig
 
+import json
 from math import pi, tan, sqrt
 from time import sleep
 
-# TODO: Check with robot_size
+# TODO: merge tims scans
 @Service.require('config')
 class Map(Service):
 
     def __init__(self):
         self.cs = CellaservProxy()
-        waitConfig(self.cs)
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
@@ -45,7 +45,6 @@ class Map(Service):
 
         # TODO: to remove
         self.path = []
-        self.line_of_sight = []
 
         # Tim data: move to dict into tim
         self.raw_data = []
@@ -57,7 +56,12 @@ class Map(Service):
         self.color = None
 
         # TODO: Create a list
-        self.tim = None
+        self.tim = {}
+
+        self.tims = None
+        with open('/etc/conf.d/tim.json', 'r') as tim_file:
+            self.tims = tim_file.read()
+            self.tims = json.loads(self.tims)
 
         try:
             color = self.cs.match.get_color()
@@ -83,11 +87,11 @@ class Map(Service):
             self.map.add_obstacles(self.color_obstacles, self.color != self.color1, type=ObstacleType.color)
 
         # Connected to the tim or change the pos if it is already connected
-        # TODO: managed multiple tim
-        if not self.tim is None and self.tim.connected:
-            self.tim.change_pos(self.color != self.color1)
-        else:
-            self.tim = Tim(self.tim_config, self.debug, self.color != self.color1)
+        for tim in self.tims:
+            if tim['ip'] in self.tim and not self.tim[tim['ip']] is None:
+                self.tim[tim['ip']].change_pos(self.color != self.color1)
+            else:
+                self.tim[tim['ip']] = Tim(tim, self.tim_config, self.debug, self.color != self.color1)
 
     @Service.event
     def pal_telemetry(self, status, telemetry):
@@ -111,22 +115,27 @@ class Map(Service):
     @Service.thread
     def loop_scan(self):
         while True:
-            if not self.tim.connected:
-                print('[MAP] TIM not connected')
-                sleep(self.refresh * 10)
-                self.tim.try_connection()
-                continue
-            if self.debug:
-                self.raw_data, self.shapes, self.robots = self.tim.get_scan()
-            else:
-                robots = self.tim.get_scan()
+            for ip in self.tim:
+                tim = self.tim[ip]
+                if not tim.connected:
+                    print('[MAP] TIM not connected')
+                    tim.try_connection()
+                    continue
+
+                scan = tim.get_scan()
+                if scan is None:
+                    continue
+
+                if self.debug:
+                    self.raw_data, self.shapes, self.robots = scan
+                    continue
 
                 for robot in self.robots:
                     self.map.remove_obstacle(robot['tag'])
                 self.robots.clear()
 
                 i = 0
-                for point in robots:
+                for point in scan:
                     # Check if point is not one of our robots
                     if (self.pal_telem and point.dist(self.pal_telem) < self.delta_dist)\
                         or (self.pmi_telem and point.dist(self.pmi_telem) < self.delta_dist):
@@ -134,7 +143,7 @@ class Map(Service):
 
                     tag = "robot%d" % i
 
-                    if self.map.add_circle_obstacle(point, self.robot_size, tag=tag, type=ObstacleType.robot):
+                    if self.map.add_octogon_obstacle(point, self.robot_size, tag=tag, type=ObstacleType.robot):
                         robot = point.to_dict()
                         robot['tag'] = tag
                         i += 1
@@ -142,8 +151,7 @@ class Map(Service):
 
                     #print('[MAP] Detected %d robots' % len(self.robots))
                     #self.publish('opponents', robots=self.robots)
-            #sleep(self.refresh)
-            sleep(0.01)
+            sleep(self.refresh)
 
     """ ACTION """
 
