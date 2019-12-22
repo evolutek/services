@@ -1,10 +1,12 @@
 from cellaserv.service import Service
 from cellaserv.settings import ROBOT
 
+import json
+
 class Ax(Service):
 
     def __init__(self, ax):
-        super().__init__(identification=str(ax))
+        super().__init__(identification="%s-%d" % (ROBOT, ax))
         self.ax = ax
         print('[AX] ax: %d initialized' % self.ax)
 
@@ -81,10 +83,18 @@ class Ax(Service):
         print('[AX] Free ax: %d' % self.ax)
 
 def main():
-    if ROBOT == 'pal':
-        axs = [Ax(ax=i) for i in [1, 2, 3, 4]]  # MAIN
-    elif ROBOT == 'pmi':
-        axs = [Ax(ax=i) for i in [11, 12]]  # MAIN
+
+    data = None
+    with open('/etc/conf.d/ax.json', 'r') as ax_file:
+        data = ax_file.read()
+        data = json.loads(data)
+
+    if not ROBOT in data:
+        print('[AX] Failed to init axs, ROBOT not existing')
+        return
+
+    axs = [Ax(ax=i) for i in data[ROBOT]]
+
     Service.loop()
 
 if __name__ == '__main__':
