@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import ctypes
 import json
 import os
@@ -132,8 +133,7 @@ class Ax(Service):
     def free(self):
         self.dxl.dxl_write_byte(self.ax, AX_TORQUE_ENABLE_B, 0)
 
-def main():
-
+async def main():
     # Read AX12 JSON config file
     data = None
     with open('/etc/conf.d/ax.json', 'r') as ax_file:
@@ -147,7 +147,8 @@ def main():
     # Init all AX12
     axs = [Ax(ax=i) for i in data[ROBOT]]
 
-    Service.loop()
+    await asyncio.wait([ax.done() for ax in axs])
+
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

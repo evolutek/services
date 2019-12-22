@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
+import json
 
 from cellaserv.service import Service
 from evolutek.lib.settings import ROBOT
 
-import json
 
 class Ax(Service):
 
@@ -84,8 +84,7 @@ class Ax(Service):
     def free(self):
         print('[AX] Free ax: %d' % self.ax)
 
-def main():
-
+async def main():
     data = None
     with open('/etc/conf.d/ax.json', 'r') as ax_file:
         data = ax_file.read()
@@ -97,7 +96,8 @@ def main():
 
     axs = [Ax(ax=i) for i in data[ROBOT]]
 
-    Service.loop()
+    await asyncio.wait([ax.done() for ax in axs])
+
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
