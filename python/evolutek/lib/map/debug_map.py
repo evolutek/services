@@ -20,6 +20,8 @@ class Interface:
         print('[DEBUG_MAP] Init interface')
 
         self.window = Tk()
+        self.window.attributes('-fullscreen', True)
+        self.window.bind('<Escape>',lambda e: self.close())
         self.map = map
         self.service = service
         self.width = map.width * unit

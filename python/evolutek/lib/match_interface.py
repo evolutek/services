@@ -37,6 +37,8 @@ class MatchInterface:
         self.match = match
 
         self.window = Tk()
+        self.window.attributes('-fullscreen', True)
+        self.window.bind('<Escape>',lambda e: self.close())
         self.window.title('Mathc Interface')
 
         img = Image.open('/etc/conf.d/map.png')
