@@ -16,12 +16,16 @@ def test_tim():
         'port' : 2112,
         'pos_x' : 1000,
         'pos_y' : -94,
-        'angle' : -90
+        'angle' : -90,
+        'delta_dist' : 40,
+        'refresh' : 0.5,
+        'radius_beacon' : 40
+      
     }
 
     print('[TEST_TIM] Starting TIM test')
 
-    tim = Tim(config, computation_config, False, False)
+    tim = Tim(config, config, True, False)
 
     sleep(0.5)
 
@@ -30,12 +34,13 @@ def test_tim():
         return
 
     print('[TEST_TIM] Starting test')
+    print('[TEST_TIM] estimated pos: %d, %d' % (tim.pos.x, tim.pos.y))
 
     while True:
-        robots = tim.get_scan()
+        raw_data, shapes, robots = tim.get_scan()
         print('[TEST_TIM] New scan:')
-        for robot in robots:
-            print(robot)
+        for point in raw_data:
+            print(point)
         sleep(0.5)
 
 if __name__ == '__main__':

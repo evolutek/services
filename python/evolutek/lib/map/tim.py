@@ -59,7 +59,8 @@ def parse_num(s):
 
 class Tim:
 
-    def __init__(self, config, computation_config, mirror=False):
+    def __init__(self, config, computation_config, debug, mirror=False):
+        self.scan_list = []
 
         # Network config
         self.ip = config['ip']
@@ -70,6 +71,7 @@ class Tim:
         self.default_angle = int(config['angle'])
 
         # Computation config
+        print(self)
         self.refresh = float(computation_config['refresh'])
         self.min_size = int(computation_config['min_size'])
         self.max_distance = int(computation_config['max_distance'])
@@ -232,16 +234,17 @@ class Tim:
           new_data = self.scan()
           with self.lock:
               if new_data is None:
-                  print('[TIM] Failed to get scan on %s' % self.ip)
-                  self.raw_data.clear()
-                  self.shapes.clear()
-                  self.robots.clear()
+                  print('[TIM] Failed to get scan')
+                  self.scan_list.clear()
                   continue
-              self.raw_data, self.shapes, self.robots = new_data
+              self.scan_list = new_data
 
     def get_scan(self):
+        if self.scan_list is []:
+          return None
 
         with self.lock:
-            robots = self.robots
+            scan = self.scan_list
+            raw_data, shapes, robots = scan[0], scan[1], scan[2]
 
         return robots

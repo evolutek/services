@@ -34,6 +34,9 @@ class Map(Service):
         self.tim_computation_config = self.cs.config.get_section('tim')
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
+        map_unit = int(self.cs.config.get(section='map', option='map_unit'))
+        self.debug = self.cs.config.get(section='map', option='debug') == 'true'
+        self.debug = True
         self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
         self.pal_size = float(self.cs.config.get(section='pal', option='robot_size'))
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
