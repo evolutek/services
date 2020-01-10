@@ -5,17 +5,18 @@ from cellaserv.proxy import CellaservProxy
 
 from evolutek.lib.map.debug_map import Interface
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map as Map_lib
-from evolutek.lib.map.pathfinding import Pathfinding
 from evolutek.lib.map.point import Point
-from evolutek.lib.map.tim import Tim
+from evolutek.lib.map.tim import DebugMode, Tim
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.waiter import waitBeacon, waitConfig
 
 import json
-from math import pi, tan, sqrt
+from threading import Lock
 from time import sleep
 
 # TODO: merge tims scans
+# TODO: ignore obstacles
+# TODO: check which is the slowest, tim or refresh ?
 @Service.require('config')
 class Map(Service):
 
@@ -28,15 +29,17 @@ class Map(Service):
         self.delta_dist = float(self.cs.config.get(section='tim', option='delta_dist')) * 2
         self.refresh = float(self.cs.config.get(section='tim', option='refresh'))
 
-        self.tim_config = self.cs.config.get_section('tim')
+        self.tim_computation_config = self.cs.config.get_section('tim')
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
         map_unit = int(self.cs.config.get(section='map', option='map_unit'))
-        self.debug = self.cs.config.get(section='map', option='debug') == 'true'
         self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
         self.pal_size = float(self.cs.config.get(section='pal', option='robot_size'))
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
         self.robot_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
+
+        self.debug_mode = DebugMode.normal
+        self.lock = Lock()
 
         self.map = Map_lib(width, height, self.pal_size)
         # Load obstacles
@@ -47,8 +50,6 @@ class Map(Service):
         self.path = []
 
         # Tim data: move to dict into tim
-        self.raw_data = []
-        self.shapes = []
         self.robots = []
 
         self.pal_telem = None
@@ -58,10 +59,10 @@ class Map(Service):
         # TODO: Create a list
         self.tim = {}
 
-        self.tims = None
+        self.tim_config = None
         with open('/etc/conf.d/tim.json', 'r') as tim_file:
-            self.tims = tim_file.read()
-            self.tims = json.loads(self.tims)
+            self.tim_config = tim_file.read()
+            self.tim_config = json.loads(self.tim_config)
 
         try:
             color = self.cs.match.get_color()
@@ -81,17 +82,18 @@ class Map(Service):
 
         if self.color is not None:
             # Change color obstacles position
-            for obstacle in self.color_obstacles:
-                if 'tag' in obstacle:
-                    self.map.remove_obstacle(obstacle['tag'])
-            self.map.add_obstacles(self.color_obstacles, self.color != self.color1, type=ObstacleType.color)
+            with self.lock:
+                for obstacle in self.color_obstacles:
+                    if 'tag' in obstacle:
+                        self.map.remove_obstacle(obstacle['tag'])
+                self.map.add_obstacles(self.color_obstacles, self.color != self.color1, type=ObstacleType.color)
 
         # Connected to the tim or change the pos if it is already connected
-        for tim in self.tims:
+        for tim in self.tim_config:
             if tim['ip'] in self.tim and not self.tim[tim['ip']] is None:
                 self.tim[tim['ip']].change_pos(self.color != self.color1)
             else:
-                self.tim[tim['ip']] = Tim(tim, self.tim_config, self.debug, self.color != self.color1)
+                self.tim[tim['ip']] = Tim(tim, self.tim_computation_config, self.color != self.color1)
 
     @Service.event
     def pal_telemetry(self, status, telemetry):
@@ -105,7 +107,6 @@ class Map(Service):
 
 
     """ THREAD """
-
     # TODO: Disable for beacon
     @Service.thread
     def start_debug_interface(self):
@@ -115,45 +116,83 @@ class Map(Service):
     @Service.thread
     def loop_scan(self):
         while True:
+
+            # Iterate over tim
+            scans = {}
             for ip in self.tim:
+
                 tim = self.tim[ip]
+
+                # Not connected
                 if not tim.connected:
-                    print('[MAP] TIM not connected')
-                    tim.try_connection()
                     continue
 
                 scan = tim.get_scan()
-                if scan is None:
-                    continue
+                scans[tim.ip] = scan
 
-                if self.debug:
-                    self.raw_data, self.shapes, self.robots = scan
-                    continue
+            # Merge robots
+            robots = []
+            for ip in scans:
 
-                for robot in self.robots:
-                    self.map.remove_obstacle(robot['tag'])
-                self.robots.clear()
+                new = []
+                for point in scans[ip]:
 
-                i = 0
-                for point in scan:
-                    # Check if point is not one of our robots
+                    # It's one of our robots
                     if (self.pal_telem and point.dist(self.pal_telem) < self.delta_dist)\
                         or (self.pmi_telem and point.dist(self.pmi_telem) < self.delta_dist):
                         continue
 
+                    merged = False
+                    for robot in robots:
+                        # Already know this robot: merge it with the current point
+                        if robot.dist(point) < self.delta_dist:
+                            new.append(robot.average(point))
+                            robots.remove(robot)
+                            merged = True
+                            break
+
+                    # Robot not found, add it
+                    if not merged:
+                        new.append(point)
+
+                # Add not merged robots
+                new += robots
+                robots = new
+
+            with self.lock:
+
+                # Remove old robots
+                for robot in self.robots:
+                    self.map.remove_obstacle(robot['tag'])
+                self.robots.clear()
+
+                # Add robots on the map
+                i = 0
+                for robot in robots:
                     tag = "robot%d" % i
-
-                    if self.map.add_octogon_obstacle(point, self.robot_size, tag=tag, type=ObstacleType.robot):
-                        robot = point.to_dict()
-                        robot['tag'] = tag
+                    if self.map.add_octogon_obstacle(robot, self.robot_size, tag=tag, type=ObstacleType.robot):
+                        d = point.to_dict()
+                        d['tag'] = tag
                         i += 1
-                        self.robots.append(robot)
+                        self.robots.append(d)
 
-                    #print('[MAP] Detected %d robots' % len(self.robots))
-                    #self.publish('opponents', robots=self.robots)
+                #print('[MAP] Detected %d robots' % len(self.robots))
+                #self.publish('opponents', robots=self.robots)
             sleep(self.refresh)
 
+
     """ ACTION """
+    @Service.action
+    def set_debug_mode(self, mode):
+        new_mode = None
+        try:
+            new_mode = DebugMode(int(mode))
+        except:
+            print('[MAP] Debug mode not existing')
+            return
+        print('[MAP] Setting debug mode to %s' % new_mode.value)
+        self.debug_mode = new_mode
+
 
     @Service.action
     def get_opponnents(self):
@@ -163,10 +202,13 @@ class Map(Service):
     def get_path(self, origin, dest):
       print("[MAP] Path request received")
       # TODO: Remove self.path and make match display it
-      if self.pmi_telem is not None:
-          self.map.add_circle_otcogon_point(Point(dict=self.pmi_telem), self.pmi_size, tag='pmi', type=ObstacleType.robot)
-      self.path = self.pathfinding.get_path(Point(dict=origin), Point(dict=dest))
-      self.map.remove_obstacle('pmi')
+      with Lock:
+          # TODO : check wich robot call the function and add the other
+          if self.pmi_telem is not None:
+              self.map.add_otcogon_point(Point(dict=self.pmi_telem), self.pmi_size, tag='pmi', type=ObstacleType.robot)
+          self.path = self.map.get_path(Point(dict=origin), Point(dict=dest))
+          # TODO: remove other robot
+          self.map.remove_obstacle('pmi')
       return self.path
 
     @Service.action
@@ -180,7 +222,13 @@ class Map(Service):
         for robot in self.robots:
             if point.dist(robot) < self.delta_dist:
                 return False
-        return self.map.add_circle_obstacle(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
+
+        if (self.pal_telem and point.dist(self.pal_telem) < self.delta_dist)\
+            or (self.pmi_telem and point.dist(self.pmi_telem) < self.delta_dist):
+            return False
+
+        with self.lock:
+            return self.map.add_circle_obstacle(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
 
     @Service.action
     def clean_tmp_robot(self):

@@ -40,7 +40,7 @@ class Point(PointShape):
 
     def average(self, p):
         """ return the average between two points """
-        return Point((self.x + p.x) // 2, (self.y + p.y) // 2)
+        return Point((self.x + p.x) / 2, (self.y + p.y) / 2)
 
     @staticmethod
     def dist_dict(p1, p2):
@@ -66,7 +66,7 @@ class Point(PointShape):
         for p in l:
             tot_x += p.x
             tot_y += p.y
-        return Point(int(tot_x / len(l)), int(tot_y / len(l)))
+        return Point(tot_x / len(l), tot_y / len(l))
 
     @staticmethod
     def substract(p1, p2):

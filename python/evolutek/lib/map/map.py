@@ -6,7 +6,6 @@ from copy import deepcopy
 from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
-# TODO: add lock
 # TODO: optimization
 # TODO: A* ?
 # TODO: exclusion zone for start point when computin pathfinding
