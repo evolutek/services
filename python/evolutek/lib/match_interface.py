@@ -24,7 +24,6 @@ class MatchInterface:
         match_interface_config = self.cs.config.get_section('match')
 
         self.interface_refresh = int(match_interface_config['interface_refresh'])
-        self.interface_ratio = float(match_interface_config['interface_ratio'])
         self.robot_size = float(match_interface_config['robot_size'])
         self.color1 = match_interface_config['color1']
         self.color2 = match_interface_config['color2']
@@ -39,7 +38,11 @@ class MatchInterface:
         self.window = Tk()
         self.window.attributes('-fullscreen', True)
         self.window.bind('<Escape>',lambda e: self.close())
-        self.window.title('Mathc Interface')
+        self.window.title('Match Interface')
+        ratio_width = self.window.winfo_screenwidth() / 3000
+        ratio_height = self.window.winfo_screenheight() / (2000 + 125)
+        self.interface_ratio = min(ratio_width, ratio_height)
+
 
         img = Image.open('/etc/conf.d/map.png')
         img = img.resize((int(3000 * self.interface_ratio), int(2000 * self.interface_ratio)), Image.ANTIALIAS)
