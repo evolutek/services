@@ -27,16 +27,14 @@ class Map(Service):
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
 
         self.delta_dist = float(self.cs.config.get(section='tim', option='delta_dist')) * 2
-        self.refresh = float(self.cs.config.get(section='tim', option='refresh'))
+        self.refresh = int(self.cs.config.get(section='tim', option='refresh'))
 
         self.tim_computation_config = self.cs.config.get_section('tim')
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
-        map_unit = int(self.cs.config.get(section='map', option='map_unit'))
         self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
         self.pal_size = float(self.cs.config.get(section='pal', option='robot_size'))
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
-        self.robot_dist_sensor = int(self.cs.config.get(section='pal', option='dist_detection'))
 
         self.debug_mode = DebugMode.normal
         self.lock = Lock()
@@ -178,7 +176,7 @@ class Map(Service):
 
                 #print('[MAP] Detected %d robots' % len(self.robots))
                 #self.publish('opponents', robots=self.robots)
-            sleep(self.refresh)
+            sleep(self.refresh / 1000)
 
 
     """ ACTION """

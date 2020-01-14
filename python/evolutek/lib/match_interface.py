@@ -40,9 +40,8 @@ class MatchInterface:
         self.window.bind('<Escape>',lambda e: self.close())
         self.window.title('Match Interface')
         ratio_width = self.window.winfo_screenwidth() / 3000
-        ratio_height = self.window.winfo_screenheight() / (2000 + 125)
+        ratio_height = (self.window.winfo_screenheight() - 75) / 2000
         self.interface_ratio = min(ratio_width, ratio_height)
-
 
         img = Image.open('/etc/conf.d/map.png')
         img = img.resize((int(3000 * self.interface_ratio), int(2000 * self.interface_ratio)), Image.ANTIALIAS)
@@ -206,7 +205,7 @@ class MatchInterface:
         close_button.grid(row=1, column=1)
         reset_button = Button(self.window, text='Reset Match', command=self.reset_match)
         reset_button.grid(row=1, column=3)
-        score_label = Label(self.window, text="Score:\n%d" % status['score'], font=('Mono', 90), fg=status['color'])
+        score_label = Label(self.window, text="Score:\n%d" % status['score'], fg=status['color'])
         score_label.grid(row=2, column=1, columnspan=3)
 
     def update_interface(self):
@@ -225,7 +224,7 @@ class MatchInterface:
         if self.interface_status == InterfaceStatus.running:
 
             self.canvas.delete('all')
-            self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
+            self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
 
             # PAL AI STATUS
             text = 'PAL not connected'
@@ -243,7 +242,7 @@ class MatchInterface:
                 text = 'AI not launched'
             self.pmi_ai_status_label.config(text="PMI status: %s" % text)
 
-            self.color_label.config(text="Color: %s" % status['color'])
+            self.color_label.config(text="Color: %s" % status['color'], fg=status['color'])
             self.score_label.config(text="Score: %d" % status['score'])
             self.match_status_label.config(text="Match status: %s" % status['status'])
             self.match_time_label.config(text="Match time: %d" % status['time'])
@@ -255,15 +254,15 @@ class MatchInterface:
                 self.print_robot(status['pmi_telemetry'], self.pmi_size_y, 'orange')
 
             # TODO: use status['robots']
-            robots = []
+            #robots = []
             #try:
             #    robots = self.cs.map.get_opponnents()
             #except Exception as e:
             #    pass
                 #print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))
 
-            for robot in robots:
-                self.print_robot(robot, self.robot_size, 'red')
+            #for robot in robots:
+            #    self.print_robot(robot, self.robot_size, 'red')
 
             # TODO: Manage path
             #self.print_path(self.pal_path, 'yellow', 'violet')

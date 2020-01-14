@@ -11,9 +11,6 @@ from os import _exit
 from shapely.geometry import Polygon, LineString
 
 colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
-unit = 1/2
-refresh = 50
-
 
 #TODO: add robot angle
 class Interface:
@@ -32,7 +29,7 @@ class Interface:
         self.service = service
 
         unit_width = self.window.winfo_screenwidth() / self.map.width
-        unit_height = self.window.winfo_screenheight() / (self.map.height + 50)
+        unit_height = (self.window.winfo_screenheight() - 50) / self.map.height
         self.unit = min(unit_width, unit_height)
 
         self.width = self.map.width * self.unit
@@ -65,7 +62,7 @@ class Interface:
         self.canvas.grid(row=3, column=1, columnspan=nb_tims)
 
         print('[DEBUG_MAP] Window created')
-        self.window.after(refresh, self.update)
+        self.window.after(int(self.service.refresh), self.update)
         self.window.mainloop()
 
     def close(self):
@@ -129,7 +126,6 @@ class Interface:
         for interior in self.map.borders.interiors:
             self.print_polygon(interior.coords)
         for poly in self.map.color_obstacles:
-            print(self.map.color_obstacles[poly])
             self.print_polygon(self.map.color_obstacles[poly].exterior.coords, ObstacleType.color)
         for poly in self.map.robots:
             self.print_polygon(self.map.robots[poly].exterior.coords, ObstacleType.robot)
@@ -205,4 +201,4 @@ class Interface:
 
         if hasattr(self.service, 'path'):
             self.print_path(self.service.path)
-        self.window.after(refresh, self.update)
+        self.window.after(self.service.refresh, self.update)
