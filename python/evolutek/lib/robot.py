@@ -2,6 +2,7 @@
 
 ## TODO: goto_with path
 
+from enum import Enum
 from functools import wraps
 from threading import Event, Thread
 from time import sleep
@@ -14,11 +15,21 @@ from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
+from evolutek.lib.map.utils import convert_path_to_point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
-DELTA = 5
+DELTA_POS = 5
+DELTA_THETA = 0.1
 TIMEOUT_PATH = 5
+
+class Status(Enum):
+    reached = 0
+    unreached = 1
+    has_avoid = 2
+    unreachable = 3
+
+# TODO: manage collision
 
 class Robot:
 
@@ -91,6 +102,7 @@ class Robot:
         self.has_avoid = Event()
         self.end_avoid = Event()
         self.timeout = Event()
+        self.telemetry = None
 
         # AsynClient
         self.client = AsynClient(get_socket())
@@ -98,6 +110,7 @@ class Robot:
         self.client.add_subscribe_cb(self.robot + '_started', self.robot_started)
         self.client.add_subscribe_cb('match_color', self.color_change)
         self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
+        self.client.add_subscribe_cb(self.robot + '_telemetry', self.telemetry_handler)
 
         # Blocking wrapper
         self.recalibration_block = self.wrap_block(self.tm.recalibration)
@@ -124,7 +137,6 @@ class Robot:
             self.has_avoid.set()
         self.is_stopped.set()
 
-    # TODO: test color
     def color_change(self, color):
         self.side = color != self.color1
 
@@ -133,6 +145,12 @@ class Robot:
 
     def timeout_handler(self):
         self.timeout.set()
+
+    def telemetry_handler(self, status, telemetry):
+        if status != 'failed':
+            self.telemetry = telemetry
+        else:
+            self.telemetry = None
 
     ########
     # Sets #
@@ -158,36 +176,75 @@ class Robot:
     #########
 
     def goto(self, x, y):
-        return self.goto_xy_block(x, 1500 + (1500 - y) * (-1 if not self.side else 1))
+        if self.goto_xy_block(x, 1500 + (1500 - y) * (-1 if not self.side else 1)):
+            return Status.has_avoid
+
+        if self.telemetry is None:
+            pos = self.tm.get_position()
+        else:
+            pos = self.telemetry
+
+        print(pos)
+
+        if Point(x=x, y=y).dist(Point(dict=pos)) < DELTA_POS:
+            return Status.unreached
+        return Status.reached
 
     def goth(self, th):
-        return self.goto_theta_block(th * (1 if not self.side else -1))
+        if self.goto_theta_block(th * (1 if not self.side else -1)):
+            return Status.has_avoid
 
-    def goto_avoid(self, x, y, timeout=0.0):
-        while self.goto(x, y):
-            self.wait_until(timeout=timeout)
+        if self.telemetry is None:
+            pos = self.tm.get_position()
+        else:
+            pos = self.telemetry
 
-    def goth_avoid(self, th, timeout=0.0):
-        while self.goth(th):
+        if abs(th - float(pos['theta'])) < DELTA_THETA:
+            return Status.unreached
+        return Status.reached
+
+    def goto_avoid(self, x, y, timeout=0.0, nb_try=None):
+        tried = 1
+        status = self.goto(x, y)
+        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+            tried += 1
             self.wait_until(timeout=timeout)
+            status = self.goto(x, y)
+
+        return status
+
+    def goth_avoid(self, th, timeout=0.0, nb_try=None):
+        tried = 1
+        status = self.goth(th)
+        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+            tried += 1
+            self.wait_until(timeout=timeout)
+            status = self.goth(th)
+
+        return status
 
     def update_path(self, path):
         new = []
 
         try:
-            tmp_path = []
             computed = 0
-            while computed < TIMEOUT_PATH and len(tmp_path) < 2:
-                tmp_path = self.cs.map.get_path(self.tm.telemetry, path[-1].to_dict())
-                sleep(0.05)
+            while computed < TIMEOUT_PATH and len(new) < 2:
+                # Ask Map for path between current pos and end point
 
-            if len(tmp_path) >= 2:
-                if Point.from_dict(new[1]) != path[1]:
-                     print('[ROBOT] Update Path')
-                     for point in tmp_path:
-                        new.append(Point.from_dict(point))
+                if self.telemetry is None:
+                    pos = self.tm.get_position()
                 else:
-                    new = path
+                    pos = self.telemetry
+
+                new = self.cs.map.get_path(pos, path[-1].to_dict())
+
+                if len(path) < 2:
+                    continue
+
+                new = convert_path_to_point(new)
+
+                if new[1].dist(new[0]) < DELTA_POS:
+                    new.pop(0)
 
         except Exception as e:
             print('[ROBOT] Failed to update path: %s' % str(e))
@@ -199,39 +256,60 @@ class Robot:
     # TODO: Manage Avoid
     def goto_with_path(self, x, y):
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
-        end = Point(x, y)
-        path = [Point.from_dict(self.tm.telemetry), end]
 
-        path = self.update_path(path)
-        if len(path) < 2:
-            print('[ROBOT] Destination unreachable')
-            return False
+        #if self.telemetry is None:
+        pos = self.tm.get_position()
+        #else:
+        #    pos = self.telemetry
 
-        while len(path) >= 2:
-            print('[ROBOT] Current pos is x: %d y: %d' % (path[0].x, path[0].y))
+        path = [Point(dict=pos), Point(x=x, y=y)]
 
+        while len(path) > 1:
+
+            # Try to update path
             path = self.update_path(path)
+
             if len(path) < 2:
                 print('[ROBOT] Destination unreachable')
-                return False
+                return Status.unreachable
+
+            print('[ROBOT] Current pos is x: %d y: %d' % (path[0].x, path[0].y))
+
+            for p in path:
+                print(p)
 
             self.is_stopped.clear()
             if not self.tm.disabled:
+                # Can't move, Trajman is disabled
                 return
+
             print('[ROBOT] Going to %s' % str(path[1]))
             self.tm.goto_xy(x=path[1].x, y=path[1].y)
 
-            # Move loop
+            # While the robot is not stopped
             while not self.is_stopped.is_set():
-                tmp_path = self.update_path(path)
-                if tmp_path[1::] != path[1::]:
-                    self.tm.stop_asap(1000, 20)
-                    path = tmp_path
-                    # TODO: need break 2 ?
-                    break;
-                sleep(0.05)
+                stopped = False
 
-            if self.has_avoid.is_set():
+                tmp_path = self.update_path(path)
+
+                if len(tmp_path) < 2:
+                    self.tm.stop_asap(1000, 20)
+                    print('[ROBOT] Destination unreachable')
+                    return Status.unreachable
+
+                if tmp_path[1::] != path[1::]:
+                    # Next point changed, need to stop
+                    self.tm.stop_asap(1000, 20)
+                    stopped = True
+
+                path = tmp_path
+
+                if stopped:
+                    # If we stopped the robot, we wait for it
+                    self.is_stopped.wait()
+
+            # TODO: Avoid management
+            """if self.has_avoid.is_set():
                 print('[ROBOT] Robot has avoid')
                 self.wait_until(timeout=3)
                 if not self.end_avoid.is_set():
@@ -239,19 +317,21 @@ class Robot:
                     side = self.tm.avoid_status()['back']
                     if self.move_trsl_block(acc=200, dec=200, dest=150, maxspeed=400, sens=int(side)):
                         print('[ROBOT] Going back again')
-                        self.move_trsl_block(acc=200, dec=200, dest=50, maxspeed=400, sens=int(not side))
+                        self.move_trsl_block(acc=200, dec=200, dest=50, maxspeed=400, sens=int(not side))"""
 
-            if len(path) < 2:
-                print('[ROBOT] Destination unreachable')
-                return False
+            # We are supposed to be stopped
+            #if self.telemetry is None:
+            pos = self.tm.get_position()
+            #else:
+            #    pos = self.telemetry
 
-            pos = Point.from_dict(self.tm.telemetry)
-            if pos.dist(path[1]) < delta:
+            if Point(dict=pos).dist(path[1]) < DELTA_POS:
+                # We reached next point (path[1])
                 path.pop(0)
-            path[0] = pos
+                path[0] = pos
 
         print('[ROBOT] Robot near destination')
-        return self.goto(end.x, end.y)
+        return Status.reached
 
     # TODO remove sleep after recalibration
     def recalibration(self,
@@ -283,8 +363,13 @@ class Robot:
             self.goth(theta)
             self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_x[0]), decal=float(decal_x))
-            sleep(2)
-            pos = self.tm.telemetry
+            sleep(0.5)
+
+            if self.telemetry is None:
+                pos = self.tm.get_position()
+            else:
+                pos = self.telemetry
+
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
             self.tm.enable_avoid()
@@ -296,8 +381,13 @@ class Robot:
             self.goth(theta * (-1 if self.side else 1))
             self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
-            sleep(2)
-            pos = self.tm.telemetry
+            sleep(0.5)
+
+            if self.telemetry is None:
+                pos = self.tm.get_position()
+            else:
+                pos = self.telemetry
+
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
             self.tm.enable_avoid()
