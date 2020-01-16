@@ -7,6 +7,7 @@ from evolutek.lib.map.debug_map import Interface
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map as Map_lib
 from evolutek.lib.map.point import Point
 from evolutek.lib.map.tim import DebugMode, Tim
+from evolutek.lib.map.utils import convert_path_to_dict
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.waiter import waitBeacon, waitConfig
 
@@ -110,6 +111,31 @@ class Map(Service):
     def start_debug_interface(self):
         self.interface = Interface(self.map, self)
 
+    @Service.thread
+    def fake_robot(self):
+        robot = {'x': 750, 'y': 1500}
+        ascending = True
+
+        while True:
+            #print('[TEST_MAP] Update Fake Robot')
+            if ascending:
+                robot['x'] += 10
+                if robot['x'] > 1700:
+                    robot['x'] = 1699
+                    ascending = False
+            else:
+                robot['x'] -= 10
+                if robot['x'] < 299:
+                    robot['x'] = 201
+                    ascending = True
+
+            pos = Point(dict=robot)
+            with self.lock:
+                obstacle = self.map.add_octogon_obstacle(pos, self.robot_size, tag='fake', type=ObstacleType.robot)
+            self.robots.clear()
+            self.robots.append(robot)
+            sleep(0.1)
+
     # TODO: debug mode not getting oppenents
     @Service.thread
     def loop_scan(self):
@@ -160,9 +186,9 @@ class Map(Service):
             with self.lock:
 
                 # Remove old robots
-                for robot in self.robots:
-                    self.map.remove_obstacle(robot['tag'])
-                self.robots.clear()
+                #for robot in self.robots:
+                #    self.map.remove_obstacle(robot['tag'])
+                #self.robots.clear()
 
                 # Add robots on the map
                 i = 0
@@ -200,14 +226,14 @@ class Map(Service):
     def get_path(self, origin, dest):
       print("[MAP] Path request received")
       # TODO: Remove self.path and make match display it
-      with Lock:
+      with self.lock:
           # TODO : check wich robot call the function and add the other
           if self.pmi_telem is not None:
               self.map.add_otcogon_point(Point(dict=self.pmi_telem), self.pmi_size, tag='pmi', type=ObstacleType.robot)
           self.path = self.map.get_path(Point(dict=origin), Point(dict=dest))
           # TODO: remove other robot
           self.map.remove_obstacle('pmi')
-      return self.path
+      return convert_path_to_dict(self.path)
 
     @Service.action
     def add_tmp_robot(self, pos):

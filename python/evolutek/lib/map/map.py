@@ -193,11 +193,11 @@ class Map:
 
                 points = list(d)
                 for point in points:
-                    if point in graph[new] or point.to_tuple() in coords:
+                    if point in graph[new]:
                         continue
                     is_colliding = False
                     for poly in obstacles:
-                        if is_colliding_with_polygon(point, new, poly.exterior):
+                        if is_colliding_with_polygon(point, new, poly):
                             is_colliding = True
                             break
 
@@ -232,9 +232,15 @@ class Map:
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
+        # Create an octogon were the robot is
+        """p = PolygonPlanar.regular(8, radius=self.robot_radius, angle=22.5, center=start.to_tuple())
+        l = []
+        for point in p:
++            l.append((point.x, point.y))"""
+
         is_colliding = False
         for poly in obstacles:
-            if is_colliding_with_polygon(start, end, poly.exterior):
+            if is_colliding_with_polygon(start, end, poly):
                 is_colliding = True
                 break
 

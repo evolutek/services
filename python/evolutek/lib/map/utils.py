@@ -4,6 +4,8 @@ import json
 from math import inf
 from shapely.geometry import Polygon, MultiPolygon, LineString
 
+from evolutek.lib.map.point import Point
+
 class ObstacleType(Enum):
     fixed = 0
     color = 1
@@ -19,8 +21,11 @@ def is_colliding_with_polygon(p1, p2, poly):
 
     line = LineString([p1, p2])
 
-    for i in range(0, len(poly.coords) - 1):
-        side = LineString([poly.coords[i], poly.coords[i + 1]])
+    if poly.contains(line):
+        return True
+
+    for i in range(0, len(poly.exterior.coords) - 1):
+        side = LineString([poly.exterior.coords[i], poly.exterior.coords[i + 1]])
         if line.crosses(side):
             return True
 
@@ -81,3 +86,15 @@ def dijkstra(start, end, graph):
         path.insert(0, start)
 
     return path
+
+def convert_path_to_dict(path):
+    new = []
+    for p in path:
+        new.append(p.to_dict())
+    return new
+
+def convert_path_to_point(path):
+    new = []
+    for p in path:
+        new.append(Point(dict=p))
+    return new

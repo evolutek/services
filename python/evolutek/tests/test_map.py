@@ -1,8 +1,9 @@
 from evolutek.lib.map.debug_map import Interface
 from evolutek.lib.map.map import Map, ObstacleType, parse_obstacle_file
 from evolutek.lib.map.point import Point
+from evolutek.lib.map.tim import DebugMode
 
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 from time import sleep, time
 
 class Test_Map:
@@ -16,6 +17,11 @@ class Test_Map:
         fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map.add_obstacles(fixed_obstacles)
         self.map.add_obstacles(self.color_obstacles, False, type=ObstacleType.color)
+
+        self.lock = Lock()
+        self.tim = []
+        self.refresh = 100
+        self.debug_mode = DebugMode.normal
 
         self.color = 'violet'
         self.path = []

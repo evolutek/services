@@ -187,14 +187,14 @@ class MatchInterface:
             self.print_robot(status['pmi_telemetry'], self.pmi_size_y, 'orange')
 
         # TODO: use status['robots']
-        #robots = []
-        #try:
-        #    robots = self.cs.map.get_opponnents()
-        #except Exception as e:
-        #    print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))
+        robots = []
+        try:
+            robots = self.cs.map.get_opponnents()
+        except Exception as e:
+            print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))
 
-        #for robot in robots:
-        #    self.print_robot(robot, self.robot_size, 'red')
+        for robot in robots:
+            self.print_robot(robot, self.robot_size, 'red')
 
     # Init score interface
     def set_score_interface(self):
@@ -254,15 +254,14 @@ class MatchInterface:
                 self.print_robot(status['pmi_telemetry'], self.pmi_size_y, 'orange')
 
             # TODO: use status['robots']
-            #robots = []
-            #try:
-            #    robots = self.cs.map.get_opponnents()
-            #except Exception as e:
-            #    pass
-                #print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))
+            robots = []
+            try:
+                robots = self.cs.map.get_opponnents()
+            except Exception as e:
+                print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))
 
-            #for robot in robots:
-            #    self.print_robot(robot, self.robot_size, 'red')
+            for robot in robots:
+                self.print_robot(robot, self.robot_size, 'red')
 
             # TODO: Manage path
             #self.print_path(self.pal_path, 'yellow', 'violet')

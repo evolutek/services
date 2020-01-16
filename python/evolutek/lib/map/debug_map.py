@@ -146,6 +146,9 @@ class Interface:
 
     def print_path(self, path):
 
+        if len(path) < 2:
+            return
+
         for i in range(1, len(path)):
             p1 = path[i - 1]
             p2 = path[i]
