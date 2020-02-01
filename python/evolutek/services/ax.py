@@ -13,8 +13,8 @@ if LIBDXL_PATH_ENV:
     LIBDXL_PATH.insert(0, LIBDXL_PATH_ENV)
 
 DEVICE_ID = 42
-BAUD_RATE = 31 # 62500 // PMI w/ USB2Dynamixel
-# BAUD_RATE = 1  # Main robot USB2AX
+#BAUD_RATE = 31 # 62500 // PMI w/ USB2Dynamixel
+BAUD_RATE = 1  # Main robot USB2AX
 
 AX_TORQUE_ENABLE_B     = 24
 AX_GOAL_POSITION_L     = 30
@@ -121,7 +121,7 @@ def wait_for_beacon():
         pass
 
 def main():
-    wait_for_beacon()
+    #wait_for_beacon()
 
     data = None
     with open('/etc/conf.d/ax.json', 'r') as ax_file:
