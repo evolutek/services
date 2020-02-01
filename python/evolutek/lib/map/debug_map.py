@@ -42,7 +42,7 @@ class Interface:
         self.close_button.grid(row=1, column=center)
 
         self.tim_labels = []
-        i = 1
+        i = 0
         for ip in self.service.tim:
             connected = self.service.tim[ip].connected
             label = Label(self.window,
@@ -59,7 +59,9 @@ class Interface:
         self.image =  ImageTk.PhotoImage(img)
 
         self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
-        self.canvas.grid(row=3, column=1, columnspan=nb_tims)
+        if nb_tims > 0:
+            self.canvas.grid(row=3, column=0, columnspan=nb_tims)
+        self.canvas.grid(row=3, column=0)
 
         print('[DEBUG_MAP] Window created')
         self.window.after(int(self.service.refresh), self.update)

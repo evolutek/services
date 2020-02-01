@@ -5,7 +5,6 @@ import sys
 
 class PostDevelopCommand(develop):
     def run(self):
-        check_call(("cp -r evolutek/ /usr/lib/python3.%d/site-packages/" % sys.version_info.minor).split())
         check_call("cp -r conf.d /etc/".split())
         develop.run(self)
 

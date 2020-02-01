@@ -1,1 +1,4 @@
 pyserial==2.7
+geos>=0.2
+shapely>=1.6
+planar>=0.4
