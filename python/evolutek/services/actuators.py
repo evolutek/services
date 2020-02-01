@@ -32,7 +32,7 @@ class PumpActuator:
 
         self.buoy = Buoy.Empty
 
-    def get_buoy(self, buoy=BuoyUnknow):
+    def get_buoy(self, buoy=Buoy.Unknow):
         self.pump_gpio.write(True)
         self.buoy = buoy
 
@@ -70,10 +70,11 @@ def if_enabled(method):
 
     return wrapped
 
-@Service.require("ax", "1")
-@Service.require("ax", "2")
-@Service.require("ax", "3")
-@Service.require("ax", "4")
+@Service.require("ax", "%s-1" % ROBOT)
+@Service.require("ax", "%s-2" % ROBOT)
+@Service.require("ax", "%s-3" % ROBOT)
+@Service.require("ax", "%s-4" % ROBOT)
+@Service.require("ax", "%s-5" % ROBOT)
 @Service.require("trajman", ROBOT)
 class Actuators(Service):
 
@@ -118,11 +119,17 @@ class Actuators(Service):
         self.disabled = False
         self.match_end.clear()
 
+        self.deploy_flags()
+
+        sleep(0.2)
+
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax["%s-%d" % (ROBOT, n)].move(goal=512)
 
-        self.cs.ax["%s-d" % (ROBOT, 3)].move(goal=820)
-        self.cs.ax["%s-d" % (ROBOT, 4)].move(goal=210)
+        sleep(0.5)
+
+        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=210)
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=820)
 
         self.close_arm_right()
         self.close_arm_left()
@@ -141,26 +148,22 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def close_arm_right(self):
-        self.cs.ax["%s-d" % (ROBOT, 1)].move(goal=820)
-        sleep(0.2)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
 
     @Service.action
     @if_enabled
     def close_arm_left(self):
-        self.cs.ax["%s-d" % (ROBOT, 2)].move(goal=820)
-        sleep(0.2)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
 
     @Service.action
     @if_enabled
     def open_arm_right(self):
-        self.cs.ax["%s-d" % (ROBOT, 1)].move(goal=512)
-        sleep(0.2)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
 
     @Service.action
     @if_enabled
     def open_arm_left(self):
-        self.cs.ax["%s-d" % (ROBOT, 2)].move(goal=512)
-        sleep(0.2)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
 
     """ SIDE ARMS """
     @Service.action
@@ -175,9 +178,9 @@ class Actuators(Service):
         sleep(0.2)
 
         # TODO config
-        status =  self.robot.move_trsl_block(500, 100, 100, 600, 1, 2, 2) == Status.reached
+        status =  self.robot.move_trsl_avoid(500, 125, 125, 800, 1, 2, 2) == Status.reached
 
-        self.cs.ax["%s-d" % (ROBOT, ax)].move(goal=820 if ax == 3 else 210)
+        self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
 
         sleep(0.2)
 
