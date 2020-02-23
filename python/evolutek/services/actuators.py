@@ -53,8 +53,7 @@ class PumpActuator:
         s += "Buoy: %s" % self.buoy.value
         return s
 
-##TODO: REWORK
-## - stop
+##TODO:
 ## - color sensors
 
 def if_enabled(method):
@@ -111,21 +110,59 @@ class Actuators(Service):
 
         self.reset()
 
-    @Service.action
-    def reset(self, color=None):
-        if color is not None and (color == self.color1 or color == self.color2):
-            self.color = color
+    """ ACTIONS """
 
+    """ RESET """
+    @Service.action
+    def reset(self):
         self.disabled = False
         self.match_end.clear()
 
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax["%s-%d" % (ROBOT, n)].move(goal=512)
 
-        # Add all other init functions
+        self.cs.ax["%s-d" % (ROBOT, 3)].move(goal=820)
+        self.cs.ax["%s-d" % (ROBOT, 4)].move(goal=210)
 
-    #TODO: All other functions
+        self.close_arm_right()
+        self.close_arm_left()
 
+        sleep(0.2)
+
+    """ FREE """
+    @Service.action
+    def free(self):
+        for pump in self.pumps:
+            pump.drop_buoy()
+        for n in [1, 2, 3, 4, 5]:
+            self.cs.ax[str(n)].free()
+
+    """ BACK ARMS """
+    @Service.action
+    @if_enabled
+    def close_arm_right(self):
+        self.cs.ax["%s-d" % (ROBOT, 1)].move(goal=820)
+        sleep(0.2)
+
+    @Service.action
+    @if_enabled
+    def close_arm_left(self):
+        self.cs.ax["%s-d" % (ROBOT, 2)].move(goal=820)
+        sleep(0.2)
+
+    @Service.action
+    @if_enabled
+    def open_arm_right(self):
+        self.cs.ax["%s-d" % (ROBOT, 1)].move(goal=512)
+        sleep(0.2)
+
+    @Service.action
+    @if_enabled
+    def open_arm_left(self):
+        self.cs.ax["%s-d" % (ROBOT, 2)].move(goal=512)
+        sleep(0.2)
+
+    """ SIDE ARMS """
     @Service.action
     @if_enabled
     def push_windsocks(self):
@@ -133,11 +170,26 @@ class Actuators(Service):
         if self.color != self.color1:
             ax = 4
 
-        self.cs.ax["%s-%d" % (ROBOT, n)].move(goal=512)
+        self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
+
+        sleep(0.2)
 
         # TODO config
-        return self.robot.move_trsl_block(500, 100, 100, 600, 1, 2, 2) == Status.reached
+        status =  self.robot.move_trsl_block(500, 100, 100, 600, 1, 2, 2) == Status.reached
 
+        self.cs.ax["%s-d" % (ROBOT, ax)].move(goal=820 if ax == 3 else 210)
+
+        sleep(0.2)
+
+        return status
+
+    """ FLAGS """
+    @Service.action
+    @if_enabled
+    def deploy_flags(self):
+        self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=820)
+
+    """ OTHERS """
     @Service.action
     def print_status(self):
         print("--- PUMPS ---")
@@ -154,14 +206,6 @@ class Actuators(Service):
         pass
         # TODO : make something intelligent
 
-    """ FREE """
-    @Service.action
-    def free(self):
-        for pump in self.pumps:
-            pump.drop_buoy()
-        for n in [1, 2, 3, 4, 5]:
-            self.cs.ax[str(n)].free()
-
     @Service.action
     @if_enabled
     def wait(self, time):
@@ -176,6 +220,9 @@ class Actuators(Service):
     @Service.action
     def enable(self):
         self.disabled = False
+
+
+    """ EVENTS """
 
     # Handle color changing event
     @Service.event("match_color")
