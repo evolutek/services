@@ -10,7 +10,7 @@ class States(Enum):
     state3 = 'state3'
     Error = 'error'
 
-class Test_FSM:
+class Test_Fsm:
 
     def __init__(self):
 
@@ -19,7 +19,7 @@ class Test_FSM:
         self.in_state = Event()
         self.stop = Event()
 
-        self.fsm = FSM(States)
+        self.fsm = Fsm(States)
         self.fsm.add_state(States.state1, self.state1)
         self.fsm.add_state(States.state2, self.state2, prevs=[States.state1])
         self.fsm.add_state(States.state3, self.state3, prevs=[States.state2])

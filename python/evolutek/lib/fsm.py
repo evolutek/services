@@ -1,5 +1,6 @@
 from enum import Enum
 from threading import Event
+from traceback  import print_exc
 
 class State:
 
@@ -15,10 +16,12 @@ class State:
         try:
             return self.fct()
         except Exception as e:
-            print('[FSM] Error in state %s: %s' % (self.state.value, str(e)))
+
+            print('[FSM] Error in state %s:' % (self.state.value))
+            print_exc()
             return None
 
-class FSM:
+class Fsm:
 
     def __init__(self, states_enum):
 
