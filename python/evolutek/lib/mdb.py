@@ -1,5 +1,12 @@
 from threading import Lock, Thread
 from time import sleep
+import adafruit_vl53l0x
+from adafruit_mcp230xx.mcp23017 import MCP23017
+import digitalio
+import board
+import busio
+import time
+import neopixel
 
 # TODO:
 # - Replace FIXME
@@ -7,6 +14,7 @@ from time import sleep
 
 # Default adress of Vl53L0X
 DEFAULT_ADDRESS = 0x29
+MAX_DIST = 1000
 
 # MDB Class
 
@@ -31,20 +39,57 @@ DEFAULT_ADDRESS = 0x29
 # __str__():
 # Return a string of the status of the MDB
 
-class Mdb():
+class Mdb:
 
-    def __init__(self, nb_sensors, sensor_address=0x30, expander_address=0x20, leds_gpio=None, refresh=0.1):
-        # FIXME
+    def __init__(self, nb_sensors, sensor_address=0x29, expander_address=0x20, leds_gpio=None, refresh=0.1, debug=0):
+        self.coef = 255 / (MAX_DIST / 2)
+        self.i2c = busio.I2C(board.SCL, board.SDA)
+        self.sensors = []
+        self.scan = []
+        self.mcp = MCP23017(self.i2c, address=expander_address)
         self.nb_sensors = nb_sensors
+        self.sleep = refresh
+        self.pixel = None
+        self.debug = debug
+        self.sensors_address = sensor_address
+        self.init_sensor()
+        self.lock = Lock()
+        Thread(target=self.loop).run()
+
+    def init_sensor(self):
+        for i in range(0, self.nb_sensors + 1):
+            self.mcp.get_pin(i + 8).switch_to_output()
+
+        for i in range(0, self.nb_capteur + 1):
+            print("INIT_Sensor: {0}".format(i + 1))
+            self.mcp.get_pin(i + 8).value = True
+            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c, address=0x29))
+            self.sensors[i].set_address(0x29 + i + 1)
+
+        self.pixel = neopixel.NeoPixel(board.D27, self.nb_capteur, brightness=10)
 
     def loop(self):
-        # FIXME
-        pass
+        while True:
+            for i in range(0, self.nb_sensors + 1):
+                self.dist = self.sensors[i].range
+                if self.dist > MAX_DIST:
+                    self.pixel[i] = (0,0,0)
+                else:
+                    r = 255 - self.dist * self.coef
+                    g = 255 - abs(MAX_DIST / 2 - self.dist) * self.coef
+                    b = 255 - (MAX_DIST - self.dist) * self.coef
+                    self.pixel[i] = (int(r if r >= 0 else 0),
+                                     int(g if g >= 0 else 0),
+                                     int(b if b >= 0 else 0))
+                if self.debug != 0:
+                    print("Range: {0}".format(self.sensors[i].range))
+                with self.lock:
+                    self.scan[i] = self.sensors[i].range
+            time.sleep(self.sleep)
 
     def get_scan(self):
-        # FIXME
-        return []
+        with self.lock:
+            return self.scan
 
     def __str__(self):
-        #FIXME
-        pass
+        return ""

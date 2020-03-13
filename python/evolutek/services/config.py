@@ -108,7 +108,7 @@ def wait_for_beacon():
         pass
 
 def main():
-    wait_for_beacon()
+    #wait_for_beacon()
     config = Config()
     config.run()
 

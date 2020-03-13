@@ -2,3 +2,6 @@ pyserial==2.7
 geos>=0.2
 shapely>=1.6
 planar>=0.4
+adafruit-circuitpython-vl53l0x
+adafruit-circuitpython-mcp230xx
+adafruit-circuitpython-neopixel
