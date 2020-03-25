@@ -20,7 +20,7 @@ class Action:
     def __init__(self, fct, args=None, avoid=True, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
         self.fct = fct
         self.args = args
-        if 'theta' in args:
+        if not args is None and 'theta' in args:
             args['theta'] = eval(args['theta'])
         self.avoid = avoid
         self.avoid_strategy = avoid_strategy
@@ -45,23 +45,27 @@ class Action:
         return s
 
     @classmethod
-    def parse(action):
+    def parse(cls, action, ai):
 
         fct = None
         try:
-            fct = getattr(getattr(self.ai, action['handler']), action['fct'])
+            fct = None
+            if not 'handler' in action:
+                fct = getattr(ai, action['fct'])
+            else:
+                fct = getattr(getattr(ai, action['handler']), action['fct'])
         except Exception as e:
             print('[GOALS] Failed to get fct in action %s: %s' % (action['fct'], str(e)))
             return None
 
         args = action['args'] if 'args' in action else None
         avoid = action['avoid'] if 'avoid' in action else True
-        avoid_strategy = eval(action['avoid_strategy']) if 'avoid_strategy' in action else AvoidStartegy.Wait
+        avoid_strategy = eval(action['avoid_strategy']) if 'avoid_strategy' in action else AvoidStrategy.Wait
         score = action['score'] if 'score' in action else 0
         timeout = action['timeout'] if 'timeout' in action else None
 
-        new = Action(fct, args=args, avoid=action['avoid'],\
-                     avoid_strategy=avoid_strategy, score=action['score'], timeout=timeout)
+        new = Action(fct, args=args, avoid=avoid,\
+                     avoid_strategy=avoid_strategy, score=score, timeout=timeout)
 
         return new
 
@@ -81,12 +85,12 @@ class Goal:
     def __str__(self):
         actions = ""
         for action in self.actions:
-            actions += "->%s\n" % str(action)
-        return "--- %s ---\nscore: %d\nactions:\n%s"\
-            % (self.name, self.score, actions)
+            actions += "%s\n" % str(action)
+        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s"\
+            % (self.name, self.position, str(self.theta), self.score, actions)
 
     @classmethod
-    def parse(goal):
+    def parse(cls, goal, ai):
 
         theta = goal['theta'] if 'theta' in goal else None
         if isinstance(theta, str):
@@ -96,16 +100,16 @@ class Goal:
         timeout = goal['timeout'] if 'timeout' in goal else None
         optional_goal = goal['optional'] if 'optional' in goal else None
 
-        self.position = Point(x=goal['position']['x'],
+        position = Point(x=goal['position']['x'],
                                        y=goal['position']['y'])
 
         actions = []
         for action in goal['actions']:
 
             try:
-                new = Action.parse(action)
+                new = Action.parse(action, ai)
             except Exception as e:
-                print('[GOALS] Failes to parse action: %s' % str(e))
+                print('[GOALS] Fails to parse action: %s' % str(e))
                 return None
 
             if new is None:
@@ -113,7 +117,7 @@ class Goal:
 
             actions.append(new)
 
-        new = Goal(name, position, theta, actions, goal['score'], timeout, optional_goal)
+        new = Goal(goal['name'], position, theta, actions, score, timeout, optional_goal)
 
         return new
 
@@ -125,23 +129,24 @@ class Strategy:
         self.goals = [] if goals is None else goals
 
     def __str__(self):
-        s = "----- %s -----" % self.name
+        s = "--- %s ---" % self.name
         for goal in self.goals:
-            s += '\n->%s' % goal
+            s += '\n%s' % goal
         return s
 
-    def parse(self, startegy, goals):
+    @classmethod
+    def parse(cls, strategy, goals):
 
-        goals = []
+        _goals = []
         for goal in strategy['goals']:
 
             if not goal in goals:
                 print('[GOALS] No existing goal')
                 return None
 
-            goals.append(goal)
+            _goals.append(goal)
 
-        new = Strategy(strategy['name'], goals)
+        new = Strategy(strategy['name'], _goals)
 
         return new
 
@@ -168,14 +173,14 @@ class Goals:
 
         self.parse(file)
 
-        self.reset(self.strategies[0])
+        self.reset(0)
 
     def parse(self, file):
 
         # Read file
         data = None
         with open(file, 'r') as goals_file:
-            date = goals_file.read()
+            data = goals_file.read()
 
         if data is None:
             print('[GOALS] Failed to read file')
@@ -199,7 +204,7 @@ class Goals:
         for goal in goals['goals']:
 
             try:
-                new = Goal.parse(goal)
+                new = Goal.parse(goal, ai)
             except Exception as e:
                 print('[GOALS] Failed to parse goal: %s' % str(e))
                 return False
@@ -209,11 +214,11 @@ class Goals:
 
             self.goals[new.name] = new
 
-        # Parse strategies
-        for strategy in goals['startegies']:
+        # Parse
+        for strategy in goals['strategies']:
 
             try:
-                new = Strategy.parse(strategy)
+                new = Strategy.parse(strategy, self.goals)
             except Exception as e:
                 print('[GOALS] Failed to parse strategy: %s' % str(e))
                 return False
@@ -226,19 +231,24 @@ class Goals:
         return True
 
     def __str__(self):
-        s = "[Goals manager]"
-        s = "Starting position:\n"
-        s += "->x: %d\n" % self.starting_position.x
-        s += "->y: %d\n" % self.starting_position.y
-        s += "->theta: %f\n" % self.starting_theta
+        s = "[Goals manager]\n"
+        s += "-> Starting position\n"
+        s += "x: %d\n" % self.starting_position.x
+        s += "y: %d\n" % self.starting_position.y
+        s += "theta: %f\n" % self.starting_theta
+        s += "-> Goals\n"
         for goal in self.goals:
             s += str(self.goals[goal])
+        s += "-> Strategies\n"
         for strategy in self.strategies:
             s += str(strategy)
         return s
 
-    def reset(self, strategy):
-        self.current_strategy = self.strategies[strategy]
+    def reset(self, index):
+        if index < 0 or index >= len(self.strategies):
+            print('[GOALS] Strategy index incorrect')
+
+        self.current_strategy = self.strategies[index]
         self.current = 0
 
     def get_goal(self):
