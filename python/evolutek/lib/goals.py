@@ -4,8 +4,10 @@ from math import pi
 
 from evolutek.lib.map.point import Point
 
-##TODO: REWORK
-
+##TODO: Critial goal
+##TODO: Tests
+##TODO: Check if position is possible
+##TODO: Update UML
 
 """ Avoid Strategy Enum """
 class AvoidStrategy(Enum):
@@ -73,13 +75,12 @@ class Action:
 """ Goal Class """
 class Goal:
 
-    def __init__(self, name, position, theta=None, actions=None, score=0, timeout=None, optional_goal=None):
+    def __init__(self, name, position, theta=None, actions=None, score=0, ptional_goal=None):
         self.name = name
         self.position = position
         self.theta = theta
         self.actions = [] if actions is None else actions
         self.score = score
-        self.timeout = timeout
         self.optional_goal = optional_goal
 
     def __str__(self):
@@ -97,32 +98,32 @@ class Goal:
             theta = eval(theta)
 
         score = goal['score'] if 'score' in goal else 0
-        timeout = goal['timeout'] if 'timeout' in goal else None
         optional_goal = goal['optional'] if 'optional' in goal else None
 
         position = Point(x=goal['position']['x'],
                                        y=goal['position']['y'])
 
         actions = []
-        for action in goal['actions']:
+        if 'actions' in goal:
+            for action in goal['actions']:
 
-            try:
-                new = Action.parse(action, ai)
-            except Exception as e:
-                print('[GOALS] Fails to parse action: %s' % str(e))
-                return None
+                try:
+                    new = Action.parse(action, ai)
+                except Exception as e:
+                    print('[GOALS] Fails to parse action: %s' % str(e))
+                    return None
 
-            if new is None:
-                return None
+                if new is None:
+                    return None
 
-            actions.append(new)
+                actions.append(new)
 
-        new = Goal(goal['name'], position, theta, actions, score, timeout, optional_goal)
+        new = Goal(goal['name'], position, theta, actions, score, optional_goal)
 
         return new
 
 
-""" Startegy Class """
+""" Strategy Class """
 class Strategy:
     def __init__(self, name, goals=None):
         self.name = name
@@ -171,11 +172,11 @@ class Goals:
         self.critical_goal = None
         self.timeout_critical_goal = None
 
-        self.parse(file)
+        self.parse(file, ai)
 
         self.reset(0)
 
-    def parse(self, file):
+    def parse(self, file, ai):
 
         # Read file
         data = None
@@ -241,7 +242,7 @@ class Goals:
             s += str(self.goals[goal])
         s += "-> Strategies\n"
         for strategy in self.strategies:
-            s += str(strategy)
+            s += str(strategy) + '\n'
         return s
 
     def reset(self, index):
@@ -252,9 +253,9 @@ class Goals:
         self.current = 0
 
     def get_goal(self):
-        if self.current >= len(self.current_strategy):
+        if self.current >= len(self.current_strategy.goals):
             return None
-        return self.goals[self.current_strategy[self.current]]
+        return self.goals[self.current_strategy.goals[self.current]]
 
     def finish_goal(self):
         self.current += 1
