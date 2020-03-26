@@ -1,4 +1,4 @@
-from evolutek.lib.fsm import FSM
+from evolutek.lib.fsm import Fsm
 
 from enum import Enum
 from threading import Event, Thread
@@ -44,7 +44,12 @@ class Test_Fsm:
             if not self.test_error_state():
                 succeed = False
 
-        print('[TEST_FSM] End of the test, succeed: %s' % str(succeed))
+        Thread(target=self.fsm.start_fsm, args=[States.state1]).start()
+        if succeed:
+            if not self.test_stop_fsm():
+                succeed = False
+
+        print('[TEST_FSM] End of the test, success: %s' % str(succeed))
 
     def test_state(self, state):
 
@@ -97,11 +102,28 @@ class Test_Fsm:
             sleep(0.1)
         if self.fsm.is_running():
             print('[TEST_FSM] Failed to stop fsm')
-        else:
-            print('[TEST_FSN] Succeed to stop fsm')
             succeed = False
-
+        else:
+            print('[TEST_FSM] Succeed to stop fsm')
         return succeed
+
+    def test_stop_fsm(self):
+
+        print('[TEST_FSM] Wating to be in state1')
+        sleep(0.1)
+
+        self.in_state.wait()
+        self.fsm.stop_fsm()
+        self.in_state.clear()
+
+        print('[TEST_FSM] Waiting FSM to stop')
+        sleep(0.5)
+
+        if self.fsm.is_running():
+            print('[TEST_FSM] Failed to stop fsm')
+            return False
+        print('[TEST_FSM] Succeed to stop fsm')
+        return True
 
     def state1(self):
         print('[TEST_FSM] Hello, I am state 1')
@@ -131,7 +153,7 @@ class Test_Fsm:
         self.stop.clear()
 
 def main():
-    Test_FSM()
+    Test_Fsm()
 
 if __name__ == "__main__":
     main()

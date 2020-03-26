@@ -60,11 +60,14 @@ class Fsm:
     def stop_fsm(self):
         if self.is_running():
             print('[FSM] Stopping FSM')
-            self.stopping = Event()
+            self.stopping.set()
 
     def run_error(self):
         self.in_error = True
+        self.running = self.error_state
+
         self.error_state.run_state()
+
         self.in_error = False
 
     # Will run on a thread
@@ -77,23 +80,28 @@ class Fsm:
             print('[FSM] Not registered state')
             return False
 
+        print('[FSM] Running')
         self.running = self.states[state]
         next = self.running.run_state()
 
-        while True:
+        while not self.stopping.is_set():
             if next is None :
                 self.run_error()
-                return
+                break
 
             if not next in self.states:
                 print('[FSM] Next not registered: %s' % next)
                 self.run_error()
-                return
+                break
 
             if not self.running.state in self.transistions[next]:
                 print("[FSM] Can't go to this state: %s" % next)
                 self.run_error()
-                return
+                break
 
             self.running = self.states[next]
             next = self.running.run_state()
+
+        self.stopping.clear()
+        self.running = None
+        print('[FSM] Stopped')
