@@ -75,7 +75,7 @@ class Action:
 """ Goal Class """
 class Goal:
 
-    def __init__(self, name, position, theta=None, actions=None, score=0, ptional_goal=None):
+    def __init__(self, name, position, theta=None, actions=None, score=0, optional_goal=None):
         self.name = name
         self.position = position
         self.theta = theta

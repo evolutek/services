@@ -4,7 +4,7 @@ from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 
 from evolutek.lib.fsm import Fsm
-from evolutek.lib.goals import Goals, Avoid
+from evolutek.lib.goals import Goals, AvoidStrategy
 #from evolutek.lib.gpio import Edge, Gpio
 from evolutek.lib.robot import Robot
 from evolutek.lib.settings import ROBOT
@@ -29,7 +29,7 @@ class States(Enum):
 # TODO: Manage Gpio
 
 #@Service.require('actuators', ROBOT)
-#@Service.require('trajman', ROBOT)
+@Service.require('trajman', ROBOT)
 class Ai(Service):
 
     def __init__(self):
@@ -54,7 +54,9 @@ class Ai(Service):
 
         #Gpio(5, "tirette", False, edge=Edge.FALLING).auto_refresh(service=self)
 
-        self.goals = Goals(file='/etc/conf.d/startegy-%s.py' % ROBOT, ai=self)
+        #self.goals = Goals(file='/etc/conf.d/strategy-%s.json' % ROBOT, ai=self)
+        self.goals = Goals(file='/etc/conf.d/test_strats.json', ai=self)
+        print(self.goals)
         self.goal = None
         self.strategy_index = 0
 
@@ -76,15 +78,15 @@ class Ai(Service):
             self.recalibration.clear()
             self.robot.recalibration(init=True)
             #self.robot.tm.disable_avoid()
-            self.robot.goto(self.goals.starting_position_x, self.goals.starting_position_y)
+            self.robot.goto(self.goals.starting_position.x, self.goals.starting_position.y)
             self.robot.goth(self.goals.starting_theta)
             #self.robot.tm.enable_avoid()
 
         else:
             self.robot.tm.free()
             self.robot.set_pos(
-                self.goals.starting_position_x,
-                self.goals.starting_position_y,
+                self.goals.starting_position.x,
+                self.goals.starting_position.y,
                 self.goals.starting_theta)
             self.robot.tm.unfree()
 
@@ -123,7 +125,7 @@ class Ai(Service):
     """ MAKING """
     def making(self):
 
-        print("[AI] making goal:\n%s" % str(self.goal))
+        print("[AI] Making goal:\n%s" % str(self.goal))
 
         if self.match_end.is_set():
             return States.Ending
@@ -132,7 +134,7 @@ class Ai(Service):
 
         self.robot.goto(self.goal.position.x, self.goal.position.y)
 
-        if not selh.goal.theta is None:
+        if not self.goal.theta is None:
             self.robot.goth(self.goal.theta)
 
         if self.match_end.is_set():
@@ -190,6 +192,10 @@ class Ai(Service):
     def reset_handler(self):
         self.reset.set()
 
+    @Service.action
+    def set_strategy(self, index):
+        self.strategy_index = int(index)
+
     @Service.event("match_start")
     def match_start_handler(self):
         self.match_start.set()
@@ -202,6 +208,10 @@ class Ai(Service):
         self.robot.tm.disable()
         #self.cs.actuators[ROBOT].free()
         #self.cs.actuators[ROBOT].disable()
+
+    def sleep_ai(self):
+        print('[AI] I am sleeping')
+        sleep(1)
 
 def main():
     ai = Ai()

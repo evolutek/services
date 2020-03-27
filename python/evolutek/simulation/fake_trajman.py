@@ -156,7 +156,7 @@ class TrajMan(Service):
                 pass
 
             while not self.need_to_stop.is_set()\
-                and abs(self.goal_theta - self.theta) > abs(self.goal_theta - (self.theta + (tmp_rotmax / RATIO_ROT) * (1 if sens else -1))):
+                and abs(self.goal_theta - self.theta) > (tmp_rotmax / RATIO_ROT):
                 if self.has_stopped.is_set():
                     self.has_stopped.clear()
                     self.publish(ROBOT + '_started')
@@ -358,7 +358,6 @@ class TrajMan(Service):
         self.goal_theta = angle if self.sens else (angle - pi)
 
         self.need_to_stop.clear()
-        print('Gas Gas Gas')
 
     @Service.action
     @if_enabled
