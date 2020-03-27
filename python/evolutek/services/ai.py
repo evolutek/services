@@ -54,10 +54,9 @@ class Ai(Service):
 
         #Gpio(5, "tirette", False, edge=Edge.FALLING).auto_refresh(service=self)
 
-        self.goals = Goals(cs=self.cs, file='lol')
+        self.goals = Goals(file='/etc/conf.d/startegy-%s.py' % ROBOT, ai=self)
         self.goal = None
-        self.strategy = self.goals.strategies[0]
-
+        self.strategy_index = 0
 
         super().__init__(ROBOT)
         print('[AI] Ready')
@@ -70,20 +69,23 @@ class Ai(Service):
         self.robot.tm.enable()
         #self.cs.actuators[ROBOT].reset()
         #self.robot.tm.enable_avoid()
-        self.goals.reset(self.strategy)
+        self.goals.reset(self.strategy_index)
         self.score = 0
 
         if self.recalibration.is_set():
             self.recalibration.clear()
             self.robot.recalibration(init=True)
             #self.robot.tm.disable_avoid()
-            self.robot.goto(self.goals.start_x, self.goals.start_y)
-            self.robot.goth(self.goals.start_theta)
+            self.robot.goto(self.goals.starting_position_x, self.goals.starting_position_y)
+            self.robot.goth(self.goals.starting_theta)
             #self.robot.tm.enable_avoid()
 
         else:
             self.robot.tm.free()
-            self.robot.set_pos(self.goals.start_x, self.goals.start_y, self.goals.start_theta)
+            self.robot.set_pos(
+                self.goals.starting_position_x,
+                self.goals.starting_position_y,
+                self.goals.starting_theta)
             self.robot.tm.unfree()
 
         self.match_end.clear()
@@ -95,15 +97,20 @@ class Ai(Service):
     def waiting(self):
         while not self.reset.is_set() and not self.match_start.is_set():
             sleep(0.1)
+
+        next = States.Selecting if self.match_start.is_set() else States.Setup
         self.reset.clear()
         self.match_start.clear()
-        return States.Selecting
+
+        return next
 
 
     """ SELECTING """
     def selecting(self):
         if self.match_end.is_set():
             return States.Ending
+
+        # TODO: Manage failing goals
 
         self.goal = self.goals.get_goal()
 
@@ -121,24 +128,22 @@ class Ai(Service):
         if self.match_end.is_set():
             return States.Ending
 
-        self.robot.goto(self.goal.position.x, self.goal.position.y)
-        self.robot.goth(self.goal.theta)
+        goal_score = self.goal.score
 
+        self.robot.goto(self.goal.position.x, self.goal.position.y)
+
+        if not selh.goal.theta is None:
+            self.robot.goth(self.goal.theta)
 
         if self.match_end.is_set():
             return States.Ending
-
-        avoid = True
 
         for action in self.goal.actions:
 
             if self.match_end.is_set():
                 return States.Ending
 
-            #if avoid and not action.avoid:
-            #    self.robot.tm.disable_avoid()
-            #elif not avoid and action.avoid:
-            #    self.robot.rm.enable_avoid()
+            # TODO: manage Avoid
 
             print("[AI] Making action:\n%s" % str(action))
 
@@ -147,15 +152,14 @@ class Ai(Service):
             if action.score > 0:
                 self.publish("score", value=action.score)
                 self.score += action.score
-                self.goal.score -= action.score
-
-        if not avoid:
-            self.robot.tm.enable_avoid()
+                goal_score -= action.score
 
         self.goals.finish_goal()
         if self.goal.score > 0:
-            self.publish("score", value=self.goal.score)
-            self.score += self.goal.score
+            self.publish("score", value=goal_score)
+            self.score += goal_score
+
+        # Manage failure
         self.goal = None
 
         return States.Selecting
