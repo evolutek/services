@@ -47,14 +47,15 @@ class PumpActuator:
         self.buoy = Buoy.Empty
 
     def __str__(self):
-        s = "Pump: %d" % self.pump_nb
-        s += "Pump output: %d" % self.pump_gpio.read()
-        s += "EV output: %d" % self.ev_gpio.read()
+        s = "Pump: %d/" % self.pump_nb
+        s += "Pump output: %d/" % self.pump_gpio.read()
+        s += "EV output: %d/" % self.ev_gpio.read()
         s += "Buoy: %s" % self.buoy.value
         return s
 
 ##TODO:
 ## - color sensors
+## - Multiplexer
 
 def if_enabled(method):
     """
@@ -103,7 +104,7 @@ class Actuators(Service):
             PumpActuator(22, 23, 2),
             PumpActuator(10, 24, 3),
             PumpActuator(9, 25, 4),
-            PumpActuator(11, 24, 5),
+            PumpActuator(11, 8, 5),
             PumpActuator(5, 7, 6),
             PumpActuator(6, 16, 7),
             PumpActuator(19, 20, 8)
