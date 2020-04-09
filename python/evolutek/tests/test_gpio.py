@@ -11,7 +11,7 @@ class Test_Gpio(Service):
 
         self.gpio.auto_refresh(1, self)
 
-    #@Service.thread
+    @Service.thread
     def loop(self):
         while True:
             print("Loop read: %d" % self.gpio.read())

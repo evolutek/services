@@ -1,5 +1,5 @@
 ## TODO : manage other options
-## TODO : manage available gpio 
+## TODO : manage available gpio
 
 BCM = 'BCM'
 IN  = 'IN'
@@ -8,18 +8,18 @@ LOW = 'LOW'
 HIGH = 'HIGH'
 PUD_DOWN = 'PULL DOWN'
 
-def setmode(cls, mode):
+def setmode(mode):
     print('[FAKE_GPIO] Setting mode %s' % mode)
 
-def setup(cls, id, mode, initial, pull_up_down=None):
-    print('[FAKE_GPIO] Setting gpio %d: (%s, %s)' % (id, mode, initial))
+def setup(id, mode, initial=LOW, pull_up_down=None):
+    print('[FAKE_GPIO] Setting gpio %d: %s' % (id, mode))
 
 def input(id):
     print('[FAKE_GPIO] Reading gpio %d' % id)
-    return False
+    return 0
 
-def output(id, value)
-    print('[FAKE_GPIO] Writing on gpio %d: %s' % (id, value))]
+def output(id, value):
+    print('[FAKE_GPIO] Writing on gpio %d: %s' % (id, value))
 
 class PWM:
 
@@ -27,11 +27,11 @@ class PWM:
         self.id = id
         print('[FAKE_GPIO] Init pwm: (%d; %d)' % (id, freq))
 
-    def ChangeDutyCycle(dc):
+    def ChangeDutyCycle(self, dc):
         print('[FAKE_GPIO] Changing duty cycle on pwm %d: %d' % (self.id, dc))
 
-    def start(dc):
+    def start(self, dc):
         print('[FAKE_GPIO] Strating pwm %d: %d' % (self.id, dc))
 
-    def stop():
+    def stop(self):
         print('[FAKE_GPIO] Stoping pwm %d' % self.id)
