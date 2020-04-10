@@ -1,8 +1,14 @@
+from enum import Enum
 from math import cos, sin, radians, sqrt
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
 from evolutek.lib.map.point import Point
 from threading import Thread, Lock
+
+class DebugMode(Enum):
+    normal=0
+    debug_merge=1
+    debug_tims=2
 
 def parse_num(s):
     if '+' in s or '-' in s:
@@ -10,18 +16,50 @@ def parse_num(s):
     else:
         return int(s, 16)
 
-# TODO: Update Documentation
 # TIM Class
-# config: {pos_x : int, pos_y : int, angle : float, min_size : float, max_distance : float, ip : str, port : int}
-# pos is the position of the TIM: Point(x, y)
-# angle is the angle of the TIM: float
-# min_size is the min size of a shape : float
-# max_distance is the max distance between two points for a robot : float
+
+# config: {ip : str, port : int, pos_x : int, pos_y : int, angle : int}
+# pos: position of the TIM: Point(x, y)
+# angle: angle of the TIM: int
+
+
+# computation_config: (min_size : int, max_distance : int, radius_beacon : int, refresh : float}
+# min_size: min size of a shape : int
+# max_distance: max distance between two points for a robot : int
+# radius_beacon: radius of a beacon placed on a robot : int
+# refresh: refresh of a TIM : float
+
+# try_connection():
+# Try to connect to TIM via a TCP/IP Socket
+# Launch a thread which will make scans
+
+# change_pos(mirror):
+# Change the pos of the TIM according of the side of the table
+
+# convert_to_card(cyl_data, size_a):
+# Change all the cylindrical coords to cardinal coords
+
+# cleanup(raw_points):
+# Remove out table points
+
+# split_raw_data(sraw_data):
+# Split raw date in shapes
+
+# ompute_center(shapes):
+# Compute center of shape using the ray between the mean of the shape and the pos of TIM
+
+# scan():
+# Make a scan
+
+# loop_scan():
+# Loop to make scans
+
+# get_scan():
+# Return detected robots
 
 class Tim:
 
-    def __init__(self, config, debug, mirror=False):
-        self.window = []
+    def __init__(self, config, computation_config, mirror=False):
 
         # Network config
         self.ip = config['ip']
@@ -32,41 +70,56 @@ class Tim:
         self.default_angle = int(config['angle'])
 
         # Computation config
-        self.refresh = float(config['refresh'])
-        self.window_size = float(config['window'])
-        self.min_size = int(config['min_size'])
-        self.max_distance = int(config['max_distance'])
-        self.window_size = int(config['window'])
+        self.refresh = float(computation_config['refresh'])
+        self.min_size = int(computation_config['min_size'])
+        self.max_distance = int(computation_config['max_distance'])
+        self.radius_beacon = int(computation_config['radius_beacon'])
+
+        self.raw_data = []
+        self.shapes = []
+        self.robots = []
 
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.connected = False
-        self.debug = debug
         self.lock = Lock()
 
         self.pos = None
         self.angle = None
         self.change_pos(mirror)
+        self.try_connection()
 
         print('TIM created')
 
+    def __str__(self):
+        s = "ip: %s\n" % self.ip
+        s += "port: %d\n" % self.port
+        s += "pos: " + str(self.pos) + "\n"
+        s += "angle: %d\n" % self.angle
+        s += "connected: %s" % str(self.connected)
+        return s
+
     def try_connection(self):
-        try:
-            print('[TIM] Connecting to the TIM: %s,%d' % (self.ip, self.port))
-            self.socket.connect((self.ip, self.port))
-            self.connected = True
-            looper = Thread(target = self.loop_scan)
-            looper.setDaemon(True)
-            looper.start()
-            print('[TIM] Connected to the TIM')
-        except Exception as e:
-            print('[TIM] Failed to connect to the TIM: ' + str(e))
-            self.connected = False
+        Thread(target = self._try_connection).start()
+
+
+    def _try_connection(self):
+        while not self.connected:
+            try:
+                print('[TIM] Connecting to the TIM: %s, %d' % (self.ip, self.port))
+                self.socket.connect((self.ip, self.port))
+                self.connected = True
+
+            except Exception as e:
+                print('[TIM] Failed to connect to the TIM %s: %s' % (self.ip, str(e)))
+                self.connected = False
+                sleep(1)
+
+        self.loop_scan()
 
     def change_pos(self, mirror=False):
         self.pos = Point(self.default_pos.x, 3000 - self.default_pos.y if mirror else self.default_pos.y)
         self.angle = self.default_angle * -1 if mirror else self.default_angle
-        if not self.connected:
-            self.try_connection()
+        print('[TIM] Changing tim %s pos: %s, angle: %d' % (self.ip, self.pos, self.angle))
 
     def convert_to_card(self, cyl_data, size_a):
         clean_data = []
@@ -78,6 +131,7 @@ class Tim:
             clean_data.append(Point(x, y))
         return clean_data
 
+    # TODO: use table config
     def cleanup(self, raw_points):
         clean_points = []
         for p in raw_points:
@@ -89,10 +143,7 @@ class Tim:
         shapes = []
         shape = []
         for p in raw_data:
-            if len(shape) == 0:
-                shape.append(p)
-                continue
-            if p.dist(shape[-1]) < self.max_distance:
+            if len(shape) == 0 or p.dist(shape[-1]) < self.max_distance:
                 shape.append(p)
             else:
                 if len(shape) >= self.min_size:
@@ -116,7 +167,7 @@ class Tim:
                 dy = True
                 a = (moy.x - self.pos.x) / (moy.y - self.pos.y)
                 b = moy.x - a * moy.y
-            radius = -40 if self.pos.x > moy.x else 40
+            radius = self.radius_beacon * (-1 if self.pos.x > moy.x else 1)
             x = 0
             y = 0
             if dy:
@@ -131,33 +182,30 @@ class Tim:
     def scan(self):
 
         if self.pos is None or self.angle is None:
-            print('[TIM] Pos or angle not configured')
+            print('[TIM] %s Pos or angle not configured' % self.ip)
             return None
 
-        #print('[TIM] Scanning')
-
-        #("Send a scan request to the TIM")
         try:
             self.socket.sendall("\x02sRN LMDscandata\x03\0".encode())
         except Exception as e:
-            print('[TIM] Failed to send scan request: %s' % str(e))
+            print('[TIM] Failed to send scan request to %s: %s' % (self.ip, str(e)))
             self.connected = False
-            return None
+            self._try_connection()
         data = ""
 
         while True:
             try:
                 part = self.socket.recv(1024)
             except Exception as e:
-                print('[TIM] Failed to recieve scan data: %s' % str(e))
+                print('[TIM] Failed to recieve scan data of %s: %s' % (self.ip, str(e)))
                 self.connected =  False
-                return None
+                self._try_connection()
             data += part.decode()
             if "\x03" in part.decode():
                 break
         length = len(data)
         if (data[0] != '\x02' or data[length - 1] != '\x03'):
-            print("[TIM] Bad response for the TIM")
+            print("[TIM] Bad response for the TIM %s" % self.ip)
             return None
         data = data[1:len(data) - 2].split(' ')
         angular_step = parse_num(data[24])/10000
@@ -182,29 +230,18 @@ class Tim:
         while self.connected:
           sleep(.1)
           new_data = self.scan()
-          if new_data is None:
-              print('[TIM] Failed to get scan')
-              continue
-          self.lock.acquire()
-          if len(self.window) == self.window_size:
-              self.window.pop(0)
-          self.window.append(self.scan())
-          self.lock.release()
-
-    # TODO: Make an algorithm to merge all scan in the window
-    def merge_window(self):
-        clean = []
-        robots = [scan[2] for scan in self.window]
-        return robots
+          with self.lock:
+              if new_data is None:
+                  print('[TIM] Failed to get scan on %s' % self.ip)
+                  self.raw_data.clear()
+                  self.shapes.clear()
+                  self.robots.clear()
+                  continue
+              self.raw_data, self.shapes, self.robots = new_data
 
     def get_scan(self):
-        if self.window == []:
-          return []
-        self.lock.acquire()
-        scan = self.window[-1]
-        raw_data, shapes, robots = scan[0], scan[1], scan[2]
-        self.lock.release()
 
-        if self.debug:
-            return raw_data, shapes, robots
+        with self.lock:
+            robots = self.robots
+
         return robots

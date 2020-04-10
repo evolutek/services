@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import ctypes
+import json
 import os
 
 from cellaserv.service import Service
@@ -30,7 +31,7 @@ AX_CCW_ANGLE_LIMIT_L   = 8
 
 class Ax(Service):
     def __init__(self, ax):
-        super().__init__(identification=str(ax))
+        super().__init__(identification="%s-%d" % (ROBOT, ax))
         self.ax = ax
 
         libdxl = None
@@ -121,11 +122,18 @@ def wait_for_beacon():
 
 def main():
     wait_for_beacon()
-    # TODO: ax mapping with json
-    if ROBOT == 'pal':
-        axs = [Ax(ax=i) for i in [1, 2, 3, 4]]  # MAIN
-    elif ROBOT == 'pmi':
-        axs = [Ax(ax=i) for i in [11, 12]]  # MAIN
+
+    data = None
+    with open('/etc/conf.d/ax.json', 'r') as ax_file:
+        data = ax_file.read()
+        data = json.loads(data)
+
+    if not ROBOT in data:
+        print('[AX] Failed to init axs, ROBOT not existing')
+        return
+
+    axs = [Ax(ax=i) for i in data[ROBOT]]
+
     Service.loop()
 
 if __name__ == "__main__":

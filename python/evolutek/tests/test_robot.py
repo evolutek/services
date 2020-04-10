@@ -15,12 +15,15 @@ def main():
 
     sleep(2)
 
+    #robot.goto(x=850, y=1750)
+
+    """for i in range(10):
+        print(robot.goto_avoid(250, 250))
+        print(robot.goto_avoid(1750, 2750))"""
+
     for i in range(10):
-        robot.goto_avoid(250, 250)
-        robot.goto_avoid(1750, 2750)
-
-
-    #robot.goto_with_path(750, 2300)
+        print(robot.goto_with_path(1400, 2300))
+        print(robot.goto_with_path(250, 250))
 
     print('End test')
 

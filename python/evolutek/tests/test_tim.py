@@ -1,24 +1,27 @@
-from evolutek.lib.map.tim import Tim
+from evolutek.lib.map.tim import DebugMode, Tim
 from time import sleep
 
 def test_tim():
 
-    config = {
+    computation_config = {
         'min_size' : 4,
         'max_distance' : 45,
+        'delta_dist' : 40,
+        'refresh' : 0.5,
+        'radius_beacon': 40
+    }
+
+    config = {
         'ip' : 'sick1',
         'port' : 2112,
         'pos_x' : 1000,
-        'pos_y' : 3094,
-        'angle' : 90,
-        'delta_dist' : 40,
-        'refresh' : 0.5,
-        'window' : 5
+        'pos_y' : -94,
+        'angle' : -90
     }
 
     print('[TEST_TIM] Starting TIM test')
 
-    tim = Tim(config, False, False)
+    tim = Tim(config, computation_config, False, False)
 
     sleep(0.5)
 

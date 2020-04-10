@@ -1,160 +1,120 @@
-#!/usr/bin/env python3
-
-from copy import deepcopy
-from enum import Enum
-from math import ceil, sqrt
-from evolutek.lib.map.obstacle import ObstacleType, Obstacle, CircleObstacle, RectangleObstacle
 from evolutek.lib.map.point import Point
+from evolutek.lib.map.utils import *
 
-class Cell:
+from collections import deque
+from copy import deepcopy
+from planar import Polygon as PolygonPlanar
+from shapely.geometry import Polygon, MultiPolygon
 
-    def __init__(self, fixed_obstacles=None, color_obstacles=None, robots=None):
-        self.fixed_obstacles = [] if fixed_obstacles is None else fixed_obstacles
-        self.color_obstacles = [] if color_obstacles is None else color_obstacles
-        self.robots = [] if robots is None else robots
-
-    def add_obstacle(self, obstacle, type):
-        if type == ObstacleType.fixed and not obstacle in self.fixed_obstacles:
-            self.fixed_obstacles.append(obstacle)
-            return True
-        elif type == ObstacleType.color and not obstacle in self.color_obstacles:
-            self.color_obstacles.append(obstacle)
-            return True
-        elif type == ObstacleType.robot and not obstacle in self.robots:
-            self.robots.append(obstacle)
-            return True
-        return False
-
-    def remove_obstacle(self, obstacle):
-        if obstacle in self.fixed_obstacles:
-            self.fixed_obstacles.remove(obstacle)
-            return True
-        if obstacle in self.color_obstacles:
-            self.color_obstacles.remove(obstacle)
-            return True
-        elif obstacle in self.robots:
-            self.robots.remove(obstacle)
-            return True
-        return False
-
-    def is_obstacle(self):
-        return len(self.fixed_obstacles) > 0 or len(self.color_obstacles) > 0
-
-    def is_color(self):
-        return len(self.color_obstacles) > 0
-
-    def is_robot(self):
-        return len(self.robots) > 0
-
-    def is_empty(self):
-        return not self.is_robot() and not self.is_obstacle()
-
-    def __str__(self):
-        s = "Cell:\n"
-        s += str(self.obstacles) + "\n"
-        s += str(self.robots) + "\n"
-        return s
-
+# TODO: optimization
+# TODO: A* ?
+# TODO: exclusion zone for start point when computin pathfinding
 
 class Map:
 
-    def __init__(self, width, height, unit, robot_radius):
-        self.real_width = width
-        self.real_height = height
-        self.width = int(width / unit)
-        self.height = int(height / unit)
-        self.unit = unit
+    def __init__(self, width, height, robot_radius):
+        self.width = width
+        self.height = height
         self.robot_radius = robot_radius
 
-        self.map = []
+        self.borders = Polygon([
+            (robot_radius, robot_radius),
+            (height - robot_radius, robot_radius),
+            (height - robot_radius, width - robot_radius),
+            (robot_radius, width - robot_radius)
+        ])
+
         self.obstacles = []
+        self.color_obstacles = {}
+        self.robots = {}
 
-        for x in range(self.height + 1):
-            self.map.append([])
-            for y in range(self.width + 1):
-                self.map[x].append(Cell())
+        self.merged_obstacles = None
+        self.merge_obstacles()
 
-        self.add_boundaries()
+        self.merged_map = None
+        self.merge_map()
 
+    def merge_obstacles(self):
+        result = MultiPolygon()
+        for obstacle in self.obstacles:
+            result = result.union(obstacle)
+        for tag in self.color_obstacles:
+            result = result.union(self.color_obstacles[tag])
+        for tag in self.robots:
+            result = result.union(self.robots[tag])
+        self.merged_obstacles = result
 
-    """ UTILITIES """
+    # Return a Polygon or a MultiPolygon
+    def merge_map(self):
+        result = self.borders
+        merged_obstacles = self.merged_obstacles
+        if isinstance(merged_obstacles, Polygon):
+            merged_obstacles = [merged_obstacles]
+        for poly in merged_obstacles:
+            result = merge_polygons(result, poly)
+        self.merged_map = result
 
-    def is_real_point_outside(self, p):
-        return p.x < 0 or p.y < 0 or p.x > self.real_height or p.y > self.real_width
+    def is_inside(self, p):
+        return 0 <= p.x <= self.height and 0 <= p.y <= self.width
 
-    def is_point_inside(self, p):
-        return p.x >= 0 and p.x <= self.height and p.y >= 0 and p.y <= self.width
-
-    def convert_point(self, p):
-        return Point(int(p.x/self.unit), int(p.y/self.unit))
-
-    def print_map(self):
-        print('-' * (self.width + 2))
-        for x in range(self.height + 1):
-            s = "|"
-            for y in range(self.width + 1):
-                s += self.map[x][y]
-            s += "|"
-            print(s)
-        print('-' * (self.width + 2))
-
-
-    """ OBSTACLES """
-
-    def add_obstacle(self, obstacle):
+    def add_obstacle(self, poly, tag=None, type=ObstacleType.fixed):
         added = False
-        for p in obstacle.points:
-            if self.is_point_inside(p):
-                added = True
-                self.map[p.x][p.y].add_obstacle(obstacle.tag, obstacle.type)
+
+        if tag is not None:
+            self.remove_obstacle(tag)
+
+        if type == ObstacleType.fixed:
+            self.obstacles.append(poly)
+            added = True
+        elif type == ObstacleType.color and tag is not None:
+            self.color_obstacles[tag] = poly
+            added = True
+        elif type == ObstacleType.robot and tag is not None:
+            self.robots[tag] = poly
+            added = True
+
         if added:
-            self.obstacles.append(obstacle)
+            self.merge_obstacles()
+            self.merge_map()
         return added
 
     def remove_obstacle(self, tag):
-        if tag is None:
+        removed = False
+        if tag in self.color_obstacles:
+            removed = True
+            del(self.color_obstacles[tag])
+        elif tag in self.robots:
+            removed = True
+            del(self.robots[tag])
+        if removed:
+            self.merge_obstacles()
+            self.merge_map()
+        return removed
+
+    def add_rectangle_obstacle(self, p1, p2, tag=None, type=ObstacleType.fixed):
+        if not self.is_inside(p1) or not self.is_inside(p2):
             return False
-        for obs in self.obstacles:
-            if obs == tag:
-                for p in obs.points:
-                    if self.is_point_inside(p):
-                        self.map[p.x][p.y].remove_obstacle(tag)
-                self.obstacles.remove(obs)
-                return True
-        return False
 
-    def add_boundaries(self):
-        radius = int(self.robot_radius / self.unit)
-        for x in range(radius, self.height - radius + 1):
-            self.map[x][radius].add_obstacle('add_boundaries', ObstacleType.fixed)
-            self.map[x][self.width - radius].add_obstacle('boundaries', ObstacleType.fixed)
-        for y in range(radius, self.width - radius):
-            self.map[radius][y].add_obstacle('add_boundaries', ObstacleType.fixed)
-            self.map[self.height - radius][y].add_obstacle('boundaries', ObstacleType.fixed)
+        l = [
+            (p1.x - self.robot_radius, p1.y - self.robot_radius),
+            (p1.x - self.robot_radius, p2.y + self.robot_radius),
+            (p2.x + self.robot_radius, p2.y + self.robot_radius),
+            (p2.x + self.robot_radius, p1.y - self.robot_radius)
+        ]
 
-    def is_inside_fixed_obstacle(self, point):
-        for obstacle in self.obstacles:
-            if obstacle.type != ObstacleType.fixed:
-                continue
-            if isinstance(obstacle, RectangleObstacle):
-                if point.x >= obstacle.p1.x and point.x <= obstacle.p1.x and\
-                    point.y >= obstacle.p2.y and point.y <= obstacle.p2.y:
-                    return True
-            elif isinstance(obstacle, CircleObstacle):
-                if point.dist(obstacle.center) <= obstacle.radius:
-                    return True
-        return False
+        return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
-    def is_inside_obstacle(self, point):
-        for obstacle in self.obstacles:
-            if isinstance(obstacle, RectangleObstacle):
-                if point.x >= obstacle.p1.x and point.x <= obstacle.p2.x and\
-                    point.y >= obstacle.p1.y and point.y <= obstacle.p2.y:
-                    return True
-            elif isinstance(obstacle, CircleObstacle):
-                if point.dist(obstacle.center) <= obstacle.radius:
-                    return True
-        return False
+    def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
+        if not self.is_inside(center):
+            return False
+
+        poly = PolygonPlanar.regular(8, radius=radius + self.robot_radius, angle=22.5, center=center.to_tuple())
+        l = []
+
+        for point in poly:
+            l.append((point.x, point.y))
+
+        return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
     def add_obstacles(self, obstacles, mirror=False, type=ObstacleType.fixed):
         obstacles = deepcopy(obstacles)
@@ -164,60 +124,137 @@ class Map:
                 try:
                     obstacle['type'] = eval(obstacle['type'])
                 except Exception as e:
-                    print('Bad obstacle type: %s' % (str(e)))
+                    print('[MAP] Bad obstacle type: %s' % (str(e)))
                     continue
 
             if not 'form' in obstacle:
-                print('No form in obstacle')
+                print('[MAP] No form in obstacle')
                 continue
             form = obstacle['form']
             del obstacle['form']
 
             if form == 'rectangle':
                 if not 'p1' in obstacle or not 'p2' in obstacle:
-                    print('Bad rectangle obstacle in parsing')
+                    print('[MAP] Bad rectangle obstacle in parsing')
                     continue
-                obstacle['p1'] = Point.from_dict(obstacle['p1'])
-                obstacle['p2'] = Point.from_dict(obstacle['p2'])
+                obstacle['p1'] = Point(dict=obstacle['p1'])
+                obstacle['p2'] = Point(dict=obstacle['p2'])
                 if mirror:
                     obstacle['p1'].y = 3000 - obstacle['p1'].y
                     obstacle['p2'].y = 3000 - obstacle['p2'].y
                 self.add_rectangle_obstacle(**obstacle, type=type)
-            elif form == 'circle':
+            elif form == 'octogon':
                 if not 'p' in obstacle:
-                    print('Bad circle obstacle in parsing')
+                    print('[MAP] Bad circle obstacle in parsing')
                     continue
-                obstacle['p'] = Point.from_dict(obstacle['p'])
+                obstacle['p'] = Point(dict=obstacle['p'])
                 if mirror:
                     obstacle['p'].y = 3000 - obstacle['p'].y
-                self.add_circle_obstacle(**obstacle, type=type)
-
+                self.add_octogon_obstacle(**obstacle, type=type)
             else:
-                print('Obstacle form not found')
+                print('[MAP] Obstacle form not found')
 
-    def print_obstacles(self):
-        for obstacle in self.obstacles:
-            print(obstacle)
+    def compute_graph(self, start, end, obstacles):
 
-    def add_point_obstacle(self, p, tag=None, type=ObstacleType.fixed):
-        if self.is_real_point_outside(p):
-            return False
-        obs = Obstacle(tag, type)
-        _p = self.convert_point(p)
-        obs.points.append(_p)
-        return self.add_obstacle(obs)
+        # Create a queue of all points
+        d = deque()
+        graph = {}
+        d.append(start)
+        graph[start] = []
 
-    def add_rectangle_obstacle(self, p1, p2, tag=None, type=ObstacleType.fixed):
-        if self.is_real_point_outside(p1) or self.is_real_point_outside(p2):
-            return False
-        _x1 = int((min(p1.x, p2.x) - self.robot_radius) / self.unit)
-        _x2 = int((max(p1.x, p2.x) + self.robot_radius) / self.unit)
-        _y1 = int((min(p1.y, p2.y) - self.robot_radius) / self.unit)
-        _y2 = int((max(p1.y, p2.y) + self.robot_radius) / self.unit)
-        return self.add_obstacle(RectangleObstacle(Point(_x1, _y1), Point(_x2, _y2), tag=tag, type=type))
+        for poly in obstacles:
+            for point in poly.exterior.coords:
+                new = Point(tuple=point)
+                if not new in d and self.borders.contains(new):
+                    d.append(new)
+                    graph[new] = []
 
-    def add_circle_obstacle(self, p, radius=0, tag=None, type=ObstacleType.fixed):
-        if self.is_real_point_outside(p):
-            return False
-        obs = CircleObstacle(self.convert_point(p), int((radius + self.robot_radius)/self.unit), tag=tag, type=type)
-        return self.add_obstacle(obs)
+        d.append(end)
+        graph[end] = []
+
+        # Iterate over polygons to compute the vertexes
+        for poly in obstacles:
+            coords = poly.exterior.coords
+            l = len(coords)
+            for i in range(1, l):
+                new = Point(tuple=coords[i])
+                if not self.borders.contains(new):
+                    continue
+
+                d.remove(new)
+                p1 = Point(coords[i - 1])
+                p2 = Point(coords[(i + 1) % l])
+
+                if not p1 in graph[new] and self.borders.contains(p1):
+                    graph[new].append(p1)
+
+                if not p2 in graph[new] and self.borders.contains(p2):
+                    graph[new].append(p2)
+
+                points = list(d)
+                for point in points:
+                    if point in graph[new]:
+                        continue
+                    is_colliding = False
+                    for poly in obstacles:
+                        if is_colliding_with_polygon(point, new, poly):
+                            is_colliding = True
+                            break
+
+                    if not is_colliding:
+                        graph[new].append(point)
+                        graph[point].append(new)
+
+        return graph
+
+    def get_path(self, start, end):
+
+        obstacles = deepcopy(self.merged_obstacles)
+        map = deepcopy(self.merged_map)
+
+        zone = None
+        if isinstance(map, Polygon):
+            zone = map
+        else:
+            for poly in map:
+                if poly.contains(start):
+                    zone = poly
+                    break
+
+        if zone is None:
+            print('[MAP] Start point outside current map')
+            return []
+
+        if not zone.contains(end):
+            print('[MAP] End point outside current map')
+            return []
+
+        if isinstance(obstacles, Polygon):
+            obstacles = MultiPolygon(obstacles)
+
+        # Create an octogon were the robot is
+        """p = PolygonPlanar.regular(8, radius=self.robot_radius, angle=22.5, center=start.to_tuple())
+        l = []
+        for point in p:
++            l.append((point.x, point.y))"""
+
+        is_colliding = False
+        for poly in obstacles:
+            if is_colliding_with_polygon(start, end, poly):
+                is_colliding = True
+                break
+
+        # No obstacles on the trajectory
+        if not is_colliding:
+            return [start, end]
+
+        graph = self.compute_graph(start, end, obstacles)
+
+        path = dijkstra(start, end, graph)
+
+        if path == []:
+            print("[MAP] Path not found")
+        else:
+            print("[MAP] Path found")
+
+        return path

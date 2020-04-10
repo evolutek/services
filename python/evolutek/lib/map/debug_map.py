@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
+from evolutek.lib.map.map import ObstacleType
+from evolutek.lib.map.point import Point
+from evolutek.lib.map.tim import DebugMode
 
 from tkinter import *
 from PIL import Image
 from PIL import ImageTk
-from math import cos, sin, pi, atan
+from math import ceil
 from os import _exit
+from shapely.geometry import Polygon, LineString
 
 colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
-unit = 1/2
-refresh = 50
 
+#TODO: add robot angle
 class Interface:
 
     def __init__(self, map, service):
@@ -17,154 +20,190 @@ class Interface:
         print('[DEBUG_MAP] Init interface')
 
         self.window = Tk()
+        self.unit = self.window
+        self.window.attributes('-fullscreen', True)
+        self.window.bind('<Escape>',lambda e: self.close())
+        self.window.title('Map interface')
+
         self.map = map
         self.service = service
-        self.width = map.real_width * unit
-        self.height = map.real_height * unit
+
+        unit_width = self.window.winfo_screenwidth() / self.map.width
+        unit_height = (self.window.winfo_screenheight() - 50) / self.map.height
+        self.unit = min(unit_width, unit_height)
+
+        self.width = self.map.width * self.unit
+        self.height = self.map.height * self.unit
+
+        nb_tims = len(self.service.tim)
+        center = int(ceil(nb_tims/2))
+
         self.close_button = Button(self.window, text='Close', command=self.close)
-        self.close_button.pack()
+        self.close_button.grid(row=1, column=center)
+
+        self.tim_labels = []
+        i = 0
+        for ip in self.service.tim:
+            connected = self.service.tim[ip].connected
+            label = Label(self.window,
+                text='TIM %s: %s' % (ip, 'connected' if connected  else 'disconnected'),
+                fg='green' if connected else 'red', height=1)
+            label.grid(row=2, column=i)
+            i += 1
+            self.tim_labels.append((label, ip))
+
         self.canvas = Canvas(self.window, width=self.width, height=self.height)
 
         img = Image.open('/etc/conf.d/map.png')
-        img = img.resize((int(3000 * unit), int(2000 * unit)), Image.ANTIALIAS)
+        img = img.resize((int(self.width), int(self.height)), Image.ANTIALIAS)
         self.image =  ImageTk.PhotoImage(img)
 
-        self.canvas.create_image(int(3000 * unit / 2), int(2000 * unit / 2), image=self.image)
+        self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
+        if nb_tims > 0:
+            self.canvas.grid(row=3, column=0, columnspan=nb_tims)
+        self.canvas.grid(row=3, column=0)
 
-        self.canvas.pack()
         print('[DEBUG_MAP] Window created')
-        self.window.after(refresh, self.update)
+        self.window.after(int(self.service.refresh), self.update)
         self.window.mainloop()
 
     def close(self):
         self.window.destroy()
         _exit(0)
 
-    def print_grid(self):
-        for x in range(self.map.width):
-            x_inf = (x * self.map.unit - self.map.unit/2) * unit
-            x_sup = (x * self.map.unit + self.map.unit/2) * unit
-            self.canvas.create_line(x_inf, 0, x_inf, self.height, fill='black')
-            self.canvas.create_line(x_sup, 0, x_sup, self.height, fill='black')
-        for y in range(self.map.height):
-            y_inf = (y * self.map.unit - self.map.unit/2) * unit
-            y_sup = (y * self.map.unit + self.map.unit/2) * unit
-            self.canvas.create_line(0, y_inf, self.width, y_inf, fill='black')
-            self.canvas.create_line(0, y_sup, self.width, y_sup, fill='black')
+    def update_tims(self):
 
-    def print_obstacles(self):
-        for y in range(self.map.width + 1):
-            for x in range(self.map.height + 1):
-                if not self.map.map[x][y].is_empty():
-                    x1 = (y * self.map.unit - self.map.unit/2) * unit
-                    x2 = (y * self.map.unit + self.map.unit/2) * unit
-                    y1 = (x * self.map.unit - self.map.unit/2) * unit
-                    y2 = (x * self.map.unit + self.map.unit/2) * unit
-                    color = 'red'
-                    if self.map.map[x][y].is_obstacle():
-                        color = 'black'
-                        if self.map.map[x][y].is_color():
-                            # TODO: get colors
-                            if hasattr(self.service, 'color'):
-                                color = self.service.color if not self.service.color is None else 'yellow'
-                            else:
-                                color = 'red'
-                    self.canvas.create_rectangle(x1, y1, x2, y2, fill=color)
+        for label, ip in self.tim_labels:
+            connected = self.service.tim[ip].connected
+            label.config(text='TIM %s: %s' % (ip, 'connected' if connected  else 'disconnected'),
+            fg='green' if connected else 'red')
 
     def print_raw_data(self, raw_data):
-      #print("data points: %d" % len(raw_data))
-      for p in raw_data:
-        self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white')
+        for p in raw_data:
+            self.canvas.create_rectangle(p.y * self.unit, p.x * self.unit, p.y * self.unit + 5, p.x * self.unit + 5, fill='white')
 
-    def print_shapes(self, shapes):
-      #print("nb shapes: %d" % len(shapes))
-      for i in range(len(shapes)):
-          color = colors[i % len(colors)]
-          for p in shapes[i]:
-            self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill=color)
+    def print_shapes(self, shapes, color):
+        for i in range(len(shapes)):
+            for p in shapes[i]:
+                self.canvas.create_rectangle(p.y * self.unit, p.x * self.unit, p.y * self.unit + 5, p.x * self.unit + 5, fill=color)
 
-    def print_robots(self, robots):
-      #print("[DEBUG_MAP] nb robots: %d" % len(robots))
-      for i in range(len(robots)):
-        color = colors[i % len(colors)]
-        p = robots[i]
-        if hastattr(self.service, 'debug') and self.service.debug:
-            self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 10, p.x * unit + 10, fill=color)
-        else:
-            self.canvas.create_rectangle((p['y'] - self.service.robot_size) * unit,
-            (p['x'] - self.service.robot_size) * unit, (p['y'] + self.service.robot_size) * unit,
-            (p['x'] + self.service.robot_size) * unit, fill='red')
+    def print_robots(self, robots, color):
+        for i in range(len(robots)):
+            if not isinstance(robots[i], Point):
+                p = Point(dict=robots[i])
+            else:
+                p = robots[i]
+            self.canvas.create_rectangle(p.y * self.unit, p.x * self.unit, p.y * self.unit + 10, p.x * self.unit + 10, fill=color)
 
-    def print_robot(self, robot, robot_size):
-        if not robot:
-            return
+    def print_tims(self, debug_tims=False):
+        i = 0
+        for ip in self.service.tim:
+            tim = self.service.tim[ip]
+            color = colors[i % len(colors)]
+            self.print_raw_data(tim.raw_data)
+            if debug_tims:
+                self.print_shapes(tim.shapes, color)
+                self.print_robots(tim.robots, color)
+            i += 1
 
-        x = robot['y'] * unit
-        y = robot['x'] * unit
-        size = robot_size * unit
+    def print_polygon(self, points, color):
 
-        points = []
-        points.append((x - size, y - size))
-        points.append((x + size, y - size))
-        points.append((x + size, y + size))
-        points.append((x - size, y + size))
+        for i in range(1, len(points)):
+            p1 = Point(tuple=points[i - 1])
+            p2 = Point(tuple=points[i])
 
-        cos_val = cos(pi/2 - robot['theta'])
-        sin_val = sin(pi/2 - robot['theta'])
+            self.canvas.create_line(p1.y * self.unit, p1.x * self.unit,
+                p2.y * self.unit, p2.x * self.unit, width=5, fill=color)
 
-        new_points = []
-        for point in points:
-            new_points.append((
-                (point[0] - x) * cos_val - (point[1] - y) * sin_val + x,
-                (point[0] - x) * sin_val + (point[1] - y) * cos_val + y
-            ))
+        for p in points:
+            point = Point(tuple=p)
+            x1 = (point.y - 10) * self.unit
+            x2 = (point.y + 10) * self.unit
+            y1 = (point.x - 10) * self.unit
+            y2 = (point.x + 10) * self.unit
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
 
-        self.canvas.create_polygon(new_points, fill='orange')
+    def print_map(self):
+        self.print_polygon(self.map.borders.exterior.coords)
+        for interior in self.map.borders.interiors:
+            self.print_polygon(interior.coords)
+        for poly in self.map.color_obstacles:
+            self.print_polygon(self.map.color_obstacles[poly].exterior.coords, ObstacleType.color)
+        for poly in self.map.robots:
+            self.print_polygon(self.map.robots[poly].exterior.coords, ObstacleType.robot)
+
+    def print_merged_map(self):
+
+        #merged_map = self.map.merge_map()
+        merged_map = self.map.merged_map
+        if isinstance(merged_map, Polygon):
+            merged_map = [merged_map]
+
+        #self.print_polygon(self.map.borders.exterior.coords, 'black')
+
+        for poly in merged_map:
+            self.print_polygon(poly.exterior.coords, 'grey')
+            for interior in poly.interiors:
+                self.print_polygon(interior.coords, 'red')
 
     def print_path(self, path):
-        #if path is None:
-        #    print("no path to display")
-        #    return
-        #print("displaying path: ")
-        #print(path)
+
+        if len(path) < 2:
+            return
+
         for i in range(1, len(path)):
             p1 = path[i - 1]
             p2 = path[i]
 
-            self.canvas.create_line(p1['y'] * unit, p1['x'] * unit,
-                p2['y'] * unit, p2['x'] * unit, width=5, fill='yellow')
+            self.canvas.create_line(p1.y * self.unit, p1.x * self.unit,
+                p2.y * self.unit, p2.x * self.unit, width=5, fill='yellow')
 
         for p in path:
-            x1 = (p['y'] - self.map.unit/4) * unit
-            x2 = (p['y'] + self.map.unit/4) * unit
-            y1 = (p['x'] - self.map.unit/4) * unit
-            y2 = (p['x'] + self.map.unit/4) * unit
+            x1 = (p.y - 10) * self.unit
+            x2 = (p.y + 10) * self.unit
+            y1 = (p.x - 10) * self.unit
+            y2 = (p.x + 10) * self.unit
             self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
 
-    def print_line_of_sight(self, line):
-        for p in line:
-            x1 = (p.y - self.map.unit/2) * unit
-            x2 = (p.y + self.map.unit/2) * unit
-            y1 = (p.x - self.map.unit/2) * unit
-            y2 = (p.x + self.map.unit/2) * unit
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill='orange')
+    def print_graph(self, graph):
+
+        for point in graph:
+
+            for p in graph[point]:
+
+                self.canvas.create_line(point.y * self.unit, point.x * self.unit,
+                    p.y * self.unit, p.x * self.unit, width=5, fill='yellow')
+
+        for p in graph:
+            x1 = (p.y - 10) * self.unit
+            x2 = (p.y + 10) * self.unit
+            y1 = (p.x - 10) * self.unit
+            y2 = (p.x + 10) * self.unit
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
 
     def update(self):
-        print('[DEBUG_MAP] Update interface')
+
+        #print('[DEBUG_MAP] Update interface')
         self.canvas.delete('all')
-        self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
-        self.print_grid()
-        self.print_obstacles()
-        if hasattr(self.service, 'pal_telem') and hasattr(self.service, 'pal_size_y'):
+        self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
+        #self.print_map()
+        with self.service.lock:
+            self.print_merged_map()
+
+        self.update_tims()
+
+        # Debug Mode
+        if self.service.debug_mode != DebugMode.normal:
+            self.print_tims(self.service.debug_mode==DebugMode.debug_tims)
+            if self.service.debug_mode == DebugMode.debug_merge:
+                with self.service.lock:
+                    self.print_robots(self.service.robots, 'white')
+
+        """if hasattr(self.service, 'pal_telem') and hasattr(self.service, 'pal_size_y'):
             self.print_robot(self.service.pal_telem, self.service.pal_size_y)
         if hasattr(self.service, 'pmi_telem') and hasattr(self.service, 'pmi_size_y'):
-            self.print_robot(self.service.pmi_telem, self.service.pmi_size)
-        if hasattr(self.service, 'debug') and self.service.debug:
-            self.print_raw_data(self.service.raw_data)
-            self.print_shapes(self.service.shapes)
-            self.print_line_of_sight(self.service.line_of_sight)
-        if hasattr(self.service, 'robots') and hasattr(self.service, 'robot_size'):
-            self.print_robots(self.service.robots)
+            self.print_robot(self.service.pmi_telem, self.service.pmi_size)"""
+
         if hasattr(self.service, 'path'):
             self.print_path(self.service.path)
-        self.window.after(refresh, self.update)
+        self.window.after(self.service.refresh, self.update)

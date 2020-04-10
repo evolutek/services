@@ -156,7 +156,7 @@ class TrajMan(Service):
                 pass
 
             while not self.need_to_stop.is_set()\
-                and abs(self.goal_theta - self.theta) > abs(self.goal_theta - (self.theta + (tmp_rotmax / RATIO_ROT) * (1 if sens else -1))):
+                and abs(self.goal_theta - self.theta) > (tmp_rotmax / RATIO_ROT):
                 if self.has_stopped.is_set():
                     self.has_stopped.clear()
                     self.publish(ROBOT + '_started')
@@ -212,7 +212,7 @@ class TrajMan(Service):
             sleep(0.1)
 
     @Service.thread
-    def telemetry(self):
+    def publish_telemetry(self):
         while True:
             self.publish(ROBOT + '_telemetry', status='successful',
                          telemetry={'x': self.pos.x,
@@ -256,7 +256,9 @@ class TrajMan(Service):
         while not self.has_stopped.is_set():
             pass
 
-        self.pos.x, self.goal_pos.x = float(x), float(x)
+        pos = Point(float(x), self.pos.y)
+
+        self.pos, self.goal_pos = pos, pos
 
         self.need_to_stop.clear()
 
@@ -266,7 +268,9 @@ class TrajMan(Service):
         while not self.has_stopped.is_set():
             pass
 
-        self.pos.y, self.goal_pos.y = float(y), float(y)
+        pos = Point(self.pos.x, float(y))
+
+        self.pos, self.goal_pos = pos, pos
 
         self.need_to_stop.clear()
 
@@ -354,7 +358,6 @@ class TrajMan(Service):
         self.goal_theta = angle if self.sens else (angle - pi)
 
         self.need_to_stop.clear()
-        print('Gas Gas Gas')
 
     @Service.action
     @if_enabled

@@ -98,6 +98,8 @@ def if_enabled(method):
     return wrapped
 
 
+# TODO: check if we collided
+
 @Service.require("config")
 class TrajMan(Service):
     """

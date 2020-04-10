@@ -3,8 +3,15 @@ from cellaserv.service import Service
 from evolutek.lib.match_interface import MatchInterface
 from evolutek.lib.watchdog import Watchdog
 from evolutek.lib.waiter import waitBeacon, waitConfig
+
+from enum import Enum
 from threading import Timer, Thread
 from time import sleep
+
+class MatchStatus(Enum):
+    unstarted = "Unstarted"
+    started = "Started"
+    ended = "Ended"
 
 @Service.require("config")
 class Match(Service):
@@ -23,7 +30,7 @@ class Match(Service):
 
         # Match Status
         self.color = None
-        self.match_status = 'unstarted'
+        self.match_status = MatchStatus.unstarted
         self.score = 0
         self.timer = Timer(self.match_duration, self.match_end)
         self.match_time = 0
@@ -68,8 +75,8 @@ class Match(Service):
 
     """ Update score """
     @Service.event('score')
-    def get_score(self, value=0):
-        if self.match_status != 'started':
+    def set_score(self, value=0):
+        if self.match_status != MatchStatus.started:
             return
         self.score += int(value)
         print('[MATCH] score is now: %d' % self.score)
@@ -112,12 +119,12 @@ class Match(Service):
     """ Tirette """
     @Service.event('tirette')
     def match_start(self, name, id, value):
-        if self.match_status != 'unstarted' or self.color is None:
+        if self.match_status != MatchStatus.unstarted or self.color is None:
             return
 
         self.publish('match_start')
         self.timer.start()
-        self.match_status = 'started'
+        self.match_status = MatchStatus.started
         print('[MATCH] Match start')
         self.match_time_thread.start()
 
@@ -126,12 +133,12 @@ class Match(Service):
     """ Reset match """
     @Service.action
     def reset_match(self, color=None):
-        if self.match_status == 'started':
+        if self.match_status == MatchStatus.started:
             print("[MATCH] Can't reset match, match is running")
             return False
 
         print('[MATCH] Reset match')
-        self.match_status = 'unstarted'
+        self.match_status = MatchStatus.unstarted
         self.score = 0
         self.timer = Timer(self.match_duration, self.match_end)
         self.match_time = 0
@@ -154,7 +161,7 @@ class Match(Service):
             print('[MATCH] Invalid color')
             return False
 
-        if self.match_status == 'started':
+        if self.match_status == MatchStatus.started:
             print("[MATCH] Can't set color, match is running")
 
         self.color = color
@@ -167,7 +174,7 @@ class Match(Service):
     def get_match(self):
         match = {}
 
-        match['status'] = self.match_status
+        match['status'] = self.match_status.value
         match['color'] = self.color
         match['robots'] = self.robots
         match['score'] = self.score
@@ -185,7 +192,7 @@ class Match(Service):
     @Service.action
     def match_end(self):
         self.publish('match_end')
-        self.match_status = 'ended'
+        self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
 
 
@@ -213,7 +220,7 @@ class Match(Service):
             MatchInterface(self)
 
     def match_time_loop(self):
-        while self.match_status == 'started':
+        while self.match_status == MatchStatus.started:
             self.match_time += 1
             sleep(1)
 
