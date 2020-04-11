@@ -26,6 +26,8 @@ setup(
     entry_points = {
         'console_scripts': [
             'config = evolutek.services.config:main',
+            'fake_ax = evolutek.simulation.fake_ax:main',
+            'fake_trajman = evolutek.simulation.fake_trajman:main'
         ],
     },
 )

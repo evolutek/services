@@ -9,7 +9,8 @@
     ],
     "pal": {
         "trajman" : "evolutek.simulation.fake_trajman",
-        "ax" : "evolutek.simulation.fake_ax"
+        "ax" : "evolutek.simulation.fake_ax",
+        "actuators" : "evolutek.services.actuators"
     },
     "pmi": {
         "trajman" : "evolutek.simulation.fake_trajman",

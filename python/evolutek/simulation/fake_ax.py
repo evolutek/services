@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from cellaserv.service import Service
 from cellaserv.settings import ROBOT
 

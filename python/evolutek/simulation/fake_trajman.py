@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
+
 from evolutek.lib.map.point import Point
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
-from cellaserv.settings import ROBOT
+from evolutek.lib.settings import ROBOT
 
 RATIO_ROT = 100000
 RATIO_TRSL = 1000
@@ -182,7 +184,7 @@ class TrajMan(Service):
             # TRSL Movement #
             #################
 
-            tmp_tslmax = self.tmp_tslmax if self.tmp_trslmax is not None else self.trslmax
+            tmp_tslmax = self.tmp_trslmax if self.tmp_trslmax is not None else self.trslmax
             self.tmp_trslmax = None
 
             dist = self.pos.dist(self.goal_pos)
@@ -220,7 +222,7 @@ class TrajMan(Service):
                                    'theta': self.theta,
                                    'speed': self.speed})
             #sleep(self.telemetry_refresh / 200)
-            sleep(0.05)
+            sleep(0.5)
 
     #######
     # Set #
@@ -386,8 +388,9 @@ class TrajMan(Service):
         if float(maxspeed) > 0:
             self.tmp_trslmax = float(maxspeed)
 
-        self.goal_pos.x += float(dest) * cos(angle)
-        self.goal_pos.y += float(dest) * sin(angle)
+        self.goal_pos = Point(
+            self.goal_pos.x + float(dest) * cos(angle),
+            self.goal_pos.y + float(dest) * sin(angle))
 
         self.need_to_stop.clear()
 
