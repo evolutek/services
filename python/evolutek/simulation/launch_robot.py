@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
-from importlib import import_module
 import json
-
+from multiprocessing import Process
 from os import _exit, system
-import pexpect
 from signal import signal, SIGINT
-from sys import argv, stdout
+from sys import argv
 from time import sleep
-from threading import Thread
 
 from cellaserv.settings import make_setting
 
@@ -24,31 +21,28 @@ def launch_robot(robot, to_launch):
     print('[SIMULATOR] Launching robot %s' % ROBOT)
 
     for service in to_launch:
-        Thread(target=launch_service, args=[to_launch[service]]).start()
+        print('[SIMULATOR] Launching %s' % service)
+        launched[service] = Process(target=system, args=[to_launch[service]])
+        launched[service].start()
 
-    sleep(5)
-
-    """for service in launched:
-        if not launched[service].isalive():
-            print('[SIMULATOR] Service %s not alive, killing robot' % service)
-            kill_robot()"""
+    print('[SIMULATOR] Checking if processes are alives')
+    for service in launched:
+        if not launched[service].is_alive():
+            print('[SIMULATOR] %s is dead' % service)
+            kill_robot()
+            return
 
     signal(SIGINT, kill_robot)
 
     print('[SIMULATOR] Finished launching robot %s' % ROBOT)
 
-def launch_service(service):
-    print('[SIMULATION] Lauching %s' % service)
-    service = import_module(service)
-    service.main()
-    sleep(0.5)
-
 def kill_robot(signal_received=None, frame=None):
 
-    print('[SIMULATIOR] Killing robot %s' % ROBOT)
+    print('[SIMULATOR] Killing robot %s' % ROBOT)
 
-    """for service in launched:
-        launched[service].kill(SIGINT)"""
+    for service in launched:
+        print('[SIMULATOR] Killing %s' % service)
+        launched[service].kill()
 
     print('[SIMULATOR] Finished killing robot %s' % ROBOT)
     _exit(0)
