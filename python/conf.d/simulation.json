@@ -10,9 +10,25 @@
     },
     "ennemies": {
         "rcva" : {
-            "service" : "evolutek.simulation.fake_trajman",
-            "x": 1000,
-            "y": 1500
+            "scripts" : {
+              "trajman" : "fake_trajman"
+            },
+            "x"       : 1000,
+            "y"       : 1500,
+            "theta"   : 0,
+            "config"  : {
+              "trsl_acc"          : 500,
+              "trsl_dec"          : 500,
+              "trsl_max"          : 500,
+              "rot_acc"           : 10,
+              "rot_dec"           : 10,
+              "rot_max"           : 10,
+              "delta_trsl"        : 100,
+              "delta_rot"         : 0.2,
+              "robot_size_x"      : 150,
+              "robot_size_y"      : 150,
+              "telemetry_refresh" : 500
+            }
         }
     }
 }
