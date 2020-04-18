@@ -8,47 +8,49 @@ from sys import argv
 from time import sleep
 
 from cellaserv.proxy import CellaservProxy
-from cellaserv.settings import make_setting
 
-ROBOT = ''
-launched = {}
+#TODO Control Interface
 
-def launch_robot(robot, to_launch):
+class Robot:
 
-    global ROBOT
-    ROBOT = robot
+    def __init__(self, robot, to_launch):
+        self.ROBOT = robot
+        self.launched = {}
+        self.launch_robot(to_launch)
 
-    cs = CellaservProxy()
-    cs.config.set_tmp(section='simulation', option='robot', value=ROBOT)
+    def launch_robot(self, to_launch):
 
-    print('[SIMULATOR] Launching robot %s' % ROBOT)
+        cs = CellaservProxy()
+        cs.config.set_tmp(section='simulation', option='robot', value=self.ROBOT)
 
-    for service in to_launch:
-        print('[SIMULATOR] Launching %s' % service)
-        launched[service] = Process(target=system, args=[to_launch[service]])
-        launched[service].start()
+        print('[SIMULATOR] Launching robot %s' % self.ROBOT)
 
-    print('[SIMULATOR] Checking if processes are alives')
-    for service in launched:
-        if not launched[service].is_alive():
-            print('[SIMULATOR] %s is dead' % service)
-            kill_robot()
-            return
+        for service in to_launch:
+            print('[SIMULATOR] Launching %s' % service)
+            self.launched[service] = Process(target=system, args=[to_launch[service]])
+            self.launched[service].start()
 
-    signal(SIGINT, kill_robot)
+            print('[SIMULATOR] Checking if processes are alives')
+        for service in self.launched:
+            if not self.launched[service].is_alive():
+                print('[SIMULATOR] %s is dead' % service)
+                self.kill_robot()
+                return
 
-    print('[SIMULATOR] Finished launching robot %s' % ROBOT)
+        signal(SIGINT, self.kill_robot)
 
-def kill_robot(signal_received=None, frame=None):
+        print('[SIMULATOR] Finished launching robot %s' % self.ROBOT)
 
-    print('[SIMULATOR] Killing robot %s' % ROBOT)
+    def kill_robot(self, signal_received=None, frame=None):
 
-    for service in launched:
-        print('[SIMULATOR] Killing %s' % service)
-        launched[service].kill()
+        print('[SIMULATOR] Killing robot %s' % self.ROBOT)
 
-    print('[SIMULATOR] Finished killing robot %s' % ROBOT)
-    _exit(0)
+        for service in self.launched:
+            print('[SIMULATOR] Killing %s' % service)
+            self.launched[service].kill()
+
+        print('[SIMULATOR] Finished killing robot %s' % self.ROBOT)
+        _exit(0)
 
 def main():
 
@@ -76,7 +78,7 @@ def main():
         print('[SIMULATOR] Failed to read config: %s' % str(e))
         return
 
-    launch_robot(robot, services)
+    robot = Robot(robot, services)
 
     while True:
         pass
