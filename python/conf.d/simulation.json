@@ -1,20 +1,12 @@
 {
     "base_services": {
-        "config" : "evolutek.services.config",
-        "match" : "evolutek.services.match"
+        "config"    : "config",
+        "match"     : "match"
     },
-    "robots": [
-        "pal",
-        "pmi"
-    ],
-    "pal": {
-        "trajman" : "fake_trajman",
-        "ax" : "fake_ax",
+    "robot": {
+        "trajman"   : "fake_trajman",
+        "ax"        : "fake_ax",
         "actuators" : "actuators"
-    },
-    "pmi": {
-        "trajman" : "evolutek.simulation.fake_trajman",
-        "ax" : "evolutek.simulation.fake_ax"
     },
     "ennemies": {
         "rcva" : {

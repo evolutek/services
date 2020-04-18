@@ -8,6 +8,7 @@ from time import sleep
 
 def read_config(section):
 
+    print('[SIMULATOR] Reading config')
     config = None
     try:
         with open('/etc/conf.d/simulation.json', 'r') as file:
@@ -54,7 +55,6 @@ def main():
     print('[SIMULATION] Starting Evolutek<< simulation')
 
     to_launch = read_config('base_services')
-
     if to_launch is None:
         return
 
