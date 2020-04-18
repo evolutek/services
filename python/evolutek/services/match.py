@@ -2,7 +2,6 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.match_interface import MatchInterface
 from evolutek.lib.watchdog import Watchdog
-from evolutek.lib.waiter import waitBeacon, waitConfig
 
 from enum import Enum
 from threading import Timer, Thread
@@ -225,7 +224,6 @@ class Match(Service):
             sleep(1)
 
 def main():
-    #waitBeacon()
     match = Match()
     match.run()
 
