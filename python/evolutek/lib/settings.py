@@ -6,13 +6,16 @@ import socket
 
 __doc__ = """Add evolutek's specific configuration to cellaserv.settings."""
 
+from cellaserv.proxy import CellaservProxy
 from cellaserv.settings import make_setting
 
 hostname = socket.gethostname()
 
 if hostname not in ['pal', 'pmi']:
     make_setting('SIMULATION', True, 'evolutek', 'simulation', 'SIMULATION')
-    make_setting('ROBOT', 'pal', 'evolutek', 'robot', 'ROBOT')
+    cs = CellaservProxy()
+    robot = cs.config.get(section='simulation', option='robot')
+    make_setting('ROBOT', robot, 'evolutek', 'robot', 'ROBOT')
 else:
     make_setting('SIMULATION', False, 'evolutek', 'simulation', 'SIMULATION')
     make_setting('ROBOT', hostname, 'evolutek', 'robot', 'ROBOT')

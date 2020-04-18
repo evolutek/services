@@ -7,6 +7,7 @@ from signal import signal, SIGINT
 from sys import argv
 from time import sleep
 
+from cellaserv.proxy import CellaservProxy
 from cellaserv.settings import make_setting
 
 ROBOT = ''
@@ -14,9 +15,11 @@ launched = {}
 
 def launch_robot(robot, to_launch):
 
+    global ROBOT
     ROBOT = robot
 
-    make_setting('ROBOT', ROBOT, 'evolutek', 'robot', 'ROBOT')
+    cs = CellaservProxy()
+    cs.config.set_tmp(section='simulation', option='robot', value=ROBOT)
 
     print('[SIMULATOR] Launching robot %s' % ROBOT)
 
