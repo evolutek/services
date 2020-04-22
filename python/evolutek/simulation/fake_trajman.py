@@ -6,13 +6,12 @@ from cellaserv.service import Service, ConfigVariable
 
 from evolutek.lib.settings import ROBOT
 
-RATIO_ROT = 100000
+RATIO_ROT = 10000
 RATIO_TRSL = 1000
 
 from enum import Enum
 from functools import wraps
 from math import pi, atan2, cos, sin
-from queue import Queue
 from threading import Event
 from time import sleep
 
@@ -91,7 +90,6 @@ class TrajMan(Service):
 
     def __init__(self):
 
-        self.queue = Queue()
         self.pos = Point(10000, 10000)
         self.theta = 0.0
         self.speed = 0.0
@@ -216,13 +214,13 @@ class TrajMan(Service):
     @Service.thread
     def publish_telemetry(self):
         while True:
-            self.publish(ROBOT + '_telemetry', status='successful',
+            self.publish(ROBOT + '_telemetry', status='successful', robot=ROBOT,
                          telemetry={'x': self.pos.x,
                                    'y': self.pos.y,
                                    'theta': self.theta,
                                    'speed': self.speed})
             #sleep(self.telemetry_refresh / 200)
-            sleep(0.5)
+            sleep(0.05)
 
     #######
     # Set #

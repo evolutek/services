@@ -146,7 +146,7 @@ class Robot:
     def timeout_handler(self):
         self.timeout.set()
 
-    def telemetry_handler(self, status, telemetry):
+    def telemetry_handler(self, status, robot, telemetry):
         if status != 'failed':
             self.telemetry = telemetry
         else:

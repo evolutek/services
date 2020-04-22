@@ -14,7 +14,11 @@ hostname = socket.gethostname()
 if hostname not in ['pal', 'pmi']:
     make_setting('SIMULATION', True, 'evolutek', 'simulation', 'SIMULATION')
     cs = CellaservProxy()
-    robot = cs.config.get(section='simulation', option='robot')
+    robot = None
+    try:
+        robot = cs.config.get(section='simulation', option='robot')
+    except:
+        pass
     make_setting('ROBOT', robot, 'evolutek', 'robot', 'ROBOT')
 else:
     make_setting('SIMULATION', False, 'evolutek', 'simulation', 'SIMULATION')
