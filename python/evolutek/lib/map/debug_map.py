@@ -156,21 +156,19 @@ class Interface:
             p2 = path[i]
 
             self.canvas.create_line(p1.y * self.unit, p1.x * self.unit,
-                p2.y * self.unit, p2.x * self.unit, width=5, fill='yellow')
+                p2.y * self.unit, p2.x * self.unit, width=5, fill='green')
 
         for p in path:
             x1 = (p.y - 10) * self.unit
             x2 = (p.y + 10) * self.unit
             y1 = (p.x - 10) * self.unit
             y2 = (p.x + 10) * self.unit
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill='red')
 
     def print_graph(self, graph):
 
         for point in graph:
-
             for p in graph[point]:
-
                 self.canvas.create_line(point.y * self.unit, point.x * self.unit,
                     p.y * self.unit, p.x * self.unit, width=5, fill='yellow')
 
@@ -179,7 +177,7 @@ class Interface:
             x2 = (p.y + 10) * self.unit
             y1 = (p.x - 10) * self.unit
             y2 = (p.x + 10) * self.unit
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill='orange')
 
     def update(self):
 
@@ -187,8 +185,8 @@ class Interface:
         self.canvas.delete('all')
         self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
         #self.print_map()
-        with self.service.lock:
-            self.print_merged_map()
+        #with self.service.lock:
+        #    self.print_merged_map()
 
         self.update_tims()
 
@@ -204,6 +202,10 @@ class Interface:
         if hasattr(self.service, 'pmi_telem') and hasattr(self.service, 'pmi_size_y'):
             self.print_robot(self.service.pmi_telem, self.service.pmi_size)"""
 
+        if hasattr(self.service, 'graph'):
+            self.print_graph(self.service.graph)
+
         if hasattr(self.service, 'path'):
             self.print_path(self.service.path)
+
         self.window.after(self.service.refresh, self.update)

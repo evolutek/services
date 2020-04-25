@@ -6,6 +6,7 @@ from copy import deepcopy
 from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
+from time import time
 # TODO: optimization
 # TODO: A* ?
 # TODO: exclusion zone for start point when computin pathfinding
@@ -207,6 +208,105 @@ class Map:
 
         return graph
 
+    def compute_graph_opti(self, start, end, obstacles):
+
+        graph = {}
+
+        for poly in obstacles:
+
+            l = len(poly.exterior.coords)
+            for i in range(l - 1):
+
+                p1 = Point(tuple=poly.exterior.coords[i])
+                if not self.borders.contains(p1):
+                    continue
+
+                p2 = Point(tuple=poly.exterior.coords[i + 1])
+                if not self.borders.contains(p2):
+                    continue
+
+                ok = True
+                for p in obstacles:
+                    if is_colliding_with_polygon(p1, p2, p):
+                        ok = False
+                        break
+
+                if ok:
+                    if p1 in graph:
+                        graph[p1].append(p2)
+                    else:
+                        graph[p1] = [p2]
+                    if p2 in graph:
+                        graph[p2].append(p1)
+                    else:
+                        graph[p2] = [p1]
+
+        l = len(obstacles)
+        for n1 in range(l - 1):
+
+            poly1 = obstacles[n1].exterior.coords
+            for i in range(len(poly1) - 1):
+
+                p1 = Point(tuple=poly1[i])
+                if not self.borders.contains(p1):
+                    continue
+
+                for n2 in range(n1 + 1, l):
+
+                    poly2 = obstacles[n2].exterior.coords
+                    for j in range(len(poly2)):
+
+                        p2 = Point(tuple=poly2[j])
+                        if not self.borders.contains(p2):
+                            continue
+
+                        ok = True
+                        for p in obstacles:
+                            if is_colliding_with_polygon(p1, p2, p):
+                                ok = False
+                                break
+
+                        if ok:
+                            if p1 in graph:
+                                graph[p1].append(p2)
+                            else:
+                                graph[p1] = [p2]
+                            if p2 in graph:
+                                graph[p2].append(p1)
+                            else:
+                                graph[p2] = [p1]
+
+
+        for p1 in [start, end]:
+            for poly in obstacles:
+                for point in poly.exterior.coords:
+
+                    p2 = Point(tuple=point)
+
+                    if not self.borders.contains(p2):
+                        continue
+
+                    ok = True
+                    for p in obstacles:
+                        if is_colliding_with_polygon(p1, p2, p):
+                            ok = False
+                            break
+
+                    if ok:
+                        if p1 in graph:
+                            graph[p1].append(p2)
+                        else:
+                            graph[p1] = [p2]
+                        if p2 in graph:
+                            graph[p2].append(p1)
+                        else:
+                            graph[p2] = [p1]
+
+
+
+
+        return graph
+
     def get_path(self, start, end):
 
         obstacles = deepcopy(self.merged_obstacles)
@@ -248,7 +348,14 @@ class Map:
         if not is_colliding:
             return [start, end]
 
-        graph = self.compute_graph(start, end, obstacles)
+        #s = time()
+        #graph = self.compute_graph(start, end, obstacles)
+        #p = time()
+        graph = self.compute_graph_opti(start, end, obstacles)
+        #e = time()
+        #print("Non opti : " + str(p-s))
+        #print("Opti : " + str(e-p))
+        #return graph
 
         path = dijkstra(start, end, graph)
 
@@ -257,4 +364,4 @@ class Map:
         else:
             print("[MAP] Path found")
 
-        return path
+        return path, graph

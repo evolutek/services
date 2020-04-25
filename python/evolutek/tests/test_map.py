@@ -24,6 +24,7 @@ class Test_Map:
         self.debug_mode = DebugMode.normal
 
         self.color = 'violet'
+        self.graph = {}
         self.path = []
 
         self.compute_path = Event()
@@ -40,7 +41,7 @@ class Test_Map:
             print('[TEST_MAP] Update path')
             self.compute_path.wait()
             start = time()
-            self.path = self.map.get_path(Point(250, 500), Point(1200, 2300))
+            self.path, self.graph = self.map.get_path(Point(250, 500), Point(1200, 2300))
             end = time()
             self.compute_path.clear()
             print('Path compute in: ' + str(end-start))

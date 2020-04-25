@@ -2,7 +2,7 @@ from collections import deque
 from enum import Enum
 import json
 from math import inf
-from shapely.geometry import Polygon, MultiPolygon, LineString
+from shapely.geometry import Polygon, MultiPolygon, LineString, Point as ShapelyPoint
 
 from evolutek.lib.map.point import Point
 
@@ -21,8 +21,10 @@ def is_colliding_with_polygon(p1, p2, poly):
 
     line = LineString([p1, p2])
 
-    if poly.contains(line):
-        return True
+    #if poly.contains(line):
+        #return True
+
+    return line.crosses(poly)
 
     for i in range(0, len(poly.exterior.coords) - 1):
         side = LineString([poly.exterior.coords[i], poly.exterior.coords[i + 1]])
