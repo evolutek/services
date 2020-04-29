@@ -18,14 +18,23 @@ class RGBSensors:
 
         for i in sensors:
             print('[RGB_SENSORS] Initializing RGB sensor %d' % i)
-            if i < 1 and i > 8:
+            if i < 1 or i > 8:
                 print('[RGB_SENSORS] Bad RGB sensor number %d' % i)
-            self.sensors[i] = adafruit_tcs34725.TCS34725(tca[i - 1])
+                continue
+            self.sensors[i] = adafruit_tcs34725.TCS34725(self.tca[i - 1])
 
         print('[RGB_SENSORS] RGB Sensors initialized')
 
-    def read_sensor(i):
+    def read_sensor(self, i):
         print('[RGB_SENSORS] Reading RGB sensor %d' % i)
         if not i in self.sensors:
             print('[RGB_SENSORS] Bad RGB sensor  number %d' % i)
-        return self.sensors.color_rgb_bytes
+            return None
+        return self.sensors[i].color_rgb_bytes
+
+    def read_color(self, i):
+        print('[RGB_SENSORS] Reading RGB color %d' % i)
+        if not i in self.sensors:
+            print('[RGB_SENSORS] Bad RGB sensor  number %d' % i)
+            return None
+        return self.sensors[i].color
