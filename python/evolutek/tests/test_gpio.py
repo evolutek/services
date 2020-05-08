@@ -9,9 +9,9 @@ class Test_Gpio(Service):
 
         super().__init__()
 
-        self.gpio.auto_refresh(1, self)
+        self.gpio.auto_refresh(1, self.publish)
 
-    #@Service.thread
+    @Service.thread
     def loop(self):
         while True:
             print("Loop read: %d" % self.gpio.read())

@@ -1,73 +1,64 @@
 #!/usr/bin/env python3
 
-from importlib import import_module
 import json
-from os import _exit
+from multiprocessing import Process
+from os import _exit, system
 from signal import signal, SIGINT
-from threading import Thread
 from time import sleep
 
-from cellaserv.proxy import CellaservProxy
-from cellaserv.service import Service, ConfigVariable
-from cellaserv.settings import make_setting
+def read_config(section):
 
-make_setting('SIMULATION', True, 'simulation', 'enable', 'SIMULATION')
+    print('[SIMULATOR] Reading config')
+    config = None
+    try:
+        with open('/etc/conf.d/simulation.json', 'r') as file:
+            data = file.read()
+            config = json.loads(data)[section]
+    except Exception as e:
+        print('[SIMULATOR] Failed to read config: %s' % str(e))
+
+    return config
 
 class Simulation:
 
-    def __init__(self, config):
+    def __init__(self, to_launch):
 
-        print('[SIMULATION] Starting simulation')
+        self.launched = {}
+        self.launch_services(to_launch)
 
-        # Launch base services
-        for service in config['base_services']:
-            Thread(target=self.launch_service, args=[config['base_services'][service]]).start()
-        sleep(1)
+    def launch_services(self, to_launch):
 
-        # Launch all robots
-        for robot in config['robots']:
-            make_setting('ROBOT', robot, 'evolutek', 'robot', 'ROBOT')
-            for service in config[robot]:
-                Thread(target=self.launch_service, args=[config[robot][service]]).start()
-            sleep(1)
+        for script in to_launch:
+            print('[SIMULATOR] Launching %s' % script)
+            self.launched[script] = Process(target=system, args=[to_launch[script]])
+            self.launched[script].start()
 
-        ennemies = {}
-        for ennemy in config['ennemies']:
-            ennemies[ennemy] = config['ennemies'][ennemy]
-            make_setting('ROBOT', ennemy, 'evolutek', 'robot', 'ROBOT')
-            Thread(target=self.launch_service, args=[config['ennemies'][ennemy]['service']]).start()
-            sleep(1)
+        print('[SIMULATOR] Checking if processes are alives')
+        for script in self.launched:
+            if not self.launched[script].is_alive():
+                print('[SIMULATOR] %s is dead' % script)
+                self.kill_simulation()
+                return
 
-
-        # TODO: control interface
-
-        signal(SIGINT, self.handler)
+        signal(SIGINT, self.kill_simulation)
 
         print('[SIMULATION] Simulation running')
 
-    def launch_service(self, service):
-        print('[SIMULATION] Lauching %s' % service)
-        service = import_module(service)
-        service.main()
-        sleep(0.5)
-
-    def handler(self, signal_received, frame):
+    def kill_simulation(self, signal_received=None, frame=None):
         print('[SIMULATION] Killing simulation')
+        for script in self.launched:
+            print('[SIMULATOR] Killing %s' % script)
+            self.launched[script].kill()
         _exit(0)
 
 def main():
-    print("Evolutek<< Simulator")
+    print('[SIMULATION] Starting Evolutek<< simulation')
 
-    with open('/etc/conf.d/simulation.json', 'r') as file:
-        data = file.read()
+    to_launch = read_config('base_services')
+    if to_launch is None:
+        return
 
-    config = json.loads(data)
-
-    print('[SIMULATION] Config for simualtion')
-    print(config)
-
-
-    simulation = Simulation(config)
+    simulation = Simulation(to_launch)
 
     while True:
         pass

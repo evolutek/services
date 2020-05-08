@@ -146,7 +146,7 @@ class Robot:
     def timeout_handler(self):
         self.timeout.set()
 
-    def telemetry_handler(self, status, telemetry):
+    def telemetry_handler(self, status, robot, telemetry):
         if status != 'failed':
             self.telemetry = telemetry
         else:
@@ -220,6 +220,16 @@ class Robot:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goth(th)
+
+        return status
+
+    def move_trsl_avoid(self, dest, acc, dec, maxspeed, sens, timeout=0.0, nb_try=None):
+        tried = 1
+        status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
+        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+            tried += 1
+            self.wait_until(timeout=timeout)
+            status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
 
         return status
 

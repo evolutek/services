@@ -1,16 +1,17 @@
+#!/usr/bin/env python3
+
 from evolutek.lib.map.point import Point
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
-from cellaserv.settings import ROBOT
+from evolutek.lib.settings import ROBOT
 
-RATIO_ROT = 100000
+RATIO_ROT = 10000
 RATIO_TRSL = 1000
 
 from enum import Enum
 from functools import wraps
 from math import pi, atan2, cos, sin
-from queue import Queue
 from threading import Event
 from time import sleep
 
@@ -89,7 +90,6 @@ class TrajMan(Service):
 
     def __init__(self):
 
-        self.queue = Queue()
         self.pos = Point(10000, 10000)
         self.theta = 0.0
         self.speed = 0.0
@@ -156,7 +156,7 @@ class TrajMan(Service):
                 pass
 
             while not self.need_to_stop.is_set()\
-                and abs(self.goal_theta - self.theta) > abs(self.goal_theta - (self.theta + (tmp_rotmax / RATIO_ROT) * (1 if sens else -1))):
+                and abs(self.goal_theta - self.theta) > (tmp_rotmax / RATIO_ROT):
                 if self.has_stopped.is_set():
                     self.has_stopped.clear()
                     self.publish(ROBOT + '_started')
@@ -182,7 +182,7 @@ class TrajMan(Service):
             # TRSL Movement #
             #################
 
-            tmp_tslmax = self.tmp_tslmax if self.tmp_trslmax is not None else self.trslmax
+            tmp_tslmax = self.tmp_trslmax if self.tmp_trslmax is not None else self.trslmax
             self.tmp_trslmax = None
 
             dist = self.pos.dist(self.goal_pos)
@@ -214,7 +214,7 @@ class TrajMan(Service):
     @Service.thread
     def publish_telemetry(self):
         while True:
-            self.publish(ROBOT + '_telemetry', status='successful',
+            self.publish(ROBOT + '_telemetry', status='successful', robot=ROBOT,
                          telemetry={'x': self.pos.x,
                                    'y': self.pos.y,
                                    'theta': self.theta,
@@ -358,7 +358,6 @@ class TrajMan(Service):
         self.goal_theta = angle if self.sens else (angle - pi)
 
         self.need_to_stop.clear()
-        print('Gas Gas Gas')
 
     @Service.action
     @if_enabled
@@ -387,8 +386,9 @@ class TrajMan(Service):
         if float(maxspeed) > 0:
             self.tmp_trslmax = float(maxspeed)
 
-        self.goal_pos.x += float(dest) * cos(angle)
-        self.goal_pos.y += float(dest) * sin(angle)
+        self.goal_pos = Point(
+            self.goal_pos.x + float(dest) * cos(angle),
+            self.goal_pos.y + float(dest) * sin(angle))
 
         self.need_to_stop.clear()
 

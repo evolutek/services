@@ -112,17 +112,7 @@ class Ax(Service):
     def free(self):
         self.dxl.dxl_write_byte(self.ax, AX_TORQUE_ENABLE_B, 0)
 
-def wait_for_beacon():
-    hostname = "pi"
-    while True:
-        r = os.system("ping -c 1 " + hostname)
-        if r == 0:
-            return
-        pass
-
 def main():
-    #wait_for_beacon()
-
     data = None
     with open('/etc/conf.d/ax.json', 'r') as ax_file:
         data = ax_file.read()

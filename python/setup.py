@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from subprocess import check_call
@@ -10,7 +12,7 @@ class PostDevelopCommand(develop):
 
 setup(
     name = "services",
-    version = "2019",
+    version = "2020",
     packages = find_packages(),
     namespace_packages = ['evolutek'],
 
@@ -26,6 +28,10 @@ setup(
     entry_points = {
         'console_scripts': [
             'config = evolutek.services.config:main',
+            'actuators = evolutek.services.actuators:main',
+            'match = evolutek.services.match:main',
+            'fake_ax = evolutek.simulation.fake_ax:main',
+            'fake_trajman = evolutek.simulation.fake_trajman:main'
         ],
     },
 )

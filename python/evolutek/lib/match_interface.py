@@ -1,4 +1,13 @@
 from cellaserv.proxy import CellaservProxy
+from cellaserv.service import AsynClient
+from cellaserv.settings import get_socket
+
+from evolutek.lib.map.point import Point
+from evolutek.lib.settings import SIMULATION
+
+if SIMULATION:
+    from evolutek.simulation.simulator import read_config
+
 from enum import Enum
 from math import cos, sin, pi
 from os import _exit
@@ -31,7 +40,6 @@ class MatchInterface:
         self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
         self.pmi_size_y = float(self.cs.config.get(section='pmi', option='robot_size_y'))
 
-
         self.interface_status = InterfaceStatus.init
         self.match = match
 
@@ -42,6 +50,7 @@ class MatchInterface:
         ratio_width = self.window.winfo_screenwidth() / 3000
         ratio_height = (self.window.winfo_screenheight() - 75) / 2000
         self.interface_ratio = min(ratio_width, ratio_height)
+        self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
 
         img = Image.open('/etc/conf.d/map.png')
         img = img.resize((int(3000 * self.interface_ratio), int(2000 * self.interface_ratio)), Image.ANTIALIAS)
@@ -49,12 +58,73 @@ class MatchInterface:
 
         print('[MATCH INTERFACE] Window created')
 
+        self.enemies = {}
+
+        self.client = AsynClient(get_socket())
+        if SIMULATION:
+            self.init_simulation()
+
         self.window.after(self.interface_refresh, self.update_interface)
         self.window.mainloop()
+
+    def init_simulation(self):
+        enemies = read_config('enemies')
+
+        if enemies is None:
+            return
+
+        for enemy, config in enemies['robots'].items():
+            self.enemies[enemy] = {'telemetry' : None, 'size' : config['config']['robot_size_y']}
+            self.client.add_subscribe_cb(enemy + '_telemetry', self.telemetry_handler)
+
+        self.moving_robot = None
+        self.canvas.bind("<ButtonPress-1>", self.get_moving_robot)
+        self.canvas.bind("<ButtonRelease-1>", self.set_moving_robot)
+
+
+    def get_moving_robot(self, event):
+
+        x, y = event.y / self.interface_ratio, event.x / self.interface_ratio
+
+        robot = None
+        previous_dist = None
+        for enemy, config in self.enemies.items():
+            if config['telemetry'] is None:
+                continue
+            dist = Point.dist_dict(config['telemetry'], {'x': x, 'y': y})
+            if dist <= config['size'] and (robot is None or dist < previous_dist):
+                robot = enemy
+                previous_dist = dist
+
+        self.moving_robot = robot
+
+        print('[MATCH INTERFACE] Get moving robot %s' % robot)
+
+    def set_moving_robot(self, event):
+
+        if self.moving_robot is None:
+            return
+
+        x, y = event.y / self.interface_ratio, event.x / self.interface_ratio
+
+        self.cs.trajman[self.moving_robot].goto_xy(x=x, y=y)
+
+        print('[MATCH INTERFACE] Moving robot %s to %f %f' % (self.moving_robot, x, y))
+
+        self.moving_robot = None
+
+    def telemetry_handler(self, status, robot, telemetry):
+        if status != 'failed':
+            self.enemies[robot]['telemetry'] = telemetry
+        else:
+            self.telemetry = None
 
     """ PRINT UTILITIES """
 
     def print_robot(self, robot, size, color):
+        if robot is None:
+            return
+
         if 'theta' in robot:
             x = robot['y'] * self.interface_ratio
             y = robot['x'] * self.interface_ratio
@@ -141,7 +211,7 @@ class MatchInterface:
         reset_button.grid(row=1, column=3)
 
         # Map
-        self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
+        #self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
         self.canvas.grid(row=4, column=1, columnspan=3)
 
         # PAL AI STATUS
@@ -187,14 +257,14 @@ class MatchInterface:
             self.print_robot(status['pmi_telemetry'], self.pmi_size_y, 'orange')
 
         # TODO: use status['robots']
-        robots = []
+        """robots = []
         try:
             robots = self.cs.map.get_opponnents()
         except Exception as e:
-            print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))
+            print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))"""
 
-        for robot in robots:
-            self.print_robot(robot, self.robot_size, 'red')
+        for robot in self.enemies:
+            self.print_robot(self.enemies[robot]['telemetry'], self.enemies[robot]['size'], 'red')
 
     # Init score interface
     def set_score_interface(self):
@@ -254,14 +324,14 @@ class MatchInterface:
                 self.print_robot(status['pmi_telemetry'], self.pmi_size_y, 'orange')
 
             # TODO: use status['robots']
-            robots = []
+            """robots = []
             try:
                 robots = self.cs.map.get_opponnents()
             except Exception as e:
-                print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))
+                print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))"""
 
-            for robot in robots:
-                self.print_robot(robot, self.robot_size, 'red')
+            for robot in self.enemies:
+                self.print_robot(self.enemies[robot]['telemetry'], self.enemies[robot]['size'], 'red')
 
             # TODO: Manage path
             #self.print_path(self.pal_path, 'yellow', 'violet')

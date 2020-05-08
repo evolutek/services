@@ -2,7 +2,6 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.match_interface import MatchInterface
 from evolutek.lib.watchdog import Watchdog
-from evolutek.lib.waiter import waitBeacon, waitConfig
 
 from enum import Enum
 from threading import Timer, Thread
@@ -18,6 +17,7 @@ class Match(Service):
 
     def __init__(self):
 
+        super().__init__()
         self.cs = CellaservProxy()
         # Match Params
         match_config = self.cs.config.get_section('match')
@@ -51,8 +51,6 @@ class Match(Service):
         # Oppenents positions
         self.robots = []
         self.robots_watchdog = Watchdog(self.timeout_robot * 3, self.reset_robots)
-
-        super().__init__()
         print('[MATCH] Match ready')
 
 
@@ -225,7 +223,6 @@ class Match(Service):
             sleep(1)
 
 def main():
-    #waitBeacon()
     match = Match()
     match.run()
 
