@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
@@ -8,25 +10,21 @@ from evolutek.lib.settings import SIMULATION
 if SIMULATION:
     from evolutek.simulation.simulator import read_config
 
-from enum import Enum
+import asyncore
 from math import cos, sin, pi
 from os import _exit
+from threading import Thread
 from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 
-## TODO: AI status
+from time import sleep
 
-class InterfaceStatus(Enum):
-    init = 0
-    set = 1
-    running = 2
-    waiting = 3
-    end = 4
+## TODO: AI status
 
 class MatchInterface:
 
-    def __init__(self, match):
+    def __init__(self):
 
         self.cs = CellaservProxy()
 
@@ -37,12 +35,6 @@ class MatchInterface:
         self.color1 = match_interface_config['color1']
         self.color2 = match_interface_config['color2']
 
-        self.pal_size_y = float(self.cs.config.get(section='pal', option='robot_size_y'))
-        self.pmi_size_y = float(self.cs.config.get(section='pmi', option='robot_size_y'))
-
-        self.interface_status = InterfaceStatus.init
-        self.match = match
-
         self.window = Tk()
         self.window.attributes('-fullscreen', True)
         self.window.bind('<Escape>',lambda e: self.close())
@@ -50,19 +42,34 @@ class MatchInterface:
         ratio_width = self.window.winfo_screenwidth() / 3000
         ratio_height = (self.window.winfo_screenheight() - 75) / 2000
         self.interface_ratio = min(ratio_width, ratio_height)
-        self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
 
         img = Image.open('/etc/conf.d/map.png')
         img = img.resize((int(3000 * self.interface_ratio), int(2000 * self.interface_ratio)), Image.ANTIALIAS)
         self.map = ImageTk.PhotoImage(img)
 
+        self.robots = {}
+
+        self.init_interface()
+
         print('[MATCH INTERFACE] Window created')
 
-        self.enemies = {}
-
         self.client = AsynClient(get_socket())
+        self.robots['pal'] = {'telemetry' : None, 'size' : float(self.cs.config.get(section='pal', option='robot_size_y')), 'color' : 'orange'}
+        self.client.add_subscribe_cb('pal_telemetry', self.telemetry_handler)
+        self.robots['pmi'] = {'telemetry' : None, 'size' : float(self.cs.config.get(section='pmi', option='robot_size_y')), 'color' : 'orange'}
+        self.client.add_subscribe_cb('pmi_telemetry', self.telemetry_handler)
+
         if SIMULATION:
             self.init_simulation()
+
+        # Start the event listening thread
+        self.client_thread = Thread(target=asyncore.loop)
+        self.client_thread.daemon = True
+        self.client_thread.start()
+
+        self.moving_robot = None
+        self.canvas.bind("<ButtonPress-1>", self.get_moving_robot)
+        self.canvas.bind("<ButtonRelease-1>", self.set_moving_robot)
 
         self.window.after(self.interface_refresh, self.update_interface)
         self.window.mainloop()
@@ -74,13 +81,8 @@ class MatchInterface:
             return
 
         for enemy, config in enemies['robots'].items():
-            self.enemies[enemy] = {'telemetry' : None, 'size' : config['config']['robot_size_y']}
+            self.robots[enemy] = {'telemetry' : None, 'size' : config['config']['robot_size_y'], 'color' : 'red'}
             self.client.add_subscribe_cb(enemy + '_telemetry', self.telemetry_handler)
-
-        self.moving_robot = None
-        self.canvas.bind("<ButtonPress-1>", self.get_moving_robot)
-        self.canvas.bind("<ButtonRelease-1>", self.set_moving_robot)
-
 
     def get_moving_robot(self, event):
 
@@ -88,7 +90,7 @@ class MatchInterface:
 
         robot = None
         previous_dist = None
-        for enemy, config in self.enemies.items():
+        for enemy, config in self.robots.items():
             if config['telemetry'] is None:
                 continue
             dist = Point.dist_dict(config['telemetry'], {'x': x, 'y': y})
@@ -114,14 +116,16 @@ class MatchInterface:
         self.moving_robot = None
 
     def telemetry_handler(self, status, robot, telemetry):
+
         if status != 'failed':
-            self.enemies[robot]['telemetry'] = telemetry
+            self.robots[robot]['telemetry'] = telemetry
         else:
             self.telemetry = None
 
     """ PRINT UTILITIES """
 
     def print_robot(self, robot, size, color):
+
         if robot is None:
             return
 
@@ -178,29 +182,20 @@ class MatchInterface:
         self.window.destroy()
         _exit(0)
 
+    # Update
     def set_color(self, color):
-        if self.match.set_color(color):
-            self.interface_status = InterfaceStatus.set
+        pass
+        self.match.set_color(color)
 
+    # Update
     def reset_match(self):
-        if self.match.reset_match():
-            self.interface_status = InterfaceStatus.init
-
-    # Init color interface
-    def set_color_interface(self):
-        close_button = Button(self.window, text='Close', command=self.close)
-        color1_button = Button(self.window, text=self.color1,
-            command=lambda: self.set_color(self.color1), bg=self.color1, height=10, width=20)
-        color2_button = Button(self.window, text=self.color2,
-            command=lambda: self.set_color(self.color2), bg=self.color2, height=10, width=20)
-        close_button.grid(row=1, column=2)
-        color1_button.grid(row=3, column=1)
-        color2_button.grid(row=3, column=3)
+        try:
+            self.cs.match.reset_match()
+        except:
+            print('[MATCH INTERFACE] Failed to reset match : %s' % str(e))
 
     # Init match interface
-    def set_match_interface(self):
-
-        status = self.match.get_match()
+    def init_interface(self):
 
         # Close button
         close_button = Button(self.window, text='Close', command=self.close)
@@ -211,92 +206,51 @@ class MatchInterface:
         reset_button.grid(row=1, column=3)
 
         # Map
-        #self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
+        self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height= 2000 * self.interface_ratio)
         self.canvas.grid(row=4, column=1, columnspan=3)
 
-        # PAL AI STATUS
-        text = 'PAL not connected'
-        if not status['pal_ai_status'] is None:
-            text = status['pal_ai_status']
-        elif not status['pal_telemetry'] is None:
-            text = 'AI not launched'
-        self.pal_ai_status_label = Label(self.window, text="PAL status: %s" % text)
+        # PAL status
+        self.pal_ai_status_label = Label(self.window)
         self.pal_ai_status_label.grid(row=2, column=1)
 
-        # PMI AI STATUS
-        text = 'PMI not connected'
-        if not status['pmi_ai_status'] is None:
-            text = status['pmi_ai_status']
-        elif not status['pmi_telemetry'] is None:
-            text = 'AI not launched'
-        self.pmi_ai_status_label = Label(self.window, text="PMI status: %s" % text)
+        # PMI
+        self.pmi_ai_status_label = Label(self.window)
         self.pmi_ai_status_label.grid(row=3, column=1)
 
         # Color
-        self.color_label = Label(self.window, text="Color: %s" % status['color'], fg=status['color'])
+        self.color_label = Label(self.window)
         self.color_label.grid(row=2, column=3)
 
         # Score
-        self.score_label = Label(self.window, text="Score: %d" % status['score'])
+        self.score_label = Label(self.window)
         self.score_label.grid(row=3, column=3)
 
         # Match status
-        self.match_status_label = Label(self.window, text="Match status: %s" % status['status'])
+        self.match_status_label = Label(self.window)
         self.match_status_label.grid(row=2, column=2)
 
         # Match time
-        self.match_time_label = Label(self.window, text="Match time: %d" % status['time'])
+        self.match_time_label = Label(self.window)
         self.match_time_label.grid(row=3, column=2)
 
         self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
-        if status['pal_telemetry'] is not None:
-            self.print_robot(status['pal_telemetry'], self.pal_size_y, 'orange')
-
-        if status['pmi_telemetry'] is not None:
-            self.print_robot(status['pmi_telemetry'], self.pmi_size_y, 'orange')
-
-        # TODO: use status['robots']
-        """robots = []
-        try:
-            robots = self.cs.map.get_opponnents()
-        except Exception as e:
-            print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))"""
-
-        for robot in self.enemies:
-            self.print_robot(self.enemies[robot]['telemetry'], self.enemies[robot]['size'], 'red')
-
-    # Init score interface
-    def set_score_interface(self):
-
-        status = self.match.get_match()
-
-        close_button = Button(self.window, text='Close', command=self.close)
-        close_button.grid(row=1, column=1)
-        reset_button = Button(self.window, text='Reset Match', command=self.reset_match)
-        reset_button.grid(row=1, column=3)
-        score_label = Label(self.window, text="Score:\n%d" % status['score'], fg=status['color'])
-        score_label.grid(row=2, column=1, columnspan=3)
-
     def update_interface(self):
 
-        status = self.match.get_match()
+        status = None
+        try:
+            status= self.cs.match.get_status()
+        except Exception as e:
+            print('[MATCH INTERFACE] Failed to get match status: %s' % str(e))
 
-        if self.interface_status != InterfaceStatus.waiting:
-            if status['status'] == 'ended':
-                self.interface_status = InterfaceStatus.end
-            elif status['status'] == 'unstarted':
-                if status['color'] == None:
-                    self.interface_status = InterfaceStatus.init
-                elif self.interface_status != InterfaceStatus.running:
-                    self.interface_status = InterfaceStatus.set
+        self.canvas.delete('all')
+        self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
 
-        if self.interface_status == InterfaceStatus.running:
-
-            self.canvas.delete('all')
-            self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
+        # TODO : display match not connected
+        if status is not None:
 
             # PAL AI STATUS
+            # TODO : Update
             text = 'PAL not connected'
             if not status['pal_ai_status'] is None:
                 text = status['pal_ai_status']
@@ -305,6 +259,7 @@ class MatchInterface:
             self.pal_ai_status_label.config(text="PAL status: %s" % text)
 
             # PMI AI STATUS
+            # TODO : Update
             text = 'PMI not connected'
             if not status['pmi_ai_status'] is None:
                 text = status['pmi_ai_status']
@@ -317,42 +272,24 @@ class MatchInterface:
             self.match_status_label.config(text="Match status: %s" % status['status'])
             self.match_time_label.config(text="Match time: %d" % status['time'])
 
-            if status['pal_telemetry'] is not None:
-                self.print_robot(status['pal_telemetry'], self.pal_size_y, 'orange')
+        # TODO: Update
+        """robots = []
+        try:
+            robots = self.cs.map.get_opponnents()
+        except Exception as e:
+            print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))"""
 
-            if status['pmi_telemetry'] is not None:
-                self.print_robot(status['pmi_telemetry'], self.pmi_size_y, 'orange')
+        for robot in self.robots:
+            self.print_robot(*self.robots[robot].values())
 
-            # TODO: use status['robots']
-            """robots = []
-            try:
-                robots = self.cs.map.get_opponnents()
-            except Exception as e:
-                print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))"""
-
-            for robot in self.enemies:
-                self.print_robot(self.enemies[robot]['telemetry'], self.enemies[robot]['size'], 'red')
-
-            # TODO: Manage path
-            #self.print_path(self.pal_path, 'yellow', 'violet')
-            #self.print_path(self.pmi_path, 'violet', 'yellow')
-
-        else:
-            if self.interface_status != InterfaceStatus.waiting:
-                widget_list = self.window.grid_slaves()
-                for item in widget_list:
-                    item.destroy()
-
-            if self.interface_status == InterfaceStatus.init:
-                self.interface_status = InterfaceStatus.waiting
-                self.set_color_interface()
-
-            elif self.interface_status == InterfaceStatus.end:
-                self.interface_status = InterfaceStatus.waiting
-                self.set_score_interface()
-
-            elif self.interface_status == InterfaceStatus.set:
-                self.interface_status = InterfaceStatus.running
-                self.set_match_interface()
+        # TODO: Manage path
+        #self.print_path(self.pal_path, 'yellow', 'violet')
+        #self.print_path(self.pmi_path, 'violet', 'yellow')
 
         self.window.after(self.interface_refresh, self.update_interface)
+
+def main():
+    MatchInterface()
+
+if __name__ == "__main__":
+    main()
