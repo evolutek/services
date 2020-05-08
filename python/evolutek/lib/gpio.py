@@ -1,7 +1,13 @@
 from enum import Enum
 from threading import Thread
 from time import sleep
-import RPi.GPIO as GPIO
+
+from evolutek.lib.settings import SIMULATION
+
+if SIMULATION:
+    import evolutek.simulation.fake_lib.fake_gpio as GPIO
+else:
+    import RPi.GPIO as GPIO
 
 class Edge(Enum):
         RISING = 0

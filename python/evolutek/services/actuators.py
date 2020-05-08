@@ -242,16 +242,7 @@ class Actuators(Service):
         self.match_end.set()
         self.disable ()
 
-def wait_for_beacon():
-    hostname = "pi"
-    while True:
-        r = os.system("ping -c 1 " + hostname)
-        if r == 0:
-            return
-        pass
-
 def main():
-    #wait_for_beacon()
     actuators = Actuators()
     actuators.run()
 
