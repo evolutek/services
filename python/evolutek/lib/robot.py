@@ -223,6 +223,16 @@ class Robot:
 
         return status
 
+    def move_trsl_avoid(self, dest, acc, dec, maxspeed, sens, timeout=0.0, nb_try=None):
+        tried = 1
+        status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
+        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+            tried += 1
+            self.wait_until(timeout=timeout)
+            status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
+
+        return status
+
     def update_path(self, path):
         new = []
 

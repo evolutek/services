@@ -72,8 +72,6 @@ class Gpio(Io):
             GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
     def read(self):
-        if self.dir:
-            return None
 
         self.value = GPIO.input(self.id)
 
