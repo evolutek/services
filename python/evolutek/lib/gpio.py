@@ -93,28 +93,26 @@ class Gpio(Io):
         GPIO.output(self.id, GPIO.HIGH if value else GPIO.LOW)
         return True
 
-    def auto_refresh(self, refresh=0.5, service=None):
+    def auto_refresh(self, refresh=0.5, callback=None):
         if self.dir:
             return
 
-        Thread(target=self._auto_refresh, args=[refresh, service]).start()
+        Thread(target=self._auto_refresh, args=[refresh, callback]).start()
 
-    def _auto_refresh(self, refresh, service):
+    def _auto_refresh(self, refresh, callback):
         while True:
             tmp = self.value
             self.read()
 
-            if not service is None and not tmp is None and self.value != tmp:
+            if not callback is None and not tmp is None and self.value != tmp:
                 if not self.edge or self.edge == Edge.BOTH:
-                    self.callback_gpio(service)
-                else:
-                    if self.edge == Edge.RISING and self.value == 1:
-                        self.callback_gpio(service)
-                    elif self.edge == Edge.FALLING and self.value == 0:
-                        self.callback_gpio(service)
+                    callback(event=self.name if self.event is None else self.event,
+                        name=self.name, id=self.id, value=self.value)
+                elif self.edge == Edge.RISING and self.value == 1:
+                    callback(event=self.name if self.event is None else self.event,
+                        name=self.name, id=self.id, value=self.value)
+                elif self.edge == Edge.FALLING and self.value == 0:
+                    callback(event=self.name if self.event is None else self.event,
+                        name=self.name, id=self.id, value=self.value)
 
             sleep(refresh)
-
-    def callback_gpio(self, service):
-        service.publish(event=self.name if self.event is None else self.event,
-            name=self.name, id=self.id, value=self.value)
