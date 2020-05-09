@@ -117,7 +117,10 @@ class MatchInterface(Interface):
             self.match_time_label.config(text="Match time: %s" % 'Match not connected')
 
         for robot in self.robots:
-            self.print_robot(*self.robots[robot].values())
+            if robot in ['pal', 'pmi']:
+                self.print_robot_image(robot, self.robots[robot]['telemetry'])
+            else:
+                self.print_robot(*self.robots[robot].values())
 
         self.print_path(self.paths['pal'], 'yellow', 'violet')
         self.print_path(self.paths['pmi'], 'violet', 'yellow')

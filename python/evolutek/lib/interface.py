@@ -75,6 +75,13 @@ class Interface:
 
         setattr(self, '%s_watchdog' % robot, Watchdog(self.timeout_robot, self.reset_robot, [robot]))
 
+        img = Image.open('/etc/conf.d/%s.png' % robot)
+        new_size = int(self.robots[robot]['size'] * 2 * self.interface_ratio)
+        print(new_size)
+        img = img.resize((new_size, new_size), Image.ANTIALIAS)
+
+        setattr(self, '%s_image' % robot, ImageTk.PhotoImage(img))
+
     def reset_robot(self, robot):
         self.robots[robot]['telemetry'] = None
         self.ai_status[robot] = None
@@ -172,6 +179,16 @@ class Interface:
             (robot['y'] + size) * self.interface_ratio,
             (robot['x'] + size) * self.interface_ratio,
             width=2, fill=color)
+
+    def print_robot_image(self, robot, coords):
+
+        if coords is None:
+            return
+
+        x = coords['y'] * self.interface_ratio
+        y = coords['x'] * self.interface_ratio
+        self.canvas.create_image(x, y, image=getattr(self, '%s_image' % robot))
+
 
     def print_path(self, path, color_path, color_point):
         size = 10 * self.interface_ratio
