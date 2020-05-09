@@ -6,6 +6,7 @@ from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
 from evolutek.lib.settings import SIMULATION
+from evolutek.lib.watchdog import Watchdog
 
 if SIMULATION:
     from evolutek.simulation.simulator import read_config
@@ -13,6 +14,7 @@ if SIMULATION:
 import asyncore
 from math import cos, sin, pi
 from os import _exit
+from signal import signal, SIGINT
 from threading import Thread
 from tkinter import *
 from PIL import Image
@@ -20,7 +22,10 @@ from PIL import ImageTk
 
 from time import sleep
 
-## TODO: AI status
+## TODO: Robots paths
+## TODO: Map obstacles
+## TODO: Tims
+## TODO: Detected oppenents
 
 class MatchInterface:
 
@@ -28,12 +33,13 @@ class MatchInterface:
 
         self.cs = CellaservProxy()
 
-        match_interface_config = self.cs.config.get_section('match')
+        match_config = self.cs.config.get_section('match')
 
-        self.interface_refresh = int(match_interface_config['interface_refresh'])
-        self.robot_size = float(match_interface_config['robot_size'])
-        self.color1 = match_interface_config['color1']
-        self.color2 = match_interface_config['color2']
+        self.interface_refresh = int(match_config['interface_refresh'])
+        self.robot_size = float(match_config['robot_size'])
+        self.color1 = match_config['color1']
+        self.color2 = match_config['color2']
+        self.timeout_robot = float(match_config['timeout_robot'])
 
         self.window = Tk()
         self.window.attributes('-fullscreen', True)
@@ -47,17 +53,21 @@ class MatchInterface:
         img = img.resize((int(3000 * self.interface_ratio), int(2000 * self.interface_ratio)), Image.ANTIALIAS)
         self.map = ImageTk.PhotoImage(img)
 
-        self.robots = {}
-
         self.init_interface()
 
         print('[MATCH INTERFACE] Window created')
 
         self.client = AsynClient(get_socket())
-        self.robots['pal'] = {'telemetry' : None, 'size' : float(self.cs.config.get(section='pal', option='robot_size_y')), 'color' : 'orange'}
-        self.client.add_subscribe_cb('pal_telemetry', self.telemetry_handler)
-        self.robots['pmi'] = {'telemetry' : None, 'size' : float(self.cs.config.get(section='pmi', option='robot_size_y')), 'color' : 'orange'}
-        self.client.add_subscribe_cb('pmi_telemetry', self.telemetry_handler)
+
+        self.robots = {}
+        self.ai_status = {}
+        self.paths = {}
+        self.init_robot('pal')
+        self.init_robot('pmi')
+
+        self.match_status = None
+        self.client.add_subscribe_cb('match_status', self.match_status_handler)
+        self.match_status_watchdog = Watchdog(float(match_config['refresh']) * 2, self.reset_match_status)
 
         if SIMULATION:
             self.init_simulation()
@@ -71,8 +81,29 @@ class MatchInterface:
         self.canvas.bind("<ButtonPress-1>", self.get_moving_robot)
         self.canvas.bind("<ButtonRelease-1>", self.set_moving_robot)
 
+        signal(SIGINT, self.close)
+
         self.window.after(self.interface_refresh, self.update_interface)
         self.window.mainloop()
+
+    def init_robot(self, robot):
+        self.robots[robot] = {'telemetry' : None, 'size' : float(self.cs.config.get(section=robot, option='robot_size_y')), 'color' : 'orange'}
+        self.client.add_subscribe_cb('%s_telemetry' % robot, self.telemetry_handler)
+
+        self.ai_status[robot] = None
+        self.client.add_subscribe_cb('%s_ai_status' % robot, self.ai_status_handler)
+
+        self.paths[robot] = []
+        self.client.add_subscribe_cb('%s_path' % robot, self.path_handler)
+
+        setattr(self, '%s_watchdog' % robot, Watchdog(self.timeout_robot, self.reset_robot, [robot]))
+
+    def reset_robot(self, robot):
+        self.robots[robot]['telemetry'] = None
+        self.ai_status[robot] = None
+
+    def reset_match_status(self):
+        self.match_status = None
 
     def init_simulation(self):
         enemies = read_config('enemies')
@@ -103,7 +134,6 @@ class MatchInterface:
         print('[MATCH INTERFACE] Get moving robot %s' % robot)
 
     def set_moving_robot(self, event):
-
         if self.moving_robot is None:
             return
 
@@ -115,12 +145,28 @@ class MatchInterface:
 
         self.moving_robot = None
 
-    def telemetry_handler(self, status, robot, telemetry):
+    """ EVENT HANDLERS """
 
+    def match_status_handler(self, status):
+        self.match_status_watchdog.reset()
+        self.match_status = status
+
+    def telemetry_handler(self, status, robot, telemetry):
         if status != 'failed':
             self.robots[robot]['telemetry'] = telemetry
         else:
             self.telemetry = None
+
+        if robot in ['pal', 'pmi']:
+            getattr(self, '%s_watchdog' % robot).reset()
+
+    def ai_status_handler(self, robot, status):
+        getattr(self, '%s_watchdog' % robot).reset()
+        if robot in self.ai_status:
+            self.ai_status[robot] = status
+
+    def path_handler(self, robot, path):
+        self.paths[robot] = path
 
     """ PRINT UTILITIES """
 
@@ -178,7 +224,8 @@ class MatchInterface:
 
     """ INTERFACE UTILITIES """
 
-    def close(self):
+    def close(self, signal_received=None, frame=None):
+        print('[MATCH_INTERFACE] Killing interface')
         self.window.destroy()
         _exit(0)
 
@@ -237,54 +284,41 @@ class MatchInterface:
 
     def update_interface(self):
 
-        status = None
-        try:
-            status= self.cs.match.get_status()
-        except Exception as e:
-            print('[MATCH INTERFACE] Failed to get match status: %s' % str(e))
-
         self.canvas.delete('all')
         self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
 
-        # TODO : display match not connected
-        if status is not None:
+        # PAL AI STATUS
+        text = 'PAL not connected'
+        if not self.ai_status['pal'] is None:
+            text = self.ai_status['pal']
+        elif not self.robots['pal']['telemetry'] is None:
+            text = 'AI not launched'
+        self.pal_ai_status_label.config(text="PAL status: %s" % text)
 
-            # PAL AI STATUS
-            # TODO : Update
-            text = 'PAL not connected'
-            if not status['pal_ai_status'] is None:
-                text = status['pal_ai_status']
-            elif not status['pal_telemetry'] is None:
-                text = 'AI not launched'
-            self.pal_ai_status_label.config(text="PAL status: %s" % text)
+        # PMI AI STATUS
+        text = 'PMI not connected'
+        if not self.ai_status['pmi'] is None:
+            text = self.ai_status['pmi']
+        elif not self.robots['pmi']['telemetry'] is None:
+            text = 'AI not launched'
+        self.pmi_ai_status_label.config(text="PMI status: %s" % text)
 
-            # PMI AI STATUS
-            # TODO : Update
-            text = 'PMI not connected'
-            if not status['pmi_ai_status'] is None:
-                text = status['pmi_ai_status']
-            elif not status['pmi_telemetry'] is None:
-                text = 'AI not launched'
-            self.pmi_ai_status_label.config(text="PMI status: %s" % text)
-
-            self.color_label.config(text="Color: %s" % status['color'], fg=status['color'])
-            self.score_label.config(text="Score: %d" % status['score'])
-            self.match_status_label.config(text="Match status: %s" % status['status'])
-            self.match_time_label.config(text="Match time: %d" % status['time'])
-
-        # TODO: Update
-        """robots = []
-        try:
-            robots = self.cs.map.get_opponnents()
-        except Exception as e:
-            print('[MATCH INTERFACE] Failed to get opponents: %s' % str(e))"""
+        if self.match_status is not None:
+            self.color_label.config(text="Color: %s" % self.match_status['color'], fg=self.match_status['color'])
+            self.score_label.config(text="Score: %d" % self.match_status['score'])
+            self.match_status_label.config(text="Match status: %s" % self.match_status['status'])
+            self.match_time_label.config(text="Match time: %d" % self.match_status['time'])
+        else:
+            self.color_label.config(text="Color: %s" % 'Match not connected')
+            self.score_label.config(text="Score: %s" % 'Match not connected')
+            self.match_status_label.config(text="Match status: %s" % 'Match not connected')
+            self.match_time_label.config(text="Match time: %s" % 'Match not connected')
 
         for robot in self.robots:
             self.print_robot(*self.robots[robot].values())
 
-        # TODO: Manage path
-        #self.print_path(self.pal_path, 'yellow', 'violet')
-        #self.print_path(self.pmi_path, 'violet', 'yellow')
+        self.print_path(self.paths['pal'], 'yellow', 'violet')
+        self.print_path(self.paths['pmi'], 'violet', 'yellow')
 
         self.window.after(self.interface_refresh, self.update_interface)
 
