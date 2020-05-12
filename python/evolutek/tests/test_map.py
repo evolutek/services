@@ -41,28 +41,28 @@ class Test_Map:
             print('[TEST_MAP] Update path')
             self.compute_path.wait()
             start = time()
-            self.path, self.graph = self.map.get_path(Point(250, 500), Point(1200, 2300))
+            self.path = self.map.get_path(Point(250, 500), Point(1200, 2300))
             end = time()
             self.compute_path.clear()
             print('Path compute in: ' + str(end-start))
 
     def fake_robot(self):
         robot = {'x': 750, 'y': 2029}
-        ascending = True
+        ascending = False
 
         while True:
             while self.compute_path.isSet():
                 sleep(0.01)
             #print('[TEST_MAP] Update Fake Robot')
             if ascending:
-                robot['y'] += 50
+                robot['y'] += 10
                 if robot['y'] > 2400:
                     robot['y'] = 2399
                     ascending = False
             else:
-                robot['y'] -= 50
-                if robot['y'] < 299:
-                    robot['y'] = 201
+                robot['y'] -= 10
+                if robot['y'] < 200:
+                    robot['y'] = 209
                     ascending = True
 
             pos = Point(dict=robot)
