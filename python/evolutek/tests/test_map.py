@@ -24,6 +24,7 @@ class Test_Map:
         self.debug_mode = DebugMode.normal
 
         self.color = 'violet'
+        self.graph = {}
         self.path = []
 
         self.compute_path = Event()
@@ -47,21 +48,21 @@ class Test_Map:
 
     def fake_robot(self):
         robot = {'x': 750, 'y': 2029}
-        ascending = True
+        ascending = False
 
         while True:
             while self.compute_path.isSet():
                 sleep(0.01)
             #print('[TEST_MAP] Update Fake Robot')
             if ascending:
-                robot['y'] += 50
+                robot['y'] += 10
                 if robot['y'] > 2400:
                     robot['y'] = 2399
                     ascending = False
             else:
-                robot['y'] -= 50
-                if robot['y'] < 299:
-                    robot['y'] = 201
+                robot['y'] -= 10
+                if robot['y'] < 200:
+                    robot['y'] = 209
                     ascending = True
 
             pos = Point(dict=robot)
