@@ -7,11 +7,12 @@ from evolutek.lib.map.debug_map import Interface
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map as Map_lib
 from evolutek.lib.map.point import Point
 from evolutek.lib.map.tim import DebugMode, Tim
-from evolutek.lib.map.utils import convert_path_to_dict
+from evolutek.lib.map.utils import convert_path_to_dict, merge_polygons
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.waiter import waitBeacon, waitConfig
 
 import json
+from shapely.geometry import Polygon, MultiPolygon
 from threading import Lock
 from time import sleep
 
@@ -22,6 +23,8 @@ from time import sleep
 class Map(Service):
 
     def __init__(self):
+        super().__init__()
+
         self.cs = CellaservProxy()
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
@@ -38,6 +41,7 @@ class Map(Service):
         self.pmi_size = float(self.cs.config.get(section='pmi', option='robot_size_y'))
 
         self.debug_mode = DebugMode.normal
+        self.publish('tim_debug_mode', mode=self.debug_mode.value)
         self.lock = Lock()
 
         self.map = Map_lib(width, height, self.pal_size)
@@ -71,7 +75,6 @@ class Map(Service):
             # Default color
             self.match_color(self.color1)
 
-        super().__init__()
 
     """ Event """
     @Service.event
@@ -86,6 +89,8 @@ class Map(Service):
                     if 'tag' in obstacle:
                         self.map.remove_obstacle(obstacle['tag'])
                 self.map.add_obstacles(self.color_obstacles, self.color != self.color1, type=ObstacleType.color)
+
+            self.publish('obstacles', obstacles=self.get_obstacles())
 
         # Connected to the tim or change the pos if it is already connected
         for tim in self.tim_config:
@@ -107,11 +112,11 @@ class Map(Service):
 
     """ THREAD """
     # TODO: Disable for beacon
-    @Service.thread
+    #@Service.thread
     def start_debug_interface(self):
         self.interface = Interface(self.map, self)
 
-    @Service.thread
+    #@Service.thread
     def fake_robot(self):
         robot = {'x': 750, 'y': 1500}
         ascending = True
@@ -136,13 +141,14 @@ class Map(Service):
             self.robots.append(robot)
             sleep(0.1)
 
-    # TODO: debug mode not getting oppenents
+    # TODO: Merge
     @Service.thread
     def loop_scan(self):
         while True:
 
             # Iterate over tim
-            scans = {}
+            scans = []
+            _scans = []
             for ip in self.tim:
 
                 tim = self.tim[ip]
@@ -151,15 +157,29 @@ class Map(Service):
                 if not tim.connected:
                     continue
 
-                scan = tim.get_scan()
-                scans[tim.ip] = scan
+                scans.append()
+
+                if self.debug_mode == DebugMode.debug_tims:
+                    raw = []
+                    for p in self.tim[ip].raw_date:
+                        raw.append(p.to_dict)
+
+                    shapes = []
+                    for p in self.tim[ip].shapes:
+                        shapes.append(p.to_dict)
+
+                    _scans.append((raw, shapes))
+
+            if self.debug_mode == DebugMode.debug_tims:
+                self.publish('tim_scans', scans=_scans)
 
             # Merge robots
+            # TODO : if debug, publish merge / manage merge
             robots = []
-            for ip in scans:
+            for scan in scans:
 
                 new = []
-                for point in scans[ip]:
+                for point in scan:
 
                     # It's one of our robots
                     if (self.pal_telem and point.dist(self.pal_telem) < self.delta_dist)\
@@ -200,12 +220,17 @@ class Map(Service):
                         i += 1
                         self.robots.append(d)
 
-                #print('[MAP] Detected %d robots' % len(self.robots))
-                #self.publish('opponents', robots=self.robots)
+                if self.debug_mode == DebugMode.normal:
+                    self.publish('tim_detected_robots', robots=self.robots)
+
             sleep(self.refresh / 1000)
 
 
     """ ACTION """
+    @Service.action
+    def get_debug_mode(self):
+        return self.debug_mode.value
+
     @Service.action
     def set_debug_mode(self, mode):
         new_mode = None
@@ -216,11 +241,48 @@ class Map(Service):
             return
         print('[MAP] Setting debug mode to %s' % new_mode.value)
         self.debug_mode = new_mode
+        self.publish('tim_debug_mode', mode=self.debug_mode.value)
 
 
     @Service.action
     def get_opponnents(self):
         return self.robots
+
+    @Service.action
+    def get_obstacles(self):
+        l = []
+
+        # Merge map
+        obstacles = MultiPolygon()
+        for obstacle in self.map.obstacles:
+            obstacles = obstacles.union(obstacle)
+        for tag in self.map.color_obstacles:
+            obstacles = obstacles.union(self.map.color_obstacles[tag])
+
+        polygons = self.map.borders
+        if isinstance(obstacles, Polygon):
+            obstacles = [obstacles]
+        for poly in obstacles:
+            polygons = merge_polygons(polygons, poly)
+
+        if isinstance(polygons, Polygon):
+            polygons = [polygons]
+
+        # Add exterior polygons
+        for poly in polygons:
+            _l = []
+            for p in poly.exterior.coords:
+                _l.append(Point(tuple=p).to_dict())
+            l.append(_l)
+
+            # Add interior polygons
+            for _poly in poly.interiors:
+                _l = []
+                for p in _poly.coords:
+                    _l.append(Point(tuple=p).to_dict())
+                l.append(_l)
+
+        return l
 
     @Service.action
     def get_path(self, origin, dest):
