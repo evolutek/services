@@ -114,48 +114,26 @@ class Map(Service):
     def start_debug_interface(self):
         self.interface = Interface(self.map, self)
 
-    @Service.thread
-    def fake_robot(self):
-        robot = {'x': 750, 'y': 1500}
-        ascending = True
-
-        while True:
-            #print('[TEST_MAP] Update Fake Robot')
-            if ascending:
-                robot['x'] += 10
-                if robot['x'] > 1700:
-                    robot['x'] = 1699
-                    ascending = False
-            else:
-                robot['x'] -= 10
-                if robot['x'] < 299:
-                    robot['x'] = 201
-                    ascending = True
-
-            pos = Point(dict=robot)
-            with self.lock:
-                obstacle = self.map.add_octogon_obstacle(pos, self.robot_size, tag='fake', type=ObstacleType.robot)
-            self.robots.clear()
-            self.robots.append(robot)
-            sleep(0.1)
-
+    # TODO: put each tim in one thread
     # TODO: debug mode not getting oppenents
     @Service.thread
     def loop_scan(self):
         while True:
-
-            # Iterate over tim
-            scans = {}
+            print("main loop")
             for ip in self.tim:
 
                 tim = self.tim[ip]
 
                 # Not connected
                 if not tim.connected:
+                    print('[MAP] TIM not connected')
+                    #tim.try_connection()
                     continue
 
                 scan = tim.get_scan()
-                scans[tim.ip] = scan
+                print("done attempting to connect")
+                if scan is None:
+                    continue
 
             # Merge robots
             robots = []
@@ -207,6 +185,11 @@ class Map(Service):
                 #self.publish('opponents', robots=self.robots)
             sleep(self.refresh / 1000)
 
+                    #print('[MAP] Detected %d robots' % len(self.robots))
+                    #self.publish('opponents', robots=self.robots)
+            print("Starting sleep")
+            sleep(self.refresh)
+            print("Finishing sleep")
 
     """ ACTION """
     @Service.action

@@ -181,24 +181,42 @@ class Interface:
             y2 = (p.x + 10) * self.unit
             self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
 
+    def print_raw_data(self, raw_data):
+        #print("data points: %d" % len(raw_data))
+        for p in raw_data:
+            #print(p)
+            self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white')
+
+    def print_shapes(self, shapes):
+        #print("nb shapes: %d" % len(shapes))
+        for i in range(len(shapes)):
+            color = colors[i % len(colors)]
+            for p in shapes[i]:
+                self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill=color)
+
+    def print_robots(self, robots):
+        #print("nb robots: %d" % len(robots))
+        for i in range(len(robots)):
+            color = colors[i % len(colors)]
+            p = robots[i]
+            if self.service.debug:
+                self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 10, p.x * unit + 10, fill=color)
+            else:
+                self.canvas.create_rectangle((p['y'] - self.service.robot_size) * unit,
+                (p['x'] - self.service.robot_size) * unit, (p['y'] + self.service.robot_size) * unit,
+                (p['x'] + self.service.robot_size) * unit, fill='red')
+
     def update(self):
 
         #print('[DEBUG_MAP] Update interface')
         self.canvas.delete('all')
-        self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
-        #self.print_map()
-        with self.service.lock:
+        self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
+        if self.service.debug:
+            self.print_raw_data(self.service.raw_data)
+            self.print_shapes(self.service.shapes) 
+            self.print_robots(self.service.robots)
+        else:
             self.print_merged_map()
-
-        self.update_tims()
-
-        # Debug Mode
-        if self.service.debug_mode != DebugMode.normal:
-            self.print_tims(self.service.debug_mode==DebugMode.debug_tims)
-            if self.service.debug_mode == DebugMode.debug_merge:
-                with self.service.lock:
-                    self.print_robots(self.service.robots, 'white')
-
         """if hasattr(self.service, 'pal_telem') and hasattr(self.service, 'pal_size_y'):
             self.print_robot(self.service.pal_telem, self.service.pal_size_y)
         if hasattr(self.service, 'pmi_telem') and hasattr(self.service, 'pmi_size_y'):

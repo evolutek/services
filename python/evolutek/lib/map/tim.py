@@ -241,7 +241,7 @@ class Tim:
 
     def get_scan(self):
         if self.scan_list is []:
-          return None
+            return None
 
         with self.lock:
             scan = self.scan_list
