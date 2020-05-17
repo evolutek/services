@@ -9,7 +9,6 @@ from evolutek.lib.map.point import Point
 from evolutek.lib.map.tim import DebugMode, Tim
 from evolutek.lib.map.utils import convert_path_to_dict
 from evolutek.lib.settings import ROBOT
-from evolutek.lib.waiter import waitBeacon, waitConfig
 
 import json
 from threading import Lock
@@ -22,6 +21,8 @@ from time import sleep
 class Map(Service):
 
     def __init__(self):
+        super().__init__()
+
         self.cs = CellaservProxy()
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
@@ -71,7 +72,6 @@ class Map(Service):
             # Default color
             self.match_color(self.color1)
 
-        super().__init__()
 
     """ Event """
     @Service.event
