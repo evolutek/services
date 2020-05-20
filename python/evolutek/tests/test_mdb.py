@@ -7,11 +7,11 @@ class Test_Mdb():
 
     def __init__(self):
 
-        mdb = Mdb(16)
+        mdb = Mdb(2, debug=True)
 
         while True:
             scan = mdb.get_scan()
-            print("--- New scan ---")
+            print("---- New scan -----")
             for i in range(len(scan)):
                 print("%d: %f" % (i + 1, scan[i]))
 

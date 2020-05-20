@@ -9,7 +9,7 @@ import time
 import neopixel
 
 # TODO:
-# - Replace FIXME
+# - Exceptions management
 # - Attribute a placement to sensors (front, back, sides)
 
 # Default adress of Vl53L0X
@@ -41,55 +41,73 @@ MAX_DIST = 1000
 
 class Mdb:
 
-    def __init__(self, nb_sensors, sensor_address=0x29, expander_address=0x20, leds_gpio=None, refresh=0.1, debug=0):
+    def __init__(self, nb_sensors, sensor_address=0x29, expander_address=0x20, leds_gpio=None, refresh=0.1, debug=False):
         self.coef = 255 / (MAX_DIST / 2)
+        
+        # Init I2C bus
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.sensors = []
         self.scan = []
+
+        # Init MCP
         self.mcp = MCP23017(self.i2c, address=expander_address)
+
         self.nb_sensors = nb_sensors
         self.sleep = refresh
-        self.pixel = None
         self.debug = debug
-        self.sensors_address = sensor_address
-        self.init_sensor()
+
+        # Init all sensors
+        self.init_sensors(sensor_address)
+ 
+        # Init led strip
+        self.pixel = neopixel.NeoPixel(board.D18, self.nb_sensors, brightness=10)
+
         self.lock = Lock()
-        Thread(target=self.loop).run()
+        Thread(target=self.loop).start()
 
-    def init_sensor(self):
-        for i in range(0, self.nb_sensors + 1):
-            self.mcp.get_pin(i + 8).switch_to_output()
+    def init_sensors(self, sensors_address):
+        
+        # Put all XSHUT pins to LOW
+        for i in range(self.nb_sensors):
+            self.mcp.get_pin(i).switch_to_output()
 
-        for i in range(0, self.nb_capteur + 1):
-            print("INIT_Sensor: {0}".format(i + 1))
-            self.mcp.get_pin(i + 8).value = True
-            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c, address=0x29))
-            self.sensors[i].set_address(0x29 + i + 1)
-
-        self.pixel = neopixel.NeoPixel(board.D27, self.nb_capteur, brightness=10)
+        # Init sensor one by one and change addresses
+        for i in range(self.nb_sensors):
+            self.mcp.get_pin(i).value = True
+            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c, address=DEFAULT_ADDRESS))
+            self.sensors[i].set_address(sensors_address + i + 1) 
 
     def loop(self):
         while True:
-            for i in range(0, self.nb_sensors + 1):
-                self.dist = self.sensors[i].range
-                if self.dist > MAX_DIST:
-                    self.pixel[i] = (0,0,0)
-                else:
-                    r = 255 - self.dist * self.coef
-                    g = 255 - abs(MAX_DIST / 2 - self.dist) * self.coef
-                    b = 255 - (MAX_DIST - self.dist) * self.coef
-                    self.pixel[i] = (int(r if r >= 0 else 0),
-                                     int(g if g >= 0 else 0),
-                                     int(b if b >= 0 else 0))
-                if self.debug != 0:
-                    print("Range: {0}".format(self.sensors[i].range))
-                with self.lock:
-                    self.scan[i] = self.sensors[i].range
+
+            tmp = []
+
+            for i in range(0, self.nb_sensors):
+                dist = self.sensors[i].range
+
+                # Display range on led strip if debug is activated
+                if self.debug:
+                    if dist > MAX_DIST:
+                        self.pixel[i] = (0, 0, 0)
+                    else:
+                        r = 255 - dist * self.coef
+                        g = 255 - abs(MAX_DIST / 2 - dist) * self.coef
+                        b = 255 - (MAX_DIST - dist) * self.coef
+                        self.pixel[i] = (int(r if r >= 0 else 0),
+                                         int(g if g >= 0 else 0),
+                                         int(b if b >= 0 else 0)) 
+                tmp.append(dist)
+            # Update scan
+            with self.lock:
+                self.scan = tmp
+
             time.sleep(self.sleep)
 
     def get_scan(self):
+        tmp = []
         with self.lock:
-            return self.scan
+            tmp = self.scan
+        return tmp
 
     def __str__(self):
         return ""
