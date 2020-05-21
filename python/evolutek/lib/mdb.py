@@ -41,7 +41,7 @@ MAX_DIST = 1000
 
 class Mdb:
 
-    def __init__(self, nb_sensors, sensor_address=0x29, expander_address=0x20, leds_gpio=None, refresh=0.1, debug=False):
+    def __init__(self, nb_sensors, sensor_address=0x29, expander_address=0x20, leds_gpio=board.D10, refresh=0.1, debug=False):
         self.coef = 255 / (MAX_DIST / 2)
         
         # Init I2C bus
@@ -53,14 +53,14 @@ class Mdb:
         self.mcp = MCP23017(self.i2c, address=expander_address)
 
         self.nb_sensors = nb_sensors
-        self.sleep = refresh
+        self.refresh = refresh
         self.debug = debug
 
         # Init all sensors
         self.init_sensors(sensor_address)
  
         # Init led strip
-        self.pixel = neopixel.NeoPixel(board.D18, self.nb_sensors, brightness=10)
+        self.pixel = neopixel.NeoPixel(leds_gpio, self.nb_sensors, brightness=10)
 
         self.lock = Lock()
         Thread(target=self.loop).start()
@@ -68,14 +68,15 @@ class Mdb:
     def init_sensors(self, sensors_address):
         
         # Put all XSHUT pins to LOW
-        for i in range(self.nb_sensors):
+        for i in range(0, self.nb_sensors):
             self.mcp.get_pin(i).switch_to_output()
+            self.mcp.get_pin(i).value = False
 
         # Init sensor one by one and change addresses
-        for i in range(self.nb_sensors):
+        for i in range(0, self.nb_sensors):
             self.mcp.get_pin(i).value = True
-            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c, address=DEFAULT_ADDRESS))
-            self.sensors[i].set_address(sensors_address + i + 1) 
+            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c))#, address=DEFAULT_ADDRESS))
+            self.sensors[i].set_address(sensors_address + i + 1)
 
     def loop(self):
         while True:
@@ -101,7 +102,7 @@ class Mdb:
             with self.lock:
                 self.scan = tmp
 
-            time.sleep(self.sleep)
+            time.sleep(self.refresh)
 
     def get_scan(self):
         tmp = []
