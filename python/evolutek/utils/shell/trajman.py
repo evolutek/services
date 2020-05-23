@@ -5,13 +5,16 @@ from click_shell import make_click_shell
 
 ROBOT = None
 
+def get_prompt():
+    return "evo-shell [%s] > " % ROBOT
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def trajman_shell(ctx):
     if ctx.invoked_subcommand is None:
         global ROBOT
         ROBOT = get_robot()
-        subshell = make_click_shell(ctx, prompt='trajman-shell %s > ' % ROBOT, intro='Shell to control Trajman')
+        subshell = make_click_shell(ctx, prompt=get_prompt, intro='Shell to control Trajman')
         subshell.cmdloop()
     else:
         click.echo('[SHELL] Failed to launch trajman shell')

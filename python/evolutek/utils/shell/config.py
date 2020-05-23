@@ -25,7 +25,7 @@ def get(section, option):
 @click.argument('section')
 @click.argument('option')
 @click.argument('value')
-@click.option('--tmp/--no-tmp', default=False, help='if value will be tmp')
+@click.option('-t', '--tmp/--no-tmp', default=False, help='if value will be tmp')
 def set(section, option, value, tmp):
     click.echo('Setting config')
     if tmp:

@@ -6,13 +6,16 @@ from click_shell import make_click_shell
 ID = 0
 ROBOT = None
 
+def get_prompt():
+    return "ax-shell [%s-%d] > " % (ROBOT, ID)
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def ax_shell(ctx):
     if ctx.invoked_subcommand is None:
         global ROBOT
         ROBOT = get_robot()
-        subshell = make_click_shell(ctx, prompt='ax-shell % s > ' % ROBOT, intro='Shell to control AX12')
+        subshell = make_click_shell(ctx, prompt=get_prompt, intro='Shell to control AX12')
         subshell.cmdloop()
     else:
         click.echo('[SHELL] Failed to launch ax shell')

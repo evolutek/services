@@ -6,13 +6,18 @@ from ax import ax_shell
 from config import config_shell
 from trajman import trajman_shell
 
+from evolutek.utils.odom_tools import compute_all
+
 import click
 from click_shell import shell
 from os import _exit
 from sys import argv
 from time import sleep
 
-@shell(prompt='evo-shell > ', intro='Shell to control robot')
+def get_prompt():
+    return "evo-shell [%s] > " % get_robot()
+
+@shell(prompt=get_prompt, intro='Shell to control robot')
 def evolutek_shell():
     pass
 
@@ -34,6 +39,10 @@ def ax():
         return
 
     ax_shell()
+
+@evolutek_shell.command()
+def config():
+    config_shell()
 
 @evolutek_shell.command()
 def trajman():
