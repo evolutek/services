@@ -4,6 +4,7 @@ from shell_global import cs, get_robot, set_robot
 
 from ax import ax_shell
 from config import config_shell
+from trajman import trajman_shell
 
 import click
 from click_shell import shell
@@ -33,6 +34,14 @@ def ax():
         return
 
     ax_shell()
+
+@evolutek_shell.command()
+def trajman():
+    if get_robot() is None:
+        click.echo('No robot selected')
+        return
+
+    trajman_shell()
 
 @evolutek_shell.command()
 def config():

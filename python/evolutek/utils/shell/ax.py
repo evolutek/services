@@ -4,12 +4,15 @@ import click
 from click_shell import make_click_shell
 
 ID = 0
+ROBOT = None
 
 @click.group(invoke_without_command=True)
 @click.pass_context
 def ax_shell(ctx):
     if ctx.invoked_subcommand is None:
-        subshell = make_click_shell(ctx, prompt='ax-shell > ', intro='Shell to control AX12')
+        global ROBOT
+        ROBOT = get_robot()
+        subshell = make_click_shell(ctx, prompt='ax-shell % s > ' % ROBOT, intro='Shell to control AX12')
         subshell.cmdloop()
     else:
         click.echo('[SHELL] Failed to launch ax shell')
@@ -31,7 +34,7 @@ def id(id):
 
 @ax_shell.command()
 def status():
-    ax = cs.ax['%s-%d' % (get_robot(), ID)]
+    ax = cs.ax['%s-%d' % (ROBOT, ID)]
     click.echo("AX:          {:4}".format(ax.identification))
     click.echo("Position:    {:4}".format(ax.get_present_position()))
     click.echo("Voltage:     {:4}".format(ax.get_present_voltage()))
@@ -41,7 +44,7 @@ def status():
 @ax_shell.command()
 def reset():
     click.echo('Reset ax [%d]' % ID)
-    cs.ax['%s-%s' % (get_robot(), ID)].reset()
+    cs.ax['%s-%s' % (ROBOT, ID)].reset()
 
 @ax_shell.command()
 @click.argument('goal', type=int)
@@ -51,8 +54,8 @@ def move(goal):
         return
 
     click.echo('Moving ax [%d] to %d' % (ID, goal))
-    cs.ax['%s-%d' % (get_robot(), ID)].mode_joint()
-    cs.ax['%s-%d' % (get_robot(), ID)].move(goal=goal)
+    cs.ax['%s-%d' % (ROBOT, ID)].mode_joint()
+    cs.ax['%s-%d' % (ROBOT, ID)].move(goal=goal)
 
 @ax_shell.command()
 @click.argument('side', type=bool)
@@ -63,10 +66,10 @@ def speed(side, speed):
         return
 
     click.echo('Setting ax [%d] to %d speed' % (ID, speed))
-    cs.ax['%s-%d' % (get_robot(), ID)].mode_wheel()
+    cs.ax['%s-%d' % (ROBOT, ID)].mode_wheel()
     cs.ax['%s-%d' % (get_robot(), ID)].turn(side=side, speed=speed)
 
 @ax_shell.command()
 def stop():
     click.echo('Stopping ax [%d]' % speed)
-    cs.ax['%s-%d' % (get_robot(), ID)].moving_speed(0)
+    cs.ax['%s-%d' % (ROBOT, ID)].moving_speed(0)
