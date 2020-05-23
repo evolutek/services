@@ -53,8 +53,16 @@ def trajman():
     trajman_shell()
 
 @evolutek_shell.command()
-def config():
-    config_shell()
+@click.option('-g', '--gains/-no-gains', default=False, help='Compute gains')
+@click.option('-d', '--diams/-no-diams', default=False, help='Compute diameters')
+@click.option('-s', '--space/-no-space', default=False, help='Compute spacing')
+@click.option('-a', '--all/-no-all', default=False, help='Compute all')
+def config_odom(gains, diams, space, all):
+    if get_robot() is None:
+        click.echo('No robot selected')
+        return
+
+    compute_all(gains, diams, space, all, get_robot())
 
 if __name__ == '__main__':
     evolutek_shell()

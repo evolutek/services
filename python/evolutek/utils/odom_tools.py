@@ -164,6 +164,48 @@ def compute_spacing():
     robot.move_rot_block(dest=nbturns * math.pi, acc=3, dec=3, maxspeed=3, sens=0)
     robot.tm.free()
 
+def compute_all(gains, diams, spacing, all, _robot=None):
+    global robot
+    robot = Robot(_robot if _robot is not None else args.robot)
+    global old
+    old = robot.tm.get_wheels()
+    global speeds
+    speeds = robot.tm.get_speeds()
+
+    if not gains and not diams and not spacing:
+        all = True
+
+    print("###############################################################")
+    print("## Hi ! and welcome to the wheels size computing assistant ! ##")
+    print("###############################################################")
+
+    if all:
+        print('It will compute everything: gains, diameters and spacing')
+    else:
+        if gains:
+            print('It will compute gains')
+        if diams:
+            print('It will compute diams')
+        if spacing:
+            print('It will compute spacing')
+
+    print("Press enter when ready")
+    input()
+
+    if all or gains:
+        compute_gains()
+
+    if all or diams:
+        compute_diams()
+
+    if all or spacing:
+        compute_spacing()
+
+    print("#############################################")
+    print("## GO TO THE MOTOR CARD AND SET THE VALUES ##")
+    print("#############################################")
+    print(robot.tm.get_wheels())
+
 def main():
     parser = ArgumentParser(description='Configuration of the odometry of the robot')
     parser.add_argument("robot", help="Robot to configure")
@@ -179,32 +221,7 @@ def main():
         print('Available robot: [pal, pmi]')
         return 1
 
-    print("###############################################################")
-    print("## Hi ! and welcome to the wheels size computing assistant ! ##")
-    print("###############################################################")
-    print("Press enter when ready")
-    input()
-
-    global robot
-    robot = Robot(args.robot)
-    global old
-    old = robot.tm.get_wheels()
-    global speeds
-    speeds = robot.tm.get_speeds()
-
-    if args.all or args.gains:
-        compute_gains()
-
-    if args.all or args.diams:
-        compute_diams()
-
-    if args.all or args.spacing:
-        compute_spacing()
-
-    print("#############################################")
-    print("## GO TO THE MOTOR CARD AND SET THE VALUES ##")
-    print("#############################################")
-    print(robot.tm.get_wheels())
+    compute_all(args.gains, args.diams, args.spacing, args.all)
 
 if __name__ == "__main__":
     main()
