@@ -2,6 +2,7 @@ from shell_global import cs
 
 import click
 from click_shell import make_click_shell
+from data_printer import print_json
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -17,9 +18,9 @@ def config_shell(ctx):
 @click.option('--option', default=None, help='specific option in section')
 def get(section, option):
     if option is None:
-        click.echo(cs.config.get_section(name=section))
+        print_json(cs.config.get_section(name=section))
     else:
-        click.echo(cs.config.get(section=section, option=option))
+        print_json(cs.config.get(section=section, option=option))
 
 @config_shell.command()
 @click.argument('section')
@@ -35,7 +36,7 @@ def set(section, option, value, tmp):
 
 @config_shell.command()
 def list():
-    click.echo(cs.config.list())
+    print_json(cs.config.list())
 
 @config_shell.command()
 def write():

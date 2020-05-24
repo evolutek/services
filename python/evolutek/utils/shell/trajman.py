@@ -1,4 +1,5 @@
 from shell_global import cs, get_robot
+from data_printer import print_json
 
 import click
 from click_shell import make_click_shell
@@ -151,12 +152,12 @@ def set_rot_dec(dec):
 """ GET """
 @trajman_shell.command()
 def get_pos():
-    click.echo(cs.trajman[ROBOT].get_position())
+    print_json(cs.trajman[ROBOT].get_position())
 
 @trajman_shell.command()
 def get_speeds():
-    click.echo(cs.trajman[ROBOT].get_speeds())
+    print_json(cs.trajman[ROBOT].get_speeds())
 
 @trajman_shell.command()
 def get_wheels():
-    click.echo(cs.trajman[ROBOT].get_wheels())
+    print_json(cs.trajman[ROBOT].get_wheels())
