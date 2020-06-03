@@ -6,7 +6,7 @@ from evolutek.lib.map.point import Point
 from evolutek.lib.watchdog import Watchdog
 
 import asyncore
-from math import cos, sin, pi
+from math import cos, sin, pi, degrees
 from os import _exit
 from signal import signal, SIGINT
 from threading import Thread
@@ -48,6 +48,7 @@ class Interface:
         self.ai_status = {}
         self.paths = {}
         self.robots = {}
+        self.tmp = []
 
         self.moving_robot = None
         self.canvas.bind("<ButtonPress-1>", self.get_moving_robot)
@@ -76,11 +77,10 @@ class Interface:
         setattr(self, '%s_watchdog' % robot, Watchdog(self.timeout_robot, self.reset_robot, [robot]))
 
         img = Image.open('/etc/conf.d/%s.png' % robot)
-        new_size = int(self.robots[robot]['size'] * 2 * self.interface_ratio)
-        print(new_size)
+        new_size = int((self.robots[robot]['size'] + 35) * 2 * self.interface_ratio)
         img = img.resize((new_size, new_size), Image.ANTIALIAS)
 
-        setattr(self, '%s_image' % robot, ImageTk.PhotoImage(img))
+        setattr(self, '%s_image' % robot, img)
 
     def reset_robot(self, robot):
         self.robots[robot]['telemetry'] = None
@@ -187,8 +187,10 @@ class Interface:
 
         x = coords['y'] * self.interface_ratio
         y = coords['x'] * self.interface_ratio
-        self.canvas.create_image(x, y, image=getattr(self, '%s_image' % robot))
-
+        img = getattr(self, '%s_image' % robot)
+        img = img.rotate(degrees(coords['theta']) - 90)
+        self.tmp.append(ImageTk.PhotoImage(img))
+        self.canvas.create_image(x, y, image=self.tmp[-1])
 
     def print_path(self, path, color_path, color_point):
         size = 10 * self.interface_ratio

@@ -216,6 +216,7 @@ class MatchInterface(Interface):
             self.match_status_label.config(text="Match status: %s" % 'Match not connected')
             self.match_time_label.config(text="Match time: %s" % 'Match not connected')
 
+        self.tmp.clear()
         for robot in self.robots:
             if robot in ['pal', 'pmi']:
                 self.print_robot_image(robot, self.robots[robot]['telemetry'])
