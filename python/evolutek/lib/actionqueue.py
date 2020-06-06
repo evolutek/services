@@ -7,6 +7,7 @@ class Act_queue():
         self.task = queue.Queue()
         self.response = queue.Queue()
         self.stop = Event()
+
     def launch_multiple_actions(self, actions, args):
         if len(args) != len(actions):
             return None
@@ -18,12 +19,15 @@ class Act_queue():
         for action in launched:
             results.append(action.result())
         return results
+
     def run_action(self, action, args):
         tmp = (action, args)
         self.task.put(tmp)
+
     def run_actions(self, actions, args_list):
         tmp = (list(actions), list(args_list))
         self.task.put(tmp)
+
     def _run_queue(self):
         tmp = ()
         while not self.stop.is_set() and not self.task.empty():
@@ -32,9 +36,11 @@ class Act_queue():
                 self.response.put(self.launch_multiple_actions(tmp[0], tmp[1]))
             else :
                 self.response.put(tmp[0](*tmp[1]))
+
     def run_queue(self):
         t = Thread(target=self._run_queue)
         t.start()
         t.join()
+
     def stop_queue(self):
         self.stop.set()
