@@ -2,8 +2,6 @@ import queue
 from threading import Thread, Event
 import concurrent.futures
 
-test = 0
-
 class Act_queue():
     def __init__(self):
         self.task = queue.Queue()
@@ -40,25 +38,3 @@ class Act_queue():
         t.join()
     def stop_queue(self):
         self.stop.set()
-
-
-def print_toto(a, b) :
-    global test
-    print("Function A: args [", a, "] and [", b, "]")
-    test += 1
-    return test
-
-
-def print_tata(a, b) :
-    global test
-    print("Function B: args [", a, "] and [", b, "]")
-    test += 1
-    return test
-
-
-toto = Act_queue()
-toto.run_action(print_toto, (1, 2))
-toto.run_actions([print_tata, print_toto], [(3, 4), (5, 6)])
-toto.run_queue()
-while (not toto.response.empty()) :
-    print(toto.response.get())
