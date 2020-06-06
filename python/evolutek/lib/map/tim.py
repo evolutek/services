@@ -246,9 +246,20 @@ class Tim:
                   continue
               self.raw_data, self.shapes, self.robots = new_data
 
-    def get_scan(self):
+    def get_points(self):
+        points = []
+        with self.lock:
+            points = self.raw_data
+        return points
 
+    def get_shapes(self):
+        shapes = []
+        with self.lock:
+            shapes = self.shapes
+        return shapes
+
+    def get_robots(self):
+        robots = []
         with self.lock:
             robots = self.robots
-
         return robots

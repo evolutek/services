@@ -162,15 +162,15 @@ class Map(Service):
                 if not tim.connected:
                     continue
 
-                scans.append(tim.get_scan())
+                scans.append(tim.get_robots())
 
                 if self.debug_mode == DebugMode.debug_tims:
                     raw = []
-                    for p in self.tim[ip].raw_date:
+                    for p in self.tim[ip].get_points():
                         raw.append(p.to_dict)
 
                     shapes = []
-                    for p in self.tim[ip].shapes:
+                    for p in self.tim[ip].get_shapes():
                         shapes.append(p.to_dict)
 
                     _scans.append((raw, shapes))
