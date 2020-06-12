@@ -4,7 +4,7 @@ from shell_global import cs, get_robot, set_robot
 
 from ax import ax_shell
 from config import config_shell
-from trajman import trajman_shell
+from robot import robot_shell
 
 from evolutek.utils.odom_tools import compute_all
 
@@ -23,7 +23,7 @@ def evolutek_shell():
 
 @evolutek_shell.command()
 @click.argument('name')
-def robot(name):
+def select_robot(name):
     if name not in ['pal', 'pmi']:
         click.echo('Unknow robot [%s]' % name)
         click.echo('Available robots: [pal, pmi]')
@@ -45,12 +45,12 @@ def config():
     config_shell()
 
 @evolutek_shell.command()
-def trajman():
+def robot():
     if get_robot() is None:
         click.echo('No robot selected')
         return
 
-    trajman_shell()
+    robot_shell()
 
 @evolutek_shell.command()
 @click.option('-g', '--gains/-no-gains', default=False, help='Compute gains')
