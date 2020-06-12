@@ -1,4 +1,4 @@
-from shell_global import cs, get_robot
+from evolutek.utils.shell.shell_global import cs, get_robot
 
 import click
 from click_shell import make_click_shell

@@ -1,8 +1,8 @@
-from shell_global import cs
+from evolutek.utils.shell.shell_global import cs
+from evolutek.utils.shell.data_printer import print_json
 
 import click
 from click_shell import make_click_shell
-from data_printer import print_json
 
 @click.group(invoke_without_command=True)
 @click.pass_context

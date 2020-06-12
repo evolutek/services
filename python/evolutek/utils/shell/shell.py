@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-from shell_global import cs, get_robot, set_robot
-
-from ax import ax_shell
-from config import config_shell
-from robot import robot_shell
+from evolutek.utils.shell.shell_global import cs, get_robot, set_robot
+from evolutek.utils.shell.ax import ax_shell
+from evolutek.utils.shell.config import config_shell
+from evolutek.utils.shell.robot import robot_shell
 
 from evolutek.utils.odom_tools import compute_all
 

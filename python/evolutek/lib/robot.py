@@ -188,7 +188,7 @@ class Robot:
         if mirror:
             y = 1500 + (1500 - y) * (-1 if not self.side else 1)
 
-        if self.goto_xy_block(x, y)
+        if self.goto_xy_block(x, y):
             return Status.has_avoid
 
         if self.telemetry is None:

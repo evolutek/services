@@ -1,7 +1,7 @@
 from evolutek.lib.robot import Robot
 
-from shell_global import cs, get_robot
-from data_printer import print_json
+from evolutek.utils.shell.shell_global import cs, get_robot
+from evolutek.utils.shell.data_printer import print_json
 
 import click
 from click_shell import make_click_shell

@@ -32,7 +32,8 @@ setup(
             'match = evolutek.services.match:main',
             'fake_ax = evolutek.simulation.fake_ax:main',
             'fake_trajman = evolutek.simulation.fake_trajman:main',
-            'match_interface = evolutek.utils.match_interface:main'
+            'match_interface = evolutek.utils.match_interface:main',
+            'shell = evolutek.utils.shell.shell:evolutek_shell'
         ],
     },
 )
