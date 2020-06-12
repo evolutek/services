@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-## TODO: goto_with path
-
 from enum import Enum
 from functools import wraps
 from threading import Event, Thread
@@ -159,24 +157,34 @@ class Robot:
     def set_x(self, x):
         self.tm.set_x(x)
 
-    def set_y(self, y):
-        self.tm.set_y(1500 + (1500 - y) * (-1 if not self.side else 1))
+    def set_y(self, y, mirror=True):
+        if mirror:
+            self.tm.set_y(1500 + (1500 - y) * (-1 if not self.side else 1))
+        else:
+            self.tm.set_y(y)
 
-    def set_theta(self, theta):
-        self.tm.set_theta(theta * (1 if not self.side else -1))
+    def set_theta(self, theta, mirror=True):
+        if mirror:
+            self.tm.set_theta(theta * (1 if not self.side else -1))
+        else:
+            self.tm.set_theta(theta)
 
-    def set_pos(self, x, y, theta=None):
+    def set_pos(self, x, y, theta=None, mirror=True):
         self.set_x(x)
-        self.set_y(y)
+        self.set_y(y, mirror)
         if not theta is None:
-            self.set_theta(theta)
+            self.set_theta(theta, mirror)
 
     #########
     # Moves #
     #########
 
-    def goto(self, x, y):
-        if self.goto_xy_block(x, 1500 + (1500 - y) * (-1 if not self.side else 1)):
+    def goto(self, x, y, mirror=True):
+
+        if mirror:
+            y = 1500 + (1500 - y) * (-1 if not self.side else 1)
+
+        if self.goto_xy_block(x, y)
             return Status.has_avoid
 
         if self.telemetry is None:
@@ -184,14 +192,16 @@ class Robot:
         else:
             pos = self.telemetry
 
-        print(pos)
-
         if Point(x=x, y=y).dist(Point(dict=pos)) < DELTA_POS:
             return Status.unreached
         return Status.reached
 
-    def goth(self, th):
-        if self.goto_theta_block(th * (1 if not self.side else -1)):
+    def goth(self, th, mirror=True):
+
+        if mirror:
+            th = th * (1 if not self.side else -1)
+
+        if self.goto_theta_block(th):
             return Status.has_avoid
 
         if self.telemetry is None:
@@ -203,23 +213,23 @@ class Robot:
             return Status.unreached
         return Status.reached
 
-    def goto_avoid(self, x, y, timeout=0.0, nb_try=None):
+    def goto_avoid(self, x, y, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
-        status = self.goto(x, y)
+        status = self.goto(x, y, mirror)
         while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
-            status = self.goto(x, y)
+            status = self.goto(x, y, mirror)
 
         return status
 
-    def goth_avoid(self, th, timeout=0.0, nb_try=None):
+    def goth_avoid(self, th, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
-        status = self.goth(th)
+        status = self.goth(th, mirror)
         while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
-            status = self.goth(th)
+            status = self.goth(th, mirror)
 
         return status
 
@@ -351,7 +361,8 @@ class Robot:
                         side_y=(False, False),
                         decal_x=0,
                         decal_y=0,
-                        init=False):
+                        init=False,
+                        mirror=True):
 
         speeds = self.tm.get_speeds()
         self.tm.free()
@@ -388,7 +399,7 @@ class Robot:
         if y:
             print('[ROBOT] Recalibration Y')
             theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
-            self.goth(theta * (-1 if self.side else 1))
+            self.goth(theta * (-1 if self.side and mirror else 1))
             self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(0.5)
