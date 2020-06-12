@@ -6,6 +6,7 @@ from copy import deepcopy
 from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
+from time import time
 # TODO: optimization
 # TODO: A* ?
 # TODO: exclusion zone for start point when computin pathfinding
@@ -154,58 +155,69 @@ class Map:
             else:
                 print('[MAP] Obstacle form not found')
 
-    def compute_graph(self, start, end, obstacles):
+    # Finds the path that goes around the given polygon
+    # The returned path is the shortest path that can "escape" from the polygon
+    # i.e go to the end without colliding with the given polygon again
+    def go_around(self, start, end, obstacles, polygon, hit, line, order):
 
-        # Create a queue of all points
-        d = deque()
-        graph = {}
-        d.append(start)
-        graph[start] = []
+        path = [hit]
 
-        for poly in obstacles:
-            for point in poly.exterior.coords:
-                new = Point(tuple=point)
-                if not new in d and self.borders.contains(new):
-                    d.append(new)
-                    graph[new] = []
+        # Finds the escaping point (first p where [p, end] doesn't intersect the polygon)
+        escapingpoint = get_first_point(polygon, hit, line, self.borders, order)
+        if escapingpoint is None: return None
+        path += [escapingpoint]
+        while is_colliding_with_polygon(escapingpoint, end, polygon):
+            escapingpoint = get_next_point(polygon, escapingpoint, self.borders, order)
+            if escapingpoint is None: return None
+            path += [escapingpoint]
 
-        d.append(end)
-        graph[end] = []
+        # At this point path contains the points from the hit to the escaping
+        # point. This path is valid but not optimal
 
-        # Iterate over polygons to compute the vertexes
-        for poly in obstacles:
-            coords = poly.exterior.coords
-            l = len(coords)
-            for i in range(1, l):
-                new = Point(tuple=coords[i])
-                if not self.borders.contains(new):
-                    continue
+        # Finds the first accessible point (from start)
+        # TODO: Opti: mettre polygon en premier dans la liste vu que ça va souvent collide avec lui
+        firstaccessible = len(path)-1
+        while firstaccessible > 0 and is_colliding_with_polygons(start, path[firstaccessible], obstacles):
+            firstaccessible -= 1
 
-                d.remove(new)
-                p1 = Point(coords[i - 1])
-                p2 = Point(coords[(i + 1) % l])
+        # Removes all the points before the first accessible
+        return path[firstaccessible:]
 
-                if not p1 in graph[new] and self.borders.contains(p1):
-                    graph[new].append(p1)
+    # Calculates the shortest path from start to end
+    # Returns the list of intermediary points (the complete path should be start+result+end)
+    def get_path_rec(self, start, end, obstacles):
 
-                if not p2 in graph[new] and self.borders.contains(p2):
-                    graph[new].append(p2)
+        # Gets the first collision point on the straight line from start to end
+        hit, line, polygon = collision(start, end, obstacles)
 
-                points = list(d)
-                for point in points:
-                    if point in graph[new]:
-                        continue
-                    is_colliding = False
-                    for poly in obstacles:
-                        if is_colliding_with_polygon(point, new, poly):
-                            is_colliding = True
-                            break
+        # If no collision point was found, returns no intermediary points
+        if hit is None: return []
 
-                    if not is_colliding:
-                        graph[new].append(point)
-                        graph[point].append(new)
+        #print("Start " + str(start) + " End " + str(end))
 
-        return graph
+        # Tries to go around the polygon in both directions
+        # TODO: ajouter un smooth sur le retour de cette fonction
+        path1 = self.go_around(start, end, obstacles, polygon, hit, line, False)
+        path2 = self.go_around(start, end, obstacles, polygon, hit, line, True)
+
+        #if path1: print("Path1 " + str([pt.to_tuple() for pt in path1]))
+        #if path2: print("Path2 " + str([pt.to_tuple() for pt in path2]))
+
+        # Gets the path from the "escaping point" to the end
+        # TODO: opti: pas besoin de tester si polygon est sur le chemin pour collision
+        if path1: path1 += self.get_path_rec(path1[-1], end, obstacles)
+        if path2: path2 += self.get_path_rec(path2[-1], end, obstacles)
+
+        # If there is only one path, returns it
+        if not path1: return path2
+        if not path2: return path1
+
+        # Calculates the length of each path and returns the smaller one
+        # TODO: opti on peut faire les deux calculs en meme temps et s'arreter quand no sait qu'un des chemins est plus court
+        p1l = path_length(path1)
+        p2l = path_length(path2)
+        if p1l < p2l: return path1
+        else: return path2
 
     def get_path(self, start, end):
 
@@ -238,23 +250,8 @@ class Map:
         for point in p:
 +            l.append((point.x, point.y))"""
 
-        is_colliding = False
-        for poly in obstacles:
-            if is_colliding_with_polygon(start, end, poly):
-                is_colliding = True
-                break
-
-        # No obstacles on the trajectory
-        if not is_colliding:
-            return [start, end]
-
-        graph = self.compute_graph(start, end, obstacles)
-
-        path = dijkstra(start, end, graph)
-
-        if path == []:
-            print("[MAP] Path not found")
-        else:
-            print("[MAP] Path found")
+        path =  [start]
+        path += self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
+        path += [end]
 
         return path
