@@ -4,6 +4,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
 from evolutek.lib.gpio import Gpio, Pwm
+from evolutek.lib.actionqueue import Act_queue as Act_queue
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
@@ -15,6 +16,8 @@ from time import sleep
 import os
 
 DELAY_EV = 0.2
+
+
 
 class Buoy(Enum):
     Empty = "empty"
@@ -83,6 +86,7 @@ class Actuators(Service):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.robot = Robot(robot='pal')
+        self.queue = Act_queue()
 
         self.disabled = False
         self.match_end = Event()
@@ -169,7 +173,7 @@ class Actuators(Service):
     """ SIDE ARMS """
     @Service.action
     @if_enabled
-    def push_windsocks(self):
+    def _push_windsocks(self):
         ax = 3
         if self.color != self.color1:
             ax = 4
@@ -179,13 +183,19 @@ class Actuators(Service):
         sleep(0.2)
 
         # TODO config
-        status =  self.robot.move_trsl_avoid(500, 125, 125, 800, 1, 2, 2) == Status.reached
+        status = self.robot.move_trsl_avoid(
+            500, 125, 125, 800, 1, 2, 2) == Status.reached
 
         self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
 
         sleep(0.2)
 
         return status
+
+    @Service.action
+    @if_enabled
+    def push_windsocks(self):
+        self.queue.run_action(*self._push_windsocks())
 
     """ FLAGS """
     @Service.action
@@ -225,6 +235,35 @@ class Actuators(Service):
     def enable(self):
         self.disabled = False
 
+    def interface(self, order):
+        call = order[0]
+        del order[0]
+        function_tab = {
+            "reset": self.reset,
+            "free": self.free,
+            "close_arm_right": self.close_arm_right,
+            "close_arm_left": self.close_arm_left,
+            "open_arm_right": self.open_arm_right,
+            "open_arm_left": self.close_arm_left,
+            "destroy_flags": self.destroy_flags,
+            "print_status": self.print_status,
+            "enable": self.enable,
+            "disable": self.disable,
+            "empty_buoys": self.empty_buoys,
+            "wait": self.wait,
+            "push_windsocks": self.push_windsocks,
+            "_push_windsocks": self._push_windsocks
+        }
+        event_tab = {
+            "match_end": self.handle_match_end,
+            "match_color": self.color_handler
+        }
+        if call in event_tab:
+            return (event_tab[call](*order))
+        elif call in function_tab:
+            return(function_tab[call](*order))
+        else:
+            print("Unknown event or action")
 
     """ EVENTS """
 
