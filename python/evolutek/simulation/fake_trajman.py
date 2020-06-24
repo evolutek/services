@@ -409,22 +409,25 @@ class TrajMan(Service):
 
     @Service.action
     @if_enabled
-    def recalibration(self, sens, decal):
+    def recalibration(self, sens, decal=0, set=1):
+
         self.move_trsl(1000, sens=sens, acc=0, dec=0, maxspeed=0)
         sleep(0.1)
 
         self.has_stopped.wait()
-        decal = float(decal)
-        sens = bool(int(sens))
 
-        if pi/4 < self.theta < 3*pi/4:
-            self.pos.y = (decal + self.robot_size_x) if not sens else (3000 - decal - self.robot_size_x)
-        elif 3 * pi/4 < self.theta < 7 * pi/4 :
-            self.pos.x = (decal + self.robot_size_x) if sens else (2000 - decal - self.robot_size_x)
-        elif 7 * pi/4 < self.theta < 11 * pi/4:
-            self.pos.y = (decal + self.robot_size_x) if sens else (3000 - decal - self.robot_size_x)
-        else:
-            self.pos.x = (decal + self.robot_size_x) if not sens else (2000 - decal - self.robot_size_x)
+        if set:
+            decal = float(decal)
+            sens = bool(int(sens))
+
+            if pi/4 < self.theta < 3*pi/4:
+                self.pos.y = (decal + self.robot_size_x) if not sens else (3000 - decal - self.robot_size_x)
+            elif 3 * pi/4 < self.theta < 7 * pi/4 :
+                self.pos.x = (decal + self.robot_size_x) if sens else (2000 - decal - self.robot_size_x)
+            elif 7 * pi/4 < self.theta < 11 * pi/4:
+                self.pos.y = (decal + self.robot_size_x) if sens else (3000 - decal - self.robot_size_x)
+            else:
+                self.pos.x = (decal + self.robot_size_x) if not sens else (2000 - decal - self.robot_size_x)
 
     @Service.action
     def stop_asap(self, trsldec, rotdec):

@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+from cellaserv.proxy import CellaservProxy
 from evolutek.lib.robot import Robot
+from evolutek.utils.shell.data_printer import print_json
 
 from argparse import ArgumentParser
 from math import pi
 
+cs = None
 robot = None
 speeds = {}
 old = {}
@@ -30,8 +33,7 @@ def compute_gains():
     robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3)
     robot.recalibration(y = False, init=True)
 
-    #TODO: disable reset theta
-    robot.tm.recalibration_block(sens=0, decal=0)
+    robot.tm.recalibration_block(sens=0, decal=0, set=0)
     robot.tm.unfree()
 
     newpos = robot.tm.get_position()
@@ -42,13 +44,11 @@ def compute_gains():
     print('The delta of theta is :', -1 * newpos['theta'])
     print('The computed coef is :', coef)
 
-    left_gain = old['left_gain'] * (1 + coef)
-    right_gain = old['right_gain'] * (1 - coef)
+    global old
+    old['left_gain'] = old['left_gain'] * (1 + coef)
+    old['right_gain'] = old['right_gain'] * (1 - coef)
 
-    print('The news gains are :', left_gain, right_gain)
-
-    robot.tm.set_wheels_gains(g1=left_gain, g2=right_gain)
-    sleep(0.1)
+    print('The news gains are :', old['left_gain'], old['left_gain'])
 
 
 """ Compute Diameters """
@@ -99,13 +99,16 @@ def compute_diams():
     mesured = newpos['x'] - 1000
     coef = float(length) / float(mesured)
 
-    left_diameter = old['left_diameter'] * coef
-    right_diameter = old['right_diameter'] * coef
+    global old
+    diameter  = old['left_diameter'] / old['left_gain'] * coef
+    old['left_diameter'] = diameter * old['left_gain']
+    old['right_diameter'] = diameter * old['right_gain']
 
     print("The error was of :", length - mesured)
-    print("The new diameters are :", left_diameter, right_diameter)
+    print("The new diameter is :", diameter)
+    print("The new diameters are :", old['left_diameter'], old['right_diameter'])
     print("Setting the new diameters")
-    robot.tm.set_wheels_diameter(w1=left_diameter ,w2=right_diameter)
+    robot.tm.set_wheels_diameter(w1=old['left_diameter'] ,w2=old['right_diameter'])
     sleep(.1)
 
     print("#################################################")
@@ -131,6 +134,7 @@ def compute_spacing():
     print("########################################################################")
 
     robot.recalibration(y = False, init=True)
+    robot.move_trsl_block(dest=100, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sense=1)
 
     print("#######################################################")
     print("Do you want the robot to do the turns by itself (y/n) ?")
@@ -154,23 +158,33 @@ def compute_spacing():
     newpos = robot.tm.get_position()
     mesured = newpos['theta'] + nbturns * math.pi
     coef = float(mesured) / float(nbturns * math.pi)
-    spacing = old['spacing'] * coef
+
+    global old
+    old['spacing'] = old['spacing'] * coef
 
     print("The error was of :", newpos['theta'])
-    print("The new spacing is :", spacing)
+    print("The new spacing is :", old['spacing'])
     print("Setting the new spacing")
 
-    robot.tm.set_wheels_spacing(spacing=spacing)
+    robot.tm.set_wheels_spacing(spacing=old['spacing'])
     robot.move_rot_block(dest=nbturns * math.pi, acc=3, dec=3, maxspeed=3, sens=0)
     robot.tm.free()
 
-def compute_all(gains, diams, spacing, all, _robot=None):
+def compute_all(gains, diams, spacing, all, config, _robot=None):
+
+    robot_name = _robot if _robot is not None else args.robot
+
+    global cs
+    cs = CellaservProxy()
     global robot
-    robot = Robot(_robot if _robot is not None else args.robot)
+    robot = Robot(robot_name)
     global old
     old = robot.tm.get_wheels()
     global speeds
     speeds = robot.tm.get_speeds()
+
+    old['left_gain'] = float(cs.config.get(section=robot_name, option='wheel_gain1'))
+    old['right_gain'] = float(cs.config.get(section=robot_name, option='wheel_gain2'))
 
     if not gains and not diams and not spacing:
         all = True
@@ -201,10 +215,21 @@ def compute_all(gains, diams, spacing, all, _robot=None):
     if all or spacing:
         compute_spacing()
 
-    print("#############################################")
-    print("## GO TO THE MOTOR CARD AND SET THE VALUES ##")
-    print("#############################################")
-    print(robot.tm.get_wheels())
+    if config:
+        print("##############################")
+        print("Setting new values to config !")
+        print("##############################")
+        cs.config.set(section=robot_name, option='wheel_diam1', value=old['left_diameter'])
+        cs.config.set(section=robot_name, option='wheel_diam2', value=old['right_diameter'])
+        cs.config.set(section=robot_name, option='wheel_gain1', value=old['left_gain'])
+        cs.config.set(section=robot_name, option='wheel_gain2', value=old['right_gain'])
+        cs.config.set(section=robot_name, option='spacing', value=old['spacing'])
+
+    print("##################################")
+    print("## Computing wheels size done ! ##")
+    print("##################################")
+    print_json(old)
+
 
 def main():
     parser = ArgumentParser(description='Configuration of the odometry of the robot')
@@ -213,6 +238,8 @@ def main():
     parser.add_argument("-d", "--diams", help="Compute wheels diameters of the robot", action="store_true")
     parser.add_argument("-s", "--spacing", help="Compute wheels spacing of the robot", action="store_true")
     parser.add_argument("-a", "--all", help="Compute all odom of the robot", action="store_true")
+    parser.add_argument("-c", "--config", help="Set new values to config", action="store_true")
+
 
     args = parser.parse_args()
 
@@ -221,7 +248,7 @@ def main():
         print('Available robot: [pal, pmi]')
         return 1
 
-    compute_all(args.gains, args.diams, args.spacing, args.all)
+    compute_all(args.gains, args.diams, args.spacing, args.all, args.config)
 
 if __name__ == "__main__":
     main()

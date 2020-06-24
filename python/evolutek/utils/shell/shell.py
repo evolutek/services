@@ -56,12 +56,13 @@ def robot():
 @click.option('-d', '--diams/-no-diams', default=False, help='Compute diameters')
 @click.option('-s', '--space/-no-space', default=False, help='Compute spacing')
 @click.option('-a', '--all/-no-all', default=False, help='Compute all')
-def config_odom(gains, diams, space, all):
+@click.option('-c', '--config/-no-config', default=False, help='Set in the config the new values')
+def odom(gains, diams, space, all, config):
     if get_robot() is None:
         click.echo('No robot selected')
         return
 
-    compute_all(gains, diams, space, all, get_robot())
+    compute_all(gains, diams, space, all, config, get_robot())
 
 if __name__ == '__main__':
     evolutek_shell()
