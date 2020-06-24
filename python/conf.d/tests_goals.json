@@ -1,0 +1,59 @@
+{
+    "goals": [
+      {
+        "name": "a",
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "name": "b",
+        "position": {
+          "x": 0,
+          "y": 500
+        },
+        "score": 42,
+        "theta": "pi",
+        "actions": [
+          {
+            "fct": "sleep"
+          },
+          {
+            "fct": "test",
+            "handler": "test",
+            "args": {
+              "x": 1000,
+              "y": 1000,
+              "theta": "-3*pi/4"
+            },
+            "avoid": false,
+            "avoid_strategy": "AvoidStrategy.Timeout",
+            "score": 21,
+            "timeout": 42
+          }
+        ]
+      }
+    ],
+    "strategies": [
+      {
+        "name": "A",
+        "goals": [
+          "a",
+          "b"
+        ]
+      },
+       {
+        "name": "B",
+        "goals": [
+          "b",
+          "a"
+        ]
+      }
+    ],
+    "start": {
+        "x": 450,
+        "y": 225,
+        "theta": "pi"
+    }
+}

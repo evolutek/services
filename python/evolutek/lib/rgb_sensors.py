@@ -53,11 +53,10 @@ class RGBSensors:
         if not i in self.sensors:
             print('[RGB_SENSORS] Bad RGB sensor number %d' % i)
             return None
- 
+
         rgb = self.read_sensor(i)
         cal = self.calibrations[i]
         return (rgb[0] - cal[0], rgb[1] - cal[1], rgb[2] - cal[2])
-
 
     def read_sensor(self, i):
         #print('[RGB_SENSORS] Reading RGB sensor %d' % i)
