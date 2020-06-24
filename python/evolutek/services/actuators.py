@@ -182,6 +182,29 @@ class Actuators(Service):
     def flags_low(self):
         self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=512)
 
+    @Service.action
+    @if_enabled
+    def pump_get(self, pump, buoy):
+        if pump >= 0 and pump < 8:
+            self.pumps[pump].pump_get(buoy)
+        else:
+            print('Not a valid pump')
+
+    @Service.action
+    @if_enabled
+    def pump_set(self, pump=-1, buoy='unknow'):
+        if pump >= 0 and pump < 8:
+            self.pumps[pump].pump_set(buoy)
+        else:
+            print('Not a valid pump or color')
+
+    @Service.action
+    @if_enabled
+    def pump_drop(self, pump=-1):
+        if pump >= 0 and pump < 8:
+            self.pumps[pump].pump_drop(pump)
+        else:
+            print('Not a valid pump or color')
 
     """ OTHERS """
     @Service.action
