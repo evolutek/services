@@ -19,6 +19,7 @@ if hostname not in ['pal', 'pmi']:
         robot = cs.config.get(section='simulation', option='robot')
         make_setting('ROBOT', robot, 'evolutek', 'robot', 'ROBOT')
     except:
+        make_setting('ROBOT', 'None', 'evolutek', 'robot', 'ROBOT')
         pass
 else:
     make_setting('SIMULATION', False, 'evolutek', 'simulation', 'SIMULATION')
