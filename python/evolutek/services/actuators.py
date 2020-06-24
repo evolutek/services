@@ -13,7 +13,6 @@ from enum import Enum
 from functools import wraps
 from threading import Event
 from time import sleep
-import os
 
 DELAY_EV = 0.2
 
@@ -105,61 +104,74 @@ class Actuators(Service):
         self.pumps = [
             PumpActuator(27, 18, 1),
             PumpActuator(22, 23, 2),
-            PumpActuator(10, 24, 3),
-            PumpActuator(9, 25, 4),
-            PumpActuator(11, 8, 5),
-            PumpActuator(5, 7, 6),
-            PumpActuator(6, 16, 7),
-            PumpActuator(19, 20, 8)
+            PumpActuator(9, 24, 3),
+            PumpActuator(11, 25, 4),
+            PumpActuator(5, 8, 5),
+            PumpActuator(6, 7, 6),
+            PumpActuator(19, 16, 7),
+            PumpActuator(26, 20, 8)
         ]
 
         self.reset()
 
-    """START"""
+    # Disable Actuators
+    @Service.action
+    def disable(self):
+        self.disabled = True
+        self.stop()
+        self.free()
 
+    # Enable Actuators
+    @Service.action
+    def enable(self):
+        self.disabled = False
+        self.start()
+
+    """START"""
     def start(self):
         self.queue.run_queue()
     
     """STOP"""
-
     def stop(self):
         self.queue.stop_queue()
 
     """RESET"""
-
     @Service.action
     def reset(self):
         self.disabled = False
         self.match_end.clear()
 
-        self.deploy_flags()
-
-        sleep(0.2)
-
-        for n in [1, 2, 3, 4, 5]:
-            self.cs.ax["%s-%d" % (ROBOT, n)].move(goal=512)
+        self.open_arm_left()
+        self.open_arm_right()
+        self.open_cup_holder_left()
+        self.open_cup_holder_right()
+        self.flags_raise()
 
         sleep(0.5)
 
-        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=210)
-        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=820)
-
-        self.close_arm_right()
         self.close_arm_left()
+        self.close_arm_right()
+        self.close_cup_holder_left()
+        self.close_cup_holder_right()
+        self.flags_low()
 
-        sleep(0.2)
+        sleep(0.5)
+        self.start()
 
     """FREE"""
-
     @Service.action
     def free(self):
         for pump in self.pumps:
             pump.pump_drop()
-        for n in [1, 2, 3, 4, 5]:
+        for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax[str(n)].free()
 
-    """ FLAGS """
+    @Service.action
+    @if_enabled
+    def wait(self, time):
+        sleep(float(time))
 
+    """ FLAGS """
     @Service.action
     @if_enabled
     def flags_raise(self):
@@ -170,8 +182,8 @@ class Actuators(Service):
     def flags_low(self):
         self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=512)
 
-    """ OTHERS """
 
+    """ OTHERS """
     @Service.action
     def print_status(self):
         print("--- PUMPS ---")
@@ -195,54 +207,10 @@ class Actuators(Service):
         }
         for pump in self.pumps:
             status['pump'].append(pump)
-        for n in [1, 2, 3, 4, 5]:
+        for n in [1, 2, 3, 4, 5]: # TODO : read config
             status['ax'].append(self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position())
         return status
 
-    @Service.action
-    @if_enabled
-    def empty_buoys(self):
-        pass
-        # TODO : make something intelligent
-
-    @Service.action
-    @if_enabled
-    def wait(self, time):
-        sleep(float(time))
-
-    # Disable Actuators
-    @Service.action
-    def disable(self):
-        self.disabled = True
-        self.stop()
-        self.free()
-
-    # Enable Actuators
-    @Service.action
-    def enable(self):
-        self.disabled = False
-        self.queue.run_queue()
-
-    """ EVENTS """
-
-    # Handle color changing event
-    @Service.event("match_color")
-    def color_handler(self, color):
-        if color != self.color1 or color != self.color2:
-            return
-        self.color = color
-
-    # Handle Match End
-    @Service.event("match_end")
-    def handle_match_end(self):
-        self.free()
-        self.match_end.set()
-        self.disable()
-
-    #Handle anchorage area
-    @Service.event("anchorage")
-    def set_anchorage(self):
-        return
 
     """ACTIONS"""
 
@@ -253,7 +221,7 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def close_arm_right(self):
-        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=820)
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=204)
 
     @Service.action
     @if_enabled
@@ -274,23 +242,23 @@ class Actuators(Service):
     
     @Service.action
     @if_enabled
-    def cup_holder_left_open(self):
-        self.cs.ac["%s-%d" % (ROBOT, 2)].move(goal=512)
+    def open_cup_holder_left(self):
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
 
     @Service.action
     @if_enabled
-    def cup_holder_right_open(self):
-        self.cs.ac["%s-%d" % (ROBOT, 1)].move(goal=512)
+    def open_cup_holder_right(self):
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
 
     @Service.action
     @if_enabled
-    def cup_holder_left_close(self):
-        self.cs.ac["%s-%d" % (ROBOT, 2)].move(goal=820)
+    def close_cup_holder_left(self):
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
 
     @Service.action
     @if_enabled
-    def cup_holder_right_close(self):
-        self.cs.ac["%s-%d" % (ROBOT, 1)].move(goal=820)
+    def close_cup_holder_right(self):
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
 
     """HIGH LEVEL"""
 
@@ -340,18 +308,30 @@ class Actuators(Service):
     def drop_chenal(self):
         #TODO
         return
+    
 
-
-def wait_for_beacon():
-    hostname = "pi"
-    while True:
-        r = os.system("ping -c 1 " + hostname)
-        if r == 0:
+    """ EVENTS """
+    # Handle color changing event
+    @Service.event("match_color")
+    def color_handler(self, color):
+        if color != self.color1 or color != self.color2:
             return
-        pass
+        self.color = color
+
+    # Handle Match End
+    @Service.event("match_end")
+    def handle_match_end(self):
+        self.free()
+        self.match_end.set()
+        self.disable()
+
+    #Handle anchorage area
+    @Service.event("anchorage")
+    def set_anchorage(self):
+        return
+
 
 def main():
-    #wait_for_beacon()
     actuators = Actuators()
     actuators.run()
 
