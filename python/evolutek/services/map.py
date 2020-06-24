@@ -6,9 +6,15 @@ from cellaserv.proxy import CellaservProxy
 from evolutek.lib.map.debug_map import Interface
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map as Map_lib
 from evolutek.lib.map.point import Point
-from evolutek.lib.map.tim import DebugMode, Tim
-from evolutek.lib.map.utils import convert_path_to_dict, merge_polygons
-from evolutek.lib.settings import ROBOT
+
+from evolutek.lib.map.utils import convert_path_to_dict
+from evolutek.lib.settings import SIMULATION
+
+if SIMULATION:
+    from evolutek.simulation.fake_lib.fake_tim import DebugMode, Tim
+else:
+    from evolutek.lib.map.tim import DebugMode, Tim
+
 
 import json
 from shapely.geometry import Polygon, MultiPolygon
@@ -156,15 +162,15 @@ class Map(Service):
                 if not tim.connected:
                     continue
 
-                scans.append()
+                scans.append(tim.get_robots())
 
                 if self.debug_mode == DebugMode.debug_tims:
                     raw = []
-                    for p in self.tim[ip].raw_date:
+                    for p in self.tim[ip].get_points():
                         raw.append(p.to_dict)
 
                     shapes = []
-                    for p in self.tim[ip].shapes:
+                    for p in self.tim[ip].get_shapes():
                         shapes.append(p.to_dict)
 
                     _scans.append((raw, shapes))
