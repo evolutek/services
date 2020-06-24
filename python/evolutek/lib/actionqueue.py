@@ -30,7 +30,7 @@ class Act_queue():
 
     def _run_queue(self):
         tmp = ()
-        while not self.stop.is_set() and not self.task.empty():
+        while not self.stop.is_set():
             tmp = self.task.get()
             if type(tmp[0]) == list:
                 self.response.put(self.launch_multiple_actions(tmp[0], tmp[1]))
@@ -40,7 +40,6 @@ class Act_queue():
     def run_queue(self):
         t = Thread(target=self._run_queue)
         t.start()
-        t.join()
 
     def stop_queue(self):
         self.stop.set()

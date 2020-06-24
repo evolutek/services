@@ -4,7 +4,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
 from evolutek.lib.gpio import Gpio, Pwm
-from evolutek.lib.actionqueue import Act_queue as Act_queue
+from evolutek.lib.actionqueue import Act_queue
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
@@ -16,8 +16,6 @@ from time import sleep
 import os
 
 DELAY_EV = 0.2
-
-
 
 class Buoy(Enum):
     Empty = "empty"
@@ -35,14 +33,14 @@ class PumpActuator:
 
         self.buoy = Buoy.Empty
 
-    def get_buoy(self, buoy=Buoy.Unknow):
+    def pump_get(self, buoy=Buoy.Unknow):
         self.pump_gpio.write(True)
         self.buoy = buoy
 
-    def set_buoy(self, buoy=Buoy.Unknow):
+    def pump_set(self, buoy=Buoy.Unknow):
         self.buoy = buoy
 
-    def drop_buoy(self):
+    def pump_drop(self):
         self.pump_gpio.write(False)
         self.ev_gpio.write(True)
         sleep(DELAY_EV)
@@ -68,7 +66,7 @@ def if_enabled(method):
     def wrapped(self, *args, **kwargs):
         if self.disabled:
             self.log(what='disabled',
-                     msg="Usage of {} is disabled".format(method))
+                    msg="Usage of {} is disabled".format(method))
             return
         return method(self, *args, **kwargs)
 
@@ -80,6 +78,7 @@ def if_enabled(method):
 @Service.require("ax", "%s-4" % ROBOT)
 @Service.require("ax", "%s-5" % ROBOT)
 @Service.require("trajman", ROBOT)
+
 class Actuators(Service):
 
     def __init__(self):
@@ -116,9 +115,18 @@ class Actuators(Service):
 
         self.reset()
 
-    """ ACTIONS """
+    """START"""
 
-    """ RESET """
+    def start(self):
+        self.queue.run_queue()
+    
+    """STOP"""
+
+    def stop(self):
+        self.queue.stop_queue()
+
+    """RESET"""
+
     @Service.action
     def reset(self):
         self.disabled = False
@@ -141,36 +149,151 @@ class Actuators(Service):
 
         sleep(0.2)
 
-    """ FREE """
+    """FREE"""
+
     @Service.action
     def free(self):
         for pump in self.pumps:
-            pump.drop_buoy()
+            pump.pump_drop()
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax[str(n)].free()
 
+    """ FLAGS """
+
+    @Service.action
+    @if_enabled
+    def flags_raise(self):
+        self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=820)
+    
+    @Service.action
+    @if_enabled
+    def flags_low(self):
+        self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=512)
+
+    """ OTHERS """
+
+    @Service.action
+    def print_status(self):
+        print("--- PUMPS ---")
+        for pump in self.pumps:
+            print(pump)
+        print("--- AX12 ---")
+        for n in [1, 2, 3, 4, 5]:
+            print("AX12 %d: %s" %
+                (n, self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position()))
+        print("--- COLOR SENSOR ---")
+        print("Sensor left")
+        print("Sensor right")
+        print("-------------------------")
+
+    @Service.action
+    def get_status(self):
+        status = {
+            'pump': [],
+            'ax': [],
+            'sensor': []
+        }
+        for pump in self.pumps:
+            status['pump'].append(pump)
+        for n in [1, 2, 3, 4, 5]:
+            status['ax'].append(self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position())
+        return status
+
+    @Service.action
+    @if_enabled
+    def empty_buoys(self):
+        pass
+        # TODO : make something intelligent
+
+    @Service.action
+    @if_enabled
+    def wait(self, time):
+        sleep(float(time))
+
+    # Disable Actuators
+    @Service.action
+    def disable(self):
+        self.disabled = True
+        self.stop()
+        self.free()
+
+    # Enable Actuators
+    @Service.action
+    def enable(self):
+        self.disabled = False
+        self.queue.run_queue()
+
+    """ EVENTS """
+
+    # Handle color changing event
+    @Service.event("match_color")
+    def color_handler(self, color):
+        if color != self.color1 or color != self.color2:
+            return
+        self.color = color
+
+    # Handle Match End
+    @Service.event("match_end")
+    def handle_match_end(self):
+        self.free()
+        self.match_end.set()
+        self.disable()
+
+    #Handle anchorage area
+    @Service.event("anchorage")
+    def set_anchorage(self):
+        return
+
+    """ACTIONS"""
+
+    """LOW LEVEL"""
+
     """ BACK ARMS """
+
     @Service.action
     @if_enabled
     def close_arm_right(self):
-        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=820)
 
     @Service.action
     @if_enabled
     def close_arm_left(self):
-        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
+        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=820)
 
     @Service.action
     @if_enabled
     def open_arm_right(self):
-        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
 
     @Service.action
     @if_enabled
     def open_arm_left(self):
-        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
+        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
 
     """ SIDE ARMS """
+    
+    @Service.action
+    @if_enabled
+    def cup_holder_left_open(self):
+        self.cs.ac["%s-%d" % (ROBOT, 2)].move(goal=512)
+
+    @Service.action
+    @if_enabled
+    def cup_holder_right_open(self):
+        self.cs.ac["%s-%d" % (ROBOT, 1)].move(goal=512)
+
+    @Service.action
+    @if_enabled
+    def cup_holder_left_close(self):
+        self.cs.ac["%s-%d" % (ROBOT, 2)].move(goal=820)
+
+    @Service.action
+    @if_enabled
+    def cup_holder_right_close(self):
+        self.cs.ac["%s-%d" % (ROBOT, 1)].move(goal=820)
+
+    """HIGH LEVEL"""
+
     @Service.action
     @if_enabled
     def _push_windsocks(self):
@@ -195,91 +318,29 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def push_windsocks(self):
-        self.queue.run_action(*self._push_windsocks())
-
-    """ FLAGS """
-    @Service.action
-    @if_enabled
-    def deploy_flags(self):
-        self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=820)
-
-    """ OTHERS """
-    @Service.action
-    def print_status(self):
-        print("--- PUMPS ---")
-        for pump in self.pumps:
-            print(pump)
-        print("--- AX12 ---")
-        for n in [1, 2, 3, 4, 5]:
-            print("AX12 %d: %s" % (n, self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position()))
-        print("-----")
+        function = [self._push_windsocks, None]
+        self.queue.run_action(*function)
 
     @Service.action
     @if_enabled
-    def empty_buoys(self):
-        pass
-        # TODO : make something intelligent
+    def get_floor_buoy(self, holder):
+        open_function = [(self.cup_holder_right_open if holder == 1 
+            else
+        self.cup_holder_left_open), None]
+        trigger_pump_function = [[(self.pumps[4].pump_get() if holder == 1
+            else
+        self.pump[6].pump_get()), None], (self.pumps[5].pump_get() if holder == 1
+            else
+        self.pump[7].pump_get()), None]
+        get_buoy = [open_function, trigger_pump_function]
+        self.queue.run_actions(*get_buoy)
 
     @Service.action
     @if_enabled
-    def wait(self, time):
-        sleep(float(time))
+    def drop_chenal(self):
+        #TODO
+        return
 
-    # Disable Actuators
-    @Service.action
-    def disable(self):
-        self.disabled = True
-
-    # Enable Actuators
-    @Service.action
-    def enable(self):
-        self.disabled = False
-
-    def interface(self, order):
-        call = order[0]
-        del order[0]
-        function_tab = {
-            "reset": self.reset,
-            "free": self.free,
-            "close_arm_right": self.close_arm_right,
-            "close_arm_left": self.close_arm_left,
-            "open_arm_right": self.open_arm_right,
-            "open_arm_left": self.close_arm_left,
-            "destroy_flags": self.destroy_flags,
-            "print_status": self.print_status,
-            "enable": self.enable,
-            "disable": self.disable,
-            "empty_buoys": self.empty_buoys,
-            "wait": self.wait,
-            "push_windsocks": self.push_windsocks,
-            "_push_windsocks": self._push_windsocks
-        }
-        event_tab = {
-            "match_end": self.handle_match_end,
-            "match_color": self.color_handler
-        }
-        if call in event_tab:
-            return (event_tab[call](*order))
-        elif call in function_tab:
-            return(function_tab[call](*order))
-        else:
-            print("Unknown event or action")
-
-    """ EVENTS """
-
-    # Handle color changing event
-    @Service.event("match_color")
-    def color_handler(self, color):
-        if color != self.color1 or color != self.color2:
-            return
-        self.color = color
-
-    # Handle Match End
-    @Service.event("match_end")
-    def handle_match_end(self):
-        self.free()
-        self.match_end.set()
-        self.disable ()
 
 def wait_for_beacon():
     hostname = "pi"
