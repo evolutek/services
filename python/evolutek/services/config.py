@@ -23,17 +23,27 @@ class Config(Service):
         KeyError is raised
         """
 
+        tmp = {}
+
         if name in self.temporary_config:
-            return self.temporary_config[name]
+            tmp = self.temporary_config[name]
 
         try:
             section = self.config_file.items(name)
             ret = {}
             for val in section:
               ret[val[0]] = val[1]
+
+
+            for option in tmp:
+                ret[option] = tmp[option]
+
             return ret
+
         except (NoSectionError) as exc:
-            raise KeyError("Unknown config section: {0}".format(section)) from exc
+            if tmp == {}:
+                raise KeyError("Unknown config section: {0}".format(section)) from exc
+            return tmp
 
     @Service.action
     def get(self, section: str, option: str) -> str:
