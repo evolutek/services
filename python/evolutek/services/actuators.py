@@ -184,27 +184,30 @@ class Actuators(Service):
 
     @Service.action
     @if_enabled
-    def pump_get(self, pump, buoy):
-        if pump >= 0 and pump < 8:
-            self.pumps[pump].pump_get(buoy)
+    def pump_get(self, pump, buoy='unknow'):
+        pump = int(pump)
+        if pump > 0 and pump <= 8:
+            self.pumps[pump - 1].pump_get(Buoy(buoy))
         else:
-            print('Not a valid pump')
+            print('[ACTUATORS] Not a valid pump: %d' % pump)
 
     @Service.action
     @if_enabled
-    def pump_set(self, pump=-1, buoy='unknow'):
-        if pump >= 0 and pump < 8:
-            self.pumps[pump].pump_set(buoy)
+    def pump_set(self, pump, buoy='unknow'):
+        pump = int(pump)
+        if pump > 0 and pump <= 8:
+            self.pumps[pump - 1].pump_set(Buoy(buoy))
         else:
-            print('Not a valid pump or color')
+            print('[ACTUATORS] Not a valid pump: %d' % pump)
 
     @Service.action
     @if_enabled
-    def pump_drop(self, pump=-1):
-        if pump >= 0 and pump < 8:
-            self.pumps[pump].pump_drop(pump)
+    def pump_drop(self, pump):
+        pump = int(pump)
+        if pump > 0 and pump <= 8:
+            self.pumps[pump - 1].pump_drop()
         else:
-            print('Not a valid pump or color')
+            print('[ACTUATORS] Not a valid pump: %d' % pump)
 
     """ OTHERS """
     @Service.action
