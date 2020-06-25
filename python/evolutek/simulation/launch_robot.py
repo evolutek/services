@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
-import json
-from multiprocessing import Process
-from os import _exit, system
-from signal import signal, SIGINT
 from sys import argv
-from time import sleep
 
 from cellaserv.proxy import CellaservProxy
 from evolutek.simulation.simulator import Simulation, read_config

@@ -2,10 +2,6 @@
 
 import json
 from math import pi
-from multiprocessing import Process
-from os import _exit, system
-from signal import signal, SIGINT
-from sys import argv
 from time import sleep
 
 from cellaserv.proxy import CellaservProxy

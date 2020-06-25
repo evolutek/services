@@ -4,7 +4,6 @@ import json
 from multiprocessing import Process
 from os import _exit, system
 from signal import signal, SIGINT
-from time import sleep
 
 def read_config(section):
 

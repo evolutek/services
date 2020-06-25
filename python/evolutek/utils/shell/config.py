@@ -15,7 +15,7 @@ def config_shell(ctx):
 
 @config_shell.command()
 @click.argument('section')
-@click.option('--option', default=None, help='specific option in section')
+@click.option('-o', '--option', default=None, help='specific option in section')
 def get(section, option):
     if option is None:
         print_json(cs.config.get_section(name=section))

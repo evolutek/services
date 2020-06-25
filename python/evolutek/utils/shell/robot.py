@@ -105,6 +105,17 @@ def move_rot(dest, acc, dec, maxspeed, sens, block):
         robot.tm.move_rot(dest, acc, dec, maxspeed, sens)
 
 @robot_shell.command()
+@click.argument('sens', type=bool)
+@click.option('-d', '--decal', default=0.0, help='tell the decalage')
+@click.option('-n', '--no-set/--set', default=False, help='disable the postion setting')
+@click.option('-b', '--block/--no-block', default=False, help='if call will be blocking')
+def recalibration(sens, decal, no_set, block):
+    if block:
+        robot.recalibration_block(sens=sens, decal=decal_x, set=not no_set)
+    else:
+        robot.tm.recalibration(sens=sens, decal=decal_x, set=not no_set)
+
+@robot_shell.command()
 @click.argument('trsldec', type=float)
 @click.argument('rotdec', type=float)
 def stop_asap(trsldec, rotdec):
