@@ -18,12 +18,18 @@ from time import sleep
 DELAY_EV = 0.2
 SAMPLE_SIZE = 10
 
+##################
+# PUMP ACTUATORS #
+##################
+
+# Buoy Type
 class Buoy(Enum):
     Empty = "empty"
     Green = "green"
     Red = "red"
     Unknow = "unknow"
 
+# Pump actuator
 class PumpActuator:
 
     def __init__(self, pump_gpio, ev_gpio, pump_nb):
@@ -55,9 +61,6 @@ class PumpActuator:
         s += "Buoy: %s" % self.buoy.value
         return s
 
-##TODO:
-## - color sensors
-## - Multiplexer
 
 def if_enabled(method):
     """
@@ -79,7 +82,6 @@ def if_enabled(method):
 @Service.require("ax", "%s-4" % ROBOT)
 @Service.require("ax", "%s-5" % ROBOT)
 @Service.require("trajman", ROBOT)
-
 class Actuators(Service):
 
     def __init__(self):
@@ -87,11 +89,7 @@ class Actuators(Service):
         self.cs = CellaservProxy()
         self.robot = Robot(robot='pal')
         self.queue = Act_queue()
-        self.sensors = [
-            RGBSensors(1, SAMPLE_SIZE),
-            RGBSensors(2, SAMPLE_SIZE)
-            ]
-
+        self.rgb_sensors = RGBSensors([1, 2], SAMPLE_SIZE)
         self.disabled = False
         self.match_end = Event()
         self.color1 = self.cs.config.get(section='match', option='color1')
@@ -120,6 +118,11 @@ class Actuators(Service):
 
         self.reset()
 
+
+    ########
+    # CORE #
+    ########
+
     # Disable Actuators
     @Service.action
     def disable(self):
@@ -133,24 +136,15 @@ class Actuators(Service):
         self.disabled = False
         self.start()
 
-    #########
-    # START #
-    #########   
-
+    # Start
     def start(self):
         self.queue.run_queue()
-    
-    ########
-    # STOP #
-    ########
 
+    # Stop
     def stop(self):
         self.queue.stop_queue()
 
-    #########
-    # RESET #
-    #########    
-
+    # Reset
     @Service.action
     def reset(self):
         self.disabled = False
@@ -173,10 +167,7 @@ class Actuators(Service):
         sleep(0.5)
         self.start()
 
-    ########
-    # FREE #
-    ########    
-
+    # Free
     @Service.action
     def free(self):
         for pump in self.pumps:
@@ -184,11 +175,21 @@ class Actuators(Service):
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax[str(n)].free()
 
+
+    ########
+    # WAIT #
+    ########
     @Service.action
     @if_enabled
     def wait(self, time):
         sleep(float(time))
 
+
+    ##########
+    # STATUS #
+    ##########
+
+    # Print Status
     @Service.action
     def print_status(self):
         print("--- PUMPS ---")
@@ -203,6 +204,7 @@ class Actuators(Service):
         print("Sensor right: %s", self.sensors[0].read_sensor(1))
         print("-------------------------")
 
+    # Get Status
     @Service.action
     def get_status(self):
         status = {
@@ -218,24 +220,29 @@ class Actuators(Service):
         status['sensor'].append(self.sensors[1].read_sensor(2))
         return status
 
+
     #########
     # FLAGS #
-    #########    
+    #########
 
+    # Raise Flags
     @Service.action
     @if_enabled
     def flags_raise(self):
         self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=820)
-    
+
+    # Close flags
     @Service.action
     @if_enabled
     def flags_low(self):
         self.cs.ax["%s-%d" % (ROBOT, 5)].move(goal=512)
 
+
     #########
     # PUMPS #
     #########
 
+    # Get Buoy
     @Service.action
     @if_enabled
     def pump_get(self, pump, buoy='unknow'):
@@ -245,8 +252,8 @@ class Actuators(Service):
         else:
             print('[ACTUATORS] Not a valid pump: %d' % pump)
 
+    # Set Buoy
     @Service.action
-    @if_enabled
     def pump_set(self, pump, buoy='unknow'):
         pump = int(pump)
         if pump > 0 and pump <= 8:
@@ -254,6 +261,7 @@ class Actuators(Service):
         else:
             print('[ACTUATORS] Not a valid pump: %d' % pump)
 
+    # Drop Buoy
     @Service.action
     @if_enabled
     def pump_drop(self, pump):
@@ -263,59 +271,83 @@ class Actuators(Service):
         else:
             print('[ACTUATORS] Not a valid pump: %d' % pump)
 
+
+    ###############
+    # RGB Sensors #
+    ###############
+
+    # Read
     @Service.action
-    @if_enabled
     def rgb_sensor_read(self, n):
-        return (self.sensors[n].read_sensor())
+        if n < 1 or n > 2:
+            print('[ACTUATORS] Wrong rgb sensor: %d' % n)
+        return self.sensors.read_sensor(n)
+
 
     #############
     # SIDE ARMS #
     #############
-    
-    @Service.action
-    @if_enabled
-    def right_arm_close(self):
-        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=204)
 
+    # Left Arm Close
     @Service.action
     @if_enabled
     def left_arm_close(self):
         self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=820)
 
-    @Service.action
-    @if_enabled
-    def right_arm_open(self):
-        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
-
+    # Left Arm Open
     @Service.action
     @if_enabled
     def left_arm_open(self):
         self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
 
+    # Right Arm Close
+    @Service.action
+    @if_enabled
+    def right_arm_close(self):
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=204)
+
+    # Right Arm Open
+    @Service.action
+    @if_enabled
+    def right_arm_open(self):
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
+
+
     ###############
     # CUP HOLDERS #
     ###############
 
-    @Service.action
-    @if_enabled
-    def left_cup_holder_open(self):
-        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
 
-    @Service.action
-    @if_enabled
-    def right_cup_holder_open(self):
-        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
-
+    # Left CH Close
     @Service.action
     @if_enabled
     def left_cup_holder_close(self):
         self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
 
+    # Left CH Open
+    @Service.action
+    @if_enabled
+    def left_cup_holder_open(self):
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
+
+    # Right CH Close
     @Service.action
     @if_enabled
     def right_cup_holder_close(self):
         self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
 
+    # Right CH Open
+    @Service.action
+    @if_enabled
+    def right_cup_holder_open(self):
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
+
+
+    ######################
+    # HIGH LEVEL ACTIONS #
+    ######################
+
+    #
     @Service.action
     @if_enabled
     def _windsocks_push(self):
@@ -343,26 +375,7 @@ class Actuators(Service):
         function = [self._windsocks_push, None]
         self.queue.run_action(*function)
 
-    @Service.action
-    @if_enabled
-    def buoy_get_floor(self, holder):
-        open_function = [(self.right_cup_holder_open if holder == 1 
-            else
-        self.left_cup_holder_open), None]
-        trigger_pump_function = [[(self.pumps[4].pump_get() if holder == 1
-            else
-        self.pump[6].pump_get()), None], (self.pumps[5].pump_get() if holder == 1
-            else
-        self.pump[7].pump_get()), None]
-        get_buoy = [open_function, trigger_pump_function]
-        self.queue.run_actions(*get_buoy)
 
-    @Service.action
-    @if_enabled
-    def chenal_drop(self):
-        #TODO
-        return
-    
     ##########
     # EVENTS #
     ##########
@@ -384,7 +397,9 @@ class Actuators(Service):
     #Handle anchorage area
     @Service.event("anchorage")
     def anchorage_set(self):
-        return
+        # TODO
+        pass
+
 
 def main():
     actuators = Actuators()
