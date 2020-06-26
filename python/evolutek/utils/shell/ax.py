@@ -13,8 +13,6 @@ def get_prompt():
 @click.pass_context
 def ax_shell(ctx):
     if ctx.invoked_subcommand is None:
-        global ROBOT
-        ROBOT = get_robot()
         subshell = make_click_shell(ctx, prompt=get_prompt, intro='Shell to control AX12')
         subshell.cmdloop()
     else:

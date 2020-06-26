@@ -41,6 +41,7 @@ class PumpActuator:
         self.buoy = Buoy.Empty
 
     def pump_get(self, buoy=Buoy.Unknow):
+        print('yo')
         self.pump_gpio.write(True)
         self.buoy = buoy
 
@@ -151,7 +152,7 @@ class Actuators(Service):
         self.match_end.clear()
 
         self.left_arm_open()
-        self.open_arm_right()
+        self.right_arm_open()
         self.left_cup_holder_open()
         self.right_cup_holder_open()
         self.flags_raise()
@@ -200,8 +201,8 @@ class Actuators(Service):
             print("AX12 %d: %s" %
                 (n, self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position()))
         print("--- COLOR SENSOR ---")
-        print("Sensor left: %s", self.sensors[1].read_sensor(2))
-        print("Sensor right: %s", self.sensors[0].read_sensor(1))
+        print("Sensor left: %s", self.rgb_sensors.read_sensor(2))
+        print("Sensor right: %s", self.rgb_sensors.read_sensor(1))
         print("-------------------------")
 
     # Get Status
@@ -216,8 +217,8 @@ class Actuators(Service):
             status['pump'].append(pump)
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             status['ax'].append(self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position())
-        status['sensor'].append(self.sensors[0].read_sensor(1))
-        status['sensor'].append(self.sensors[1].read_sensor(2))
+        status['sensor'].append(self.rgb_sensors.read_sensor(1))
+        status['sensor'].append(self.rgb_sensors.read_sensor(2))
         return status
 
 
@@ -249,8 +250,10 @@ class Actuators(Service):
         pump = int(pump)
         if pump > 0 and pump <= 8:
             self.pumps[pump - 1].pump_get(Buoy(buoy))
+            return True
         else:
             print('[ACTUATORS] Not a valid pump: %d' % pump)
+            return False
 
     # Set Buoy
     @Service.action
