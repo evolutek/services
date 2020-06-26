@@ -284,7 +284,7 @@ class Actuators(Service):
     def rgb_sensor_read(self, n):
         if n < 1 or n > 2:
             print('[ACTUATORS] Wrong rgb sensor: %d' % n)
-        return self.sensors.read_sensor(n)
+        return self.rgb_sensors.read_sensor(n)
 
 
     #############
