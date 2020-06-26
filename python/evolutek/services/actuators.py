@@ -347,7 +347,6 @@ class Actuators(Service):
     # HIGH LEVEL ACTIONS #
     ######################
 
-    #
     @Service.action
     @if_enabled
     def _windsocks_push(self):
