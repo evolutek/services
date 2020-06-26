@@ -4,6 +4,7 @@ from evolutek.utils.shell.shell_global import cs, get_robot, set_robot
 from evolutek.utils.shell.ax import ax_shell
 from evolutek.utils.shell.config import config_shell
 from evolutek.utils.shell.robot import robot_shell
+from evolutek.utils.shell.actuator import actuator_shell
 
 from evolutek.utils.odom_tools import compute_all
 
@@ -50,6 +51,14 @@ def robot():
         return
 
     robot_shell()
+
+@evolutek_shell.command()
+def actuator():
+    if get_robot() is None:
+        click.echo('No robot selected')
+        return
+
+    actuator_shell()
 
 @evolutek_shell.command()
 @click.option('-g', '--gains/-no-gains', default=False, help='Compute gains')

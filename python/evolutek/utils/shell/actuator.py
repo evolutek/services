@@ -10,16 +10,21 @@ ROBOT = None
 def get_prompt():
     return "evo-shell [%s] > " % get_robot()
 
-# @shell(prompt=get_prompt, intro='Shell to control robot')
-# def evolutek_shell():
-#     pass
+
+@click.group(invoke_without_command=True)
+@click.pass_context
+def actuator_shell(ctx):
+    if ctx.invoked_subcommand is None:
+        global ROBOT
+        ROBOT = get_robot()
+        subshell = make_click_shell(
+            ctx, prompt=get_prompt, intro='Shell to control actuator')
+        subshell.cmdloop()
+    else:
+        click.echo('[SHELL] Failed to launch actuator shell')
 
 @actuator_shell.command()
 def reset():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.reset()
     return
 
@@ -31,64 +36,36 @@ def free():
 
 @actuator_shell.command()
 def disable():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.disable()
     return
 
 @actuator_shell.command()
 def enable():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.enable()
     return
 
 @actuator_shell.command()
 def start():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.start()
     return
 
 @actuator_shell.command()
 def stop():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.stop()
     return
 
 @actuator_shell.command()
 def print_status():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.print_status()
     return
 
 @actuator_shell.command()
 def get_status():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.get_status()
     return
 
 @actuator_shell.command()
 def flags_raise():
-    global ROBOT
-    if ROBOT is None:
-        print('[ACTUATOR] ROBOT NOT SET...')
-        return
     ACT.free()
     return
 
