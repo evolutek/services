@@ -202,7 +202,7 @@ class TrajMan(Service):
         self.set_telemetry(500)
 
     """ AVOID """
-    @Service.thread
+    #@Service.thread
     def loop_avoid(self):
         while True:
             if self.telemetry is None:
