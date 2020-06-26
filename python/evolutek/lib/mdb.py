@@ -9,7 +9,7 @@ import time
 import neopixel
 
 # TODO:
-# - Replace FIXME
+# - Exceptions management
 # - Attribute a placement to sensors (front, back, sides)
 
 # Default adress of Vl53L0X
@@ -43,24 +43,25 @@ class Mdb:
 
     def __init__(self, nb_sensors, sensor_address=0x29, front_led=[16, 1, 2, 3], right_led=[4, 5, 6, 7], back_led=[8, 9, 10, 11],
                  left_led=[12, 13, 14, 15], expander_address=0x20, leds_gpio=None, refresh=0.1, debug=0):
+
         self.coef = 255 / (MAX_DIST / 2)
+        
+        # Init I2C bus
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.sensors = []
         self.scan = []
+
+        # Init MCP
         self.mcp = MCP23017(self.i2c, address=expander_address)
+
         self.nb_sensors = nb_sensors
-        self.sleep = refresh
-        self.pixel = None
+        self.refresh = refresh
         self.debug = debug
         self.sensors_address = sensor_address
         self.position = {"back": (False, back_led), "front": (False, front_led),  "right": (False, right_led), "left": (False, left_led)}
         self.init_sensor()
         self.lock = Lock()
         Thread(target=self.loop).run()
-
-    def init_sensor(self):
-        for i in range(0, self.nb_sensors + 1):
-            self.mcp.get_pin(i + 8).switch_to_output()
 
         for i in range(0, self.nb_capteur + 1):
             print("INIT_Sensor: {0}".format(i + 1))
@@ -105,8 +106,10 @@ class Mdb:
             time.sleep(self.sleep)
 
     def get_scan(self):
+        tmp = []
         with self.lock:
-            return self.scan
+            tmp = self.scan
+        return tmp
 
     def __str__(self):
         return ""
