@@ -1,12 +1,12 @@
 [Unit]
 Description=Config service
 PartOf=evolutek.target
-Requires=cellaserv2.service
-After=cellaserv2.service
+Requires=cellaserv.service
+After=cellaserv.service
 
 [Service]
 Environment=CONFIG_FILE=/etc/conf.d/config.ini
-ExecStart=/usr/bin/config
+ExecStart=config
 CPUSchedulingPolicy=rr
 
 [Install]

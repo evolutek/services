@@ -1,0 +1,11 @@
+[Unit]
+Description=Cellaserv service
+PartOf=evolutek.target
+
+[Service]
+ExecStart=/home/pi/go/bin/cellaserv
+CPUSchedulingPolicy=rr
+
+[Install]
+WantedBy=multi-user.target
+
