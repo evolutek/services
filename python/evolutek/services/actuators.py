@@ -41,7 +41,6 @@ class PumpActuator:
         self.buoy = Buoy.Empty
 
     def pump_get(self, buoy=Buoy.Unknow):
-        print('yo')
         self.pump_gpio.write(True)
         self.buoy = buoy
 

@@ -29,19 +29,19 @@ class TestPump:
         sleep(2)
 
         print('[TEST] Getting Buoy')
-        pump.get_buoy()
+        pump.pump_get()
         print(pump)
 
         sleep(2)
 
         print('[TEST] Setting buoy')
-        pump.set_buoy(Buoy.Green)
+        pump.pump_set(Buoy.Green)
         print(pump)
 
         sleep(2)
 
         print('[TEST] Drop buoy')
-        pump.drop_buoy()
+        pump.pump_drop()
         print(pump)
 
         sleep(2)

@@ -29,7 +29,7 @@ from cellaserv.settings import make_logger
 from cellaserv.settings import ROBOT
 from cellaserv.settings import SIMULATION
 
-SIMULATION = bool(SIMULATION)
+SIMULATION = SIMULATION == 'True'
 
 logger = make_logger(__name__)
 logger.debug('ROBOT: %s', ROBOT)
