@@ -22,14 +22,28 @@ class Config(Service):
         Return section from config file. If the section does not exists, a
         KeyError is raised
         """
+
+        tmp = {}
+
+        if name in self.temporary_config:
+            tmp = self.temporary_config[name]
+
         try:
             section = self.config_file.items(name)
             ret = {}
             for val in section:
               ret[val[0]] = val[1]
+
+
+            for option in tmp:
+                ret[option] = tmp[option]
+
             return ret
+
         except (NoSectionError) as exc:
-            raise KeyError("Unknown config section: {0}".format(section)) from exc
+            if tmp == {}:
+                raise KeyError("Unknown config section: {0}".format(section)) from exc
+            return tmp
 
     @Service.action
     def get(self, section: str, option: str) -> str:
@@ -37,8 +51,8 @@ class Config(Service):
         Return value from config file. If the section does not exists, a
         KeyError is raised.
         """
-        if section + '.' + option in self.temporary_config:
-            return self.temporary_config[section + '.' + option]
+        if section in self.temporary_config and option in self.temporary_config[section]:
+            return self.temporary_config[section][option]
 
         try:
             return self.config_file.get(section, option)
@@ -50,8 +64,8 @@ class Config(Service):
         """Write config value."""
 
         # Flush temporary value
-        if section + '.' + option in self.temporary_config:
-            del self.temporary_config[section + '.' + option]
+        if section in self.temporary_config and option in self.temporary_config[section]:
+            del self.temporary_config[section][option]
 
         try:
             self.config_file.set(section, option, value)
@@ -71,20 +85,23 @@ class Config(Service):
     @Service.action
     def set_tmp(self, section: str, option: str, value: str) -> None:
         """Set a temporary value."""
-        self.temporary_config[section + '.' + option] = value
+        if not section in self.temporary_config:
+            self.temporary_config[section] = {}
+
+        self.temporary_config[section][option] = value
 
     @Service.action
     def write(self) -> None:
         """Write temporary config to file."""
-        for key, value in self.temporary_config.items():
-            section, option = key.split('.', 1)
+        for section in self.temporary_config:
+            for option, value in self.temporary_config[section].items():
 
-            # We can't use self.set() because it modifies self.temporary_config
-            try:
-                self.config_file.set(section, option, value)
-            except NoSectionError:
-                self.config_file.add_section(section)
-                self.config_file.set(section, option, value)
+                # We can't use self.set() because it modifies self.temporary_config
+                try:
+                    self.config_file.set(section, option, value)
+                except NoSectionError:
+                    self.config_file.add_section(section)
+                    self.config_file.set(section, option, value)
 
         self.write_config()
         self.temporary_config.clear()
@@ -99,16 +116,7 @@ class Config(Service):
                 ret[section][k] = v
         return ret
 
-def wait_for_beacon():
-    hostname = "pi"
-    while True:
-        r = os.system("ping -c 1 " + hostname)
-        if r == 0:
-            return
-        pass
-
 def main():
-    #wait_for_beacon()
     config = Config()
     config.run()
 

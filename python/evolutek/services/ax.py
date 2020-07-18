@@ -12,8 +12,7 @@ LIBDXL_PATH_ENV = os.environ.get("LIBDXL_PATH", None)
 if LIBDXL_PATH_ENV:
     LIBDXL_PATH.insert(0, LIBDXL_PATH_ENV)
 
-DEVICE_ID = 42
-#BAUD_RATE = 31 # 62500 // PMI w/ USB2Dynamixel
+DEVICE_ID = 0
 BAUD_RATE = 1  # Main robot USB2AX
 
 AX_TORQUE_ENABLE_B     = 24
@@ -112,17 +111,7 @@ class Ax(Service):
     def free(self):
         self.dxl.dxl_write_byte(self.ax, AX_TORQUE_ENABLE_B, 0)
 
-def wait_for_beacon():
-    hostname = "pi"
-    while True:
-        r = os.system("ping -c 1 " + hostname)
-        if r == 0:
-            return
-        pass
-
 def main():
-    #wait_for_beacon()
-
     data = None
     with open('/etc/conf.d/ax.json', 'r') as ax_file:
         data = ax_file.read()
