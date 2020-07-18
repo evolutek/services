@@ -187,9 +187,9 @@ def compute_spacing():
     robot.move_rot_block(dest=2 * nbturns * pi, acc=3, dec=3, maxspeed=3, sens=0)
     robot.tm.free()
 
-def compute_all(gains, diams, spacing, all, config, _robot=None):
+def compute_all(gains, diams, spacing, all, config, _robot):
 
-    robot_name = _robot if _robot is not None else args.robot
+    robot_name = _robot
 
     global cs
     cs = CellaservProxy()
@@ -266,7 +266,7 @@ def main():
         print('Available robot: [pal, pmi]')
         return 1
 
-    compute_all(args.gains, args.diams, args.spacing, args.all, args.config)
+    compute_all(args.gains, args.diams, args.spacing, args.all, args.config, args.robot)
 
 if __name__ == "__main__":
     main()
