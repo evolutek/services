@@ -29,6 +29,8 @@ setup(
         'console_scripts': [
             'config = evolutek.services.config:main',
             'actuators = evolutek.services.actuators:main',
+            'ax = evolutek.services.ax:main',
+            'trajman = evolutek.services.trajman:main',
             'match = evolutek.services.match:main',
             'fake_ax = evolutek.simulation.fake_ax:main',
             'fake_trajman = evolutek.simulation.fake_trajman:main',
