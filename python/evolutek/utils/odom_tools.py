@@ -6,6 +6,7 @@ from evolutek.utils.shell.data_printer import print_json
 
 from argparse import ArgumentParser
 from math import pi
+from time import sleep
 
 cs = None
 robot = None
@@ -26,18 +27,27 @@ def compute_gains():
     print("Please place the robot with the back near a wall, press Enter when ready")
     print("########################################################################")
 
-    robot.recalibration(y = False, init=True)
-    robot.move_trsl_block(dest=lenth, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sense=1)
-    robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3)
-    robot.move_trsl_block(dest=lenth, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sense=1)
-    robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3)
-    robot.recalibration(y = False, init=True)
+    input()
 
-    robot.tm.recalibration_block(sens=0, decal=0, set=0)
-    robot.tm.unfree()
+    # TODO path 75, in move_trsl_block
+    robot.recalibration_block(sens=0)
+    robot.move_trsl_block(dest=75, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
+
+    print("################################################################")
+    print("Do you want the robot to go to the mark by itself (y/n) ?")
+    print("################################################################")
+
+    i = input()
+    # TODO : Manual
+
+    robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
+    robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3, sens=1)
+    robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
+    robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3, sens=1)
+    robot.recalibration_block(sens=0, decal=0, set=0)
 
     newpos = robot.tm.get_position()
-    robot.free()
+    robot.tm.free()
 
     coef = -1 * newpos['theta'] / length
 
@@ -48,7 +58,7 @@ def compute_gains():
     old['left_gain'] = old['left_gain'] * (1 + coef)
     old['right_gain'] = old['right_gain'] * (1 - coef)
 
-    print('The news gains are :', old['left_gain'], old['left_gain'])
+    print('The news gains are :', old['left_gain'], old['right_gain'])
 
 
 """ Compute Diameters """
@@ -57,35 +67,24 @@ def compute_diams():
     print("Please enter the length of the distance to mesure (mm) :")
     print("########################################################")
 
-    length = float(input)
+    length = float(input())
     print("Length = ", length)
 
-    print("########################################################################")
-    print("Please place the robot with the back near a wall, press Enter when ready")
-    print("########################################################################")
-
-    robot.recalibration(y = False, init=True)
+    robot.recalibration_block(sens=0)
 
     print("################################################################")
     print("Do you want the robot to go to the mark by itself (y/n) ?")
     print("################################################################")
 
-    if input()[0] == 'y':
+    i = input()
+    oldpos = robot.tm.get_position()
+
+    if i[0] == 'y':
         print("Going...")
-        robot.move_trsl_block(dest=lenth, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sense=1)
+        robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
 
     robot.tm.free()
     sleep(0.1)
-
-    print("################################################################")
-    print("Do you want the robot to go to the mark by itself (y/n) ?")
-    print("################################################################")
-
-    if input()[0] == 'y':
-        print("Going...")
-        robot.goto_xy_block(1000 + length, 1000)
-    sleep(0.1)
-    robot.tm.free()
 
     print("#################################################################")
     print("Please place the robot on the second mark, press Enter when ready")
@@ -96,7 +95,10 @@ def compute_diams():
     robot.tm.unfree()
     newpos = robot.tm.get_position()
 
-    mesured = newpos['x'] - 1000
+    print(oldpos)
+    print(newpos)
+    print(newpos['x'] - oldpos['x'])
+    mesured = newpos['x'] - oldpos['x']
     coef = float(length) / float(mesured)
 
     global old
@@ -116,7 +118,7 @@ def compute_diams():
     print("#################################################")
     input()
 
-    robot.move_trsl_block(dest=lenth, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sense=0)
+    robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=0)
     robot.tm.free()
 
 
@@ -129,20 +131,25 @@ def compute_spacing():
     nbturns = float(input())
     print("nbturns = ", nbturns)
 
-    print("########################################################################")
-    print("Please place the robot with the back near a wall, press Enter when ready")
-    print("########################################################################")
+    print("##########################################################")
+    print("Please place the robot on the mark, press Enter when ready")
+    print("##########################################################")
 
-    robot.recalibration(y = False, init=True)
-    robot.move_trsl_block(dest=100, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sense=1)
+    input()
+
+    robot.tm.unfree()
 
     print("#######################################################")
     print("Do you want the robot to do the turns by itself (y/n) ?")
     print("#######################################################")
 
-    if input()[0] == 'y':
+    i = input()
+
+    oldpos = robot.tm.get_position()
+
+    if i[0] == 'y':
         print("Going...")
-        robot.move_rot_block(dest=2 * nbturns * math.pi, acc=3, dec=3, maxspeed=3, sens=1)
+        robot.move_rot_block(dest=2 * nbturns * pi, acc=3, dec=3, maxspeed=3, sens=1)
         sleep(0.1)
         robot.tm.free()
         print("############################################################")
@@ -156,18 +163,24 @@ def compute_spacing():
     input()
 
     newpos = robot.tm.get_position()
-    mesured = newpos['theta'] + nbturns * math.pi
-    coef = float(mesured) / float(nbturns * math.pi)
+    mesured = newpos['theta'] - oldpos['theta'] + nbturns * pi
+    coef = float(mesured) / float(nbturns * pi)
 
     global old
     old['spacing'] = old['spacing'] * coef
 
-    print("The error was of :", newpos['theta'])
+    print("The error was of :", newpos['theta'] - oldpos['theta'])
     print("The new spacing is :", old['spacing'])
     print("Setting the new spacing")
 
     robot.tm.set_wheels_spacing(spacing=old['spacing'])
-    robot.move_rot_block(dest=nbturns * math.pi, acc=3, dec=3, maxspeed=3, sens=0)
+
+    print("#################################################")
+    print("Going back to the origin, press Enter when ready.")
+    print("#################################################")
+    input()
+
+    robot.move_rot_block(dest=2 * nbturns * pi, acc=3, dec=3, maxspeed=3, sens=0)
     robot.tm.free()
 
 def compute_all(gains, diams, spacing, all, config, _robot=None):
