@@ -33,9 +33,9 @@ def compute_gains():
     robot.recalibration_block(sens=0)
     robot.move_trsl_block(dest=75, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
 
-    print("################################################################")
+    print("#########################################################")
     print("Do you want the robot to go to the mark by itself (y/n) ?")
-    print("################################################################")
+    print("#########################################################")
 
     i = input()
     # TODO : Manual
@@ -70,11 +70,17 @@ def compute_diams():
     length = float(input())
     print("Length = ", length)
 
+    print("########################################################################")
+    print("Please place the robot with the back near a wall, press Enter when ready")
+    print("########################################################################")
+
+    input()
+
     robot.recalibration_block(sens=0)
 
-    print("################################################################")
+    print("#########################################################")
     print("Do you want the robot to go to the mark by itself (y/n) ?")
-    print("################################################################")
+    print("#########################################################")
 
     i = input()
     oldpos = robot.tm.get_position()
@@ -95,9 +101,6 @@ def compute_diams():
     robot.tm.unfree()
     newpos = robot.tm.get_position()
 
-    print(oldpos)
-    print(newpos)
-    print(newpos['x'] - oldpos['x'])
     mesured = newpos['x'] - oldpos['x']
     coef = float(length) / float(mesured)
 
@@ -156,6 +159,7 @@ def compute_spacing():
         print("Please replace the robot on the mark, press Enter when ready")
         print("############################################################")
     else:
+        robot.tm.free()
         print("################################################################")
         print("Please make the robot do turns on itself, press Enter when ready")
         print("################################################################")
@@ -232,6 +236,7 @@ def compute_all(gains, diams, spacing, all, config, _robot=None):
         print("##############################")
         print("Setting new values to config !")
         print("##############################")
+
         cs.config.set(section=robot_name, option='wheel_diam1', value=old['left_diameter'])
         cs.config.set(section=robot_name, option='wheel_diam2', value=old['right_diameter'])
         cs.config.set(section=robot_name, option='wheel_gain1', value=old['left_gain'])
