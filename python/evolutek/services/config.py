@@ -5,7 +5,6 @@ from cellaserv.service import Service
 from cellaserv.settings import make_setting
 make_setting('CONFIG_FILE', '/etc/conf.d/config.ini', 'config', 'file', 'CONFIG_FILE')
 from cellaserv.settings import CONFIG_FILE
-import os
 
 class Config(Service):
     def __init__(self):
