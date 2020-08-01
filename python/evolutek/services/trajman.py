@@ -202,7 +202,7 @@ class TrajMan(Service):
         self.set_telemetry(500)
 
     """ AVOID """
-    @Service.thread
+    #@Service.thread
     def loop_avoid(self):
         while True:
             if self.telemetry is None:
@@ -638,11 +638,12 @@ class TrajMan(Service):
 
     @Service.action
     @if_enabled
-    def recalibration(self, sens, decal):
+    def recalibration(self, sens, decal=0, set=1):
         tab = pack('B', 7)
         tab += pack('B', Commands.RECALAGE.value)
         tab += pack('B', int(sens))
         tab += pack('f', float(decal))
+        tab += pack('B', int(set))
         return self.command(bytes(tab))
 
     # Thread 2

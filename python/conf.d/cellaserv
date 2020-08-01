@@ -4,5 +4,5 @@ port = 4200
 
 [client]
 debug = 1
-host = localhost
+host = 127.0.0.1
 port = 4200

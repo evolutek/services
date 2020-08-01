@@ -9,17 +9,16 @@ class TestPump:
         self.pumps = [
             PumpActuator(27, 18, 1),
             PumpActuator(22, 23, 2),
-            PumpActuator(10, 24, 3),
-            PumpActuator(9, 25, 4),
-            PumpActuator(11, 8, 5),
-            PumpActuator(5, 7, 6),
-            PumpActuator(6, 16, 7),
-            PumpActuator(19, 20, 8)
+            PumpActuator(9, 24, 3),
+            PumpActuator(11, 25, 4),
+            PumpActuator(5, 8, 5),
+            PumpActuator(6, 7, 6),
+            PumpActuator(19, 16, 7),
+            PumpActuator(26, 20, 8)
         ]
 
-        self.test_pump(7)
-        #for i in range(len(self.pumps)):
-        #    self.test_pump(i)
+        for i in range(len(self.pumps)):
+            self.test_pump(i)
 
     def test_pump(self, id):
 
@@ -30,19 +29,19 @@ class TestPump:
         sleep(2)
 
         print('[TEST] Getting Buoy')
-        pump.get_buoy()
+        pump.pump_get()
         print(pump)
 
         sleep(2)
 
         print('[TEST] Setting buoy')
-        pump.set_buoy(Buoy.Green)
+        pump.pump_set(Buoy.Green)
         print(pump)
 
         sleep(2)
 
         print('[TEST] Drop buoy')
-        pump.drop_buoy()
+        pump.pump_drop()
         print(pump)
 
         sleep(2)

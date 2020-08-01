@@ -78,7 +78,7 @@ class Ax(Service):
 
     @Service.action
     def turn(self, side: "1 or -1", speed):
-        print('[AX] Turn ax: %d with moving speed to: %d on side: %d' % (self.ax, int(speed), int(sens)))
+        print('[AX] Turn ax: %d with moving speed to: %d on side: %d' % (self.ax, int(speed), int(side)))
 
     @Service.action
     def free(self):

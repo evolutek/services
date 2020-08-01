@@ -88,7 +88,7 @@ class Tim:
         self.change_pos(mirror)
         self.try_connection()
 
-        print('TIM created')
+        print('[TIM] TIM created')
 
     def __str__(self):
         s = "ip: %s\n" % self.ip
@@ -100,7 +100,6 @@ class Tim:
 
     def try_connection(self):
         Thread(target = self._try_connection).start()
-
 
     def _try_connection(self):
         while not self.connected:
@@ -121,11 +120,37 @@ class Tim:
         self.angle = self.default_angle * -1 if mirror else self.default_angle
         print('[TIM] Changing tim %s pos: %s, angle: %d' % (self.ip, self.pos, self.angle))
 
+    def send_request(self):
+        try:
+            self.socket.sendall("\x02sRN LMDscandata\x03\0".encode())
+        except Exception as e:
+            print('[TIM] Failed to send scan request to %s: %s' % (self.ip, str(e)))
+            self.connected = False
+            self._try_connection()
+        data = ""
+
+        while True:
+            try:
+                part = self.socket.recv(1024)
+            except Exception as e:
+                print('[TIM] Failed to recieve scan data of %s: %s' % (self.ip, str(e)))
+                self.connected =  False
+                self._try_connection()
+            data += part.decode()
+            if "\x03" in part.decode():
+                break
+        length = len(data)
+        if (data[0] != '\x02' or data[length - 1] != '\x03'):
+            print("[TIM] Bad response for the TIM %s" % self.ip)
+            return None
+
+        return data[1:len(data) - 2].split(' ')
+
     def convert_to_card(self, cyl_data, size_a):
         clean_data = []
         length = len(cyl_data)
         for i in range(0, length):
-            angle = radians(length - i * size_a + self.angle)
+            angle = radians((length - i) * size_a - self.angle)
             y = cyl_data[i] * cos(angle) + self.pos.y
             x = cyl_data[i] * sin(angle) + self.pos.x
             clean_data.append(Point(x, y))
@@ -185,31 +210,13 @@ class Tim:
             print('[TIM] %s Pos or angle not configured' % self.ip)
             return None
 
-        try:
-            self.socket.sendall("\x02sRN LMDscandata\x03\0".encode())
-        except Exception as e:
-            print('[TIM] Failed to send scan request to %s: %s' % (self.ip, str(e)))
-            self.connected = False
-            self._try_connection()
-        data = ""
+        data = self.send_request()
 
-        while True:
-            try:
-                part = self.socket.recv(1024)
-            except Exception as e:
-                print('[TIM] Failed to recieve scan data of %s: %s' % (self.ip, str(e)))
-                self.connected =  False
-                self._try_connection()
-            data += part.decode()
-            if "\x03" in part.decode():
-                break
-        length = len(data)
-        if (data[0] != '\x02' or data[length - 1] != '\x03'):
-            print("[TIM] Bad response for the TIM %s" % self.ip)
-            return None
-        data = data[1:len(data) - 2].split(' ')
-        angular_step = parse_num(data[24])/10000
+        angular_step = parse_num(data[24])/10000.0
         length = parse_num(data[25])
+
+        if length == 0:
+            return [], [], []
 
         # Convert data to cardinal coordinates
         raw_points = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
@@ -239,9 +246,20 @@ class Tim:
                   continue
               self.raw_data, self.shapes, self.robots = new_data
 
-    def get_scan(self):
+    def get_points(self):
+        points = []
+        with self.lock:
+            points = self.raw_data
+        return points
 
+    def get_shapes(self):
+        shapes = []
+        with self.lock:
+            shapes = self.shapes
+        return shapes
+
+    def get_robots(self):
+        robots = []
         with self.lock:
             robots = self.robots
-
         return robots
