@@ -281,6 +281,7 @@ class Actuators(Service):
     # Read
     @Service.action
     def rgb_sensor_read(self, n):
+        n = int(n)
         if n < 1 or n > 2:
             print('[ACTUATORS] Wrong rgb sensor: %d' % n)
         return self.rgb_sensors.read_sensor(n)
