@@ -76,4 +76,13 @@ class RGBSensors:
         if not i in self.sensors:
             print('[RGB_SENSORS] Bad RGB sensor number %d' % i)
             return None
+        result = self.sensors[i].color_rgb_bytes
+        if (result[0] > result[1] and result[0] > result[2]):
+            print('red')
+        elif (result[1] > result[0] and result[1] > result[2]):
+            print('green')
+        else:
+            print("unknown")
+        print("result: {}".format(result))
+        
         return self.sensors[i].color_rgb_bytes

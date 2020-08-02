@@ -114,9 +114,9 @@ class Mdb:
 
     # Sets the near distance (for front and back flags). In millimeters
     def set_near(self, distance):
-        self.send(REQ_NEAR + bytes([distance/256, distance%256]))
+        self.send(REQ_NEAR + bytes([distance//256, distance%256]))
         
 
     # Sets the far distance (for the is_robot flag). In millimeters
     def set_far(self, distance):
-        self.send(REQ_FAR + bytes([distance/256, distance%256]))
+        self.send(REQ_FAR + bytes([distance//256, distance%256]))

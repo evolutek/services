@@ -261,8 +261,7 @@ class Robot:
             else:
                 pos = self.telemetry
 
-            # TODO: tell which robot ask
-            new = self.cs.map.get_path(pos, path[-1].to_dict())
+            new = self.cs.map.get_path(pos, path[-1].to_dict(), self.robot)
             new = convert_path_to_point(new)
 
             # Next point is near current pos
@@ -283,7 +282,7 @@ class Robot:
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
         path = [None, Point(x, y)]
 
-        while len(path) > 2:
+        while len(path) >= 2:
 
             path = self.update_path(path)
 
@@ -309,12 +308,15 @@ class Robot:
 
                 if tmp_path[1::] != path[1::]:
                     # Next point changed, need to stop
+                    print("[ROBOT] Next point changed")
                     self.tm.stop_asap(1000, 20)
                     self.is_stopped.wait()
                 else:
                     sleep(0.5)
 
                 path = tmp_path
+
+            print("[ROBOT] Robot stopped")
 
             if self.has_avoid.is_set():
                 self.move_back(path[0], MOVE_BACK)

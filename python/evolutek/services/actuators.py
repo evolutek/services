@@ -86,6 +86,7 @@ class Actuators(Service):
 
     def __init__(self):
         super().__init__(ROBOT)
+        print("hello")
         self.cs = CellaservProxy()
         self.robot = Robot(robot='pal')
         self.queue = Act_queue()
@@ -149,6 +150,8 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
+        print('here')
+        self.start()
 
         self.left_arm_open()
         self.right_arm_open()
@@ -295,25 +298,33 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def left_arm_close(self):
-        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=820)
+        function = [self.cs.ax["%s-%d" % (ROBOT, 3)].move, 820]
+#        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=820)
+        self.queue.run_action(*function)
 
     # Left Arm Open
     @Service.action
     @if_enabled
     def left_arm_open(self):
-        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
+        function = [self.cs.ax["%s-%d" % (ROBOT, 3)].move, 512]
+#        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
+        self.queue.run_action(*function)
 
     # Right Arm Close
     @Service.action
     @if_enabled
     def right_arm_close(self):
-        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=204)
+        function = [self.cs.ax["%s-%d" % (ROBOT, 4).move], 204]
+#        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=204)
+        self.queue.run_action(*function)
 
     # Right Arm Open
     @Service.action
     @if_enabled
     def right_arm_open(self):
-        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
+        function = [self.cs.ax["%s-%d" % (ROBOT, 4)].move, 512]
+#        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
+        self.queue.run_action(*function)
 
 
     ###############
