@@ -86,7 +86,6 @@ class Actuators(Service):
 
     def __init__(self):
         super().__init__(ROBOT)
-        print("hello")
         self.cs = CellaservProxy()
         self.robot = Robot(robot='pal')
         self.queue = Act_queue()
@@ -135,6 +134,7 @@ class Actuators(Service):
     @Service.action
     def enable(self):
         self.disabled = False
+        self.queue.run_queue()
         self.start()
 
     # Start
@@ -150,8 +150,6 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
-        print('here')
-        self.start()
 
         self.left_arm_open()
         self.right_arm_open()
@@ -298,33 +296,25 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def left_arm_close(self):
-        function = [self.cs.ax["%s-%d" % (ROBOT, 3)].move, 820]
-#        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=820)
-        self.queue.run_action(*function)
+        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=820)
 
     # Left Arm Open
     @Service.action
     @if_enabled
     def left_arm_open(self):
-        function = [self.cs.ax["%s-%d" % (ROBOT, 3)].move, 512]
-#        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
-        self.queue.run_action(*function)
+        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
 
     # Right Arm Close
     @Service.action
     @if_enabled
     def right_arm_close(self):
-        function = [self.cs.ax["%s-%d" % (ROBOT, 4).move], 204]
-#        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=204)
-        self.queue.run_action(*function)
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=204)
 
     # Right Arm Open
     @Service.action
     @if_enabled
     def right_arm_open(self):
-        function = [self.cs.ax["%s-%d" % (ROBOT, 4)].move, 512]
-#        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
-        self.queue.run_action(*function)
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
 
 
     ###############
@@ -385,8 +375,28 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def windsocks_push(self):
+        result = None
         function = [self._windsocks_push, None]
         self.queue.run_action(*function)
+        result = self.queue.response_queue.get()
+        return result
+
+    @Service.action
+    @if_enabled
+    def get_floor_buoy(self, pump, buoy='unknown'):
+        self.pump_get(pump, buoy)
+
+    # @Service.action
+    # @if_enabled
+    # def get_sorted_reef():
+    #     self.left_cup_holder_open()
+    #     self.right_cup_holder_open()
+    #     for i in range (5, 9):
+    #         ##self.pumps[i]
+    #         self.get(i)
+    #     self.left_cup_holder_close()
+    #     self.right_cup_holder_close()
+    #    # self.pum
 
 
     ##########

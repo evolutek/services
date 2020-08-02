@@ -96,8 +96,8 @@ def pump_drop(pump):
 @actuator_shell.command()
 @click.argument('sensor')
 def rgb_sensor_read(sensor):
-    if int(sensor) != 1 and int(sensor) != 2:
-        print('[ACTUATOR] TRY TO READ A NOT VALID SENSOR [{}]'.format(sensor))
+    if sensor != 1 and sensor != 2:
+        print('[ACTUATOR] TRY TO READ A NOT VALID SENSOR')
     cs.actuators[ROBOT].rgb_sensor_read(sensor)
     return
 

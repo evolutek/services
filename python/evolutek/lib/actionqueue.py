@@ -32,19 +32,14 @@ class Act_queue():
         tmp = ()
         while not self.stop.is_set():
             tmp = self.task.get()
-            print("exec {}".format(tmp))
             if type(tmp[0]) == list:
                 self.response.put(self.launch_multiple_actions(tmp[0], tmp[1]))
             else :
                 self.response.put(tmp[0](*tmp[1]))
 
     def run_queue(self):
-        print("STARTING QUEUE")
         t = Thread(target=self._run_queue)
         t.start()
-        print("QUEUE STARTED")
 
     def stop_queue(self):
-        print("STOPING QUEUE")
         self.stop.set()
-        print("QUEUE STOPED")
