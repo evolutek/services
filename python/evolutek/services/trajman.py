@@ -164,16 +164,12 @@ class TrajMan(Service):
         self.avoid_disabled = Event()
         self.front = False
         self.back = False
-        self.side = None
         self.is_robot = False
+        self.side = ''
 
         # init sensors
-        self.mdb = Mdb(16, board.SPI(), debug=False,
-            back_sensors    = [7, 8, 9, 10, 11],
-            front_sensors   = [1, 2, 3, 15, 16],
-            left_sensors    = [],#[11, 12, 13, 14, 15],
-            right_sensors   = [],#[3, 4, 5, 6, 7]
-        )
+        self.mdb = Mdb()
+        self.mdb.enable()
 
         self.trsl_max_speed = self.trslmax()
         self.rot_max_speed = self.rotmax()
@@ -233,8 +229,9 @@ class TrajMan(Service):
             if self.avoid_disabled.isSet():
                 continue
 
-            front = self.mdb.get_front() if self.telemetry['speed'] > 0.0 else False
-            back = self.mdb.get_back() if self.telemetry['speed'] < 0.0 else False
+            zones = self.mdb.get_zones()
+            front = zones['front'] if self.telemetry['speed'] > 0.0 else False
+            back = zones['back'] if self.telemetry['speed'] < 0.0 else False
 
             # End detection
             if (self.side == 'front' and not front) or (self.side == 'back' and not back):
@@ -256,7 +253,7 @@ class TrajMan(Service):
                 print("[AVOID] Back detection")
 
             # TODO : get refresh in config
-            sleep(0.2)
+            sleep(0.1)
 
     @Service.action
     def avoid_status(self):
@@ -266,7 +263,6 @@ class TrajMan(Service):
             'is_robot' : self.is_robot,
             'avoid' : self.has_avoid.isSet(),
             'enabled' : not self.avoid_disabled.isSet(),
-            'side' : self.side
         }
 
         return status
@@ -287,7 +283,7 @@ class TrajMan(Service):
         stopped = False
         self.side = side
         try:
-            self.stop_asap(1000, 20)
+            self.stop_asap(600, 20)
             stopped = True
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
@@ -299,6 +295,7 @@ class TrajMan(Service):
     def enable_avoid(self):
         print('[AVOID] Enable')
         self.avoid_disabled.clear()
+        self.mdb.enable()
 
     @Service.action
     def disable_avoid(self):
@@ -309,8 +306,8 @@ class TrajMan(Service):
         self.is_robot = False
         # Get speeds back to normal
         self.set_speeds(True)
-        self.side = None
         self.has_avoid.clear()
+        self.mdb.disable() 
 
     def write(self, data):
         """Write data to serial and flush."""

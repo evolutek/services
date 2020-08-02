@@ -11,6 +11,8 @@ REQ_CHANGETYPE = b't'
 REQ_ENABLESCAN = b'e'
 REQ_ERROR = b'r'
 REQ_BRIGHTNESS = b'b'
+REQ_NEAR = b'n'
+REQ_FAR = b'f'
 
 RCV_SCAN = b'\x00'
 RCV_ZONES = b'\x01'
@@ -29,39 +31,49 @@ class Mdb:
         try:
             self.i2c = busio.I2C(board.SCL, board.SDA)
         except Exception as e:
-            print("MDB: ERROR couldn't initialise i2c bus between Teensy and RaspberryPI")
+            print("[MDB] ERROR couldn't initialise i2c bus between Teensy and RaspberryPI")
             raise(e)
+    
+    def send(self, msg):
+        try: self.i2c.writeto(TEENSY, msg)
+        except: print("[MDB] ERROR while sending message: " + str(msg))
 
 
     def get_scan(self):
-        self.i2c.writeto(TEENSY, REQ_CHANGETYPE + RCV_SCAN)
+        self.send(REQ_CHANGETYPE + RCV_SCAN)
         buf = bytearray(b'\xff' * 32)
-        self.i2c.readfrom_into(TEENSY, buf)
         res = [65535] * 16
-        for i in range(16): res[i] = buf[i*2] * buf[i*2+1]
+        try: 
+            self.i2c.readfrom_into(TEENSY, buf)
+            for i in range(16): res[i] = buf[i*2] * buf[i*2+1]
+        except:
+            print("[MDB] ERROR while reading scan data")
         return res
 
 
     # Possible values: 0: Distances, 1: Zones, 2: Loading, 3: Disabled
     def set_debug_mode(self, mode):
-        self.i2c.writeto(TEENSY, REQ_LEDSMODE + bytes([mode]))
+        self.send(REQ_LEDSMODE + bytes([mode]))
 
     
     # True: changes color to yellow; False: changes color to blue
-    def change_color(self, to_yellow):
-        self.i2c.writeto(TEENSY, REQ_COLOR + (LEDS_YELLOW if to_yellow else LEDS_BLUE))
+    def set_color(self, to_yellow):
+        self.send(REQ_COLOR + (LEDS_YELLOW if to_yellow else LEDS_BLUE))
 
 
     def get_zones(self):
         
-        self.i2c.writeto(TEENSY, REQ_CHANGETYPE + RCV_ZONES)
+        self.send(REQ_CHANGETYPE + RCV_ZONES)
         buf = bytearray(b'\x02' * 3)
-        self.i2c.readfrom_into(TEENSY, buf)
-        
+        try:
+            self.i2c.readfrom_into(TEENSY, buf)
+        except:
+            print("[MDB] ERROR while reading zones data")
+
         err = False
         for i in range(len(buf)):
             if buf[i] not in [0, 1]: err = True
-        if err: print("ERROR: get_zones received erroneous data! " + str(buf))
+        if err: print("[MDB] ERROR: get_zones received erroneous data! " + str(buf))
         
         return {
                 'front': buf[0] == 1,
@@ -79,7 +91,7 @@ class Mdb:
 
     
     def set_enabled(self, enabled):
-        self.i2c.writeto(TEENSY, REQ_ENABLESCAN + (b'\x01' if enabled else b'\x00'))
+        self.send(REQ_ENABLESCAN + (b'\x01' if enabled else b'\x00'))
 
 
     def enable(self, debug_mode=1): 
@@ -93,8 +105,18 @@ class Mdb:
 
 
     def set_brightness(self, brightness):
-        self.i2c.writeto(TEENSY, REQ_BRIGHTNESS + bytes([brightness]))
+        self.send(REQ_BRIGHTNESS + bytes([brightness]))
 
 
     def error_mode(self):
-        self.i2c.writeto(TEENSY, REQ_ERROR)
+        self.send(REQ_ERROR)
+
+
+    # Sets the near distance (for front and back flags). In millimeters
+    def set_near(self, distance):
+        self.send(REQ_NEAR + bytes([distance/256, distance%256]))
+        
+
+    # Sets the far distance (for the is_robot flag). In millimeters
+    def set_far(self, distance):
+        self.send(REQ_FAR + bytes([distance/256, distance%256]))

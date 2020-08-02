@@ -9,6 +9,7 @@ class Test_Mdb():
     def __init__(self):
 
         mdb = Mdb()
+        mdb.enable(0)
 
         while True:
             scan = mdb.get_scan()
