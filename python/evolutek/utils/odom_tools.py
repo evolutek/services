@@ -31,7 +31,7 @@ def compute_gains():
 
     # TODO path 75, in move_trsl_block
     robot.recalibration_block(sens=0)
-    robot.move_trsl_block(dest=75, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
+    robot.move_trsl_block(dest=75, acc=100, dec=100, maxspeed=200, sens=1)
 
     print("#########################################################")
     print("Do you want the robot to go to the mark by itself (y/n) ?")
@@ -40,9 +40,9 @@ def compute_gains():
     i = input()
     # TODO : Manual
 
-    robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
+    robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=200, sens=1)
     robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3, sens=1)
-    robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
+    robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=200, sens=1)
     robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3, sens=1)
     robot.recalibration_block(sens=0, decal=0, set=0)
 
@@ -87,7 +87,7 @@ def compute_diams():
 
     if i[0] == 'y':
         print("Going...")
-        robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=100, sens=1)
+        robot.move_trsl_block(dest=length, acc=100, dec=100, maxspeed=100, sens=1)
 
     robot.tm.free()
     sleep(0.1)
@@ -100,6 +100,9 @@ def compute_diams():
 
     robot.tm.unfree()
     newpos = robot.tm.get_position()
+
+    print(oldpos)
+    print(newpos)
 
     mesured = newpos['x'] - oldpos['x']
     coef = float(length) / float(mesured)
@@ -237,11 +240,11 @@ def compute_all(gains, diams, spacing, all, config, _robot):
         print("Setting new values to config !")
         print("##############################")
 
-        cs.config.set(section=robot_name, option='wheel_diam1', value=old['left_diameter'])
-        cs.config.set(section=robot_name, option='wheel_diam2', value=old['right_diameter'])
-        cs.config.set(section=robot_name, option='wheel_gain1', value=old['left_gain'])
-        cs.config.set(section=robot_name, option='wheel_gain2', value=old['right_gain'])
-        cs.config.set(section=robot_name, option='spacing', value=old['spacing'])
+        cs.config.set(section=robot_name, option='wheel_diam1', str(value=old['left_diameter']))
+        cs.config.set(section=robot_name, option='wheel_diam2', str(value=old['right_diameter']))
+        cs.config.set(section=robot_name, option='wheel_gain1', str(value=old['left_gain']))
+        cs.config.set(section=robot_name, option='wheel_gain2', str(value=old['right_gain']))
+        cs.config.set(section=robot_name, option='spacing', str(value=old['spacing']))
 
     print("##################################")
     print("## Computing wheels size done ! ##")
