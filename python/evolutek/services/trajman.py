@@ -244,15 +244,20 @@ class TrajMan(Service):
         zones = self.mdb.get_zones()
         front = zones['front'] if self.telemetry['speed'] > 0.0 else False
         back = zones['back'] if self.telemetry['speed'] < 0.0 else False
+        is_robot = zones['is_robot']
 
         # End detection
         if (self.side == 'front' and not front) or (self.side == 'back' and not back):
             self.side = None
             self.publish(ROBOT + '_end_avoid')
 
+        if(self.is_robot != is_robot):
+            self.set_speeds(not self.is_robot)
+
         # Change the values after the read to avoid race conflict
         self.front = front
         self.back = back
+        self.is_robot = is_robot
 
         if self.has_avoid.isSet() or self.has_stopped.isSet():
             return
@@ -280,9 +285,8 @@ class TrajMan(Service):
 
     @Service.action
     def set_speeds(self, state):
-        print("Set speeds " + str(state))
-        trsl_speed = self.trsl_max_speed / (1 if state else 2)
-        rot_speed = self.rot_max_speed / (1 if state else 2)
+        trsl_speed = self.trsl_max_speed // (2 if state else 10)
+        rot_speed = self.rot_max_speed // (2 if state else 10)
         self.set_trsl_max_speed(trsl_speed)
         self.set_rot_max_speed(rot_speed)
 

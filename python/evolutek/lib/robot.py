@@ -301,8 +301,6 @@ class Robot:
 
                 tmp_path = self.update_path(path)
 
-                # TODO manage dec
-
                 if len(tmp_path) < 2:
                     self.tm.stop_asap(1000, 20)
                     print('[ROBOT] Destination unreachable')
@@ -315,7 +313,7 @@ class Robot:
                     self.is_stopped.wait()
                 else:
                     # TODO : manage refresh
-                    sleep(0.5)
+                    sleep(0.2)
 
                 path = tmp_path
 
