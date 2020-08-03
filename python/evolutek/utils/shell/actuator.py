@@ -108,6 +108,7 @@ def left_arm_close():
 
 @actuator_shell.command()
 def left_arm_open():
+    print(ROBOT)
     cs.actuators[ROBOT].left_arm_open()
     return
 
