@@ -49,7 +49,11 @@ def dance_demo():
 def main():
     if not argv[1] in ['pal', 'pmi']:
         return
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> first functional version demo JPO
     global ROBOT
     ROBOT = argv[1]
     global robot
@@ -58,4 +62,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> first functional version demo JPO
