@@ -1,18 +1,18 @@
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
-from evolutek.lib.map.debug_map import Interface
+from evolutek.utils.match_interface import MatchInterface as Interface
 from evolutek.lib.map.map import Map as Map_lib, ObstacleType, parse_obstacle_file
 from evolutek.lib.map.tim import DebugMode, Tim
 from evolutek.lib.map.point import Point
 
-from evolutek.lib.map.utils import convert_path_to_dict
+from evolutek.lib.map.utils import convert_path_to_dict, merge_polygons
+from evolutek.lib.settings import SIMULATION
 
 if SIMULATION:
     from evolutek.simulation.fake_lib.fake_tim import DebugMode, Tim
 else:
     from evolutek.lib.map.tim import DebugMode, Tim
-
 
 import json
 from shapely.geometry import Polygon, MultiPolygon
@@ -65,7 +65,7 @@ class Map(Service):
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
         self.delta_dist = float(self.cs.config.get(section='tim', option='delta_dist')) * 2
         self.pal_telem = None
-        self.pmi_telem = {'x':900, 'y':900}
+        self.pmi_telem = None
 
     # Initialisation -----------------------------------------------------------
 
@@ -73,7 +73,7 @@ class Map(Service):
     # TODO: Disable for beacon
     @Service.thread
     def start_debug_interface(self):
-        self.interface = Interface(self.map, self)
+        self.interface = Interface()
 
 
     """ EVENT """
@@ -107,21 +107,21 @@ class Map(Service):
 
     """ ACTION """
     @Service.action
-    def get_path(self, origin, dest, for_robot):
+    def get_path(self, origin, dest, robot):
 
         # To request path from terminal:
-        # cellaservctl request map.get_path origin="{'x':300,'y':300}" dest="{'x':900,'y':900}" for_robot="pal"
-        # import json
-        # origin = json.loads(origin.replace("'",'"'))
-        # dest = json.loads(dest.replace("'",'"'))
+        # cellaservctl request map.get_path origin="{'x':300,'y':300}" dest="{'x':500,'y':500}" robot="pal"
+        import json
+        origin = json.loads(origin.replace("'",'"'))
+        dest = json.loads(dest.replace("'",'"'))
 
         print("[MAP] Path request received")
         with self.lock:
-            if for_robot not in ['pal', 'pmi']:
-                print("[MAP] WARNING: Unknown robot " + for_robot + ". Possible values are pal and pmi");
+            if robot not in ['pal', 'pmi']:
+                print("[MAP] WARNING: Unknown robot " + robot + ". Possible values are pal and pmi");
             else:
                 # Adds the other robot as an obstacle
-                other_robot = 'pmi' if for_robot == 'pal' else 'pal'
+                other_robot = 'pmi' if robot == 'pal' else 'pal'
                 if getattr(self, '%s_telem' % other_robot) is None:
                     print("[MAP] WARNING: %s telemetry not known, calculating a path ignoring it" % other_robot)
                 else:
@@ -134,8 +134,55 @@ class Map(Service):
             self.path = self.map.get_path(Point(dict=origin), Point(dict=dest))
             # Removes the temporary obstacle that corresponds to the other robot
             self.map.remove_obstacle('otherrobot')
+            # Publishes the new path
+            if robot in ['pal', 'pmi']:
+                res = [p.to_dict() for p in self.path]
+                self.publish(robot+'_path', robot=robot, path=res)
+            return convert_path_to_dict(self.path)
 
-        return convert_path_to_dict(self.path)
+
+    """ ACTION """
+    @Service.action
+    def get_obstacles(self):
+        l = []
+
+        # Merge map
+        obstacles = MultiPolygon()
+        for obstacle in self.map.obstacles:
+            obstacles = obstacles.union(obstacle)
+        for tag in self.map.color_obstacles:
+            obstacles = obstacles.union(self.map.color_obstacles[tag])
+
+        polygons = self.map.borders
+        if isinstance(obstacles, Polygon):
+            obstacles = [obstacles]
+        for poly in obstacles:
+            polygons = merge_polygons(polygons, poly)
+
+        if isinstance(polygons, Polygon):
+            polygons = [polygons]
+
+        # Add exterior polygons
+        for poly in polygons:
+            _l = []
+            for p in poly.exterior.coords:
+                _l.append(Point(tuple=p).to_dict())
+            l.append(_l)
+
+            # Add interior polygons
+            for _poly in poly.interiors:
+                _l = []
+                for p in _poly.coords:
+                    _l.append(Point(tuple=p).to_dict())
+                l.append(_l)
+
+        return l
+
+    """ ACTION """
+    @Service.action
+    def get_debug_mode(self):
+        return self.debug_mode.value
+
 
     # Config ----------------------------------------------------------
 
@@ -169,6 +216,7 @@ class Map(Service):
         if status != 'failed':
             self.pal_telem = telemetry
 
+
     """ EVENT """
     @Service.event
     def pmi_telemetry(self, status, telemetry):
@@ -176,74 +224,12 @@ class Map(Service):
             self.pmi_telem = telemetry
 
 
-    # TODO: debug mode not getting oppenents
     """ THREAD """
     @Service.thread
     def loop_scan(self):
-        while True:
+        # TODO
+        pass
 
-            # Iterate over tim
-            scans = {}
-            for ip in self.tim:
-
-                tim = self.tim[ip]
-
-                # Not connected
-                if not tim.connected:
-                    continue
-
-                scan = tim.get_scan()
-                scans[tim.ip] = scan
-
-            # Merge robots
-            robots = []
-            for ip in scans:
-
-                new = []
-                for point in scans[ip]:
-
-                    # It's one of our robots
-                    if (self.pal_telem and point.dist(self.pal_telem) < self.delta_dist)\
-                        or (self.pmi_telem and point.dist(self.pmi_telem) < self.delta_dist):
-                        continue
-
-                    merged = False
-                    for robot in robots:
-                        # Already know this robot: merge it with the current point
-                        if robot.dist(point) < self.delta_dist:
-                            new.append(robot.average(point))
-                            robots.remove(robot)
-                            merged = True
-                            break
-
-                    # Robot not found, add it
-                    if not merged:
-                        new.append(point)
-
-                # Add not merged robots
-                new += robots
-                robots = new
-
-            with self.lock:
-
-                # Remove old robots
-                #for robot in self.robots:
-                #    self.map.remove_obstacle(robot['tag'])
-                #self.robots.clear()
-
-                # Add robots on the map
-                i = 0
-                for robot in robots:
-                    tag = "robot%d" % i
-                    if self.map.add_octogon_obstacle(robot, self.robot_size, tag=tag, type=ObstacleType.robot):
-                        d = point.to_dict()
-                        d['tag'] = tag
-                        i += 1
-                        self.robots.append(d)
-
-                #print('[MAP] Detected %d robots' % len(self.robots))
-                #self.publish('opponents', robots=self.robots)
-            sleep(self.refresh / 1000)
 
     # --------------------------------------------------------------------------
 
