@@ -327,25 +327,25 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def left_cup_holder_close(self):
-        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
 
     # Left CH Open
     @Service.action
     @if_enabled
     def left_cup_holder_open(self):
-        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
 
     # Right CH Close
     @Service.action
     @if_enabled
     def right_cup_holder_close(self):
-        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
 
     # Right CH Open
     @Service.action
     @if_enabled
     def right_cup_holder_open(self):
-        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
 
 
     ######################
