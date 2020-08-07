@@ -23,7 +23,7 @@ class Interface:
         self.unit = self.window
         self.window.attributes('-fullscreen', True)
         self.window.bind('<Escape>',lambda e: self.close())
-        self.window.title('Map interface')
+        self.window.title('Debug map interface')
 
         self.map = map
         self.service = service
@@ -58,6 +58,12 @@ class Interface:
         img = img.resize((int(self.width), int(self.height)), Image.ANTIALIAS)
         self.image =  ImageTk.PhotoImage(img)
 
+        for robot in ['pal', 'pmi']:
+            img = Image.open('/etc/conf.d/%s.png' % robot)
+            new_size = int(getattr(service, '%s_size' % robot) * 2 * self.unit)
+            img = img.resize((new_size, new_size), Image.ANTIALIAS)
+            setattr(self, '%s_image' % robot, ImageTk.PhotoImage(img))
+
         self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
         if nb_tims > 0:
             self.canvas.grid(row=3, column=0, columnspan=nb_tims)
@@ -72,7 +78,6 @@ class Interface:
         _exit(0)
 
     def update_tims(self):
-
         for label, ip in self.tim_labels:
             connected = self.service.tim[ip].connected
             label.config(text='TIM %s: %s' % (ip, 'connected' if connected  else 'disconnected'),
@@ -107,7 +112,6 @@ class Interface:
             i += 1
 
     def print_polygon(self, points, color):
-
         for i in range(1, len(points)):
             p1 = Point(tuple=points[i - 1])
             p2 = Point(tuple=points[i])
@@ -179,14 +183,57 @@ class Interface:
             y2 = (p.x + 10) * self.unit
             self.canvas.create_rectangle(x1, y1, x2, y2, fill='orange')
 
+    def print_robot(self, robot, size, color):
+
+        if robot is None:
+            return
+
+        if 'theta' in robot:
+            x = robot['y'] * self.unit
+            y = robot['x'] * self.unit
+            size *= self.unit
+
+            points = []
+            points.append((x - size, y - size))
+            points.append((x + size, y - size))
+            points.append((x + size, y + size))
+            points.append((x - size, y + size))
+
+            cos_val = cos(pi/2 - robot['theta'])
+            sin_val = sin(pi/2 - robot['theta'])
+
+            new_points = []
+            for point in points:
+                new_points.append((
+                    (point[0] - x) * cos_val - (point[1] - y) * sin_val + x,
+                    (point[0] - x) * sin_val + (point[1] - y) * cos_val + y
+                ))
+
+            self.canvas.create_polygon(new_points, fill=color)
+            return
+
+        self.canvas.create_rectangle(
+            (robot['y'] - size) * self.unit,
+            (robot['x'] - size) * self.unit,
+            (robot['y'] + size) * self.unit,
+            (robot['x'] + size) * self.unit,
+            width=2, fill=color)
+
+    def print_robot_image(self, robot, coords):
+        if coords is None:
+            return
+        x = coords['y'] * self.unit
+        y = coords['x'] * self.unit
+        self.canvas.create_image(x, y, getattr(self, '%s_image' % robot))
+
     def update(self):
 
         #print('[DEBUG_MAP] Update interface')
         self.canvas.delete('all')
         self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
         #self.print_map()
-        #with self.service.lock:
-        #    self.print_merged_map()
+        with self.service.lock:
+            self.print_merged_map()
 
         self.update_tims()
 
@@ -207,5 +254,13 @@ class Interface:
 
         if hasattr(self.service, 'path'):
             self.print_path(self.service.path)
+
+        for robot in ['pal', 'pmi']:
+            if hasattr(self.service, '%s_telem' % robot):
+                self.print_robot(
+                        getattr(self.service, '%s_telem' % robot),
+                        getattr(self.service, '%s_size'  % robot),
+                        'magenta'
+                )
 
         self.window.after(self.service.refresh, self.update)
