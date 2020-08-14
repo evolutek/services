@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
