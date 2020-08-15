@@ -6,17 +6,20 @@ from shapely.geometry import Polygon, MultiPolygon, LineString, Point as Shapely
 
 from evolutek.lib.map.point import Point
 
+# Possible types of obstacle
 class ObstacleType(Enum):
     fixed = 0
     color = 1
     robot = 2
 
+# Read the JSON config file for obstacles
 def parse_obstacle_file(file):
     with open(file, 'r') as obstacle_file:
         data = obstacle_file.read()
         data = json.loads(data)
         return data['fixed_obstacles'], data['color_obstacles']
 
+# Check if a line is colling with a polygon
 def is_colliding_with_polygon(p1, p2, poly):
 
     line = LineString([p1, p2])
@@ -65,6 +68,7 @@ def collision(p1, p2, obstacles):
     if closer: hit = Point(tuple=line.intersection(closer))
     return hit, closer, polygon
 
+# Compute the collision of a line with a polygon
 def collision_with_polygon(p1, p2, poly):
 
     line = LineString([p1, p2])
@@ -115,6 +119,7 @@ def get_next_point(poly, point, borders, reverseorder):
     if not borders.contains(point): return None
     return point
 
+# Merge two polygons
 def merge_polygons(poly1, poly2):
     # poly1 is a Polygon
     if isinstance(poly1, Polygon):
@@ -136,47 +141,15 @@ def merge_polygons(poly1, poly2):
     # return a MultiPolygon
     return MultiPolygon(l)
 
-def dijkstra(start, end, graph):
-    queue = deque()
-    queue.append(start)
 
-    pred = {}
-    dist = {}
-    for point in graph:
-        dist[point] = inf
-    dist[start] = 0
-
-    while len(queue) > 0:
-        current = queue.popleft()
-
-        if current == end:
-            break
-
-        neighbours = graph[current]
-        for neighbour in neighbours:
-            distance = dist[current] + neighbour.dist(current)
-            if distance < dist[neighbour]:
-                dist[neighbour] = distance
-                queue.append(neighbour)
-                pred[neighbour] = current
-
-    path = []
-    if end in pred:
-        current = end
-        path.append(end)
-        while pred[current] in pred:
-            current = pred[current]
-            path.insert(0, current)
-        path.insert(0, start)
-
-    return path
-
+# Convert a path to a list of dict
 def convert_path_to_dict(path):
     new = []
     for p in path:
         new.append(p.to_dict())
     return new
 
+# Convert a path to a list of dict
 def convert_path_to_point(path):
     new = []
     for p in path:

@@ -7,12 +7,22 @@ from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
 from time import time
-# TODO: optimization
-# TODO: A* ?
-# TODO: exclusion zone for start point when computin pathfinding
+# TODO: exclusion zone for start point when computing pathfinding
+# TODO: tmp obstacles as buoy
 
+# Class to store the state of the table during matches
 class Map:
 
+    # Init of the class
+    # width : width of the map (3000)
+    # height : height of the map (2000)
+    # robot_radius : radius of our robots (140)
+    # borders : rectangle of the borders of the table
+    # obstacles : fixed obstacles on the table
+    # color_obstacles : obstacles depending of the color of the team
+    # robots : robots on the table
+    # merged_obstacles : union of all the obstacles
+    # merged_map : Polygons of the table
     def __init__(self, width, height, robot_radius):
         self.width = width
         self.height = height
@@ -35,6 +45,7 @@ class Map:
         self.merged_map = None
         self.merge_map()
 
+    # Merge all obstacles
     def merge_obstacles(self):
         result = MultiPolygon()
         for obstacle in self.obstacles:
@@ -45,6 +56,7 @@ class Map:
             result = result.union(self.robots[tag])
         self.merged_obstacles = result
 
+    # Remove obstacles to the polygon of the borders
     # Return a Polygon or a MultiPolygon
     def merge_map(self):
         result = self.borders
@@ -55,9 +67,14 @@ class Map:
             result = merge_polygons(result, poly)
         self.merged_map = result
 
+    # Check if a point is inside the map
     def is_inside(self, p):
         return 0 <= p.x <= self.height and 0 <= p.y <= self.width
 
+    # Add an obstacle to the map
+    # poly : polygon of the obstalce
+    # tag : name of the obstacle
+    # type : type of the obstacle
     def add_obstacle(self, poly, tag=None, type=ObstacleType.fixed):
         added = False
 
@@ -79,6 +96,7 @@ class Map:
             self.merge_map()
         return added
 
+    # Remove an obstacle by the tag
     def remove_obstacle(self, tag):
         removed = False
         if tag in self.color_obstacles:
@@ -92,6 +110,9 @@ class Map:
             self.merge_map()
         return removed
 
+    # Add a rectagular obstacle
+    # p1 : first corner
+    # p2 : second corner
     def add_rectangle_obstacle(self, p1, p2, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(p1) or not self.is_inside(p2):
             return False
@@ -105,6 +126,9 @@ class Map:
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
+    # Add an octogonal obstacle
+    # center : center of the octogon
+    # radius : external radius of the octogon
     def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(center):
             return False
@@ -117,6 +141,7 @@ class Map:
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
+    # Add the obstacles from the JSON config file
     def add_obstacles(self, obstacles, mirror=False, type=ObstacleType.fixed):
         obstacles = deepcopy(obstacles)
         for obstacle in obstacles:
@@ -219,6 +244,9 @@ class Map:
         if p1l < p2l: return path1
         else: return path2
 
+    # Get a path on the table
+    # start : start point
+    # end : end point
     def get_path(self, start, end):
 
         obstacles = deepcopy(self.merged_obstacles)
