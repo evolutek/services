@@ -17,7 +17,7 @@ make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
-from evolutek.lib.gpio import Gpio
+from evolutek.lib.gpio import Gpio, Edge as GpioEdge
 from evolutek.lib.settings import ROBOT
 
 #######################
@@ -68,6 +68,9 @@ class Commands(Enum):
     SET_ROBOT_SIZE_Y   = 166
     SET_DEBUG          = 200
     ERROR              = 255
+
+# Emergency stop button
+BAU_GPIO = 21
 
 #################
 # The errors ID #
@@ -200,6 +203,15 @@ class TrajMan(Service):
 
         self.set_telemetry(self.telemetry_refresh())
         self.set_telemetry(500)
+
+        # BAU (emergency stop)
+        bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=GpioEdge.BOTH)
+        if bau_gpio.read() == 0: self.free()
+        def handle_bau(event, name, id, value):
+            if value == 0: self.free()
+            else: self.unfree()
+        bau_gpio.auto_refresh(callback=handle_bau)
+
 
     """ AVOID """
     #@Service.thread
@@ -367,6 +379,7 @@ class TrajMan(Service):
 
     @Service.action
     def free(self):
+        print('[TRAJMAN] Freed robot')
         tab = pack('B', 2)
         tab += pack('B', Commands.FREE.value)
         self.command(bytes(tab))
