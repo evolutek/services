@@ -1,10 +1,14 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
+from evolutek.lib import gpio
 
 from enum import Enum
 from threading import Timer, Thread
 from time import sleep
+
+WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
+WEATHERCOCK_GPIO = 16 # Number of the GPIO used by the weathercock reader
 
 class MatchStatus(Enum):
     unstarted = "Unstarted"
@@ -30,7 +34,6 @@ class Match(Service):
         self.color = self.color1
         self.match_status = MatchStatus.unstarted
         self.score = 0
-        self.timer = Timer(self.match_duration, self.match_end)
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
 
@@ -49,15 +52,25 @@ class Match(Service):
 
     """ Tirette """
     @Service.event('tirette')
-    def match_start(self, name, id, value):
+    def match_start(self, name='', id=0, value=0):
         if self.match_status != MatchStatus.unstarted or self.color is None:
             return
 
         self.publish('match_start')
-        self.timer.start()
+        match_timer = Timer(self.match_duration, self.match_end)
+        match_timer.start()
         self.match_status = MatchStatus.started
         print('[MATCH] Match start')
         self.match_time_thread.start()
+
+        # Reads the weathercock position 25 seconds after the start of the match
+        weathercock_timer = Timer(WEATHERCOCK_TIME, self.read_weathercock)
+        weathercock_timer.start()
+
+    def read_weathercock(self):
+        white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
+        print('[MATCH] reading weathercock position')
+        self.publish('anchorage', 'north' if white else 'south')
 
     """ ACTION """
 
@@ -71,7 +84,6 @@ class Match(Service):
         print('[MATCH] Reset match')
         self.match_status = MatchStatus.unstarted
         self.score = 0
-        self.timer = Timer(self.match_duration, self.match_end)
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
 
