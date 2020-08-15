@@ -208,8 +208,12 @@ class TrajMan(Service):
         bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=GpioEdge.BOTH)
         if bau_gpio.read() == 0: self.free()
         def handle_bau(event, name, id, value):
-            if value == 0: self.free()
-            else: self.unfree()
+            if value == 0:
+                self.free()
+                self.disable()
+            else:
+                self.enable()
+                self.unfree()
         bau_gpio.auto_refresh(callback=handle_bau)
 
 
