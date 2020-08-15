@@ -14,6 +14,8 @@ from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 
+
+# Interface class
 class Interface:
 
     def __init__(self, title, nb_lines=1):

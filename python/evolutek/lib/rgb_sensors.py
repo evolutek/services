@@ -4,6 +4,11 @@ import board
 import busio
 import time
 
+# RGB sensors class
+# sensors: list of sensors to init
+# sample_size: size of the sample for calibration
+# Sensors models: TCS34725
+# Sensors are multiplexed with a TCA9548A
 class RGBSensors:
 
     def __init__(self, sensors, sample_size):
@@ -32,6 +37,10 @@ class RGBSensors:
             s += 'sensor %d with calibration %s\n' % (key, self.calibrations[key])
         return s
 
+    # Calibrate the sensor
+    # i: number of the sensor
+    # sample_size: size of the sample
+    # Will read n frame an make a mean
     def calibration(self, i, sample_size):
         #print('[RGB_SENSORS] Calibrating RGB sensor %d' % i)
         if not i in self.sensors:
@@ -48,6 +57,8 @@ class RGBSensors:
 
         self.calibrations[i] = (r // sample_size, g // sample_size, b // sample_size)
 
+    # Return the difference between readed colors and the calibration
+    # i: number of the sensor
     def get_diff_colors(self, i):
         #print('[RGB_SENSORS] Reading RGB color for sensor %d' % i)
         if not i in self.sensors:
@@ -58,6 +69,8 @@ class RGBSensors:
         cal = self.calibrations[i]
         return (rgb[0] - cal[0], rgb[1] - cal[1], rgb[2] - cal[2])
 
+    # Read a sensor
+    # i: number of the sensor
     def read_sensor(self, i):
         #print('[RGB_SENSORS] Reading RGB sensor %d' % i)
         if not i in self.sensors:

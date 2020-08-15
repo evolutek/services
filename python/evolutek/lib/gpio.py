@@ -9,11 +9,17 @@ if SIMULATION:
 else:
     import RPi.GPIO as GPIO
 
+# Types of edge for gpio
 class Edge(Enum):
         RISING = 0
         FALLING = 1
         BOTH = 2
 
+# Parent class IO
+# id: id of the io
+# name: name of io
+# dir: True if output else False
+# event: name of the event
 class Io():
 
     def __init__(self, id, name, dir=True, event=None):
@@ -44,6 +50,10 @@ class Io():
             'event': self.event,
         }
 
+# PWM class
+# Inherit of IO class
+# dc: initial Duty Cycle
+# freq: Freq of the PWM
 class Pwm(Io):
 
     def __init__(self, id, name, dc=0, freq=0):
@@ -55,15 +65,22 @@ class Pwm(Io):
         self.pwm = GPIO.PWM(id, freq)
         self.start(dc)
 
+    # Write Duty Cycle
     def write(self, dc=0):
         self.pwm.ChangeDutyCycle(dc)
 
+    # Start PWM
     def start(self, dc=0):
         self.pwm.start(dc)
 
+    # Stop PWM
     def stop(self):
         self.pwm.stop()
 
+# GPIO Class
+# Inherit of IO class
+# edge: Edge for automatic detection
+# default_value: Default value to write on output gpio
 class Gpio(Io):
 
     def __init__(self, id, name, dir=True, event=None, edge=Edge.BOTH, default_value=False):
@@ -77,12 +94,14 @@ class Gpio(Io):
         else:
             GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
+    # Read the gpio
     def read(self):
 
         self.value = GPIO.input(self.id)
 
         return self.value
 
+    # Write on the gpio
     def write(self, value):
         if not self.dir:
             return False
@@ -93,12 +112,16 @@ class Gpio(Io):
         GPIO.output(self.id, GPIO.HIGH if value else GPIO.LOW)
         return True
 
+    # Launch a thread on _auto_refresh
     def auto_refresh(self, refresh=0.5, callback=None):
         if self.dir:
             return
 
         Thread(target=self._auto_refresh, args=[refresh, callback]).start()
 
+    # Auto refresh the gpio
+    # If the gpio value change according to the edge, it will call the callback
+    # callback need to take 4 args: event, name, id & value
     def _auto_refresh(self, refresh, callback):
         while True:
             tmp = self.value
