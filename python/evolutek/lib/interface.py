@@ -16,6 +16,10 @@ from PIL import ImageTk
 
 
 # Interface class
+# Help to create interfaces
+# title: title of the interface
+# nb_lines: Number of lines of buttons
+# TODO: manage multiple config
 class Interface:
 
     def __init__(self, title, nb_lines=1):
@@ -66,6 +70,12 @@ class Interface:
 
     """" ROBOT UTILITIES """
 
+    # Init a robot:
+    # - Subscribe to it's telemetry
+    # - Subsribe to it's ai status
+    # - Subscribe to it's pathfinding
+    # - Enable a Watchdog for the received data
+    # - Read it's image
     def init_robot(self, robot):
         self.robots[robot] = {'telemetry' : None, 'size' : float(self.cs.config.get(section=robot, option='robot_size_y')), 'color' : 'orange'}
         self.client.add_subscribe_cb('%s_telemetry' % robot, self.telemetry_handler)
@@ -84,10 +94,12 @@ class Interface:
 
         setattr(self, '%s_image' % robot, img)
 
+    # Reset robot's data
     def reset_robot(self, robot):
         self.robots[robot]['telemetry'] = None
         self.ai_status[robot] = None
 
+    # Get the robot to move
     def get_moving_robot(self, event):
         x, y = event.y / self.interface_ratio, event.x / self.interface_ratio
 
@@ -105,6 +117,8 @@ class Interface:
 
         print('[INTERFACE] Get moving robot %s' % robot)
 
+    # Make the robot move
+    # TODO: use Robot to move the robot
     def set_moving_robot(self, event):
         if self.moving_robot is None:
             return
@@ -117,14 +131,17 @@ class Interface:
 
         self.moving_robot = None
 
+    # Handler for AI status
     def ai_status_handler(self, robot, status):
         getattr(self, '%s_watchdog' % robot).reset()
         if robot in self.ai_status:
             self.ai_status[robot] = status
 
+    # Handler for path
     def path_handler(self, robot, path):
         self.paths[robot] = path
 
+    # Handler for telemetry
     def telemetry_handler(self, status, robot, telemetry):
         if status != 'failed':
             self.robots[robot]['telemetry'] = telemetry
@@ -134,6 +151,7 @@ class Interface:
         if robot in ['pal', 'pmi']:
             getattr(self, '%s_watchdog' % robot).reset()
 
+    # Get the status of the ai of a robot
     def get_robot_status(self, robot):
         text = '%s not connected' % robot
         if not self.ai_status[robot] is None:
@@ -146,6 +164,7 @@ class Interface:
 
     """ PRINT UTILITIES """
 
+    # Print a robot
     def print_robot(self, robot, size, color):
 
         if robot is None:
@@ -182,6 +201,8 @@ class Interface:
             (robot['x'] + size) * self.interface_ratio,
             width=2, fill=color)
 
+
+    # Print the image of a robot
     def print_robot_image(self, robot, coords):
 
         if coords is None:
@@ -194,6 +215,7 @@ class Interface:
         self.tmp.append(ImageTk.PhotoImage(img))
         self.canvas.create_image(x, y, image=self.tmp[-1])
 
+    # Print a path
     def print_path(self, path, color_path, color_point):
         size = 10 * self.interface_ratio
         for i in range(1, len(path)):
@@ -213,10 +235,12 @@ class Interface:
 
     """ INTERFACE UTILITIES """
 
+    # Exit the interface
     def close(self, signal_received=None, frame=None):
         print('[INTERFACE] Killing interface')
         self.window.destroy()
         _exit(0)
 
+    # Set the color of a match
     def set_color(self, color):
         self.cs.match.set_color(color)
