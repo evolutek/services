@@ -10,11 +10,11 @@ import neopixel
 
 # TODO:
 # - Exceptions management
-# - Attribute a placement to sensors (front, back, sides)
 
 # Default adress of Vl53L0X
 DEFAULT_ADDRESS = 0x29
-MAX_DIST = 1000
+# See the bottom of the file for a list of coloration functions
+DEFAULT_COLORATION_FUNCTION = 'sides'
 
 # MDB Class
 
@@ -41,15 +41,20 @@ MAX_DIST = 1000
 
 class Mdb:
 
-    def __init__(self, nb_sensors, sensor_address=0x29, front_led=[16, 1, 2, 3], right_led=[4, 5, 6, 7], back_led=[8, 9, 10, 11],
-                 left_led=[12, 13, 14, 15], expander_address=0x20, leds_gpio=None, refresh=0.1, debug=0):
+    def __init__(self, nb_sensors, sensor_address=DEFAULT_ADDRESS,
+            front_sensors=[], right_sensors=[], back_sensors=[], left_sensors=[],
+            dist_far=600, dist_near=300, coloration_function=DEFAULT_COLORATION_FUNCTION,
+            expander_address=0x20, leds_gpio=None, refresh=0.1, debug=False):
 
-        self.coef = 255 / (MAX_DIST / 2)
-        
+        self.dist_far = dist_far
+        self.dist_near = dist_near
+
+        self.coef = 255 / (self.dist_far / 2)
+
         # Init I2C bus
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.sensors = []
-        self.scan = []
+        self.scan = [8191]*nb_sensors
 
         # Init MCP
         self.mcp = MCP23017(self.i2c, address=expander_address)
@@ -58,52 +63,77 @@ class Mdb:
         self.refresh = refresh
         self.debug = debug
         self.sensors_address = sensor_address
-        self.position = {"back": (False, back_led), "front": (False, front_led),  "right": (False, right_led), "left": (False, left_led)}
-        self.init_sensor()
-        self.lock = Lock()
-        Thread(target=self.loop).run()
 
-        for i in range(0, self.nb_capteur + 1):
-            print("INIT_Sensor: {0}".format(i + 1))
-            self.mcp.get_pin(i + 8).value = True
-            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c, address=0x29))
-            self.sensors[i].set_address(0x29 + i + 1)
-        self.pixel = neopixel.NeoPixel(board.D27, self.nb_capteur, brightness=10)
+        self.front_sensors = front_sensors
+        self.back_sensors = back_sensors
+        self.right_sensors = right_sensors
+        self.left_sensors = left_sensors
+        self.obstacle_front = False
+        self.obstacle_back = False
+        self.obstacle_right = False
+        self.obstacle_left = False
+        self.is_robot = False
+
+        # Init all sensors
+        self.init_sensors(sensor_address)
+
+        # Init led strip
+        self.pixel = neopixel.NeoPixel(
+                leds_gpio,
+                self.nb_sensors,
+                brightness=0.05)
+        self.coloration_function = coloration_function
+
+        self.lock = Lock()
+        Thread(target=self.loop).start()
+
+
+    def init_sensors(self, sensors_address):
+
+        # Put all XSHUT pins to LOW
+        for i in range(0, self.nb_sensors):
+            self.mcp.get_pin(i).switch_to_output()
+            self.mcp.get_pin(i).value = False
+
+        # Init sensor one by one and change addresses
+        for i in range(0, self.nb_sensors):
+            self.mcp.get_pin(i).value = True
+            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c))
+            self.sensors[i].set_address(sensors_address + i + 1)
+
 
     def loop(self):
         while True:
-            for i in range(0, self.nb_sensors + 1):
-                self.dist = self.sensors[i].range
-                if self.dist > MAX_DIST:
-                    self.pixel[i] = (0,0,0)
-                elif self.dist > 500:
-                    if i in self.position["front"][1]:
-                        self.position["front"][0] = True
-                    elif i in self.position["right"][1]:
-                        self.position["right"][0] = True
-                    elif i in self.position["back"][1]:
-                        self.position["back"][0] = True
-                    else:
-                        self.position["left"] = True
+            is_robot = False
+            for side in ['front', 'back', 'right', 'left']:
+                obstacle = False
+                # Reads the sensors data
+                for sensor_id in getattr(self, '%s_sensors' % side):
+                    sensor_index = sensor_id - 1
+                    dist = self.sensors[sensor_index].range
+                    if self.debug:
+                        pass
+                        #print("Sensor {0} measured distance: {1}".format(
+                            #sensor_id, self.sensors[sensor_index].range))
+                    if dist < self.dist_near: obstacle = True
+                    if dist < self.dist_far: is_robot = True
+                    # If the obstacle is close, registers it
+                    with self.lock:
+                        setattr(self, 'obstacle_%s' % side, obstacle)
+                        self.is_robot = is_robot
+                        self.scan[sensor_index] = dist
+            for side in ['front', 'back', 'right', 'left']:
+                # Updates the LEDs
+                for sensor_id in getattr(self, '%s_sensors' % side):
+                    sensor_index = sensor_id - 1
+                    # Sets the color of the pixel
+                    dist = self.scan[sensor_index]
+                    px = getattr(self, 'coloration_%s'%self.coloration_function)(
+                            dist, side, sensor_id)
+                    self.pixel[sensor_index] = px
+                    #if self.debug: print("RGB: %i %i %i" % (px[0], px[1], px[2]))
+            time.sleep(self.refresh)
 
-                    r = 255 - self.dist * self.coef
-                    g = 255 - abs(MAX_DIST / 2 - self.dist) * self.coef
-                    b = 255 - (MAX_DIST - self.dist) * self.coef
-                    self.pixel[i] = (int(r if r >= 0 else 0),
-                                     int(g if g >= 0 else 0),
-                                     int(b if b >= 0 else 0))
-                else:
-                    r = 255 - self.dist * self.coef
-                    g = 255 - abs(MAX_DIST / 2 - self.dist) * self.coef
-                    b = 255 - (MAX_DIST - self.dist) * self.coef
-                    self.pixel[i] = (int(r if r >= 0 else 0),
-                                     int(g if g >= 0 else 0),
-                                     int(b if b >= 0 else 0))
-                if self.debug != 0:
-                    print("Range: {0}".format(self.sensors[i].range))
-                with self.lock:
-                    self.scan[i] = self.sensors[i].range
-            time.sleep(self.sleep)
 
     def get_scan(self):
         tmp = []
@@ -111,5 +141,58 @@ class Mdb:
             tmp = self.scan
         return tmp
 
-    def __str__(self):
-        return ""
+
+    def get_front(self):
+        tmp = False
+        with self.lock:
+            tmp = self.obstacle_front
+        return tmp
+
+
+    def get_back(self):
+        tmp = False
+        with self.lock:
+            tmp = self.obstacle_back
+        return tmp
+
+
+    def get_left(self):
+        tmp = False
+        with self.lock:
+            tmp = self.obstacle_left
+        return tmp
+
+
+    def get_right(self):
+        tmp = False
+        with self.lock:
+            tmp = self.obstacle_right
+        return tmp
+
+
+    def get_is_robot(self):
+        tmp = False
+        with self.lock:
+            tmp = self.is_robot
+        return tmp
+
+
+    def coloration_continuous(self, dist, side, id):
+        r = 255 - dist * self.coef
+        g = 255 - abs(self.dist_far / 2 - dist) * self.coef
+        b = 255 - (self.dist_far - dist) * self.coef
+        return (int(r if r >= 0 else 0),
+                int(g if g >= 0 else 0),
+                int(b if b >= 0 else 0))
+
+
+    def coloration_simple(self, dist, side, id):
+        if dist > self.dist_far: return (0,255,0)
+        elif dist < self.dist_near: return (255,0,0)
+        else: return (255,135,0)
+
+
+    def coloration_sides(self, dist, side, id):
+        if getattr(self, 'obstacle_%s' % side): return (255,0,0)
+        if self.is_robot: return (255,135,0)
+        return (0,255,0)
