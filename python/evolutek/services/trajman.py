@@ -173,6 +173,9 @@ class TrajMan(Service):
             right_sensors   = [3, 4, 5, 6, 7]
         )
 
+        self.trsl_max_speed = self.trslmax()
+        self.rot_max_speed = self.rotmax()
+
         self.init_sequence()
         self.set_telemetry(0)
 
@@ -201,16 +204,23 @@ class TrajMan(Service):
 
         # BAU (emergency stop)
         bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=GpioEdge.BOTH)
-        if bau_gpio.read() == 0: self.free()
-        def handle_bau(event, name, id, value):
-            if value == 0:
-                self.free()
-                self.disable()
-            else:
-                self.enable()
-                self.unfree()
-        bau_gpio.auto_refresh(callback=handle_bau)
 
+        # If the BAU is set at init, free the robot
+        if bau_gpio.read() == 0:
+            self.free()
+
+        bau_gpio.auto_refresh(callback=self.handle_bau)
+
+
+    """ BAU """
+    @Service.action
+    def handle_bau(self, value, event='', name='', id=0):
+        if value == 0:
+            self.free()
+            self.disable()
+        else:
+            self.enable()
+            self.unfree()
 
     """ AVOID """
     #@Service.thread
@@ -232,8 +242,7 @@ class TrajMan(Service):
 
             # No more robot in the area
             if self.is_robot and not is_robot:
-                # TODO : inscrease speeds
-                pass
+                self.set_speeds(True)
 
             # Change the values after the read to avoid race conflict
             self.front = front
@@ -250,8 +259,7 @@ class TrajMan(Service):
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
             elif self.is_robot:
-                # TODO : reduce speeds
-                pass
+                self.set_speeds(False)
 
             # TODO : get refresh in config
             sleep(0.1)
@@ -270,13 +278,19 @@ class TrajMan(Service):
         return status
 
     @Service.action
+    def set_speeds(state):
+        trsl_speed = self.trsl_max_speed / (1 if state else 2)
+        rot_speed = self.rot_max_speed / (1 if state else 2)
+        self.set_trsl_max_speed(trsl_speed)
+        self.set_rot_max_speed(rot_speed)
+
+    @Service.action
     def stop_robot(self, side=None):
         stopped = False
         self.side = side
         try:
             self.stop_asap(1000, 20)
             stopped = True
-            #self.cs.ai[ROBOT].abort(side=side)
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
         self.has_avoid.set()
@@ -295,7 +309,8 @@ class TrajMan(Service):
         self.front = False
         self.back = False
         self.is_robot = False
-        # TODO : increase speeds
+        # Get speeds back to normal
+        self.set_speeds(True)
         self.side = None
         self.has_avoid.clear()
 
