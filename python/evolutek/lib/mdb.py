@@ -6,7 +6,8 @@ import digitalio
 import board
 import busio
 import time
-import neopixel
+import neopixel_spi as neopixel
+
 
 # TODO:
 # - Exceptions management

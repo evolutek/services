@@ -8,7 +8,7 @@ class Test_Mdb():
 
     def __init__(self):
 
-        mdb = Mdb(16, debug=True, leds_gpio=board.D12,
+        mdb = Mdb(16, debug=True, leds_gpio=board.SPI(),
                 front_sensors=[15,16,1,2,3],
                 left_sensors=[11,12,13,14,15],
                 back_sensors=[7,8,9,10,11],
