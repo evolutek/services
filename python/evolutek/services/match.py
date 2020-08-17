@@ -71,7 +71,7 @@ class Match(Service):
     def read_weathercock(self):
         white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
         print('[MATCH] reading weathercock position')
-        self.publish('anchorage', 'north' if not white else 'south')
+        self.publish('anchorage', side=('north' if not white else 'south'))
 
     """ ACTION """
 
