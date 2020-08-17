@@ -71,7 +71,7 @@ class Match(Service):
     def read_weathercock(self):
         white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
         print('[MATCH] reading weathercock position')
-        self.publish('anchorage', 'north' if white else 'south')
+        self.publish('anchorage', 'north' if not white else 'south')
 
     """ ACTION """
 
@@ -128,6 +128,7 @@ class Match(Service):
     """ End match """
     @Service.action
     def match_end(self):
+        self.score += 10
         self.publish('match_end')
         self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
