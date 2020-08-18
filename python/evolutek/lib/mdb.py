@@ -42,10 +42,10 @@ DEFAULT_COLORATION_FUNCTION = 'sides'
 
 class Mdb:
 
-    def __init__(self, nb_sensors, sensor_address=DEFAULT_ADDRESS,
+    def __init__(self, nb_sensors, leds_gpio, sensor_address=DEFAULT_ADDRESS,
             front_sensors=[], right_sensors=[], back_sensors=[], left_sensors=[],
             dist_far=600, dist_near=300, coloration_function=DEFAULT_COLORATION_FUNCTION,
-            expander_address=0x20, leds_gpio=None, refresh=0.1, debug=False):
+            expander_address=0x20, refresh=0.1, debug=False):
 
         self.dist_far = dist_far
         self.dist_near = dist_near
@@ -79,7 +79,7 @@ class Mdb:
         self.init_sensors(sensor_address)
 
         # Init led strip
-        self.pixel = neopixel.NeoPixel(
+        self.pixel = neopixel.NeoPixel_SPI(
                 leds_gpio,
                 self.nb_sensors,
                 brightness=0.05)
