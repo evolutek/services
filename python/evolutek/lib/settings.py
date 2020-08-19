@@ -11,7 +11,7 @@ from cellaserv.settings import make_setting
 
 hostname = socket.gethostname()
 
-if hostname not in ['pal', 'pmi']:
+if hostname not in ['pal', 'pmi', 'beacon']:
     make_setting('SIMULATION', True, 'evolutek', 'simulation', 'SIMULATION')
     cs = CellaservProxy()
     robot = None

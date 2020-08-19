@@ -8,7 +8,7 @@ from threading import Timer, Thread
 from time import sleep
 
 WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
-WEATHERCOCK_GPIO = 16 # Number of the GPIO used by the weathercock reader
+WEATHERCOCK_GPIO = 24 # Number of the GPIO used by the weathercock reader
 
 class MatchStatus(Enum):
     unstarted = "Unstarted"
