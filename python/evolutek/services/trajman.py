@@ -8,6 +8,7 @@ import serial
 from struct import pack, unpack, calcsize
 from threading import Thread, Event
 from time import sleep
+import board
 
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
@@ -164,13 +165,14 @@ class TrajMan(Service):
         self.front = False
         self.back = False
         self.side = None
+        self.is_robot = False
 
         # init sensors
-        self.mdb = Mdb(16, debug=True,
+        self.mdb = Mdb(16, board.SPI(), debug=False,
             back_sensors    = [7, 8, 9, 10, 11],
             front_sensors   = [1, 2, 3, 15, 16],
-            left_sensors    = [11, 12, 13, 14, 15],
-            right_sensors   = [3, 4, 5, 6, 7]
+            left_sensors    = [],#[11, 12, 13, 14, 15],
+            right_sensors   = [],#[3, 4, 5, 6, 7]
         )
 
         self.trsl_max_speed = self.trslmax()
@@ -223,7 +225,7 @@ class TrajMan(Service):
             self.unfree()
 
     """ AVOID """
-    #@Service.thread
+    @Service.thread
     def loop_avoid(self):
         while True:
             if self.telemetry is None:
@@ -231,23 +233,17 @@ class TrajMan(Service):
             if self.avoid_disabled.isSet():
                 continue
 
-            front = mdb.get_front()
-            back = mdb.get_back()
-            is_robot = mdb.is_robot()
+            front = self.mdb.get_front() if self.telemetry['speed'] > 0.0 else False
+            back = self.mdb.get_back() if self.telemetry['speed'] < 0.0 else False
 
             # End detection
             if (self.side == 'front' and not front) or (self.side == 'back' and not back):
                 self.side = None
                 self.publish(ROBOT + '_end_avoid')
 
-            # No more robot in the area
-            if self.is_robot and not is_robot:
-                self.set_speeds(True)
-
             # Change the values after the read to avoid race conflict
             self.front = front
             self.back = back
-            self.is_robot = is_robot
 
             if self.has_avoid.isSet() or self.has_stopped.isSet():
                 continue
@@ -258,11 +254,9 @@ class TrajMan(Service):
             elif self.telemetry['speed'] < 0.0 and self.back:
                 self.stop_robot('back')
                 print("[AVOID] Back detection")
-            elif self.is_robot:
-                self.set_speeds(False)
 
             # TODO : get refresh in config
-            sleep(0.1)
+            sleep(0.2)
 
     @Service.action
     def avoid_status(self):
@@ -278,11 +272,15 @@ class TrajMan(Service):
         return status
 
     @Service.action
-    def set_speeds(state):
+    def set_speeds(self, state):
+        print("SET SPEEDS")
+        pass
+        """
         trsl_speed = self.trsl_max_speed / (1 if state else 2)
         rot_speed = self.rot_max_speed / (1 if state else 2)
         self.set_trsl_max_speed(trsl_speed)
         self.set_rot_max_speed(rot_speed)
+        """
 
     @Service.action
     def stop_robot(self, side=None):

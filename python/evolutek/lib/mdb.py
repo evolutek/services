@@ -44,8 +44,8 @@ class Mdb:
 
     def __init__(self, nb_sensors, leds_gpio, sensor_address=DEFAULT_ADDRESS,
             front_sensors=[], right_sensors=[], back_sensors=[], left_sensors=[],
-            dist_far=600, dist_near=300, coloration_function=DEFAULT_COLORATION_FUNCTION,
-            expander_address=0x20, refresh=0.1, debug=False):
+            dist_far=6000, dist_near=600, coloration_function=DEFAULT_COLORATION_FUNCTION,
+            expander_address=0x20, debug=False):
 
         self.dist_far = dist_far
         self.dist_near = dist_near
@@ -61,7 +61,6 @@ class Mdb:
         self.mcp = MCP23017(self.i2c, address=expander_address)
 
         self.nb_sensors = nb_sensors
-        self.refresh = refresh
         self.debug = debug
         self.sensors_address = sensor_address
 
@@ -73,7 +72,6 @@ class Mdb:
         self.obstacle_back = False
         self.obstacle_right = False
         self.obstacle_left = False
-        self.is_robot = False
 
         # Init all sensors
         self.init_sensors(sensor_address)
@@ -83,10 +81,9 @@ class Mdb:
                 leds_gpio,
                 self.nb_sensors,
                 brightness=0.05)
-        self.coloration_function = coloration_function
+        self.coloration_function = getattr(self, 'coloration_%s' % coloration_function)
 
         self.lock = Lock()
-        Thread(target=self.loop).start()
 
 
     def init_sensors(self, sensors_address):
@@ -103,37 +100,44 @@ class Mdb:
             self.sensors[i].set_address(sensors_address + i + 1)
 
 
-    def loop(self):
-        while True:
-            is_robot = False
-            for side in ['front', 'back', 'right', 'left']:
-                obstacle = False
-                # Reads the sensors data
-                for sensor_id in getattr(self, '%s_sensors' % side):
-                    sensor_index = sensor_id - 1
-                    dist = self.sensors[sensor_index].range
-                    if self.debug:
-                        pass
-                        #print("Sensor {0} measured distance: {1}".format(
-                            #sensor_id, self.sensors[sensor_index].range))
-                    if dist < self.dist_near: obstacle = True
-                    if dist < self.dist_far: is_robot = True
-                    # If the obstacle is close, registers it
-                    with self.lock:
-                        setattr(self, 'obstacle_%s' % side, obstacle)
-                        self.is_robot = is_robot
-                        self.scan[sensor_index] = dist
-            for side in ['front', 'back', 'right', 'left']:
-                # Updates the LEDs
-                for sensor_id in getattr(self, '%s_sensors' % side):
-                    sensor_index = sensor_id - 1
-                    # Sets the color of the pixel
-                    dist = self.scan[sensor_index]
-                    px = getattr(self, 'coloration_%s'%self.coloration_function)(
-                            dist, side, sensor_id)
-                    self.pixel[sensor_index] = px
-                    #if self.debug: print("RGB: %i %i %i" % (px[0], px[1], px[2]))
-            time.sleep(self.refresh)
+    def get_side(self, side):
+
+        if self.debug:
+            print("Updating " + side)
+            start = time.time()
+
+        obstacle = False
+        # Reads the sensors data
+        for sensor_id in getattr(self, '%s_sensors' % side):
+            sensor_index = sensor_id - 1
+            dist = self.sensors[sensor_index].range
+            if self.debug:
+                print("Sensor {0} measured distance: {1}".format(
+                    sensor_id, self.sensors[sensor_index].range))
+            if dist < self.dist_near: obstacle = True
+            # If the obstacle is nearby, registers it
+            with self.lock:
+                setattr(self, 'obstacle_%s' % side, obstacle)
+                self.scan[sensor_index] = dist
+
+        if self.debug:
+            print("Done measurements in " + str(time.time() - start) + " s")
+            start = time.time()
+
+        # Updates the LEDs
+        for sensor_id in getattr(self, '%s_sensors' % side):
+            sensor_index = sensor_id - 1
+            # Sets the color of the pixel
+            with self.lock:
+                dist = self.scan[sensor_index]
+            px = self.coloration_function(dist, side, sensor_id)
+            self.pixel[sensor_index] = px
+            if self.debug: print("RGB: %i %i %i" % (px[0], px[1], px[2]))
+
+        if self.debug:
+            print("Done leds in " + str(time.time() - start) + " s")
+
+        return obstacle
 
 
     def get_scan(self):
@@ -144,38 +148,11 @@ class Mdb:
 
 
     def get_front(self):
-        tmp = False
-        with self.lock:
-            tmp = self.obstacle_front
-        return tmp
+        return self.get_side('front')
 
 
     def get_back(self):
-        tmp = False
-        with self.lock:
-            tmp = self.obstacle_back
-        return tmp
-
-
-    def get_left(self):
-        tmp = False
-        with self.lock:
-            tmp = self.obstacle_left
-        return tmp
-
-
-    def get_right(self):
-        tmp = False
-        with self.lock:
-            tmp = self.obstacle_right
-        return tmp
-
-
-    def get_is_robot(self):
-        tmp = False
-        with self.lock:
-            tmp = self.is_robot
-        return tmp
+        return self.get_side('back')
 
 
     def coloration_continuous(self, dist, side, id):
@@ -195,5 +172,4 @@ class Mdb:
 
     def coloration_sides(self, dist, side, id):
         if getattr(self, 'obstacle_%s' % side): return (255,0,0)
-        if self.is_robot: return (255,135,0)
         return (0,255,0)

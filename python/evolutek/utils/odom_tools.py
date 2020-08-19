@@ -240,11 +240,11 @@ def compute_all(gains, diams, spacing, all, config, _robot):
         print("Setting new values to config !")
         print("##############################")
 
-        cs.config.set(section=robot_name, option='wheel_diam1', str(value=old['left_diameter']))
-        cs.config.set(section=robot_name, option='wheel_diam2', str(value=old['right_diameter']))
-        cs.config.set(section=robot_name, option='wheel_gain1', str(value=old['left_gain']))
-        cs.config.set(section=robot_name, option='wheel_gain2', str(value=old['right_gain']))
-        cs.config.set(section=robot_name, option='spacing', str(value=old['spacing']))
+        cs.config.set(section=robot_name, option='wheel_diam1', value=str(old['left_diameter']))
+        cs.config.set(section=robot_name, option='wheel_diam2', value=str(old['right_diameter']))
+        cs.config.set(section=robot_name, option='wheel_gain1', value=str(old['left_gain']))
+        cs.config.set(section=robot_name, option='wheel_gain2', value=str(old['right_gain']))
+        cs.config.set(section=robot_name, option='spacing', value=str(old['spacing']))
 
     print("##################################")
     print("## Computing wheels size done ! ##")
