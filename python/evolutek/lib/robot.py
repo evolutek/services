@@ -274,14 +274,13 @@ class Robot:
 
         return new
 
-    # TODO: Manage Avoid
     def goto_with_path(self, x, y, mirror=True):
 
         if mirror:
             1500 + (1500 - y) * (-1 if not self.side else 1)
 
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
-        path = [None, Point(x, y)]
+        path = [self.tm.get_position(), Point(x, y)]
 
         while len(path) > 2:
 
@@ -302,6 +301,8 @@ class Robot:
 
                 tmp_path = self.update_path(path)
 
+                # TODO manage dec
+
                 if len(tmp_path) < 2:
                     self.tm.stop_asap(1000, 20)
                     print('[ROBOT] Destination unreachable')
@@ -312,6 +313,7 @@ class Robot:
                     self.tm.stop_asap(1000, 20)
                     self.is_stopped.wait()
                 else:
+                    # TODO : manage refresh
                     sleep(0.5)
 
                 path = tmp_path
