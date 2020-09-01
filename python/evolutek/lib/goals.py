@@ -4,10 +4,6 @@ from math import pi
 
 from evolutek.lib.map.point import Point
 
-##TODO: Critial goal
-##TODO: Tests
-##TODO: Check if position is possible
-##TODO: Update UML
 
 """ Avoid Strategy Enum """
 class AvoidStrategy(Enum):
@@ -75,13 +71,15 @@ class Action:
 """ Goal Class """
 class Goal:
 
-    def __init__(self, name, position, theta=None, actions=None, score=0, optional_goal=None):
+    def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, optional_goal=None, timeout=0):
         self.name = name
         self.position = position
         self.theta = theta
         self.actions = [] if actions is None else actions
         self.score = score
+        self.obstacles = [] if obstacles is None else obstacles
         self.optional_goal = optional_goal
+        self.timeout = timeout
 
     def __str__(self):
         actions = ""
@@ -98,7 +96,6 @@ class Goal:
             theta = eval(theta)
 
         score = goal['score'] if 'score' in goal else 0
-        optional_goal = goal['optional'] if 'optional' in goal else None
 
         position = Point(x=goal['position']['x'],
                                        y=goal['position']['y'])
@@ -118,7 +115,11 @@ class Goal:
 
                 actions.append(new)
 
-        new = Goal(goal['name'], position, theta, actions, score, optional_goal)
+        obstacles = goal['obstacles'] if 'obstacles' in goal else []
+        optional_goal = goal['optional'] if 'optional' in goal else None
+        timeout = goal['timeout'] if 'timeout' in goal else 0
+
+        new = Goal(goal['name'], position, theta, actions, score, obstacles, optional_goal, timeout)
 
         return new
 
