@@ -148,6 +148,15 @@ class Test_Goals:
         if action.timeout != 42:
             print('[TEST] test action has bad timeout: %d' % action.timeout)
 
+        if goal.optional_goal != "lol":
+            print('[TEST] test goals has bad optional_goals: %s' % goals.optional)
+
+        if goal.obstacles != ["lol1", "lol2"]:
+            print('[TEST] test goals has bad obstacles: %s' % str(goals.obstacles))
+
+        if goal.timeout != 42:
+            print('[TEST] test goals has bad timeout: %d' % goals.timeout)
+
         return passed
 
     def eval_strategies(self):

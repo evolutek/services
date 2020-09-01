@@ -85,8 +85,8 @@ class Goal:
         actions = ""
         for action in self.actions:
             actions += "%s\n" % str(action)
-        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s"\
-            % (self.name, self.position, str(self.theta), self.score, actions)
+        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s\noptional_goal: %s\nobstacles: %s\ntimeout: %d\n"\
+            % (self.name, self.position, str(self.theta), self.score, actions, self.optional_goal, str(self.obstacles), self.timeout)
 
     @classmethod
     def parse(cls, goal, ai):
@@ -166,7 +166,7 @@ class Goals:
         self.goals = {}
 
         # Current strategy
-        self.current_strategy = []
+        self.current_strategy = None
         self.current = 0
 
         # Critical goal
@@ -239,6 +239,10 @@ class Goals:
         s += "y: %d\n" % self.starting_position.y
         s += "theta: %f\n" % self.starting_theta
         s += "-> Goals\n"
+        s += "Current Strategy: %s\n" % str(self.current_strategy)
+        s += "Number Current Strategy: %d\n" % self.current
+        s += "Critical goal: %s\n" % str(self.critical_goal)
+        s += "Timeout Critical goal: %s\n" % str(self.timeout_critical_goal)
         for goal in self.goals:
             s += str(self.goals[goal])
         s += "-> Strategies\n"
