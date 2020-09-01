@@ -1,175 +1,100 @@
-from threading import Lock, Thread
+from threading import Lock
 from time import sleep
-import adafruit_vl53l0x
-from adafruit_mcp230xx.mcp23017 import MCP23017
-import digitalio
 import board
 import busio
-import time
-import neopixel_spi as neopixel
 
+TEENSY = 0x42
 
-# TODO:
-# - Exceptions management
+REQ_COLOR = b'c'
+REQ_LEDSMODE = b'l'
+REQ_CHANGETYPE = b't'
+REQ_ENABLESCAN = b'e'
+REQ_ERROR = b'r'
+REQ_BRIGHTNESS = b'b'
 
-# Default adress of Vl53L0X
-DEFAULT_ADDRESS = 0x29
-# See the bottom of the file for a list of coloration functions
-DEFAULT_COLORATION_FUNCTION = 'sides'
+RCV_SCAN = b'\x00'
+RCV_ZONES = b'\x01'
 
-# MDB Class
+LEDS_YELLOW = b'\x00'
+LEDS_BLUE = b'\x01'
 
-# __init__(nb_sensors, sensor_address, expander_address, leds_gpio, refresh):
-#   - nb_sensors        : Number of VL53L0X
-#   - sensor_address    : Address of the first sensors
-#   - expander_address  : Address of the Gpio Expander
-#   - leds_gpio         : Gpio of the led strip
-#   - refresh           : Refresh of the loop
-# Sensors wil be between sensor_address and sensor_address + nb_sensors - 1
-# Will init the gpio expanders, sensors and led_strip
-# Will launch a thread for the loop
-
-# loop():
-# Loop to get scan with a certain refresh
-# Must run in a thread
-# Will use a lock to update the data of the class
-
-# get_scan:
-#   Will return a scan (a list of measurement)
-
-# __str__():
-# Return a string of the status of the MDB
+LEDS_DIST = b'\x00'
+LEDS_ZONES = b'\x01'
+LEDS_LOADING = b'\x02'
+LEDS_DISABLED = b'\x03'
 
 class Mdb:
 
-    def __init__(self, nb_sensors, leds_gpio, sensor_address=DEFAULT_ADDRESS,
-            front_sensors=[], right_sensors=[], back_sensors=[], left_sensors=[],
-            dist_far=6000, dist_near=600, coloration_function=DEFAULT_COLORATION_FUNCTION,
-            expander_address=0x20, debug=False):
-
-        self.dist_far = dist_far
-        self.dist_near = dist_near
-
-        self.coef = 255 / (self.dist_far / 2)
-
-        # Init I2C bus
-        self.i2c = busio.I2C(board.SCL, board.SDA)
-        self.sensors = []
-        self.scan = [8191]*nb_sensors
-
-        # Init MCP
-        self.mcp = MCP23017(self.i2c, address=expander_address)
-
-        self.nb_sensors = nb_sensors
-        self.debug = debug
-        self.sensors_address = sensor_address
-
-        self.front_sensors = front_sensors
-        self.back_sensors = back_sensors
-        self.right_sensors = right_sensors
-        self.left_sensors = left_sensors
-        self.obstacle_front = False
-        self.obstacle_back = False
-        self.obstacle_right = False
-        self.obstacle_left = False
-
-        # Init all sensors
-        self.init_sensors(sensor_address)
-
-        # Init led strip
-        self.pixel = neopixel.NeoPixel_SPI(
-                leds_gpio,
-                self.nb_sensors,
-                brightness=0.05)
-        self.coloration_function = getattr(self, 'coloration_%s' % coloration_function)
-
-        self.lock = Lock()
-
-
-    def init_sensors(self, sensors_address):
-
-        # Put all XSHUT pins to LOW
-        for i in range(0, self.nb_sensors):
-            self.mcp.get_pin(i).switch_to_output()
-            self.mcp.get_pin(i).value = False
-
-        # Init sensor one by one and change addresses
-        for i in range(0, self.nb_sensors):
-            self.mcp.get_pin(i).value = True
-            self.sensors.append(adafruit_vl53l0x.VL53L0X(self.i2c))
-            self.sensors[i].set_address(sensors_address + i + 1)
-
-
-    def get_side(self, side):
-
-        if self.debug:
-            print("Updating " + side)
-            start = time.time()
-
-        obstacle = False
-        # Reads the sensors data
-        for sensor_id in getattr(self, '%s_sensors' % side):
-            sensor_index = sensor_id - 1
-            dist = self.sensors[sensor_index].range
-            if self.debug:
-                print("Sensor {0} measured distance: {1}".format(
-                    sensor_id, self.sensors[sensor_index].range))
-            if dist < self.dist_near: obstacle = True
-            # If the obstacle is nearby, registers it
-            with self.lock:
-                setattr(self, 'obstacle_%s' % side, obstacle)
-                self.scan[sensor_index] = dist
-
-        if self.debug:
-            print("Done measurements in " + str(time.time() - start) + " s")
-            start = time.time()
-
-        # Updates the LEDs
-        for sensor_id in getattr(self, '%s_sensors' % side):
-            sensor_index = sensor_id - 1
-            # Sets the color of the pixel
-            with self.lock:
-                dist = self.scan[sensor_index]
-            px = self.coloration_function(dist, side, sensor_id)
-            self.pixel[sensor_index] = px
-            if self.debug: print("RGB: %i %i %i" % (px[0], px[1], px[2]))
-
-        if self.debug:
-            print("Done leds in " + str(time.time() - start) + " s")
-
-        return obstacle
+    def __init__(self, debug=False):
+        try:
+            self.i2c = busio.I2C(board.SCL, board.SDA)
+        except Exception as e:
+            print("MDB: ERROR couldn't initialise i2c bus between Teensy and RaspberryPI")
+            raise(e)
 
 
     def get_scan(self):
-        tmp = []
-        with self.lock:
-            tmp = self.scan
-        return tmp
+        self.i2c.writeto(TEENSY, REQ_CHANGETYPE + RCV_SCAN)
+        buf = bytearray(b'\x00' * 16)
+        self.i2c.readfrom_into(TEENSY, buf)
+        return list(buf)
+
+
+    # Possible values: 0: Distances, 1: Zones, 2: Loading, 3: Disabled
+    def set_debug_mode(self, mode):
+        self.i2c.writeto(TEENSY, REQ_LEDSMODE + bytes([mode]))
+
+    
+    # True: changes color to yellow; False: changes color to blue
+    def change_color(self, to_yellow):
+        self.i2c.writeto(TEENSY, REQ_COLOR + (LEDS_YELLOW if to_yellow else LEDS_BLUE))
+
+
+    def get_zones(self):
+        
+        self.i2c.writeto(TEENSY, REQ_CHANGETYPE + RCV_ZONES)
+        buf = bytearray(b'\x02' * 3)
+        self.i2c.readfrom_into(TEENSY, buf)
+        
+        err = False
+        for i in buf:
+            if i not in [0, 1]:
+                err = True
+                buf[i] = 0
+        if err: print("ERROR: get_zones received erroneous data!" + str(buf))
+        
+        return {
+                'front': buf[0] != 0,
+                'back': buf[1] != 0,
+                'is_robot': buf[2] != 0
+               }
 
 
     def get_front(self):
-        return self.get_side('front')
-
-
+        return self.get_zones()['front']
     def get_back(self):
-        return self.get_side('back')
+        return self.get_zones()['back']
+    def get_is_robot(self):
+        return self.get_zones()['is_robot']
+
+    
+    def set_enabled(self, enabled):
+        self.i2c.writeto(TEENSY, REQ_ENABLESCAN + (b'\x01' if enabled else b'\x00'))
 
 
-    def coloration_continuous(self, dist, side, id):
-        r = 255 - dist * self.coef
-        g = 255 - abs(self.dist_far / 2 - dist) * self.coef
-        b = 255 - (self.dist_far - dist) * self.coef
-        return (int(r if r >= 0 else 0),
-                int(g if g >= 0 else 0),
-                int(b if b >= 0 else 0))
+    def enable(self, debug_mode=1): 
+        self.set_enabled(True)
+        self.set_debug_mode(debug_mode)
+   
+
+    def disable(self): 
+        self.set_enabled(False)
+        self.set_debug_mode(3)
 
 
-    def coloration_simple(self, dist, side, id):
-        if dist > self.dist_far: return (0,255,0)
-        elif dist < self.dist_near: return (255,0,0)
-        else: return (255,135,0)
+    def set_brightness(self, brightness):
+        self.i2c.writeto(TEENSY, REQ_BRIGHTNESS + bytes([brightness]))
 
 
-    def coloration_sides(self, dist, side, id):
-        if getattr(self, 'obstacle_%s' % side): return (255,0,0)
-        return (0,255,0)
+    def error_mode(self):
+        self.i2c.writeto(TEENSY, REQ_ERROR)
