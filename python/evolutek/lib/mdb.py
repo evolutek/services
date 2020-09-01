@@ -35,9 +35,11 @@ class Mdb:
 
     def get_scan(self):
         self.i2c.writeto(TEENSY, REQ_CHANGETYPE + RCV_SCAN)
-        buf = bytearray(b'\x00' * 16)
+        buf = bytearray(b'\xff' * 32)
         self.i2c.readfrom_into(TEENSY, buf)
-        return list(buf)
+        res = [65535] * 16
+        for i in range(16): res[i] = buf[i*2] * buf[i*2+1]
+        return res
 
 
     # Possible values: 0: Distances, 1: Zones, 2: Loading, 3: Disabled
@@ -57,16 +59,14 @@ class Mdb:
         self.i2c.readfrom_into(TEENSY, buf)
         
         err = False
-        for i in buf:
-            if i not in [0, 1]:
-                err = True
-                buf[i] = 0
-        if err: print("ERROR: get_zones received erroneous data!" + str(buf))
+        for i in range(len(buf)):
+            if buf[i] not in [0, 1]: err = True
+        if err: print("ERROR: get_zones received erroneous data! " + str(buf))
         
         return {
-                'front': buf[0] != 0,
-                'back': buf[1] != 0,
-                'is_robot': buf[2] != 0
+                'front': buf[0] == 1,
+                'back': buf[1] == 1,
+                'is_robot': buf[2] == 1
                }
 
 

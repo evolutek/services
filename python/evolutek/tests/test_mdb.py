@@ -8,24 +8,20 @@ class Test_Mdb():
 
     def __init__(self):
 
-        mdb = Mdb(16, board.SPI(), debug=True,
-                front_sensors=[15,16,1,2,3],
-                left_sensors=[11,12,13,14,15],
-                back_sensors=[7,8,9,10,11],
-                right_sensors=[3,4,5,6,7])
+        mdb = Mdb()
 
         while True:
             scan = mdb.get_scan()
             print("---- New scan -----")
             for i in range(len(scan)):
-                print("%d: %f" % (i + 1, scan[i]))
-            sleep(1)
+                print("%d: " % (i+1), end='')
+                if scan[i] == 65535: print("ERROR")
+                else: print("%2.f cm" % (scan[i] / 10))
             print("---- Obstacles ----")
             print("Front: " + str(mdb.get_front()))
             print("Back: " + str(mdb.get_back()))
-            print("Right: " + str(mdb.get_right()))
-            print("Left: " + str(mdb.get_left()))
             print("Is robot: " + str(mdb.get_is_robot()))
+            sleep(0.1)
 
 
 def main():
