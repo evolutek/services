@@ -7,6 +7,7 @@ from evolutek.lib.gpio import Gpio, Pwm
 from evolutek.lib.actionqueue import Act_queue
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.rgb_sensors import RGBSensors
+from evolutek.services.trajman import goto_xy, move_rot
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
@@ -134,6 +135,7 @@ class Actuators(Service):
     @Service.action
     def enable(self):
         self.disabled = False
+        self.queue.run_queue()
         self.start()
 
     # Start
@@ -374,8 +376,28 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def windsocks_push(self):
+        result = None
         function = [self._windsocks_push, None]
         self.queue.run_action(*function)
+        result = self.queue.response_queue.get()
+        return result
+
+    @Service.action
+    @if_enabled
+    def get_floor_buoy(self, pump, buoy='unknown'):
+        self.pump_get(pump, buoy)
+
+    # @Service.action
+    # @if_enabled
+    # def get_sorted_reef():
+    #     self.left_cup_holder_open()
+    #     self.right_cup_holder_open()
+    #     for i in range (5, 9):
+    #         ##self.pumps[i]
+    #         self.get(i)
+    #     self.left_cup_holder_close()
+    #     self.right_cup_holder_close()
+    #    # self.pum
 
 
     ##########
