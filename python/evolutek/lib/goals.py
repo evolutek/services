@@ -4,10 +4,6 @@ from math import pi
 
 from evolutek.lib.map.point import Point
 
-##TODO: Critial goal
-##TODO: Tests
-##TODO: Check if position is possible
-##TODO: Update UML
 
 """ Avoid Strategy Enum """
 class AvoidStrategy(Enum):
@@ -75,20 +71,22 @@ class Action:
 """ Goal Class """
 class Goal:
 
-    def __init__(self, name, position, theta=None, actions=None, score=0, optional_goal=None):
+    def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, optional_goal=None, timeout=0):
         self.name = name
         self.position = position
         self.theta = theta
         self.actions = [] if actions is None else actions
         self.score = score
+        self.obstacles = [] if obstacles is None else obstacles
         self.optional_goal = optional_goal
+        self.timeout = timeout
 
     def __str__(self):
         actions = ""
         for action in self.actions:
             actions += "%s\n" % str(action)
-        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s"\
-            % (self.name, self.position, str(self.theta), self.score, actions)
+        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s\noptional_goal: %s\nobstacles: %s\ntimeout: %d\n"\
+            % (self.name, self.position, str(self.theta), self.score, actions, self.optional_goal, str(self.obstacles), self.timeout)
 
     @classmethod
     def parse(cls, goal, ai):
@@ -98,7 +96,6 @@ class Goal:
             theta = eval(theta)
 
         score = goal['score'] if 'score' in goal else 0
-        optional_goal = goal['optional'] if 'optional' in goal else None
 
         position = Point(x=goal['position']['x'],
                                        y=goal['position']['y'])
@@ -118,7 +115,11 @@ class Goal:
 
                 actions.append(new)
 
-        new = Goal(goal['name'], position, theta, actions, score, optional_goal)
+        obstacles = goal['obstacles'] if 'obstacles' in goal else []
+        optional_goal = goal['optional'] if 'optional' in goal else None
+        timeout = goal['timeout'] if 'timeout' in goal else 0
+
+        new = Goal(goal['name'], position, theta, actions, score, obstacles, optional_goal, timeout)
 
         return new
 
@@ -165,7 +166,7 @@ class Goals:
         self.goals = {}
 
         # Current strategy
-        self.current_strategy = []
+        self.current_strategy = None
         self.current = 0
 
         # Critical goal
@@ -238,6 +239,10 @@ class Goals:
         s += "y: %d\n" % self.starting_position.y
         s += "theta: %f\n" % self.starting_theta
         s += "-> Goals\n"
+        s += "Current Strategy: %s\n" % str(self.current_strategy)
+        s += "Number Current Strategy: %d\n" % self.current
+        s += "Critical goal: %s\n" % str(self.critical_goal)
+        s += "Timeout Critical goal: %s\n" % str(self.timeout_critical_goal)
         for goal in self.goals:
             s += str(self.goals[goal])
         s += "-> Strategies\n"

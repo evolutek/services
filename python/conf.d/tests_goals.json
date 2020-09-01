@@ -32,7 +32,10 @@
             "score": 21,
             "timeout": 42
           }
-        ]
+        ],
+        "optional": "lol",
+        "obstacles": ["lol1", "lol2"],
+        "timeout": 42
       }
     ],
     "strategies": [
