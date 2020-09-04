@@ -102,8 +102,8 @@ def if_enabled(method):
 
     return wrapped
 
-
 # TODO: check if we collided
+# TODO: Set mdb distances and brightness with config
 
 @Service.require("config")
 class TrajMan(Service):
@@ -169,7 +169,10 @@ class TrajMan(Service):
 
         # init sensors
         self.mdb = Mdb()
+<<<<<<< HEAD
+=======
         self.mdb.enable()
+>>>>>>> d7b6d92341b88d8c0b6ff89e5f6c0d12cb0f1100
 
         self.trsl_max_speed = self.trslmax()
         self.rot_max_speed = self.rotmax()
@@ -269,14 +272,10 @@ class TrajMan(Service):
 
     @Service.action
     def set_speeds(self, state):
-        print("SET SPEEDS")
-        pass
-        """
         trsl_speed = self.trsl_max_speed / (1 if state else 2)
         rot_speed = self.rot_max_speed / (1 if state else 2)
         self.set_trsl_max_speed(trsl_speed)
         self.set_rot_max_speed(rot_speed)
-        """
 
     @Service.action
     def stop_robot(self, side=None):
@@ -581,6 +580,15 @@ class TrajMan(Service):
         tab += pack('B', Commands.STOP_ASAP.value)
         tab += pack('ff', float(trsldec), float(rotdec))
         self.command(bytes(tab))
+
+    # Sets the MDB debug mode. 0: Distances, 1: Zones, 2: Loading, 3: Disabled
+    @Service.action
+    def set_mdb_mode(self, mode):
+        self.mdb.set_debug_mode(int(mode))
+
+    @Service.action
+    def set_color(self, to_yellow):
+        self.mdb.set_color(to_yellow in [True, 'True', 'true', 1, '1'])
 
     #######
     # Get #
