@@ -169,10 +169,6 @@ class TrajMan(Service):
 
         # init sensors
         self.mdb = Mdb()
-<<<<<<< HEAD
-=======
-        self.mdb.enable()
->>>>>>> d7b6d92341b88d8c0b6ff89e5f6c0d12cb0f1100
 
         self.trsl_max_speed = self.trslmax()
         self.rot_max_speed = self.rotmax()
@@ -306,7 +302,7 @@ class TrajMan(Service):
         # Get speeds back to normal
         self.set_speeds(True)
         self.has_avoid.clear()
-        self.mdb.disable() 
+        self.mdb.disable()
 
     def write(self, data):
         """Write data to serial and flush."""
