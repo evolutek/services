@@ -45,7 +45,7 @@ class Ai(Service):
         self.fsm.add_state(States.Ending, self.ending, prevs=[States.Setup, States.Waiting, States.Selecting, States.Making])
         self.fsm.add_error_state(self.error)
 
-        Gpio(5, "tirette", False, edge=Edge.FALLING).auto_refresh(service=self.publish)
+        Gpio(17, "tirette", False, edge=Edge.FALLING).auto_refresh(callback=self.publish)
 
         # TODO : change strat file
         #self.goals = Goals(file='/etc/conf.d/strategy-%s.json' % ROBOT, ai=self)
@@ -64,7 +64,7 @@ class Ai(Service):
 
         self.robot.tm.enable()
 
-        # TODO : set MDB to color mode
+        self.robot.tm.set_mdb_mode(2)
 
         self.cs.actuators[ROBOT].reset()
         self.robot.tm.disable_avoid()
