@@ -139,6 +139,7 @@ class Robot:
 
     def color_change(self, color):
         self.side = color != self.color1
+        self.tm.set_color(self.side)
 
     def end_avoid_handler(self):
         self.end_avoid.set()

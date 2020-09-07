@@ -64,7 +64,7 @@ class Ai(Service):
 
         self.robot.tm.enable()
 
-        # TODO : set MDB to color mode
+        self.robot.tm.set_mdb_mode(2)
 
         self.cs.actuators[ROBOT].reset()
         self.robot.tm.disable_avoid()
