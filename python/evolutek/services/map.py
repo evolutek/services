@@ -1,7 +1,6 @@
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
-from evolutek.utils.match_interface import MatchInterface as Interface
 from evolutek.lib.map.map import Map as Map_lib, ObstacleType, parse_obstacle_file
 from evolutek.lib.map.tim import DebugMode, Tim
 from evolutek.lib.map.point import Point
@@ -69,13 +68,6 @@ class Map(Service):
 
     # Initialisation -----------------------------------------------------------
 
-    """ THREAD """
-    # TODO: Disable for beacon
-    @Service.thread
-    def start_debug_interface(self):
-        self.interface = Interface()
-
-
     """ EVENT """
     @Service.event
     def match_color(self, color):
@@ -111,9 +103,9 @@ class Map(Service):
 
         # To request path from terminal:
         # cellaservctl request map.get_path origin="{'x':300,'y':300}" dest="{'x':500,'y':500}" robot="pal"
-        import json
-        origin = json.loads(origin.replace("'",'"'))
-        dest = json.loads(dest.replace("'",'"'))
+        #import json
+        #origin = json.loads(origin.replace("'",'"'))
+        #dest = json.loads(dest.replace("'",'"'))
 
         print("[MAP] Path request received")
         with self.lock:
@@ -138,8 +130,9 @@ class Map(Service):
             if robot in ['pal', 'pmi']:
                 res = [p.to_dict() for p in self.path]
                 self.publish(robot+'_path', robot=robot, path=res)
-            return convert_path_to_dict(self.path)
-
+            res = convert_path_to_dict(self.path)
+            print("[MAP] Path: " + str(res))
+            return res
 
     """ ACTION """
     @Service.action
@@ -212,14 +205,18 @@ class Map(Service):
 
     """ EVENT """
     @Service.event
-    def pal_telemetry(self, status, telemetry):
+    def pal_telemetry(self, status, telemetry, robot):
+        #import json
+        #telemetry = json.loads(telemetry.replace("'",'"'))
         if status != 'failed':
             self.pal_telem = telemetry
 
 
     """ EVENT """
     @Service.event
-    def pmi_telemetry(self, status, telemetry):
+    def pmi_telemetry_(self, status, telemetry, robot):
+        #import json
+        #telemetry = json.loads(telemetry.replace("'",'"'))
         if status != 'failed':
             self.pmi_telem = telemetry
 

@@ -64,7 +64,7 @@ class Ai(Service):
 
         self.robot.tm.enable()
 
-        self.robot.tm.set_mdb_mode(2)
+        self.robot.tm.set_mdb_config(mode=2)
 
         self.cs.actuators[ROBOT].reset()
         self.robot.tm.disable_avoid()

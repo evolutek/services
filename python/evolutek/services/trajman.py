@@ -104,7 +104,6 @@ def if_enabled(method):
     return wrapped
 
 # TODO: check if we collided
-# TODO: Set mdb distances and brightness with config
 
 @Service.require("config")
 class TrajMan(Service):
@@ -281,6 +280,7 @@ class TrajMan(Service):
 
     @Service.action
     def set_speeds(self, state):
+        print("Set speeds " + str(state))
         trsl_speed = self.trsl_max_speed / (1 if state else 2)
         rot_speed = self.rot_max_speed / (1 if state else 2)
         self.set_trsl_max_speed(trsl_speed)
@@ -315,7 +315,7 @@ class TrajMan(Service):
         # Get speeds back to normal
         self.set_speeds(True)
         self.has_avoid.clear()
-        self.mdb.disable()
+        self.mdb.disable() 
 
     def write(self, data):
         """Write data to serial and flush."""
