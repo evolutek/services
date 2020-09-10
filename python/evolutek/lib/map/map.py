@@ -230,8 +230,14 @@ class Map:
 
         # Gets the path from the "escaping point" to the end
         # TODO: opti: pas besoin de tester si polygon est sur le chemin pour collision
-        if path1: path1 += self.get_path_rec(path1[-1], end, obstacles)
-        if path2: path2 += self.get_path_rec(path2[-1], end, obstacles)
+        if path1: 
+            inter = self.get_path_rec(path1[-1], end, obstacles)
+            if not inter: path1 = None
+            else: path1 += inter
+        if path2: 
+            inter = self.get_path_rec(path2[-1], end, obstacles)
+            if not inter: path2 = None
+            else: path2 += inter
 
         # If there is only one path, returns it
         if not path1: return path2
@@ -277,9 +283,14 @@ class Map:
         l = []
         for point in p:
 +            l.append((point.x, point.y))"""
+        
+        inter = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
+        if inter is None: 
+            print("[MAP] Couldn't find a path between " + str(start) + " and " + str(end))
+            return []
 
         path =  [start]
-        path += self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
+        path += inter
         path += [end]
 
         return path

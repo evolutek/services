@@ -206,6 +206,8 @@ class Map(Service):
     """ EVENT """
     @Service.event
     def pal_telemetry(self, status, telemetry, robot):
+        # To place a fake pal from terminal:
+        # cellaservctl p pal_telemetry status='success' telemetry="{'x':1000,'y':1000,'theta':0}" robot="pal"
         #import json
         #telemetry = json.loads(telemetry.replace("'",'"'))
         if status != 'failed':
@@ -215,6 +217,8 @@ class Map(Service):
     """ EVENT """
     @Service.event
     def pmi_telemetry_(self, status, telemetry, robot):
+        # To place a fake pal from terminal:
+        # cellaservctl p pmi_telemetry status='success' telemetry="{'x':1000,'y':1000,'theta':0}" robot="pmi"
         #import json
         #telemetry = json.loads(telemetry.replace("'",'"'))
         if status != 'failed':
