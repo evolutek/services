@@ -27,7 +27,6 @@ class Interface:
         self.cs = CellaservProxy()
         self.client = AsynClient(get_socket())
 
-
         match_config = self.cs.config.get_section('match')
         self.interface_refresh = int(match_config['interface_refresh'])
         self.robot_size = float(match_config['robot_size'])
@@ -49,7 +48,7 @@ class Interface:
         self.map = ImageTk.PhotoImage(img)
 
         self.init_interface()
-        print('[NTERFACE] Window created')
+        print('[INTERFACE] Window created')
 
         self.ai_status = {}
         self.paths = {}
@@ -65,8 +64,10 @@ class Interface:
         self.client_thread.daemon = True
         self.client_thread.start()
 
-        signal(SIGINT, self.close)
+        #signal(SIGINT, self.close)
 
+
+    def init_interface(): pass
 
     """" ROBOT UTILITIES """
 
