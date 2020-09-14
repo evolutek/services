@@ -25,7 +25,7 @@ def evolutek_shell():
 @click.argument('name')
 def select_robot(name):
     if name not in ['pal', 'pmi']:
-        click.echo('Unknow robot [%s]' % name)
+        click.echo('Unknown robot [%s]' % name)
         click.echo('Available robots: [pal, pmi]')
         return
 
@@ -51,6 +51,14 @@ def robot():
         return
 
     robot_shell()
+
+@evolutek_shell.command()
+def mdb():
+    if get_robot() is None:
+        click.echo('No robot selected')
+        return
+
+    mdb_shell()
 
 @evolutek_shell.command()
 def actuator():

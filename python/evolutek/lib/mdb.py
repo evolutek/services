@@ -53,6 +53,8 @@ class Mdb:
 
     # Possible values: 0: Distances, 1: Zones, 2: Loading, 3: Disabled
     def set_debug_mode(self, mode):
+        if not 0 <= mode <= 3:
+            print('[MDB] Unknown debug mode ' + str(mode))
         self.send(REQ_LEDSMODE + bytes([mode]))
 
 
@@ -105,6 +107,8 @@ class Mdb:
 
 
     def set_brightness(self, brightness):
+        if not 0 <= brightness <= 255:
+            print('[MDB] Invalid brightness value ' + str(mode))
         self.send(REQ_BRIGHTNESS + bytes([brightness]))
 
 
@@ -114,9 +118,13 @@ class Mdb:
 
     # Sets the near distance (for front and back flags). In millimeters
     def set_near(self, distance):
+        if not 0 <= distance <= 65535:
+            print('[MDB] Invalid distance value ' + str(mode))
         self.send(REQ_NEAR + bytes([distance//256, distance%256]))
 
 
     # Sets the far distance (for the is_robot flag). In millimeters
     def set_far(self, distance):
+        if not 0 <= distance <= 65535:
+            print('[MDB] Invalid distance value ' + str(mode))
         self.send(REQ_FAR + bytes([distance//256, distance%256]))

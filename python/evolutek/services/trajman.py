@@ -240,7 +240,7 @@ class TrajMan(Service):
 
     @Service.action
     def check_avoid(self):
-        
+
         zones = self.mdb.get_zones()
         front = zones['front'] if self.telemetry['speed'] > 0.0 else False
         back = zones['back'] if self.telemetry['speed'] < 0.0 else False
@@ -307,7 +307,7 @@ class TrajMan(Service):
     def enable_avoid(self):
         print('[AVOID] Enable')
         self.avoid_disabled.clear()
-        self.mdb.enable()
+        self.enable_mdb()
 
     @Service.action
     def disable_avoid(self):
@@ -319,7 +319,22 @@ class TrajMan(Service):
         # Get speeds back to normal
         self.set_speeds(True)
         self.has_avoid.clear()
-        self.mdb.disable() 
+        self.disable_mdb()
+
+    @Service.action
+    def enable_mdb(self):
+        print('[AVOID] Enabling mdb')
+        self.mdb.enable()
+
+    @Service.action
+    def disable_mdb(self):
+        print('[AVOID] Disabling mdb')
+        self.mdb.disable()
+
+    @Service.action
+    def error_mdb(self):
+        print('[AVOID] Putting mdb in error mode')
+        self.mdb.error_mode()
 
     def write(self, data):
         """Write data to serial and flush."""
@@ -603,7 +618,7 @@ class TrajMan(Service):
     def set_mdb_config(self, mode=None, yellow=None, near=None, far=None, brightness=None):
         if mode is not None:
             self.mdb.set_debug_mode(int(mode))
-        if yellow is not None: 
+        if yellow is not None:
             self.mdb.set_color(yellow in [True, 'True', 'true', 1, '1'])
         if near is not None:
             self.mdb.set_near(int(near))
@@ -694,6 +709,14 @@ class TrajMan(Service):
     @Service.action
     def is_moving(self):
         return not self.has_stopped.is_set()
+
+    @Service.action
+    def get_zones(self):
+        return mdb.get_zones()
+
+    @Service.action
+    def get_scan(self):
+        return mdb.get_scan()
 
     # Calibrate
 
