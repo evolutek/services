@@ -21,75 +21,72 @@ def parse_obstacle_file(file):
 
 # Check if a line is colling with a polygon
 def is_colliding_with_polygon(p1, p2, poly):
-
     line = LineString([p1, p2])
-
-    #if poly.contains(line):
-        #return True
-
     return line.crosses(poly)
-
-    for i in range(0, len(poly.exterior.coords) - 1):
-        side = LineString([poly.exterior.coords[i], poly.exterior.coords[i + 1]])
-        if line.crosses(side):
-            return True
-
-    return False
 
 # Runs is_colliding_with_polygon on multiple polygons
 def is_colliding_with_polygons(p1, p2, polys):
+    line = LineString([p1, p2])
     for poly in polys:
-        if is_colliding_with_polygon(p1, p2, poly):
+        if line.crosses(poly):
             return True
     return False
 
-# TODO: Optimise
-# poly1 can be a Polygon or a MultiPolygon
-# Can return a Polygon or a MultiPolygon
-# Return the nearest collision if there is one else None
+# Returns the nearest collision if there is one else None
 # The returned tuple is the collision point, the line containing
 # that point and the polygon containing that line
 def collision(p1, p2, obstacles):
+
     line = LineString([p1, p2])
+    collpolygon = None
+    collside = None
+    collpoint = None
+    colldistsqr = 0
 
-    polygon = None
-    closer = None
-    hit = None
-    dist = 0
-
-    # Iterate over all interns polygons
     for poly in obstacles:
-        new_closer, new_dist = collision_with_polygon(p1, p2, poly)
-        if not new_closer is None and (closer is None or new_dist < dist):
-            closer = new_closer
-            dist = new_dist
-            polygon = poly
+        # For every side of the polygon that collides with line
+        for side in collision_with_polygon(line, poly):
+            # Calculates the distance to the intersection point
+            hit = Point(tuple=line.intersection(side))
+            distsqr = p1.sqrdist(hit)
+            # If this hit is closer, saves it
+            if collpoint is None or distsqr < colldistsqr:
+                collpolygon = poly
+                collside = side
+                collpoint = hit
+                colldistsqr = distsqr
 
-    if closer: hit = Point(tuple=line.intersection(closer))
-    return hit, closer, polygon
+    return collpoint, collside, collpolygon
 
-# Compute the collision of a line with a polygon
-def collision_with_polygon(p1, p2, poly):
-
-    line = LineString([p1, p2])
-
-    closer = None
-    dist = 0
-
+# Returns all the sides of poly that collide with line
+def collision_with_polygon(line, poly):
+    res = []
     for i in range(len(poly.exterior.coords) - 1):
         side = LineString([poly.exterior.coords[i], poly.exterior.coords[i + 1]])
-        new_dist = p1.distance(side)
-        if line.crosses(side) and (closer is None or dist > new_dist):
-            closer = side
-            dist = new_dist
-
-    return closer, dist
+        if line.crosses(side):
+            res.append(side)
+    return res
 
 def path_length(path):
     res = 0
     for i in range(len(path)-2):
         res += path[i].dist(path[i+1])
     return res
+
+# Returns True if the path p1 is shorter than the path p2, False otherwise
+def is_shorter(p1, p2):
+    n1, n2 = len(p1), len(p2)
+    l1, l2 = 0, 0
+    i1, i2 = 1, 1
+    while True:
+        if l1 < l2:
+            if i1 >= n1: return True
+            l1 += p1[i1-1].dist(p1[i1])
+            i1 += 1
+        else:
+            if i2 >= n2: return False
+            l2 += p2[i2-1].dist(p2[i2])
+            i2 += 1
 
 # Finds point next to the hit on the polygon
 # line is the line that has been hit

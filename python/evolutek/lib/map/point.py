@@ -40,9 +40,12 @@ class Point(PointShape):
 
     # Compute the euclidian distance with another point
     def dist(self, p):
+        return sqrt(self.sqrdist(p))
+
+    def sqrdist(self, p):
         if isinstance(p, dict):
-            return sqrt((p['x'] - self.x) ** 2 + (p['y'] - self.y) ** 2)
-        return sqrt((p.x - self.x) ** 2 + (p.y - self.y) ** 2)
+            return (p['x'] - self.x) ** 2 + (p['y'] - self.y) ** 2
+        return (p.x - self.x) ** 2 + (p.y - self.y) ** 2
 
     # Compute the median point between two point
     def average(self, p):

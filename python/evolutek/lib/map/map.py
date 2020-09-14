@@ -180,6 +180,34 @@ class Map:
             else:
                 print('[MAP] Obstacle form not found')
 
+    # Smoothes a path (tries to make it shorter by skipping points)
+    # CurrentObs is the obstacle around which the algorithm is calculating a
+    # trajectory, obstacles are all the obstacles
+    # CurrentObs can be None if you want a general smooth (if you are not
+    # going around an obstacle at the moment)
+    def smooth_path(self, path, obstacles, currentobs=None):
+        length = len(path)
+        jumpSize = length-1
+        # We start with the biggest possible jump and then tries smaller jumps
+        while jumpSize > 1:
+            current = 0
+            # While the jump is possible (There is a point at the end)
+            while current + jumpSize < length:
+                start = path[current]
+                end = path[current+jumpSize]
+                inside = False if currentobs is None else \
+                    currentobs.contains(LineString([start, end]))
+                collides = True if inside else \
+                        is_colliding_with_polygons(start, end, obstacles)
+                # If the jump is possible (no obstacle)
+                if not collides:
+                    # Removes the points
+                    del path[current+1:current+jumpSize]
+                    length -= jumpSize-1
+                # Tries from the next point
+                current += 1
+            jumpSize -= 1
+
     # Finds the path that goes around the given polygon
     # The returned path is the shortest path that can "escape" from the polygon
     # i.e go to the end without colliding with the given polygon again
@@ -188,12 +216,14 @@ class Map:
         path = [hit]
 
         # Finds the escaping point (first p where [p, end] doesn't intersect the polygon)
-        escapingpoint = get_first_point(polygon, hit, line, self.borders, order)
-        if escapingpoint is None: return None
+        firstpoint = get_first_point(polygon, hit, line, self.borders, order)
+        if firstpoint is None: return None # Blocked by border
+        escapingpoint = firstpoint
         path += [escapingpoint]
         while is_colliding_with_polygon(escapingpoint, end, polygon):
             escapingpoint = get_next_point(polygon, escapingpoint, self.borders, order)
-            if escapingpoint is None: return None
+            if escapingpoint is None: return None # Blocked by border
+            if escapingpoint == firstpoint: return None # Went around the poly
             path += [escapingpoint]
 
         # At this point path contains the points from the hit to the escaping
@@ -206,11 +236,14 @@ class Map:
             firstaccessible -= 1
 
         # Removes all the points before the first accessible
-        return path[firstaccessible:]
+        path = path[firstaccessible:]
+        # Optimises the path if possible
+        self.smooth_path(path, list(obstacles), polygon)
+        return path
 
     # Calculates the shortest path from start to end
     # Returns the list of intermediary points (the complete path should be start+result+end)
-    def get_path_rec(self, start, end, obstacles):
+    def get_path_rec(self, start, end, obstacles, previousNodes=[]):
 
         # Gets the first collision point on the straight line from start to end
         hit, line, polygon = collision(start, end, obstacles)
@@ -218,41 +251,44 @@ class Map:
         # If no collision point was found, returns no intermediary points
         if hit is None: return []
 
-        #print("Start " + str(start) + " End " + str(end))
-
         # Tries to go around the polygon in both directions
-        # TODO: ajouter un smooth sur le retour de cette fonction
         path1 = self.go_around(start, end, obstacles, polygon, hit, line, False)
         path2 = self.go_around(start, end, obstacles, polygon, hit, line, True)
 
-        #if path1: print("Path1 " + str([pt.to_tuple() for pt in path1]))
-        #if path2: print("Path2 " + str([pt.to_tuple() for pt in path2]))
+        # If one of the nodes is already in the path, no need to consider using it
+        # TODO: Regarder si c'est plus rapide d'utiliser un set pour passer en O(n)
+        for node in previousNodes:
+            if path1:
+                for pnode in path1:
+                    if node == pnode:
+                        path1 = None
+                        break
+            if path2:
+                for pnode in path2:
+                    if node == pnode:
+                        path2 = None
+                        break
 
         # Gets the path from the "escaping point" to the end
         # TODO: opti: pas besoin de tester si polygon est sur le chemin pour collision
-        if path1 is not None:
-            inter = self.get_path_rec(path1[-1], end, obstacles)
-            if inter is None: path1 = None
-            else: path1 += inter
-        if path2 is not None:
-            inter = self.get_path_rec(path2[-1], end, obstacles)
-            if inter is None: path2 = None
-            else: path2 += inter
+        if path1:
+            res = self.get_path_rec(path1[-1], end, obstacles, previousNodes + path1)
+            if res is not None: path1 += res
+            else: path1 = None
+        if path2:
+            res = self.get_path_rec(path2[-1], end, obstacles, previousNodes + path2)
+            if res is not None: path2 += res
+            else: path2 = None
 
-        # If there is only one path, returns it
-        if path1 is None: return path2
-        if path2 is None: return path1
+        if not path1 and not path2: return None
+        if not path1: return path2
+        if not path2: return path1
 
         # Calculates the length of each path and returns the smaller one
-        # TODO: opti on peut faire les deux calculs en meme temps et s'arreter quand no sait qu'un des chemins est plus court
-        p1l = path_length(path1)
-        p2l = path_length(path2)
-        if p1l < p2l: return path1
+        p1shorter = is_shorter(path1, path2)
+        if p1shorter: return path1
         else: return path2
 
-    # Get a path on the table
-    # start : start point
-    # end : end point
     def get_path(self, start, end):
 
         obstacles = deepcopy(self.merged_obstacles)
@@ -278,19 +314,13 @@ class Map:
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
-        # Create an octogon were the robot is
-        """p = PolygonPlanar.regular(8, radius=self.robot_radius, angle=22.5, center=start.to_tuple())
-        l = []
-        for point in p:
-+            l.append((point.x, point.y))"""
-
-        inter = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
-        if inter is None:
-            print("[MAP] Couldn't find a path between " + str(start) + " and " + str(end))
-            return []
-
         path =  [start]
-        path += inter
-        path += [end]
+        nodes = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
+
+        if nodes: path += nodes + [end]
+        else: print("[MAP] No path found")
+
+        # Applies an additionnal smooth to handle some edge cases
+        self.smooth_path(path, obstacles)
 
         return path
