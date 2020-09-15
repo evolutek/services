@@ -30,6 +30,7 @@ class Mdb:
     def __init__(self, debug=False):
         try:
             self.i2c = busio.I2C(board.SCL, board.SDA)
+            self.send(REQ_ERROR + b'\x00')
         except Exception as e:
             print("[MDB] ERROR couldn't initialise i2c bus between Teensy and RaspberryPI")
             raise(e)
@@ -112,8 +113,8 @@ class Mdb:
         self.send(REQ_BRIGHTNESS + bytes([brightness]))
 
 
-    def error_mode(self):
-        self.send(REQ_ERROR)
+    def error_mode(self, enabled=True):
+        self.send(REQ_ERROR + (b'\x01' if enabled else b'\x00'))
 
 
     # Sets the near distance (for front and back flags). In millimeters

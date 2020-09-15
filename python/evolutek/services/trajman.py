@@ -332,9 +332,11 @@ class TrajMan(Service):
         self.mdb.disable()
 
     @Service.action
-    def error_mdb(self):
-        print('[AVOID] Putting mdb in error mode')
-        self.mdb.error_mode()
+    def error_mdb(self, enable=True):
+        enable = enable in ['True', 'true', 't', 'T', True, '1', 1]
+        if(enable): print('[AVOID] Putting mdb in error mode')
+        else: print('[AVOID] Disabling error mode on MDB')
+        self.mdb.error_mode(enable)
 
     def write(self, data):
         """Write data to serial and flush."""

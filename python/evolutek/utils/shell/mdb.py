@@ -36,9 +36,10 @@ def disable():
     tm.disable_mdb()
 
 @mdb_shell.command()
-def error_mode():
-    click.echo('Putting MDB in error mode')
-    tm.error_mdb()
+@click.argument('v', type=bool)
+def error_mode(v):
+    click.echo(('Enabling' if v else 'Disabling') + ' MDB error mode')
+    tm.error_mdb(v)
 
 """ GETTERS """
 
