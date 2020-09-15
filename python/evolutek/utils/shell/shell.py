@@ -5,6 +5,7 @@ from evolutek.utils.shell.ax import ax_shell
 from evolutek.utils.shell.config import config_shell
 from evolutek.utils.shell.robot import robot_shell
 from evolutek.utils.shell.actuator import actuator_shell
+from evolutek.utils.shell.mdb import mdb_shell
 
 from evolutek.utils.odom_tools import compute_all
 

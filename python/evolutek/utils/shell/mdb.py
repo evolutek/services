@@ -15,8 +15,8 @@ def get_prompt():
 def mdb_shell(ctx):
     if ctx.invoked_subcommand is None:
         global ROBOT
+        global tm
         ROBOT = get_robot()
-        global robot
         tm = Robot(ROBOT).tm
         subshell = make_click_shell(ctx, prompt=get_prompt, intro='Shell to control Mdb')
         subshell.cmdloop()
@@ -38,16 +38,16 @@ def disable():
 @mdb_shell.command()
 def error_mode():
     click.echo('Putting MDB in error mode')
-    mdb.error_mode()
+    tm.error_mdb()
 
 """ GETTERS """
 
 @mdb_shell.command()
-def get_zones():
+def zones():
     click.echo(str(tm.get_zones()))
 
 @mdb_shell.command()
-def get_scan():
+def scan():
     click.echo(str(tm.get_scan()))
 
 """ SETTERS """
@@ -68,20 +68,19 @@ def far(v):
     tm.set_mdb_config(far=v)
 
 @mdb_shell.command()
-@click.argument('v', type=string)
+@click.argument('v')
 def color(v):
     c = None
     v = v.lower()
     if v in ['yellow', 'y']: c = True
     if v in ['blue', 'b']: c = False
     if c is not None:
-        tm.set_mdb_config(color=c)
-        click.echo('Changing color to ' + ('yellow' if c else 'blue'))
+        tm.set_mdb_config(yellow=c)
     else: click.echo('Unknown color. Possible values are yellow, blue, y, b')
 
 @mdb_shell.command()
-@click.argument('v', type=string)
-def set_debug_mode(v):
+@click.argument('v')
+def mode(v):
     v = v.lower()
     if v in ['distances', 'd']: tm.set_mdb_config(mode=0)
     elif v in ['zones', 'z']: tm.set_mdb_config(mode=1)

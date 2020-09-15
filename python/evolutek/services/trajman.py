@@ -712,11 +712,11 @@ class TrajMan(Service):
 
     @Service.action
     def get_zones(self):
-        return mdb.get_zones()
+        return self.mdb.get_zones()
 
     @Service.action
     def get_scan(self):
-        return mdb.get_scan()
+        return self.mdb.get_scan()
 
     # Calibrate
 
