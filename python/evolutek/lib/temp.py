@@ -1,5 +1,0 @@
-robot = __import__("robot")
-r = robot.Robot()
-r.set_x(800)
-r.set_y(2300)
-r.set_theta(0)

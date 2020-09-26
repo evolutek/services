@@ -1,12 +1,10 @@
 [Unit]
-Description=actuators service
+Description=Actuators service
 PartOf=evolutek.target
-After=systemd-networkd-wait-online.service
-Wants=systemd-networkd-wait-online.service
 
 [Service]
-ExecStart=/usr/local/bin/actuators
+ExecStart=actuators
+CPUSchedulingPolicy=rr
 
 [Install]
 WantedBy=multi-user.target
-
