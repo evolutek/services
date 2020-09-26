@@ -302,7 +302,8 @@ class Map(Service):
 
 # --------------------------------------------------------------------------
 
-    # --------------------------------------------------------------------------
+        with self.lock:
+            return self.map.add_circle_obstacle(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
 
 
 def main():
