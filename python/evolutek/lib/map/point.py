@@ -10,7 +10,7 @@ class Point(PointShape):
         elif dict is not None:
             super().__init__(int(dict['x']), int(dict['y']))
         else:
-            super().__init__(x, y)
+            super().__init__(round(x, 3), round(y, 3))
 
     def __str__(self):
         return "(" + str(self.x) + ', ' + str(self.y) + ")"

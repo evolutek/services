@@ -4,17 +4,75 @@ from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
 from evolutek.lib.map.point import Point
 from threading import Thread, Lock
-
+import evolutek.lib.map.utils as utils
+# Debug Modes of a TIM :
+# - normal : display only the viewed robots
+# - debug_merge : display all the viewed robots befor merging
+# - debug_tims : display all data from tims
 class DebugMode(Enum):
-    normal=0
-    debug_merge=1
-    debug_tims=2
+  normal=0
+  debug_merge=1
+  debug_tims=2
 
 def parse_num(s):
-    if '+' in s or '-' in s:
-        return int(s)
+  if '+' in s or '-' in s:
+    return int(s)
+  else:
+    return int(s, 16)
+
+class RobotCloud:
+  def __init__(self, points=[], ip="", tag="", dict=None):
+    self.points = {}
+    self.pos = {}
+    if dict is not None:
+      from_dict(dict)
     else:
-        return int(s, 16)
+      self.points[ip] = points[:]
+      self.merged_points = points[:]
+      self.pos[ip] = Point.mean(points)
+      self.merged_pos = self.pos[ip]
+      self.tag = tag
+
+  def __str__(self):
+    return tag + self.merged_pos
+  
+  def from_dict(self, dict):
+      for ip in dict["points"]:
+        self.points[ip] = utils.convert_path_to_points(dict["points"])
+        self.pos[ip]= Point(dict=dict["pos"])
+      self.merged_points = utils.convert_path_to_points(dict["merged_points"])
+      self.merged_pos = Point(dict=dict["merged_pos"])
+      self.tag = dict["tag"]
+
+  def to_dict(self):
+    temp_points = {}
+    temp_pos = {}
+    for ip in self.pos:
+      temp_points[ip] = utils.convert_path_to_dict(self.points[ip])
+      temp_pos[ip] = self.pos[ip].to_dict()
+    return { 
+        "points": temp_points,
+        "merged_points": utils.convert_path_to_dict(self.merged_points),
+        "pos": temp_pos,
+        "merged_pos": self.merged_pos.to_dict(),
+        "tag": self.tag,
+        }
+
+  def merge(self, other, delta_dist):
+    ip = list(other.pos.keys())[0]
+    if ip in self.points:
+      return False
+    if self.merged_pos.dist(other.merged_pos) < delta_dist:
+      self.points[ip] = other.points[ip][:]
+      self.pos[ip] = Point.mean(points)
+      self.merged_points += points
+      self.merged_pos = Point.mean(merged_points)
+      return True
+    else:
+      return False
+
+  def add_telemetry(self, pos):
+    self.pos["telemetry"] = pos
 
 # TIM Class
 
@@ -80,6 +138,7 @@ class Tim:
         self.raw_data = []
         self.shapes = []
         self.robots = []
+        self.clouds = []
 
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.connected = False
@@ -130,7 +189,7 @@ class Tim:
             angle = radians(length - i * size_a + self.angle)
             y = cyl_data[i] * cos(angle) + self.pos.y
             x = cyl_data[i] * sin(angle) + self.pos.x
-            clean_data.append(Point(x, y))
+            clean_data.append(Point(round(x, 3), round(y, 3)))
         return clean_data
 
     # TODO: use table config
@@ -213,6 +272,9 @@ class Tim:
         angular_step = parse_num(data[24])/10000
         length = parse_num(data[25])
 
+        if length == 0:
+            return [], [], [], []
+
         # Convert data to cardinal coordinates
         raw_points = self.convert_to_card(list(map(parse_num, data[26:26 + length])), angular_step)
 
@@ -221,12 +283,15 @@ class Tim:
 
         # Split points in different cloud
         shapes = self.split_raw_data(clean_points)
-
         # Compute robots center
         robots = self.compute_center(shapes)
 
+        clouds = []
+        # Generate unified output
+        for shape in shapes:
+          clouds.append(RobotCloud(shape, self.ip))
         #print("[TIM] End scanning")
-        return clean_points, shapes, robots
+        return clean_points, shapes, robots, clouds
 
     def loop_scan(self):
         while self.connected:
@@ -234,10 +299,13 @@ class Tim:
           new_data = self.scan()
           with self.lock:
               if new_data is None:
-                  print('[TIM] Failed to get scan')
-                  self.scan_list.clear()
+                  print('[TIM] Failed to get scan on %s' % self.ip)
+                  self.raw_data.clear()
+                  self.shapes.clear()
+                  self.robots.clear()
+                  self.clouds.clear()
                   continue
-              self.scan_list = new_data
+              self.raw_data, self.shapes, self.robots, self.clouds = new_data
 
     def get_scan(self):
         if self.scan_list is []:
@@ -248,3 +316,10 @@ class Tim:
             raw_data, shapes, robots = scan[0], scan[1], scan[2]
 
         return robots
+    
+    # Return all scan info
+    def get_scan(self):
+        scan = []
+        with self.lock:
+            scan = self.clouds
+        return scan
