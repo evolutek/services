@@ -340,6 +340,13 @@ class Robot:
     #################
 
     # TODO remove sleep after recalibration
+    # x/y => recalibration x or y
+    # side_x/y: 
+    #     first value:  touches with front or back (True is front) 
+    #     second value: touches high or low coordinates wall (True is high)
+    # decal: adds an offset if there is an obstacle
+    # init: TODO
+    # mirror: mirrors everything depending on the ally side
     def recalibration(self,
                         x=True,
                         y=True,
@@ -353,10 +360,9 @@ class Robot:
         speeds = self.tm.get_speeds()
         self.tm.free()
 
-        # TODO: check speeds
-        self.tm.set_trsl_max_speed(400)
-        self.tm.set_trsl_acc(400)
-        self.tm.set_trsl_dec(400)
+        self.tm.set_trsl_max_speed(100)
+        self.tm.set_trsl_acc(300)
+        self.tm.set_trsl_dec(300)
 
         # init pos if necessary
         if init:
@@ -380,7 +386,7 @@ class Robot:
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
             self.tm.enable_avoid()
-            self.move_trsl_block(dest=self.dist - self.size_x, acc=200, dec=200, maxspeed=200, sens=not side_x[0])
+            self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_x[0])
 
         if y:
             print('[ROBOT] Recalibration Y')
@@ -398,7 +404,7 @@ class Robot:
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
             self.tm.enable_avoid()
-            self.move_trsl_block(dest=self.dist - self.size_x, acc=200, dec=200, maxspeed=200, sens=not side_y[0])
+            self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_y[0])
 
         self.tm.set_trsl_max_speed(speeds['trmax'])
         self.tm.set_trsl_acc(speeds['tracc'])
