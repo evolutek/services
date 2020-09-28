@@ -115,17 +115,7 @@ class Config(Service):
                 ret[section][k] = v
         return ret
 
-def wait_for_beacon():
-    hostname = "pi"
-    while True:
-        r = os.system("ping -c 1 " + hostname)
-        os.sleep(1)
-        if r == 0:
-            return
-        pass
-
 def main():
-    #wait_for_beacon()
     config = Config()
     config.run()
 

@@ -23,30 +23,12 @@ class Test_Map:
         Thread(target=self.loop_path).start()
 
     def loop_path(self):
-
         sleep(2) # Ensures that the interface has started
-
-        right = True
-        y = 500
-        speed = 20
-        bounds = (500, 2500)
-
         while True:
-
-            sleep(0.1)
-
-            y += speed if right else -speed
-            if y > bounds[1]:
-                y = bounds[1]
-                right = False
-            if y < bounds[0]:
-                y = bounds[0]
-                right = True
-
             print('[TEST_MAP] Update path')
             start = time()
             self.cs.map.get_path(
-                    origin={'x':1600,'y':y},
+                    origin={'x':250,'y':500},
                     dest={'x':1700,'y':1800},
                     robot='pal')
             end = time()

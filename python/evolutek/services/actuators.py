@@ -4,10 +4,9 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
 from evolutek.lib.gpio import Gpio, Pwm
-from evolutek.lib.actionqueue import Act_queue
+from evolutek.lib.action_queue import Act_queue
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.rgb_sensors import RGBSensors
-from evolutek.services.trajman import goto_xy, move_rot
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
@@ -28,7 +27,7 @@ class Buoy(Enum):
     Empty = "empty"
     Green = "green"
     Red = "red"
-    Unknow = "unknow"
+    Unknown = "unknown"
 
 # Pump actuator
 class PumpActuator:
@@ -41,11 +40,11 @@ class PumpActuator:
 
         self.buoy = Buoy.Empty
 
-    def pump_get(self, buoy=Buoy.Unknow):
+    def pump_get(self, buoy=Buoy.Unknown):
         self.pump_gpio.write(True)
         self.buoy = buoy
 
-    def pump_set(self, buoy=Buoy.Unknow):
+    def pump_set(self, buoy=Buoy.Unknown):
         self.buoy = buoy
 
     def pump_drop(self):
@@ -76,6 +75,21 @@ def if_enabled(method):
         return method(self, *args, **kwargs)
 
     return wrapped
+
+def use_queue(method):
+    """
+    Make quit a fucntion waiting for the queue if that one is no longer running
+    """
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        parameters = [self, args]
+
+        if self.queue.stop.is_set():
+            return
+        print(parameters)
+        self.queue.run_action(method, tuple(parameters))
+    return wrapped
+
 
 @Service.require("ax", "%s-1" % ROBOT)
 @Service.require("ax", "%s-2" % ROBOT)
@@ -183,6 +197,7 @@ class Actuators(Service):
     ########
     @Service.action
     @if_enabled
+    @use_queue
     def wait(self, time):
         sleep(float(time))
 
@@ -202,8 +217,8 @@ class Actuators(Service):
             print("AX12 %d: %s" %
                 (n, self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position()))
         print("--- COLOR SENSOR ---")
-        print("Sensor left: %s", self.rgb_sensors.read_sensor(2))
-        print("Sensor right: %s", self.rgb_sensors.read_sensor(1))
+        print("Sensor left: %s", self.rgb_sensors.read_sensor(2, "match"))
+        print("Sensor right: %s", self.rgb_sensors.read_sensor(1, "match"))
         print("-------------------------")
 
     # Get Status
@@ -218,8 +233,8 @@ class Actuators(Service):
             status['pump'].append(pump)
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             status['ax'].append(self.cs.ax["%s-%d" % (ROBOT, n)].get_present_position())
-        status['sensor'].append(self.rgb_sensors.read_sensor(1))
-        status['sensor'].append(self.rgb_sensors.read_sensor(2))
+        status['sensor'].append(self.rgb_sensors.read_sensor(1, "match"))
+        status['sensor'].append(self.rgb_sensors.read_sensor(2, "match"))
         return status
 
 
@@ -247,19 +262,23 @@ class Actuators(Service):
     # Get Buoy
     @Service.action
     @if_enabled
-    def pump_get(self, pump, buoy='unknow'):
+    def pump_get(self, pump, buoy='unknown'):
+        valid = True
         pump = int(pump)
-        if pump > 0 and pump <= 8:
+        try:
+            buoy = Buoy(buoy)
+        except:
+            valid = False
+        if pump > 0 and pump <= 8 and valid:
             self.pumps[pump - 1].pump_get(Buoy(buoy))
             return True
         else:
-            print('[ACTUATORS] Not a valid pump: %d' % pump)
+            print('[ACTUATORS] Not a valid pump or color: %d' % pump)
             return False
 
     # Set Buoy
     @Service.action
-    def pump_set(self, pump, buoy='unknow'):
-        pump = int(pump)
+    def pump_set(self, pump, buoy='unknown'):
         if pump > 0 and pump <= 8:
             self.pumps[pump - 1].pump_set(Buoy(buoy))
         else:
@@ -286,7 +305,9 @@ class Actuators(Service):
         n = int(n)
         if n < 1 or n > 2:
             print('[ACTUATORS] Wrong rgb sensor: %d' % n)
-        return self.rgb_sensors.read_sensor(n)
+        result = self.rgb_sensors.read_sensor(n, "match")
+        print("result:".format(result))
+        return result
 
 
     #############
@@ -354,6 +375,7 @@ class Actuators(Service):
 
     @Service.action
     @if_enabled
+    @use_queue
     def _windsocks_push(self):
         ax = 3
         if self.color != self.color1:
@@ -373,14 +395,14 @@ class Actuators(Service):
 
         return status
 
-    @Service.action
-    @if_enabled
-    def windsocks_push(self):
-        result = None
-        function = [self._windsocks_push, None]
-        self.queue.run_action(*function)
-        result = self.queue.response_queue.get()
-        return result
+#    @Service.action
+ #   @if_enabled
+  #  def windsocks_push(self):
+   #     result = None
+    #    function = [self._windsocks_push, None]
+     #   self.queue.run_action(*function)
+      #  result = self.queue.response_queue.get()
+       # return result
 
     @Service.action
     @if_enabled
