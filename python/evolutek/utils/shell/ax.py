@@ -7,11 +7,13 @@ ID = 0
 ROBOT = None
 
 def get_prompt():
-    return "ax-shell [%s-%d] > " % (ROBOT, ID)
+    return "ax-shell [%s-%d] > " % (get_robot(), ID)
 
 @click.group(invoke_without_command=True)
 @click.pass_context
 def ax_shell(ctx):
+    global ROBOT
+    ROBOT = get_robot()
     if ctx.invoked_subcommand is None:
         subshell = make_click_shell(ctx, prompt=get_prompt, intro='Shell to control AX12')
         subshell.cmdloop()
@@ -54,7 +56,7 @@ def move(goal):
         click.echo('Bad goal %d' % goal)
         return
 
-    click.echo('Moving ax [%d] to %d' % (ID, goal))
+    click.echo('Moving ax [%s-%d] to %d' % (ROBOT, ID, goal))
     cs.ax['%s-%d' % (ROBOT, ID)].mode_joint()
     cs.ax['%s-%d' % (ROBOT, ID)].move(goal=goal)
 
