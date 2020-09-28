@@ -5,7 +5,6 @@ from cellaserv.service import Service
 from cellaserv.settings import make_setting
 make_setting('CONFIG_FILE', '/etc/conf.d/config.ini', 'config', 'file', 'CONFIG_FILE')
 from cellaserv.settings import CONFIG_FILE
-import os
 
 class Config(Service):
     def __init__(self):
@@ -23,17 +22,27 @@ class Config(Service):
         KeyError is raised
         """
 
+        tmp = {}
+
         if name in self.temporary_config:
-            return self.temporary_config[name]
+            tmp = self.temporary_config[name]
 
         try:
             section = self.config_file.items(name)
             ret = {}
             for val in section:
               ret[val[0]] = val[1]
+
+
+            for option in tmp:
+                ret[option] = tmp[option]
+
             return ret
+
         except (NoSectionError) as exc:
-            raise KeyError("Unknown config section: {0}".format(section)) from exc
+            if tmp == {}:
+                raise KeyError("Unknown config section: {0}".format(section)) from exc
+            return tmp
 
     @Service.action
     def get(self, section: str, option: str) -> str:

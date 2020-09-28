@@ -1,12 +1,10 @@
 [Unit]
-Description=AX-12 controller
+Description=AX 12 service
 PartOf=evolutek.target
-After=systemd-networkd-wait-online.service
-Wants=systemd-networkd-wait-online.service
 
 [Service]
-ExecStart=/usr/local/bin/ax
+ExecStart=ax
+CPUSchedulingPolicy=rr
 
 [Install]
 WantedBy=multi-user.target
-

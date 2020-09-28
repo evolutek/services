@@ -12,8 +12,7 @@ LIBDXL_PATH_ENV = os.environ.get("LIBDXL_PATH", None)
 if LIBDXL_PATH_ENV:
     LIBDXL_PATH.insert(0, LIBDXL_PATH_ENV)
 
-DEVICE_ID = 42
-#BAUD_RATE = 31 # 62500 // PMI w/ USB2Dynamixel
+DEVICE_ID = 0
 BAUD_RATE = 1  # Main robot USB2AX
 
 AX_TORQUE_ENABLE_B     = 24

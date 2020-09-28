@@ -1,13 +1,10 @@
 [Unit]
 Description=Trajman service
 PartOf=evolutek.target
-After=systemd-networkd-wait-online.service
-Wants=systemd-networkd-wait-online.service
 
 [Service]
-ExecStart=/usr/local/bin/trajman
+ExecStart=trajman
 CPUSchedulingPolicy=rr
 
 [Install]
 WantedBy=multi-user.target
-After=network.target network-online.target

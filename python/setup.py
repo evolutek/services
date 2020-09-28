@@ -27,11 +27,21 @@ setup(
 
     entry_points = {
         'console_scripts': [
+            # Services
             'config = evolutek.services.config:main',
             'actuators = evolutek.services.actuators:main',
+            'ax = evolutek.services.ax:main',
+            'trajman = evolutek.services.trajman:main',
             'match = evolutek.services.match:main',
+            # Simulation
             'fake_ax = evolutek.simulation.fake_ax:main',
-            'fake_trajman = evolutek.simulation.fake_trajman:main'
+            'fake_trajman = evolutek.simulation.fake_trajman:main',
+            'launch_enemies = evolutek.simulation.launch_enemies:main',
+            'launch_robot = evolutek.simulation.launch_robot:main',
+            'simulator = evolutek.simulation.simulator:main',
+            # Utils
+            'match_interface = evolutek.utils.match_interface:main',
+            'shell = evolutek.utils.shell.shell:evolutek_shell'
         ],
     },
 )

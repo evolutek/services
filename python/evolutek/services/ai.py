@@ -5,8 +5,8 @@ from cellaserv.proxy import CellaservProxy
 
 from evolutek.lib.fsm import Fsm
 from evolutek.lib.goals import Goals, AvoidStrategy
-#from evolutek.lib.gpio import Edge, Gpio
-from evolutek.lib.robot import Robot
+from evolutek.lib.gpio import Edge, Gpio
+from evolutek.lib.robot import Robot, Status
 from evolutek.lib.settings import ROBOT
 
 from enum import Enum
@@ -21,14 +21,7 @@ class States(Enum):
     Ending = "Ending"
     Error = "Error"
 
-# TODO: update goals
-# TODO: Config recalibration in goals
-# TODO: Manage return status (action, robot)
-# TODO: Manage Actuators
-# TODO: Manage Avoid
-# TODO: Manage Gpio
-
-#@Service.require('actuators', ROBOT)
+@Service.require('actuators', ROBOT)
 @Service.require('trajman', ROBOT)
 class Ai(Service):
 
@@ -52,13 +45,14 @@ class Ai(Service):
         self.fsm.add_state(States.Ending, self.ending, prevs=[States.Setup, States.Waiting, States.Selecting, States.Making])
         self.fsm.add_error_state(self.error)
 
-        #Gpio(5, "tirette", False, edge=Edge.FALLING).auto_refresh(service=self)
+        Gpio(17, "tirette", False, edge=Edge.FALLING).auto_refresh(callback=self.publish)
 
+        # TODO : change strat file
         #self.goals = Goals(file='/etc/conf.d/strategy-%s.json' % ROBOT, ai=self)
+
         self.goals = Goals(file='/etc/conf.d/test_strats.json', ai=self)
         print(self.goals)
         self.goal = None
-        self.strategy_index = 0
 
         super().__init__(ROBOT)
         print('[AI] Ready')
@@ -69,18 +63,21 @@ class Ai(Service):
     def setup(self):
 
         self.robot.tm.enable()
-        #self.cs.actuators[ROBOT].reset()
-        #self.robot.tm.enable_avoid()
+
+        self.robot.tm.set_mdb_config(mode=2)
+
+        self.cs.actuators[ROBOT].reset()
+        self.robot.tm.disable_avoid()
+
         self.goals.reset(self.strategy_index)
         self.score = 0
 
         if self.recalibration.is_set():
             self.recalibration.clear()
             self.robot.recalibration(init=True)
-            #self.robot.tm.disable_avoid()
             self.robot.goto(self.goals.starting_position.x, self.goals.starting_position.y)
             self.robot.goth(self.goals.starting_theta)
-            #self.robot.tm.enable_avoid()
+
 
         else:
             self.robot.tm.free()
@@ -104,6 +101,10 @@ class Ai(Service):
         self.reset.clear()
         self.match_start.clear()
 
+        self.robot.tm.enable_avoid()
+        # TODO : Change MDB mode
+        # TODO : Launch critical goal timer
+
         return next
 
 
@@ -111,8 +112,6 @@ class Ai(Service):
     def selecting(self):
         if self.match_end.is_set():
             return States.Ending
-
-        # TODO: Manage failing goals
 
         self.goal = self.goals.get_goal()
 
@@ -132,10 +131,16 @@ class Ai(Service):
 
         goal_score = self.goal.score
 
-        self.robot.goto(self.goal.position.x, self.goal.position.y)
+        status = self.robot.goto_with_path(self.goal.position.x, self.goal.position.y)
+
+        if status != Status.reached:
+            pass
+            # TODO : retry ?
+            # TODO : optional goal
 
         if not self.goal.theta is None:
             self.robot.goth(self.goal.theta)
+            # TODO : has avoid ?
 
         if self.match_end.is_set():
             return States.Ending
@@ -151,6 +156,8 @@ class Ai(Service):
 
             action.make()
 
+            # TODO : Check the action return
+
             if action.score > 0:
                 self.publish("score", value=action.score)
                 self.score += action.score
@@ -161,7 +168,6 @@ class Ai(Service):
             self.publish("score", value=goal_score)
             self.score += goal_score
 
-        # Manage failure
         self.goal = None
 
         return States.Selecting
@@ -203,11 +209,15 @@ class Ai(Service):
     @Service.event("match_end")
     @Service.action("stop_robot")
     def match_end_handler(self):
+        # TODO : Use leds ?
+
         self.match_end.set()
         self.robot.tm.free()
         self.robot.tm.disable()
-        #self.cs.actuators[ROBOT].free()
-        #self.cs.actuators[ROBOT].disable()
+        self.cs.actuators[ROBOT].free()
+        self.cs.actuators[ROBOT].disable()
+
+    # TODO : manage critical goal
 
     def sleep_ai(self):
         print('[AI] I am sleeping')

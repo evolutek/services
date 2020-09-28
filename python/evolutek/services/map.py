@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from cellaserv.service import Service, Event
 from cellaserv.proxy import CellaservProxy
 
@@ -16,7 +14,9 @@ from evolutek.lib.map.utils import convert_path_to_dict, merge_polygons
 from evolutek.lib.map.tim import DebugMode, Tim
 
 import json
+from shapely.geometry import Polygon, MultiPolygon
 from threading import Lock
+import json
 from time import sleep
 
 @Service.require('config')
@@ -302,12 +302,8 @@ class Map(Service):
 
 # --------------------------------------------------------------------------
 
-        with self.lock:
-            return self.map.add_circle_obstacle(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
+    # --------------------------------------------------------------------------
 
-    @Service.action
-    def clean_tmp_robot(self):
-        self.map.remove_obstacle('tmp')
 
 def main():
   map = Map()

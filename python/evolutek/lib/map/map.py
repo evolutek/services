@@ -6,12 +6,23 @@ from copy import deepcopy
 from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
-# TODO: optimization
-# TODO: A* ?
-# TODO: exclusion zone for start point when computin pathfinding
+from time import time
+# TODO: exclusion zone for start point when computing pathfinding
+# TODO: tmp obstacles as buoy
 
+# Class to store the state of the table during matches
 class Map:
 
+    # Init of the class
+    # width : width of the map (3000)
+    # height : height of the map (2000)
+    # robot_radius : radius of our robots (140)
+    # borders : rectangle of the borders of the table
+    # obstacles : fixed obstacles on the table
+    # color_obstacles : obstacles depending of the color of the team
+    # robots : robots on the table
+    # merged_obstacles : union of all the obstacles
+    # merged_map : Polygons of the table
     def __init__(self, width, height, robot_radius):
         self.width = width
         self.height = height
@@ -34,6 +45,7 @@ class Map:
         self.merged_map = None
         self.merge_map()
 
+    # Merge all obstacles
     def merge_obstacles(self):
         result = MultiPolygon()
         for obstacle in self.obstacles:
@@ -44,6 +56,7 @@ class Map:
             result = result.union(self.robots[tag])
         self.merged_obstacles = result
 
+    # Remove obstacles to the polygon of the borders
     # Return a Polygon or a MultiPolygon
     def merge_map(self):
         result = self.borders
@@ -54,9 +67,14 @@ class Map:
             result = merge_polygons(result, poly)
         self.merged_map = result
 
+    # Check if a point is inside the map
     def is_inside(self, p):
         return 0 <= p.x <= self.height and 0 <= p.y <= self.width
 
+    # Add an obstacle to the map
+    # poly : polygon of the obstalce
+    # tag : name of the obstacle
+    # type : type of the obstacle
     def add_obstacle(self, poly, tag=None, type=ObstacleType.fixed):
         added = False
 
@@ -78,6 +96,7 @@ class Map:
             self.merge_map()
         return added
 
+    # Remove an obstacle by the tag
     def remove_obstacle(self, tag):
         removed = False
         if tag in self.color_obstacles:
@@ -91,6 +110,9 @@ class Map:
             self.merge_map()
         return removed
 
+    # Add a rectagular obstacle
+    # p1 : first corner
+    # p2 : second corner
     def add_rectangle_obstacle(self, p1, p2, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(p1) or not self.is_inside(p2):
             return False
@@ -104,18 +126,23 @@ class Map:
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
+    def build_octogon(self, center, radius):
+        poly = PolygonPlanar.regular(8, radius=radius, angle=22.5, center=center.to_tuple())
+        l = []
+        for point in poly:
+            l.append((point.x, point.y))
+        return Polygon(l)
+
+    # Add an octogonal obstacle
+    # center : center of the octogon
+    # radius : external radius of the octogon
     def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(center):
             return False
+        octogon = self.build_octogon(center, radius+self.robot_radius)
+        return self.add_obstacle(octogon, tag=tag, type=type)
 
-        poly = PolygonPlanar.regular(8, radius=radius + self.robot_radius, angle=22.5, center=center.to_tuple())
-        l = []
-
-        for point in poly:
-            l.append((point.x, point.y))
-
-        return self.add_obstacle(Polygon(l), tag=tag, type=type)
-
+    # Add the obstacles from the JSON config file
     def add_obstacles(self, obstacles, mirror=False, type=ObstacleType.fixed):
         obstacles = deepcopy(obstacles)
         for obstacle in obstacles:
@@ -154,58 +181,114 @@ class Map:
             else:
                 print('[MAP] Obstacle form not found')
 
-    def compute_graph(self, start, end, obstacles):
+    # Smoothes a path (tries to make it shorter by skipping points)
+    # CurrentObs is the obstacle around which the algorithm is calculating a
+    # trajectory, obstacles are all the obstacles
+    # CurrentObs can be None if you want a general smooth (if you are not
+    # going around an obstacle at the moment)
+    def smooth_path(self, path, obstacles, currentobs=None):
+        length = len(path)
+        jumpSize = length-1
+        # We start with the biggest possible jump and then tries smaller jumps
+        while jumpSize > 1:
+            current = 0
+            # While the jump is possible (There is a point at the end)
+            while current + jumpSize < length:
+                start = path[current]
+                end = path[current+jumpSize]
+                inside = False if currentobs is None else \
+                    currentobs.contains(LineString([start, end]))
+                collides = True if inside else \
+                        is_colliding_with_polygons(start, end, obstacles)
+                # If the jump is possible (no obstacle)
+                if not collides:
+                    # Removes the points
+                    del path[current+1:current+jumpSize]
+                    length -= jumpSize-1
+                # Tries from the next point
+                current += 1
+            jumpSize -= 1
 
-        # Create a queue of all points
-        d = deque()
-        graph = {}
-        d.append(start)
-        graph[start] = []
+    # Finds the path that goes around the given polygon
+    # The returned path is the shortest path that can "escape" from the polygon
+    # i.e go to the end without colliding with the given polygon again
+    def go_around(self, start, end, obstacles, polygon, hit, line, order):
 
-        for poly in obstacles:
-            for point in poly.exterior.coords:
-                new = Point(tuple=point)
-                if not new in d and self.borders.contains(new):
-                    d.append(new)
-                    graph[new] = []
+        path = [hit]
 
-        d.append(end)
-        graph[end] = []
+        # Finds the escaping point (first p where [p, end] doesn't intersect the polygon)
+        firstpoint = get_first_point(polygon, hit, line, self.borders, order)
+        if firstpoint is None: return None # Blocked by border
+        escapingpoint = firstpoint
+        path += [escapingpoint]
+        while is_colliding_with_polygon(escapingpoint, end, polygon):
+            escapingpoint = get_next_point(polygon, escapingpoint, self.borders, order)
+            if escapingpoint is None: return None # Blocked by border
+            if escapingpoint == firstpoint: return None # Went around the poly
+            path += [escapingpoint]
 
-        # Iterate over polygons to compute the vertexes
-        for poly in obstacles:
-            coords = poly.exterior.coords
-            l = len(coords)
-            for i in range(1, l):
-                new = Point(tuple=coords[i])
-                if not self.borders.contains(new):
-                    continue
+        # At this point path contains the points from the hit to the escaping
+        # point. This path is valid but not optimal
 
-                d.remove(new)
-                p1 = Point(coords[i - 1])
-                p2 = Point(coords[(i + 1) % l])
+        # Finds the first accessible point (from start)
+        # TODO: Opti: mettre polygon en premier dans la liste vu que ça va souvent collide avec lui
+        firstaccessible = len(path)-1
+        while firstaccessible > 0 and is_colliding_with_polygons(start, path[firstaccessible], obstacles):
+            firstaccessible -= 1
 
-                if not p1 in graph[new] and self.borders.contains(p1):
-                    graph[new].append(p1)
+        # Removes all the points before the first accessible
+        path = path[firstaccessible:]
+        # Optimises the path if possible
+        self.smooth_path(path, list(obstacles), polygon)
+        return path
 
-                if not p2 in graph[new] and self.borders.contains(p2):
-                    graph[new].append(p2)
+    # Calculates the shortest path from start to end
+    # Returns the list of intermediary points (the complete path should be start+result+end)
+    def get_path_rec(self, start, end, obstacles, previousNodes=[]):
 
-                points = list(d)
-                for point in points:
-                    if point in graph[new]:
-                        continue
-                    is_colliding = False
-                    for poly in obstacles:
-                        if is_colliding_with_polygon(point, new, poly):
-                            is_colliding = True
-                            break
+        # Gets the first collision point on the straight line from start to end
+        hit, line, polygon = collision(start, end, obstacles)
 
-                    if not is_colliding:
-                        graph[new].append(point)
-                        graph[point].append(new)
+        # If no collision point was found, returns no intermediary points
+        if hit is None: return []
 
-        return graph
+        # Tries to go around the polygon in both directions
+        path1 = self.go_around(start, end, obstacles, polygon, hit, line, False)
+        path2 = self.go_around(start, end, obstacles, polygon, hit, line, True)
+
+        # If one of the nodes is already in the path, no need to consider using it
+        # TODO: Regarder si c'est plus rapide d'utiliser un set pour passer en O(n)
+        for node in previousNodes:
+            if path1:
+                for pnode in path1:
+                    if node == pnode:
+                        path1 = None
+                        break
+            if path2:
+                for pnode in path2:
+                    if node == pnode:
+                        path2 = None
+                        break
+
+        # Gets the path from the "escaping point" to the end
+        # TODO: opti: pas besoin de tester si polygon est sur le chemin pour collision
+        if path1:
+            res = self.get_path_rec(path1[-1], end, obstacles, previousNodes + path1)
+            if res is not None: path1 += res
+            else: path1 = None
+        if path2:
+            res = self.get_path_rec(path2[-1], end, obstacles, previousNodes + path2)
+            if res is not None: path2 += res
+            else: path2 = None
+
+        if not path1 and not path2: return None
+        if not path1: return path2
+        if not path2: return path1
+
+        # Calculates the length of each path and returns the smaller one
+        p1shorter = is_shorter(path1, path2)
+        if p1shorter: return path1
+        else: return path2
 
     def get_path(self, start, end):
 
@@ -229,32 +312,20 @@ class Map:
             print('[MAP] End point outside current map')
             return []
 
+        # Exclusion zone around the start point
+        ex = self.build_octogon(start, self.robot_radius)
+        obstacles = obstacles.difference(ex)
+
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
-        # Create an octogon were the robot is
-        """p = PolygonPlanar.regular(8, radius=self.robot_radius, angle=22.5, center=start.to_tuple())
-        l = []
-        for point in p:
-+            l.append((point.x, point.y))"""
+        path = [start]
+        nodes = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
 
-        is_colliding = False
-        for poly in obstacles:
-            if is_colliding_with_polygon(start, end, poly):
-                is_colliding = True
-                break
+        if nodes: path += nodes + [end]
+        else: print("[MAP] No path found")
 
-        # No obstacles on the trajectory
-        if not is_colliding:
-            return [start, end]
-
-        graph = self.compute_graph(start, end, obstacles)
-
-        path = dijkstra(start, end, graph)
-
-        if path == []:
-            print("[MAP] Path not found")
-        else:
-            print("[MAP] Path found")
+        # Applies an additionnal smooth to handle some edge cases
+        self.smooth_path(path, obstacles)
 
         return path

@@ -33,7 +33,7 @@ def test_tim():
     print('[TEST_TIM] estimated pos: %d, %d' % (tim.pos.x, tim.pos.y))
 
     while True:
-        robots = tim.get_scan()
+        robots = tim.get_robots()
         print('[TEST_TIM] New scan:')
         for robot in robots:
             print(robot.to_dict())

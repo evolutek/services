@@ -1,0 +1,16 @@
+{
+  "refresh" : 1.0,
+  "devices" : [
+    "beacon",
+    "pal",
+    "pmi",
+    "sick1",
+    "sick2",
+    "sick3"
+  ],
+  "services" : [
+    {"name": "config"},
+    {"name": "match"},
+    {"name": "map"}
+  ]
+}
