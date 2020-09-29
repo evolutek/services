@@ -46,7 +46,7 @@ class MapInterface(Interface):
         self.client.add_subscribe_cb('obstacles', self.map_obstacles_handler)
 
         self.window.after(self.interface_refresh, self.update_interface)
-        print('[MAP NTERFACE] Window looping')
+        print('[MAP INTERFACE] Window looping')
         self.window.mainloop()
 
     def tim_debug_mode_handler(self, mode):

@@ -126,21 +126,20 @@ class Map:
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
-    def build_octogon(self, center, radius):
-        poly = PolygonPlanar.regular(8, radius=radius, angle=22.5, center=center.to_tuple())
-        l = []
-        for point in poly:
-            l.append((point.x, point.y))
-        return Polygon(l)
-
     # Add an octogonal obstacle
     # center : center of the octogon
     # radius : external radius of the octogon
     def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(center):
             return False
-        octogon = self.build_octogon(center, radius+self.robot_radius)
-        return self.add_obstacle(octogon, tag=tag, type=type)
+
+        poly = PolygonPlanar.regular(8, radius=radius + self.robot_radius, angle=22.5, center=center.to_tuple())
+        l = []
+
+        for point in poly:
+            l.append((point.x, point.y))
+
+        return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
     # Add the obstacles from the JSON config file
     def add_obstacles(self, obstacles, mirror=False, type=ObstacleType.fixed):
@@ -312,14 +311,10 @@ class Map:
             print('[MAP] End point outside current map')
             return []
 
-        # Exclusion zone around the start point
-        ex = self.build_octogon(start, self.robot_radius)
-        obstacles = obstacles.difference(ex)
-
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
-        path = [start]
+        path =  [start]
         nodes = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
 
         if nodes: path += nodes + [end]
