@@ -22,8 +22,7 @@ class IAInterface(Interface):
 
 		self.match_status = None
 		self.client.add_subscribe_cb('match_status', self.match_status_handler)
-		self.match_status_watchdog = Watchdog(3,
-		                                      self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
+		self.match_status_watchdog = Watchdog(3, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
 
 		if SIMULATION:
 			self.init_simulation()
@@ -60,7 +59,6 @@ class IAInterface(Interface):
 		self.cs.match.set_color(self.select_color.get())
 
 	def action_strategy(self, event):
-		self.ia.strategy = self.select_strategy.get()
 		self.ia.goals.reset(self.select_strategy.get())
 
 	def shutdown(self):
@@ -97,9 +95,9 @@ class IAInterface(Interface):
 		self.reset_button.grid(row=8, column=0)
 
 		# select strategy
-		list_strategy = [self.ia.goals().current_strategy]
+		list_strategy = ["bonjour", "bonjou"]
 		self.select_strategy = ttk.Combobox(self.window, values=list_strategy)
-		self.select_strategy.current(self.ia.goals.current_strategy())
+		self.select_strategy.current(0)
 		self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
 		self.select_strategy.grid(row=7, column=0)
 
@@ -135,7 +133,6 @@ class IAInterface(Interface):
 		self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
 	def update_interface(self):
-		print(self.get_robot_status('pal'))
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
 		self.bau_status_label.config(text='%s' % ' Bau Status: mise' if self.ia.bau.read == 0 else 'Bau Status: enlever')
