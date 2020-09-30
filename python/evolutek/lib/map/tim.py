@@ -108,7 +108,6 @@ class Tim:
         self.default_angle = int(config['angle'])
 
         # Computation config
-        print(self)
         self.refresh = float(computation_config['refresh'])
         self.min_size = int(computation_config['min_size'])
         self.max_distance = int(computation_config['max_distance'])
@@ -127,6 +126,7 @@ class Tim:
         self.angle = None
         self.change_pos(mirror)
         self.try_connection()
+        print(self)
 
         print('[TIM] TIM created')
 
