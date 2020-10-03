@@ -45,9 +45,9 @@ class Act_queue():
         while not self.stop.is_set():
             tmp = self.task.get()
             if type(tmp[0]) == list:
-                self.response.put(self.launch_multiple_actions(tmp[0], tmp[1]))
+                self.response_queue.put(self.launch_multiple_actions(tmp[0], tmp[1]))
             else :
-                self.response.put(tmp[0](*tmp[1]))
+                self.response_queue.put(tmp[0](*tmp[1]))
 
     ###############
     # START QUEUE #
