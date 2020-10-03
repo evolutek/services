@@ -189,7 +189,7 @@ class Actuators(Service):
         for pump in self.pumps:
             pump.pump_drop()
         for n in [1, 2, 3, 4, 5]: # TODO : read config
-            self.cs.ax[str(n)].free()
+            self.cs.ax["%s-%d" % (ROBOT, str(n))].free()
 
 
     ########
@@ -306,7 +306,7 @@ class Actuators(Service):
         if n < 1 or n > 2:
             print('[ACTUATORS] Wrong rgb sensor: %d' % n)
         result = self.rgb_sensors.read_sensor(n, "match")
-        print("result:".format(result))
+        print("result: {}".format(result))
         return result
 
 
