@@ -3,7 +3,7 @@ import os
 from evolutek.lib.interface import Interface
 from evolutek.lib.settings import SIMULATION
 from evolutek.lib.watchdog import Watchdog
-
+from evolutek.services.ai import Ai
 if SIMULATION:
 	from evolutek.simulation.simulator import read_config
 
@@ -15,7 +15,7 @@ from tkinter import Button, Canvas, Label, ttk
 class IAInterface(Interface):
 
 	def __init__(self, ia):
-		super().__init__('IA', 3)
+		super().__init__('AI', 3)
 
 		self.init_robot('pal')
 		self.ia = ia
@@ -28,7 +28,7 @@ class IAInterface(Interface):
 			self.init_simulation()
 
 		self.window.after(self.interface_refresh, self.update_interface)
-		print('[IA NTERFACE] Window looping')
+		print('[AI NTERFACE] Window looping')
 		self.window.mainloop()
 
 	def init_simulation(self):
@@ -84,7 +84,7 @@ class IAInterface(Interface):
 		self.close_button = Button(self.window, text='Close', command=self.close)
 		self.close_button.grid(row=9, column=0)
 
-		self.shutdown_button = Button(self.window, text='Éteindre', command=self.close)
+		self.shutdown_button = Button(self.window, text='shutdown', command=self.close)
 		self.shutdown_button.grid(row=10, column=0)
 
 		self.recalibration_button = Button(self.window, text='Recalibration', command=self.event_recalibration)
@@ -164,22 +164,8 @@ class IAInterface(Interface):
 		self.window.after(self.interface_refresh, self.update_interface)
 
 
-class Ia():
-	def __init__(self):
-		self.strategy = ""
-
-	class bau:
-		@property
-		def read(self):
-			return 0
-
-	class goals:
-
-		def __init__(self):
-			self.strategies = ["bonjour", "strategy1", "lolo", "bonjour"]
-
 def main():
-	IAInterface(Ia())
+	IAInterface(Ai())
 
 
 if __name__ == "__main__":
