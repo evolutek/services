@@ -190,6 +190,7 @@ class Actuators(Service):
             pump.pump_drop()
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax["%s-%d" % (ROBOT, str(n))].free()
+        self.queue.stop_queue()
 
 
     ########
