@@ -194,13 +194,13 @@ class Ai(Service):
         while True:
             pass
     """ GO HOME """
-    def go_home(self):
-        print('[AI] Going home before start match')
-        self.cs.recalibration(x=True, y=True, side_x=True, side_y=False)
-        self.cs.goto_xy_block(300, 1000)
-        self.cs.goto_xy_block(620, 1000)
-        self.cs.goto_theta_block(pi / 2)
-        self.cs.move_trsl(dest=1000, acc=500, dec=500, maxspeed=300, sens=False)
+    # def go_home(self):
+    #     print('[AI] Going home before start match')
+    #     self.cs.recalibration(x=True, y=True, side_x=True, side_y=False, init=True)
+    #     self.cs.goto_xy_block(300, 1000)
+    #     self.cs.goto_xy_block(620, 1000)
+    #     self.cs.goto_theta_block(pi / 2)
+    #     self.cs.move_trsl(dest=1000, acc=500, dec=500, maxspeed=300, sens=False)
 
 
     """ HANDLERS """
