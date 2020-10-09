@@ -209,6 +209,9 @@ class Actuators(Service):
         if value == 0:
             self.free()
             self.disable()
+        else:
+            self.enable()
+            self.reset()
 
 
     ########
