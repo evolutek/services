@@ -411,6 +411,15 @@ class Robot:
         self.tm.set_trsl_dec(speeds['trdec'])
 
 
+    """ GO HOME """
+
+    def go_home(self, point, point_theta):
+        self.recalibration(init=True)
+        self.goto(300, 700)
+        self.goto(point.x, 700)
+        self.goth(point_theta)
+        self.goto(point.x, point.y)
+
     #########
     # Avoid #
     #########
