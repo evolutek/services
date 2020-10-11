@@ -3,7 +3,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
-from evolutek.lib.gpio import Gpio, Pwm
+from evolutek.lib.gpio import Gpio, Pwm, Edge
 from evolutek.lib.action_queue import Act_queue
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.rgb_sensors import RGBSensors
@@ -17,6 +17,9 @@ from time import sleep
 
 DELAY_EV = 0.2
 SAMPLE_SIZE = 10
+
+# Emergency stop button
+BAU_GPIO = 21
 
 ##################
 # PUMP ACTUATORS #
@@ -110,6 +113,14 @@ class Actuators(Service):
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
 
+        # BAU (emergency stop)
+        bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
+        # If the BAU is set at init, free the robot
+        if bau_gpio.read() == 0:
+            self.free()
+
+        bau_gpio.auto_refresh(callback=self.handle_bau)
+
         self.color = self.color1
 
         try:
@@ -119,6 +130,9 @@ class Actuators(Service):
 
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax["%s-%d" % (ROBOT, n)].mode_joint()
+            self.cs.ax["%s-%d" % (ROBOT, n)].moving_speed(1023)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
 
         self.pumps = [
             PumpActuator(27, 18, 1),
@@ -189,7 +203,19 @@ class Actuators(Service):
         for pump in self.pumps:
             pump.pump_drop()
         for n in [1, 2, 3, 4, 5]: # TODO : read config
-            self.cs.ax[str(n)].free()
+            self.cs.ax["%s-%d" % (ROBOT, n)].free()
+
+    #######
+    # BAU #
+    #######
+    @Service.action
+    def handle_bau(self, value, event='', name='', id=0):
+        if value == 0:
+            self.free()
+            self.disable()
+        else:
+            self.enable()
+            self.reset()
 
 
     ########
@@ -306,7 +332,7 @@ class Actuators(Service):
         if n < 1 or n > 2:
             print('[ACTUATORS] Wrong rgb sensor: %d' % n)
         result = self.rgb_sensors.read_sensor(n, "match")
-        print("result:".format(result))
+        print("result: {}".format(result))
         return result
 
 
