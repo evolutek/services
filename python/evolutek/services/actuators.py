@@ -112,6 +112,7 @@ class Actuators(Service):
         self.match_end = Event()
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
+
         # BAU (emergency stop)
         bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
         # If the BAU is set at init, free the robot
@@ -128,6 +129,7 @@ class Actuators(Service):
             print("Failed to get color: %s" % str(e))
 
         for n in [1, 2, 3, 4, 5]:
+            self.cs.ax["%s-%d" % (ROBOT, n)].moving_speed(512)
             self.cs.ax["%s-%d" % (ROBOT, n)].mode_joint()
 
         self.pumps = [
