@@ -129,8 +129,10 @@ class Actuators(Service):
             print("Failed to get color: %s" % str(e))
 
         for n in [1, 2, 3, 4, 5]:
-            self.cs.ax["%s-%d" % (ROBOT, n)].moving_speed(512)
             self.cs.ax["%s-%d" % (ROBOT, n)].mode_joint()
+            self.cs.ax["%s-%d" % (ROBOT, n)].moving_speed(1023)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
 
         self.pumps = [
             PumpActuator(27, 18, 1),
