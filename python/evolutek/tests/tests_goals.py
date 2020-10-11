@@ -1,7 +1,6 @@
 from sys import argv
 from time import sleep
 from math import pi
-
 from cellaserv.proxy import CellaservProxy
 from evolutek.lib.robot import Robot
 
@@ -27,19 +26,25 @@ class TestGoals:
 		self.run()
 
 	def run(self):
-		print("[TEST] TEST Goals 8: ")
-		self.goals_8()
-		print("going starting pos")
-		self.robot.goto(150, 200)
-		self.robot.goth(0)
-
+		list_goals = [self.goals_9, self.goals_8]
+		self.robot.recalibration(init=True)
+		for goal in list_goals:
+			goal()
+			self.tidy_actuators()
+			self.cs.tm.free()
+			input("please replace the robot for the next goals:\n press enter if you finish")
+			self.robot.recalibration(init=True)
 		return True
 
-	def goals_8(self,):
+	def tidy_actuators(self):
+		self.cs.actuators[ROBOT].free()
+		self.cs.actuators[ROBOT].right_cup_holder_close()
+		self.cs.actuators[ROBOT].left_cup_holder_close()
+		self.cs.actuators[ROBOT].left_arm_close()
+		self.cs.actuators[ROBOT].right_arm_close()
+	def goals_8(self, ):
 		print("[GOALS 8] start")
 		sleep(2)
-
-		self.robot.recalibration(init=True)
 		self.robot.goto(1800, 200)
 		self.robot.goth(pi)
 		self.robot.recalibration(y=False, init=False, side_x=(False, True))
@@ -59,6 +64,37 @@ class TestGoals:
 		self.cs.actuators[ROBOT].right_cup_holder_close()
 		print("[GOALS 8] end")
 
+	def goals_9(self):
+		print("[GOALS 9] start")
+		self.robot.goto(1830, 200)
+		self.robot.goth(pi / 2)
+		self.robot.recalibration_block(sens=0)
+		self.push_windsocks(4)
+		print("[GOALS 9] end")
+
+	def push_windsocks(self, ax):
+
+		# self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
+
+		self.cs.actuators[ROBOT].left_arm_open() if ax == 3 else cs.actuators[ROBOT].right_arm_open()
+
+		# TODO config
+		self.robot.tm.set_delta_max_rot(0.5)
+		self.robot.tm.set_delta_max_trsl(300)
+
+		self.robot.tm.move_trsl(dest=650, acc=800, dec=800, maxspeed=1000, sens=1)
+
+		sleep(2)
+
+		# self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
+		self.cs.actuators[ROBOT].left_arm_close() if ax == 3 else cs.actuators[ROBOT].right_arm_close()
+
+		self.robot.tm.set_delta_max_rot(0.2)
+		self.robot.tm.set_delta_max_trsl(100)
+
+		self.robot.move_trsl_block(100, 400, 400, 500, 0)
+
+
 def main():
 	selected_robot = argv[1]
 	if not selected_robot in ['pal', 'pmi']:
@@ -70,6 +106,7 @@ def main():
 	global robot
 	robot = Robot(selected_robot)
 	TestGoals(cs, robot)
+
 
 if __name__ == "__main__":
 	main()
