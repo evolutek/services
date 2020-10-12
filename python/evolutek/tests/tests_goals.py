@@ -26,22 +26,31 @@ class TestGoals:
 		self.run()
 
 	def run(self):
-		list_goals = [self.goals_9, self.goals_8]
+		list_goals = [self.goals_2, self.goals_9, self.goals_8]
 		self.robot.recalibration(init=True)
 		for goal in list_goals:
 			goal()
 			self.tidy_actuators()
-			self.cs.tm.free()
 			input("please replace the robot for the next goals:\n press enter if you finish")
 			self.robot.recalibration(init=True)
 		return True
 
 	def tidy_actuators(self):
-		self.cs.actuators[ROBOT].free()
 		self.cs.actuators[ROBOT].right_cup_holder_close()
 		self.cs.actuators[ROBOT].left_cup_holder_close()
 		self.cs.actuators[ROBOT].left_arm_close()
 		self.cs.actuators[ROBOT].right_arm_close()
+
+	def goals_2(self):
+		print("[GOALS 2] start")
+		self.robot.goto(200, 250)
+		self.robot.goth(0)
+		self.cs.actuators[ROBOT].right_cup_holder_open()
+		self.cs.actuators[ROBOT].left_cup_holder_open()
+		self.robot.tm.move_trsl(70, 100, 100, 250, 1)
+		self.robot.tm.move_trsl(70, 100, 100, 250, 0)
+		print("[GOALS 2] end")
+
 	def goals_8(self, ):
 		print("[GOALS 8] start")
 		sleep(2)
@@ -56,9 +65,9 @@ class TestGoals:
 		self.cs.actuators[ROBOT].pump_get(6, 'red')
 		self.cs.actuators[ROBOT].pump_get(7, 'green')
 		self.cs.actuators[ROBOT].pump_get(8, 'red')
-		self.robot.tm.move_trsl(200, 100, 100, 250, 0)
+		self.robot.tm.move_trsl(90, 100, 100, 250, 0)
 		sleep(2)
-		self.robot.tm.move_trsl(200, 100, 100, 500, 1)
+		self.robot.tm.move_trsl(90, 100, 100, 500, 1)
 
 		self.cs.actuators[ROBOT].left_cup_holder_close()
 		self.cs.actuators[ROBOT].right_cup_holder_close()
