@@ -150,15 +150,11 @@ class MapInterface(Interface):
 
         self.tmp.clear()
         for robot in self.robots:
-            if robot in ['pal', 'pmi']:
-                self.print_robot_image(robot, self.robots[robot]['telemetry'])
-            else:
-                if not self.tim_enabled:
-                    self.print_robot(*self.robots[robot].values())
+            self.print_robot_image(robot, self.robots[robot]['telemetry'])
 
         if self.tim_enabled:
             if DebugMode(self.tim_debug) == DebugMode.normal:
-                for robot in self.tim_detected_robots:
+                for robot in self.tim_robots:
                     self.print_robot(robot, self.robot_size, 'red')
             if DebugMode(self.tim_debug) == DebugMode.debug_tims:
                 self.print_tims(self.tim_scans)

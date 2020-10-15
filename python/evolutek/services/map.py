@@ -291,7 +291,7 @@ class Map(Service):
             self.robots.append(d)
 
         #print('[MAP] Detected %d robots' % len(self.robots))
-        self.publish('robots', robots=self.robots)
+        self.publish('tim_detected_robots', robots=self.robots)
         if self.debug_mode == DebugMode.debug_tims:
           self.publish('tim_scans', scans=self.tim_scans)
         if self.debug_mode == DebugMode.debug_merge:
@@ -300,10 +300,6 @@ class Map(Service):
 
 
 
-# --------------------------------------------------------------------------
-
-        with self.lock:
-            return self.map.add_circle_obstacle(point, self.robot_size, tag='tmp', type=ObstacleType.robot)
 
 
 def main():
