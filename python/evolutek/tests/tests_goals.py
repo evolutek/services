@@ -2,7 +2,7 @@ from sys import argv
 from time import sleep
 from math import pi
 from cellaserv.proxy import CellaservProxy
-from evolutek.lib.robot import Robot
+from evolutek.lib.robot import Robot, Point
 
 cs = CellaservProxy()
 ROBOT = None
@@ -26,7 +26,7 @@ class TestGoals:
 		self.run()
 
 	def run(self):
-		list_goals = [self.goals_2, self.goals_9, self.goals_8]
+		list_goals = [self.goal_1, self.goals_2, self.goals_9, self.goals_8]
 		self.robot.recalibration(init=True)
 		for goal in list_goals:
 			goal()
@@ -40,6 +40,16 @@ class TestGoals:
 		self.cs.actuators[ROBOT].left_cup_holder_close()
 		self.cs.actuators[ROBOT].left_arm_close()
 		self.cs.actuators[ROBOT].right_arm_close()
+
+	def goal_1(self):
+		print("[GOALS 1] start")
+		self.robot.go_home(Point(x=640, y=120), pi/2)
+		self.cs.actuators[ROBOT].pump_get(4, 'red')
+		self.robot.goto(640, 250)
+		self.robot.goth(pi)
+		self.cs.actuators[ROBOT].pump_get(2, 'red')
+		self.robot.move_trsl_block(160, 400,400,500, True)
+		print("[GOALS 1] end")
 
 	def goals_2(self):
 		print("[GOALS 2] start")
