@@ -31,7 +31,8 @@ class Match(Service):
         self.timeout_robot = float(match_config['timeout_robot'])
 
         # Match Status
-        self.color = self.color1
+        self.color = None
+        self.set_color(self.color1)
         self.match_status = MatchStatus.unstarted
         self.score = 0
         self.match_time = 0
