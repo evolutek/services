@@ -113,8 +113,7 @@ class Actuators(Service):
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
 
-        # BAU (emergency stop)
-        bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
+        
         # If the BAU is set at init, free the robot
         # if bau_gpio.read() == 0:
         #     self.free()
@@ -145,6 +144,8 @@ class Actuators(Service):
         ]
 
         self.reset()
+        # BAU (emergency stop)
+        bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
         bau_gpio.auto_refresh(callback=self.handle_bau)
 
 
