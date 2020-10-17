@@ -410,16 +410,23 @@ class Actuators(Service):
         if self.color != self.color1:
             ax = 4
 
-        self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
-
+        if self.queue.stop.is_set() == False:
+            self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
+        else :
+            return 
         sleep(0.2)
 
         # TODO config
-        status = self.robot.move_trsl_avoid(
-            500, 125, 125, 800, 1, 2, 2) == Status.reached
+        if self.queue.stop.is_set() == False:
+            status = self.robot.move_trsl_avoid(
+                500, 125, 125, 800, 1, 2, 2) == Status.reached
+        else:
+            return
 
-        self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
-
+        if self.queue.stop.is_set() == False:
+            self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
+        else:
+            return 
         sleep(0.2)
 
         return status
