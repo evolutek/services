@@ -113,13 +113,11 @@ class Actuators(Service):
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
 
-        # BAU (emergency stop)
-        bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
+        
         # If the BAU is set at init, free the robot
-        if bau_gpio.read() == 0:
-            self.free()
+        # if bau_gpio.read() == 0:
+        #     self.free()
 
-        bau_gpio.auto_refresh(callback=self.handle_bau)
 
         self.color = self.color1
 
@@ -130,9 +128,6 @@ class Actuators(Service):
 
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax["%s-%d" % (ROBOT, n)].mode_joint()
-            self.cs.ax["%s-%d" % (ROBOT, n)].moving_speed(1023)
-        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
-        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
 
         self.pumps = [
             PumpActuator(27, 18, 1),
@@ -146,6 +141,10 @@ class Actuators(Service):
         ]
 
         self.reset()
+        # BAU (emergency stop)
+        bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
+        bau_gpio.auto_refresh(callback=self.handle_bau)
+
 
 
     ########
@@ -179,6 +178,10 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
+
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
+        self.cs.ax["%s-%d" % (ROBOT, 5)].moving_speed(256)
 
         self.left_arm_open()
         self.right_arm_open()
