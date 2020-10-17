@@ -179,6 +179,7 @@ class Actuators(Service):
 
         self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
         self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
+        self.cs.ax["%s-%d" % (ROBOT, 5)].moving_speed(256)
 
         self.left_arm_open()
         self.right_arm_open()
