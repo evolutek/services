@@ -116,10 +116,9 @@ class Actuators(Service):
         # BAU (emergency stop)
         bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
         # If the BAU is set at init, free the robot
-        if bau_gpio.read() == 0:
-            self.free()
+        # if bau_gpio.read() == 0:
+        #     self.free()
 
-        bau_gpio.auto_refresh(callback=self.handle_bau)
 
         self.color = self.color1
 
@@ -146,6 +145,8 @@ class Actuators(Service):
         ]
 
         self.reset()
+        bau_gpio.auto_refresh(callback=self.handle_bau)
+
 
 
     ########
