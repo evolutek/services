@@ -128,9 +128,6 @@ class Actuators(Service):
 
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax["%s-%d" % (ROBOT, n)].mode_joint()
-            self.cs.ax["%s-%d" % (ROBOT, n)].moving_speed(1023)
-        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
-        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
 
         self.pumps = [
             PumpActuator(27, 18, 1),
@@ -181,6 +178,10 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
+
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
+        self.cs.ax["%s-%d" % (ROBOT, 5)].moving_speed(256)
 
         self.left_arm_open()
         self.right_arm_open()
