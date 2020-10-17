@@ -19,7 +19,7 @@ def actuators_shell(ctx):
             ctx, prompt=get_prompt, intro='Shell to control actuator')
         subshell.cmdloop()
     else:
-        click.echo('[SHELL] Failed to launch actuator shell')
+        click.echo('[SHELL] Failed to launch actuators shell')
 
 @actuators_shell.command()
 def reset():
