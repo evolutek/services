@@ -19,7 +19,11 @@ class Test_Goals:
 
         self.test = Test()
         self.sleeped = False
-        self.goals = Goals('/etc/conf.d/tests_goals.json', self)
+        self.goals = Goals('/etc/conf.d/tests_goals.json', self, 'pal')
+
+        if not self.goals.parsed:
+            print('[TEST] Failed to parse goals')
+            return
 
         print('[TEST] Tested goals:')
         print(self.goals)
@@ -59,7 +63,7 @@ class Test_Goals:
             print('[TEST] a has a bad theta')
             passed = False
 
-        if not goal.optional_goal is None:
+        if not goal.secondary_goal is None:
             print('[TEST] a has a bad optional_goal')
             passed = False
 
@@ -148,7 +152,7 @@ class Test_Goals:
         if action.timeout != 42:
             print('[TEST] test action has bad timeout: %d' % action.timeout)
 
-        if goal.optional_goal != "lol":
+        if goal.secondary_goal != "secondary":
             print('[TEST] test goals has bad optional_goals: %s' % goals.optional)
 
         if goal.obstacles != ["lol1", "lol2"]:

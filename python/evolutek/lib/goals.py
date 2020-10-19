@@ -20,6 +20,8 @@ class Action:
         self.args = args
         if not args is None and 'theta' in args:
             args['theta'] = eval(args['theta'])
+
+        # Optionals
         self.avoid = avoid
         self.avoid_strategy = avoid_strategy
         self.score = score
@@ -71,22 +73,24 @@ class Action:
 """ Goal Class """
 class Goal:
 
-    def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, optional_goal=None, timeout=0):
+    def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, secondary_goal=None, timeout=None):
         self.name = name
         self.position = position
-        self.theta = theta
         self.actions = [] if actions is None else actions
+
+        # Optionals
+        self.theta = theta
         self.score = score
         self.obstacles = [] if obstacles is None else obstacles
-        self.optional_goal = optional_goal
+        self.secondary_goal = secondary_goal
         self.timeout = timeout
 
     def __str__(self):
         actions = ""
         for action in self.actions:
             actions += "%s\n" % str(action)
-        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s\noptional_goal: %s\nobstacles: %s\ntimeout: %d\n"\
-            % (self.name, self.position, str(self.theta), self.score, actions, self.optional_goal, str(self.obstacles), self.timeout)
+        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s\secondary_goal: %s\nobstacles: %s\ntimeout: %s\n"\
+            % (self.name, self.position, str(self.theta), self.score, actions, self.secondary_goal, str(self.obstacles), str(self.timeout))
 
     @classmethod
     def parse(cls, goal, ai):
@@ -97,8 +101,7 @@ class Goal:
 
         score = goal['score'] if 'score' in goal else 0
 
-        position = Point(x=goal['position']['x'],
-                                       y=goal['position']['y'])
+        position = Point(x=goal['position']['x'], y=goal['position']['y'])
 
         actions = []
         if 'actions' in goal:
@@ -116,24 +119,28 @@ class Goal:
                 actions.append(new)
 
         obstacles = goal['obstacles'] if 'obstacles' in goal else []
-        optional_goal = goal['optional'] if 'optional' in goal else None
-        timeout = goal['timeout'] if 'timeout' in goal else 0
+        secondary_goal = goal['secondary_goal'] if 'secondary_goal' in goal else None
+        timeout = goal['timeout'] if 'timeout' in goal else None
 
-        new = Goal(goal['name'], position, theta, actions, score, obstacles, optional_goal, timeout)
+        new = Goal(goal['name'], position, theta, actions, score, obstacles, secondary_goal, timeout)
 
         return new
 
 
 """ Strategy Class """
 class Strategy:
-    def __init__(self, name, goals=None):
+    def __init__(self, name, goals=None, available=None):
         self.name = name
         self.goals = [] if goals is None else goals
+        self.available = [] if available is None else available
 
     def __str__(self):
         s = "--- %s ---" % self.name
         for goal in self.goals:
             s += '\n%s' % goal
+        s += "available for:"
+        for robot in self.available:
+            s += '\n%s' % robot
         return s
 
     @classmethod
@@ -148,7 +155,7 @@ class Strategy:
 
             _goals.append(goal)
 
-        new = Strategy(strategy['name'], _goals)
+        new = Strategy(strategy['name'], _goals, strategy['available'])
 
         return new
 
@@ -156,7 +163,7 @@ class Strategy:
 """ Goals Manager """
 class Goals:
 
-    def __init__(self, file, ai):
+    def __init__(self, file, ai, robot):
         # Starting position
         self.starting_position = None
         self.starting_theta = None
@@ -173,11 +180,13 @@ class Goals:
         self.critical_goal = None
         self.timeout_critical_goal = None
 
-        self.parse(file, ai)
 
-        self.reset(0)
+        self.parsed = self.parse(file, ai, robot)
 
-    def parse(self, file, ai):
+        if self.parsed:
+            self.reset(0)
+
+    def parse(self, file, ai, robot):
 
         # Read file
         data = None
@@ -192,15 +201,16 @@ class Goals:
 
         # Parse starting position
         try:
-            self.starting_position = Point(x=goals['start']['x'],
-                                           y=goals['start']['y'])
-            self.starting_theta = goals['start']['theta']
+            pos = goals['starting_pos'][robot]
+            self.starting_position = Point(x=pos['x'],
+                                           y=pos['y'])
+            self.starting_theta = pos['theta']
             if isinstance(self.starting_theta, str):
                 self.starting_theta = eval(self.starting_theta)
 
         except Exception as e:
             print('[GOALS] Failed to parse start point: %s' % str(e))
-            return False
+            return Falseoptional
 
         # Parse goals
         for goal in goals['goals']:
@@ -213,6 +223,16 @@ class Goals:
 
             if new is None:
                 return False
+
+            if new.secondary_goal is not None:
+                found = False
+                for goal in goals['goals']:
+                    if goal['name'] == new.secondary_goal:
+                        found = True
+
+                if not found:
+                    print('[GOALS] Secondary goal not existing')
+                    return False
 
             self.goals[new.name] = new
 
@@ -228,7 +248,9 @@ class Goals:
             if new is None:
                 return False
 
-            self.strategies.append(new)
+            if robot in new.available:
+                print('[GOALS] Adding %s strategy' % new.name)
+                self.strategies.append(new)
 
         return True
 
