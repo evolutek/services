@@ -33,6 +33,7 @@ setup(
             'ax = evolutek.services.ax:main',
             'trajman = evolutek.services.trajman:main',
             'match = evolutek.services.match:main',
+            'map = evolutek.services.map:main',
             # Simulation
             'fake_ax = evolutek.simulation.fake_ax:main',
             'fake_trajman = evolutek.simulation.fake_trajman:main',
