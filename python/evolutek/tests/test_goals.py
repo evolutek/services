@@ -39,6 +39,7 @@ class Test_Goals:
         print('[TEST] Testing of a success: %s' % str(self.eval_a()))
         print('[TEST] Testing of b success: %s' % str(self.eval_b()))
         print('[TEST] Testing of strategies success: %s' % str(self.eval_strategies()))
+        print('[TEST] Testing of critical goal success: %s' % str(self.eval_critical_goal()))
         print('[TEST] Testing of goals success: %s' % str(self.eval_goals()))
 
         print('[TEST] End testing')
@@ -210,6 +211,18 @@ class Test_Goals:
             passed = False
 
         return passed
+
+    def eval_critical_goal(self):
+
+        if self.goals.critical_goal != 'secondary':
+            print('[TEST] Critical goal is not correct: %s' % self.goals.critical_goal)
+            return False
+
+        if self.goals.timeout_critical_goal != 1024:
+            print('[TEST] Critical timeout is not correct: %s' % self.goals.timeout_critical_goal)
+            return False
+
+        return True
 
     def eval_goals(self):
         if self.goals.current_strategy.name != 'A':

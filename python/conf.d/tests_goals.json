@@ -1,83 +1,87 @@
 {
-    "goals": [
-      {
-        "name": "a",
-        "position": {
-          "x": 0,
-          "y": 0
-        }
+  "goals": [
+    {
+      "name": "a",
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "b",
+      "position": {
+        "x": 0,
+        "y": 500
       },
-      {
-        "name": "b",
-        "position": {
-          "x": 0,
-          "y": 500
+      "score": 42,
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "sleep"
         },
-        "score": 42,
-        "theta": "pi",
-        "actions": [
-          {
-            "fct": "sleep"
+        {
+          "fct": "test",
+          "handler": "test",
+          "args": {
+            "x": 1000,
+            "y": 1000,
+            "theta": "-3*pi/4"
           },
-          {
-            "fct": "test",
-            "handler": "test",
-            "args": {
-              "x": 1000,
-              "y": 1000,
-              "theta": "-3*pi/4"
-            },
-            "avoid": false,
-            "avoid_strategy": "AvoidStrategy.Timeout",
-            "score": 21,
-            "timeout": 42
-          }
-        ],
-        "secondary_goal": "secondary",
-        "obstacles": ["lol1", "lol2"],
-        "timeout": 42
-      },
-      {
-        "name": "secondary",
-        "position": {
-          "x": 0,
-          "y": 0
+          "avoid": false,
+          "avoid_strategy": "AvoidStrategy.Timeout",
+          "score": 21,
+          "timeout": 42
         }
-      }
-    ],
-    "strategies": [
-      {
-        "name": "A",
-        "goals": [
-          "a",
-          "b"
-        ],
-        "available": [
-          "pal",
-          "pmi"
-        ]
-      },
-       {
-        "name": "B",
-        "goals": [
-          "b",
-          "a"
-        ],
-        "available": [
-          "pal"
-        ]
-      }
-    ],
-    "starting_pos": {
-      "pal": {
-        "x": 450,
-        "y": 225,
-        "theta": "pi"
-      },
-      "pmi": {
-        "x": 225,
-        "y": 450,
-        "theta": 0
+      ],
+      "secondary_goal": "secondary",
+      "obstacles": ["lol1", "lol2"],
+      "timeout": 42
+    },
+    {
+      "name": "secondary",
+      "position": {
+        "x": 0,
+        "y": 0
       }
     }
+  ],
+  "strategies": [
+    {
+      "name": "A",
+      "goals": [
+        "a",
+        "b"
+      ],
+      "available": [
+        "pal",
+        "pmi"
+      ]
+    },
+    {
+      "name": "B",
+      "goals": [
+        "b",
+        "a"
+      ],
+      "available": [
+        "pal"
+      ]
+    }
+  ],
+  "starting_pos": {
+    "pal": {
+      "x": 450,
+      "y": 225,
+      "theta": "pi"
+    },
+    "pmi": {
+      "x": 225,
+      "y": 450,
+      "theta": 0
+    }
+  },
+  "critical_goal": {
+    "goal": "secondary",
+    "timeout": 1024
+  }
 }

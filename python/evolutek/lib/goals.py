@@ -252,6 +252,18 @@ class Goals:
                 print('[GOALS] Adding %s strategy' % new.name)
                 self.strategies.append(new)
 
+        if 'critical_goal' in goals:
+            try:
+                self.critical_goal = goals['critical_goal']['goal']
+                self.timeout_critical_goal = goals['critical_goal']['timeout']
+            except Exception as e:
+                print('[GOALS] Failed to parse critical goal: %s' % str(e))
+                return False
+
+            if not self.critical_goal in self.goals:
+                print('[GOALS] Not existing critical goal: %s' % self.critical_goal)
+                return False
+
         return True
 
     def __str__(self):
