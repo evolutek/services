@@ -22,7 +22,7 @@ class MatchInterface(Interface):
 
         self.match_status = None
         self.client.add_subscribe_cb('match_status', self.match_status_handler)
-        self.match_status_watchdog = Watchdog(1, self.reset_match_status)#float(match_config['refresh']) * 2, self.reset_match_status)
+        self.match_status_watchdog = Watchdog(2, self.reset_match_status)#float(match_config['refresh']) * 2, self.reset_match_status)
 
         if SIMULATION:
             self.init_simulation()
