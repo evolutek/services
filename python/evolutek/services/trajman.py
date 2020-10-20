@@ -138,6 +138,8 @@ class TrajMan(Service):
     robot_size_x = ConfigVariable(section=ROBOT, option="robot_size_x", coerc=float)
     robot_size_y = ConfigVariable(section=ROBOT, option="robot_size_y", coerc=float)
     telemetry_refresh = ConfigVariable(section=ROBOT, option="telemetry_refresh", coerc=float)
+    stoptrsldec = ConfigVariable(section=ROBOT, option="stop_trsl_dec", coerc=float)
+    stoptrslrot = ConfigVariable(section=ROBOT, option="stop_trsl_rot", coerc=float)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -174,6 +176,8 @@ class TrajMan(Service):
 
         self.trsl_max_speed = self.trslmax()
         self.rot_max_speed = self.rotmax()
+        self.stop_trsl_dec = self.stoptrsldec()
+        self.stop_trsl_rot = self.stoptrslrot()
 
         self.init_sequence()
         self.set_telemetry(0)
@@ -285,8 +289,8 @@ class TrajMan(Service):
 
     @Service.action
     def set_speeds(self, state):
-        trsl_speed = self.trsl_max_speed // (2 if state else 10)
-        rot_speed = self.rot_max_speed // (2 if state else 10)
+        trsl_speed = self.trsl_max_speed
+        rot_speed = self.rot_max_speed
         self.set_trsl_max_speed(trsl_speed)
         self.set_rot_max_speed(rot_speed)
 
@@ -295,7 +299,7 @@ class TrajMan(Service):
         stopped = False
         self.side = side
         try:
-            self.stop_asap(600, 20)
+            self.stop_asap(self.stop_trsl_dec, self.stop_trsl_rot)
             stopped = True
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
