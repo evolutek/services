@@ -877,11 +877,10 @@ class TrajMan(Service):
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
                     self.telemetry = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
-                    """try:
-                        self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry)
+                    try:
+                        self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry, robot = ROBOT)
                     except:
-                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = None)
-                    """
+                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = None, robot = ROBOT)
                 elif tab[1] == Commands.ERROR.value:
                     self.log("CM returned an error")
                     if tab[2] == Errors.COULD_NOT_READ.value:
