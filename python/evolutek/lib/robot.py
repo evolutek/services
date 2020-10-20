@@ -91,7 +91,7 @@ class Robot:
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.side = False
         try:
-            self.side = self.cs.match.get_color() != self.color1
+            self.color_change(self.cs.match.get_color())
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % (str(e)))
 
@@ -341,8 +341,8 @@ class Robot:
 
     # TODO remove sleep after recalibration
     # x/y => recalibration x or y
-    # side_x/y: 
-    #     first value:  touches with front or back (True is front) 
+    # side_x/y:
+    #     first value:  touches with front or back (True is front)
     #     second value: touches high or low coordinates wall (True is high)
     # decal: adds an offset if there is an obstacle
     # init: TODO
