@@ -203,10 +203,15 @@ class Actuators(Service):
     # Free
     @Service.action
     def free(self):
+        free_pump_array = []
+        params = []
         for pump in self.pumps:
-            pump.pump_drop()
+            free_pump_array.append(pump.pump_drop)
+            params.append([])
+        self.queue.run_actions(free_pump_array, [])
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax["%s-%d" % (ROBOT, n)].free()
+
 
     #######
     # BAU #
