@@ -15,7 +15,7 @@ from functools import wraps
 from threading import Event
 from time import sleep
 
-DELAY_EV = 0.2
+DELAY_EV = 0.05
 SAMPLE_SIZE = 10
 
 # Emergency stop button
@@ -208,7 +208,7 @@ class Actuators(Service):
         for pump in self.pumps:
             free_pump_array.append(pump.pump_drop)
             params.append([])
-        self.queue.run_actions(free_pump_array, [])
+        self.queue.run_actions(free_pump_array, params)
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax["%s-%d" % (ROBOT, n)].free()
 
