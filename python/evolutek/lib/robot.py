@@ -51,6 +51,7 @@ class Robot:
 
             watchdog = Watchdog(1, self.timeout_handler)
             watchdog.reset()
+            self.has_avoid.clear()
 
             f(*args, **kwargs)
 
@@ -221,7 +222,7 @@ class Robot:
     def goto_avoid(self, x, y, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
         status = self.goto(x, y, mirror)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goto(x, y, mirror)
@@ -231,7 +232,7 @@ class Robot:
     def goth_avoid(self, th, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
         status = self.goth(th, mirror)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goth(th, mirror)
@@ -241,7 +242,7 @@ class Robot:
     def move_trsl_avoid(self, dest, acc, dec, maxspeed, sens, timeout=0.0, nb_try=None):
         tried = 1
         status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
@@ -332,7 +333,7 @@ class Robot:
             print("[ROBOT] Robot stopped")
 
             if self.has_avoid.is_set():
-                self.move_back(path[0], MOVE_BACK)
+                self.move_back(MOVE_BACK)
             self.has_avoid.clear()
 
             # We are supposed to be stopped
@@ -437,6 +438,7 @@ class Robot:
     #########
 
     def wait_until(self, timeout=0.0):
+
         watchdog = None
 
         if timeout > 0.0:
@@ -451,21 +453,21 @@ class Robot:
             self.timeout.clear()
         self.end_avoid.clear()
 
-    def move_back(self, last_point, max_dist):
+    def move_back(self, dist):
         print('[ROBOT] Moving back')
 
         self.wait_until(timeout=3)
 
         pos = self.tm.get_position()
-        dist = min(last_point.dist(Point(dict=pos)), max_dist)
         side = self.tm.avoid_status()['side']
 
+        print('[ROBOT] Move back direction: ' + str(side))
         if side is None:
             return
 
-        if self.move_trsl_block(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(side == 'front')):
+        if self.move_trsl_block(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(side != 'front')):
             print('[ROBOT] Robot avoided, moving front')
-            if self.move_trsl_block(acc=200, dec=200, dest=dist/2, maxspeed=400, sens=int(side != 'front')):
+            if self.move_trsl_block(acc=200, dec=200, dest=dist/2, maxspeed=400, sens=int(side == 'front')):
                 return Status.has_avoid
 
         return Status.reached

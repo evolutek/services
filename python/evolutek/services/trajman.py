@@ -246,8 +246,8 @@ class TrajMan(Service):
     def check_avoid(self):
 
         zones = self.mdb.get_zones()
-        front = zones['front'] if self.telemetry['speed'] > 0.0 else False
-        back = zones['back'] if self.telemetry['speed'] < 0.0 else False
+        front = zones['front']
+        back = zones['back']
         is_robot = zones['is_robot']
 
         # End detection
@@ -298,12 +298,12 @@ class TrajMan(Service):
     def stop_robot(self, side=None):
         stopped = False
         self.side = side
+        self.has_avoid.set()
         try:
             self.stop_asap(self.stop_trsl_dec, self.stop_trsl_rot)
             stopped = True
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
-        self.has_avoid.set()
         print('[AVOID] Stopping robot, %s detection triggered' % side)
         sleep(0.5)
 
