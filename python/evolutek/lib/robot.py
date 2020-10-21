@@ -285,6 +285,10 @@ class Robot:
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
         path = [Point(dict=self.tm.get_position()), Point(x, y)]
 
+        if path[1].dist(path[0]) < DELTA_POS:
+            print("[ROBOT] Already at destination")
+            return Status.reached
+
         while len(path) >= 2:
 
             if(not self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
