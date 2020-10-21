@@ -172,15 +172,17 @@ class Robot:
 
     def set_y(self, y, mirror=True):
         if mirror:
-            self.tm.set_y(1500 + (1500 - y) * (-1 if not self.side else 1))
-        else:
-            self.tm.set_y(y)
+            y = self.mirror_pos(y=y)[1]
+
+        self.tm.set_y(y)
 
     def set_theta(self, theta, mirror=True):
         if mirror:
-            self.tm.set_theta(theta * (1 if not self.side else -1))
-        else:
-            self.tm.set_theta(theta)
+            theta = self.mirror_pos(theta=theta)[2]
+
+        self.tm.set_theta(theta)
+
+
 
     def set_pos(self, x, y, theta=None, mirror=True):
         self.set_x(x)
@@ -196,7 +198,7 @@ class Robot:
     def goto(self, x, y, mirror=True):
 
         if mirror:
-            y = 1500 + (1500 - y) * (-1 if not self.side else 1)
+            y = self.mirror_pos(y=y)[1]
 
         if self.goto_xy_block(x, y):
             return Status.has_avoid
@@ -213,7 +215,7 @@ class Robot:
     def goth(self, th, mirror=True):
 
         if mirror:
-            th = th * (1 if not self.side else -1)
+            theta = self.mirror_pos(theta=th)[2]
 
         if self.goto_theta_block(th):
             return Status.has_avoid
@@ -286,7 +288,7 @@ class Robot:
     def goto_with_path(self, x, y, mirror=True):
 
         if mirror:
-            1500 + (1500 - y) * (-1 if not self.side else 1)
+            y = self.mirror_pos(y=y)[1]
 
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
         path = [self.tm.get_position(), Point(x, y)]
