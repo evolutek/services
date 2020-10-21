@@ -11,12 +11,12 @@ from tkinter import Button, Canvas, Label, ttk
 
 # TODO: clean
 
-class IAInterface(Interface):
+class AIInterface(Interface):
 
-	def __init__(self, ai):
+	def __init__(self, intelligence_artificial):
 		super().__init__('Ai interface', 3)
 
-		self.ia = ai
+		self.ai = intelligence_artificial
 		self.init_robot("pal")
 
 		self.match_status = None
@@ -54,22 +54,23 @@ class IAInterface(Interface):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def action_color(self):
-		if self.match_status["color"] == self.ia.robot.color1:
+		if self.match_status["color"] == self.ai.robot.color1:
 			self.cs.match.set_color(self.color2)
 		else:
-			self.cs.match.set_color(self.ia.robot.color1)
+			self.cs.match.set_color(self.ai.robot.color1)
 
 	def action_strategy(self, event):
-		self.ia.goals.reset(self.select_strategy.get())
+		self.ai.goals.reset(self.select_strategy.get())
 
 	def shutdown(self):
 		os.system("poweroff")
 
 	def event_recalibration(self):
-		self.ia.set_recalibration(True)
+		self.ai.set_recalibration(True)
 
 	def event_set_pos(self):
-		self.ia.set_recalibration(False)
+		self.ai.set_recalibration(False)
+
 	# Init match interface
 	def init_interface(self):
 
@@ -90,9 +91,9 @@ class IAInterface(Interface):
 
 		self.recalibration_button = Button(self.window, text='Recalibration', command=self.event_recalibration)
 		self.recalibration_button.grid(row=11, column=0)
-
-		self.homologation_button = Button(self.window, text='Homologation', command=self.event_homologation)
-		self.homologation_button.grid(row=12, column=0)
+		#
+		# self.homologation_button = Button(self.window, text='Homologation', command=self.event_homologation)
+		# self.homologation_button.grid(row=12, column=0)
 
 		# Reset Button
 		self.resset_pos = Button(self.window, text='Reset position', command=self.event_set_pos)
@@ -134,17 +135,17 @@ class IAInterface(Interface):
 		self.match_time_label.grid(row=0, column=4)
 		self.match_time_label.config(font=('Arial', 12))
 
-		self.ia_status = Label(self.window)
-		self.ia_status.grid(row=0, column=5)
-		self.ia_status.config(font=('Arial', 12))
+		self.status = Label(self.window)
+		self.status.grid(row=0, column=5)
+		self.status.config(font=('Arial', 12))
 
 		self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
 	def update_interface(self):
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
-		self.bau_status_label.config(text='%s' % ' Bau Status: mise' if self.ia.bau.read == 0 else 'Bau Status: enlever')
-		self.ia_status.config(text='État ia: %s' % str(self.ia.fsm.running))
+		self.bau_status_label.config(text='%s' % ' Bau Status: mise' if self.ai.bau.read == 0 else 'Bau Status: enlever')
+		self.status.config(text='State ai: %s' % self.ai.fsm.running)
 
 		if self.match_status is not None:
 
@@ -175,7 +176,6 @@ class IAInterface(Interface):
 
 class Ai:
 	def __init__(self):
-		self.fsm = Ai.Fsm()
 		self.goals = Ai.Goals()
 
 	class robot:
@@ -189,16 +189,14 @@ class Ai:
 		def read():
 			return True
 
-	class Fsm:
-
-		def __init__(self):
-			self.running = "Bonjour"
+	class fsm:
+		running = "Bonjour"
 
 	class Goals:
 		def __init__(self):
 			self.strategies = ["Bonjour", "Geooi", "pfdjfmd"]
 def main():
-	IAInterface(Ai())
+	AIInterface(Ai())
 
 
 if __name__ == "__main__":
