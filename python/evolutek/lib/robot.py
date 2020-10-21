@@ -13,7 +13,7 @@ from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
-from evolutek.lib.map.utils import convert_path_to_point
+from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
@@ -254,6 +254,9 @@ class Robot:
     ###############
 
     def update_path(self, path):
+
+        print("[ROBOT] Updating path")
+
         new = []
 
         try:
@@ -280,11 +283,12 @@ class Robot:
             1500 + (1500 - y) * (-1 if not self.side else 1)
 
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
-        path = [self.tm.get_position(), Point(x, y)]
+        path = [Point(dict=self.tm.get_position()), Point(x, y)]
 
         while len(path) >= 2:
 
-            path = self.update_path(path)
+            if(not self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+                path = self.update_path(path)
 
             if len(path) < 2:
                 print('[ROBOT] Destination unreachable')
@@ -298,6 +302,10 @@ class Robot:
 
             # While the robot is not stopped
             while not self.is_stopped.is_set():
+
+                if(self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+                    sleep(0.1)
+                    continue
 
                 tmp_path = self.update_path(path)
 
@@ -313,7 +321,7 @@ class Robot:
                     self.is_stopped.wait()
                 else:
                     # TODO : manage refresh
-                    sleep(0.2)
+                    sleep(0.1)
 
                 path = tmp_path
 
@@ -324,9 +332,9 @@ class Robot:
             self.has_avoid.clear()
 
             # We are supposed to be stopped
-            pos = self.tm.get_position()
+            pos = Point(dict=self.tm.get_position())
 
-            if Point(dict=pos).dist(path[1]) < DELTA_POS:
+            if pos.dist(path[1]) < DELTA_POS:
                 # We reached next point (path[1])
                 path.pop(0)
                 path[0] = pos
@@ -450,7 +458,6 @@ class Robot:
 
         if side is None:
             return
-
 
         if self.move_trsl_block(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(side == 'front')):
             print('[ROBOT] Robot avoided, moving front')

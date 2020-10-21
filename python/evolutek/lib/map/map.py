@@ -126,20 +126,21 @@ class Map:
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
+    def build_octogon(self, center, radius):
+        poly = PolygonPlanar.regular(8, radius=radius, angle=22.5, center=center.to_tuple())
+        l = []
+        for point in poly:
+            l.append((point.x, point.y))
+        return Polygon(l)
+
     # Add an octogonal obstacle
     # center : center of the octogon
     # radius : external radius of the octogon
     def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(center):
             return False
-
-        poly = PolygonPlanar.regular(8, radius=radius + self.robot_radius, angle=22.5, center=center.to_tuple())
-        l = []
-
-        for point in poly:
-            l.append((point.x, point.y))
-
-        return self.add_obstacle(Polygon(l), tag=tag, type=type)
+        octogon = self.build_octogon(center, radius+self.robot_radius)
+        return self.add_obstacle(octogon, tag=tag, type=type)
 
     # Add the obstacles from the JSON config file
     def add_obstacles(self, obstacles, mirror=False, type=ObstacleType.fixed):
@@ -196,7 +197,7 @@ class Map:
                 start = path[current]
                 end = path[current+jumpSize]
                 inside = False if currentobs is None else \
-                    currentobs.contains(LineString([start, end]))
+                    currentobs.contains(start.average(end))
                 collides = True if inside else \
                         is_colliding_with_polygons(start, end, obstacles)
                 # If the jump is possible (no obstacle)
@@ -243,7 +244,7 @@ class Map:
 
     # Calculates the shortest path from start to end
     # Returns the list of intermediary points (the complete path should be start+result+end)
-    def get_path_rec(self, start, end, obstacles, previousNodes=[]):
+    def get_path_rec(self, start, end, obstacles, previousNodes):
 
         # Gets the first collision point on the straight line from start to end
         hit, line, polygon = collision(start, end, obstacles)
@@ -280,9 +281,9 @@ class Map:
             if res is not None: path2 += res
             else: path2 = None
 
-        if not path1 and not path2: return None
-        if not path1: return path2
-        if not path2: return path1
+        if path1 is None and path2 is None: return None
+        if path1 is None: return path2
+        if path2 is None: return path1
 
         # Calculates the length of each path and returns the smaller one
         p1shorter = is_shorter(path1, path2)
@@ -311,16 +312,55 @@ class Map:
             print('[MAP] End point outside current map')
             return []
 
+        # Exclusion zone around the start point
+        #ex = self.build_octogon(start, self.robot_radius)
+        #obstacles = obstacles.difference(ex)
+
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
-        path =  [start]
-        nodes = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles)
+        nodes = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles, [])
 
-        if nodes: path += nodes + [end]
-        else: print("[MAP] No path found")
+        if nodes is None:
+            print("[MAP] No path found")
+            return []
+
+        path = [start] + nodes + [end]
 
         # Applies an additionnal smooth to handle some edge cases
         self.smooth_path(path, obstacles)
 
         return path
+
+    def is_path_valid(self, path):
+
+        if len(path) < 2:
+            return False
+
+        obstacles = deepcopy(self.merged_obstacles)
+
+        start = path[0]
+        end = path[1]
+
+        # Exclusion zone around the start point
+        #ex = self.build_octogon(start, self.robot_radius)
+        #obstacles = obstacles.difference(ex)
+
+        prev = start
+        for p in path[1:]:
+            line = LineString([prev.round(), p.round()])
+            for poly in obstacles:
+                for i in range(len(poly.exterior.coords) - 1):
+                    p1 = poly.exterior.coords[i]
+                    side = LineString([
+                        Point(tuple=poly.exterior.coords[i]).round(),
+                        Point(tuple=poly.exterior.coords[i + 1]).round()
+                    ])
+                    if line.crosses(side):
+                        print("Found")
+                        print(line)
+                        print(side)
+                        return False
+            prev = p
+
+        return True
