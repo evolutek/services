@@ -226,7 +226,8 @@ class TrajMan(Service):
         while True:
             if self.telemetry is not None:
                 self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry, robot = ROBOT)
-            sleep(100)
+            print('Sending telemetry')
+            sleep(0.1)
 
     """ BAU """
     @Service.action
