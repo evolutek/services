@@ -415,10 +415,7 @@ class Actuators(Service):
         if self.color != self.color1:
             ax = 4
 
-        if self.queue.stop.is_set() == False:
-            self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
-        else :
-            return 
+        self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
         sleep(0.2)
 
         # TODO config
@@ -426,12 +423,12 @@ class Actuators(Service):
             status = self.robot.move_trsl_avoid(
                 500, 125, 125, 800, 1, 2, 2) == Status.reached
         else:
-            return
+            return Status.unreached
 
         if self.queue.stop.is_set() == False:
             self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
         else:
-            return 
+            return Status.unreached
         sleep(0.2)
 
         return status
