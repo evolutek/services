@@ -18,7 +18,7 @@ class Action:
     def __init__(self, fct, args=None, avoid=True, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
         self.fct = fct
         self.args = args
-        if not args is None and 'theta' in args:
+        if not args is None and 'theta' in args and isinstance(args['theta'], str):
             args['theta'] = eval(args['theta'])
 
         # Optionals
@@ -89,7 +89,7 @@ class Goal:
         actions = ""
         for action in self.actions:
             actions += "%s\n" % str(action)
-        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s\secondary_goal: %s\nobstacles: %s\ntimeout: %s\n"\
+        return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s\nsecondary_goal: %s\nobstacles: %s\ntimeout: %s\n"\
             % (self.name, self.position, str(self.theta), self.score, actions, self.secondary_goal, str(self.obstacles), str(self.timeout))
 
     @classmethod
@@ -138,9 +138,9 @@ class Strategy:
         s = "--- %s ---" % self.name
         for goal in self.goals:
             s += '\n%s' % goal
-        s += "available for:"
+        s += "\navailable for:"
         for robot in self.available:
-            s += '\n%s' % robot
+            s += '\n-->%s' % robot
         return s
 
     @classmethod
@@ -190,11 +190,11 @@ class Goals:
 
         # Read file
         data = None
-        with open(file, 'r') as goals_file:
-            data = goals_file.read()
-
-        if data is None:
-            print('[GOALS] Failed to read file')
+        try:
+            with open(file, 'r') as goals_file:
+                data = goals_file.read()
+        except Exception as e:
+            print('[GOALS] Failed to read file: %s' % str(e))
             return False
 
         goals = json.loads(data)
@@ -273,7 +273,7 @@ class Goals:
         s += "y: %d\n" % self.starting_position.y
         s += "theta: %f\n" % self.starting_theta
         s += "-> Goals\n"
-        s += "Current Strategy: %s\n" % str(self.current_strategy)
+        s += "Current Strategy: %s\n" % str(self.current_strategy.name)
         s += "Number Current Strategy: %d\n" % self.current
         s += "Critical goal: %s\n" % str(self.critical_goal)
         s += "Timeout Critical goal: %s\n" % str(self.timeout_critical_goal)
@@ -284,17 +284,31 @@ class Goals:
             s += str(strategy) + '\n'
         return s
 
-    def reset(self, index):
-        if index < 0 or index >= len(self.strategies):
-            print('[GOALS] Strategy index incorrect')
+    def reset(self, index=None):
 
-        self.current_strategy = self.strategies[index]
+        if index is not None:
+
+            if index < 0 or index >= len(self.strategies):
+                print('[GOALS] Strategy index incorrect')
+                return False
+
+            self.current_strategy = self.strategies[index]
+
         self.current = 0
+
+        return True
 
     def get_goal(self):
         if self.current >= len(self.current_strategy.goals):
             return None
         return self.goals[self.current_strategy.goals[self.current]]
+
+    def get_secondary_goal(self, goal):
+        return self.goals[goal]
+
+    def get_critical_goal(self):
+        self.current = len(self.current_strategy.goals)
+        return self.goals[self.critical_goal]
 
     def finish_goal(self):
         self.current += 1

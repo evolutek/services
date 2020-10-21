@@ -125,6 +125,15 @@ class Robot:
         self.client_thread.start()
 
 
+    def mirror_pos(self, x = None, y = None, theta = None):
+        if y is not None:
+            y = (y if not self.side else 3000 - y)
+        if theta is not None:
+            theta  = (theta if not self.side else -1 * theta)
+
+        return (x, y, theta)
+
+
     ##########
     # Events #
     ##########
@@ -341,8 +350,8 @@ class Robot:
 
     # TODO remove sleep after recalibration
     # x/y => recalibration x or y
-    # side_x/y: 
-    #     first value:  touches with front or back (True is front) 
+    # side_x/y:
+    #     first value:  touches with front or back (True is front)
     #     second value: touches high or low coordinates wall (True is high)
     # decal: adds an offset if there is an obstacle
     # init: TODO
@@ -412,13 +421,9 @@ class Robot:
 
 
     """ GO HOME """
-
     def go_home(self, point, point_theta):
-        self.recalibration(init=True)
-        self.goto(300, 700)
-        self.goto(point.x, 700)
-        self.goth(point_theta)
         self.goto(point.x, point.y)
+        self.goth(point_theta)
 
     #########
     # Avoid #
@@ -434,10 +439,15 @@ class Robot:
         while not self.end_avoid.is_set() and not self.timeout.is_set():
             sleep(0.1)
 
+        if self.timeout.is_set():
+            return False
+
         if not watchdog is None:
             watchdog.stop()
             self.timeout.clear()
+
         self.end_avoid.clear()
+        return True
 
     def move_back(self, last_point, max_dist):
         print('[ROBOT] Moving back')
