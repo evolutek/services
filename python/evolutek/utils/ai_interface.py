@@ -13,11 +13,11 @@ from tkinter import Button, Canvas, Label, ttk
 
 class AIInterface(Interface):
 
-	def __init__(self, intelligence_artificial):
+	def __init__(self, ai):
 		super().__init__('Ai interface', 3)
 
-		self.ai = intelligence_artificial
-		self.init_robot("pal")
+		self.ai = ai
+		self.init_robot(self.ai.robot)
 
 		self.match_status = None
 		self.client.add_subscribe_cb('match_status', self.match_status_handler)
@@ -59,7 +59,7 @@ class AIInterface(Interface):
 		else:
 			self.cs.match.set_color(self.ai.robot.color1)
 
-	def action_strategy(self, event):
+	def action_strategy(self):
 		self.ai.goals.reset(self.select_strategy.get())
 
 	def shutdown(self):
@@ -100,7 +100,7 @@ class AIInterface(Interface):
 		self.resset_pos.grid(row=13, column=0)
 
 		# select strategy
-		list_strategy = ["bonjour", "bonjour"]
+		list_strategy = self.ai.goals.strategies
 		self.select_strategy = ttk.Combobox(self.window, values=list_strategy)
 		self.select_strategy.current(0)
 		self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
@@ -144,7 +144,7 @@ class AIInterface(Interface):
 	def update_interface(self):
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
-		self.bau_status_label.config(text='%s' % ' Bau Status: mise' if self.ai.bau.read == 0 else 'Bau Status: enlever')
+		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.ai.bau.read == 0 else 'Bau Status: OFF')
 		self.status.config(text='State ai: %s' % self.ai.fsm.running)
 
 		if self.match_status is not None:
@@ -173,30 +173,8 @@ class AIInterface(Interface):
 
 		self.window.after(self.interface_refresh, self.update_interface)
 
-
-class Ai:
-	def __init__(self):
-		self.goals = Ai.Goals()
-
-	class robot:
-		color1 = 'blue'
-
-	class bau:
-		def __init__(self):
-			pass
-
-		@staticmethod
-		def read():
-			return True
-
-	class fsm:
-		running = "Bonjour"
-
-	class Goals:
-		def __init__(self):
-			self.strategies = ["Bonjour", "Geooi", "pfdjfmd"]
 def main():
-	AIInterface(Ai())
+	pass
 
 
 if __name__ == "__main__":
