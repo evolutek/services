@@ -178,10 +178,7 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
-        self.free()
 
-        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
-        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
         self.cs.ax["%s-%d" % (ROBOT, 5)].moving_speed(256)
 
         self.left_arm_open()
@@ -366,6 +363,7 @@ class Actuators(Service):
     def left_arm_open(self):
         self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
 
+
     # Right Arm Close
     @Service.action
     @if_enabled
@@ -388,7 +386,9 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def left_cup_holder_close(self):
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(speed=128)
         self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(speed=1023)
 
     # Left CH Open
     @Service.action
@@ -400,7 +400,9 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def right_cup_holder_close(self):
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(speed=128)
         self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(speed=1023)
 
     # Right CH Open
     @Service.action
