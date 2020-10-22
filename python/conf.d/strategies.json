@@ -1,0 +1,97 @@
+{
+  "goals": [
+    {
+      "name": "get_buoy_3",
+      "position": {
+        "x": 700,
+        "y": 280
+      },
+      "actions": [
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 700,
+            "y": 920
+          }
+        },
+        {
+          "fct": "goth_avoid",
+          "handler": "robot",
+          "args": {
+            "theta": "pi"
+          }
+        },
+        {
+          "fct": "pump_get",
+          "handler": "actuators",
+          "args": {
+            "pump": 3,
+            "buoy": "green"
+          }
+        },
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 400,
+            "y": 920
+          }
+        },
+        {
+          "fct": "pump_get",
+          "handler": "actuators",
+          "args": {
+            "pump": 2,
+            "buoy": "red"
+          }
+        },
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 200,
+            "y": 750
+          }
+        },
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 200,
+            "y": 887.5
+          }
+        },
+        {
+          "fct": "goth_avoid",
+          "handler": "robot",
+          "args": {
+            "theta": 0
+          }
+        },
+        {
+          "fct": "get_reef",
+          "handler": "actuators"
+        }
+      ]
+    }
+  ],
+  "strategies": [
+    {
+      "name": "homologation_pal",
+      "goals": [
+         "get_buoy_3"
+      ],
+      "available": [
+        "pal"
+      ]
+    }
+  ],
+  "starting_pos": {
+    "pal": {
+      "x": 700,
+      "y": 280,
+      "theta": "pi/2"
+    }
+  }
+}
