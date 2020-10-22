@@ -15,7 +15,7 @@ from functools import wraps
 from threading import Event
 from time import sleep
 
-DELAY_EV = 0.05
+DELAY_EV = 0.5
 SAMPLE_SIZE = 10
 
 # Emergency stop button
@@ -327,6 +327,13 @@ class Actuators(Service):
             self.pumps[pump - 1].pump_drop()
         else:
             print('[ACTUATORS] Not a valid pump: %d' % pump)
+
+    @Service.action
+    @if_enabled
+    def pumps_drop(self, pumps):
+        print(pumps)
+        _pumps = [self.pumps[int(p) - 1].pump_drop for p in pumps]
+        self.queue.run_actions(_pumps, [[] * len(pumps)])
 
 
     ###############

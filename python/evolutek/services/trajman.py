@@ -221,6 +221,14 @@ class TrajMan(Service):
         bau_gpio.auto_refresh(callback=self.handle_bau)
 
 
+    @Service.thread
+    def send_telemetry(self):
+        while True:
+            if self.telemetry is not None:
+                self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry, robot = ROBOT)
+            print('Sending telemetry')
+            sleep(0.1)
+
     """ BAU """
     @Service.action
     def handle_bau(self, value, event='', name='', id=0):
@@ -877,10 +885,10 @@ class TrajMan(Service):
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
                     self.telemetry = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
-                    try:
+                    """try:
                         self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry, robot = ROBOT)
                     except:
-                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = None, robot = ROBOT)
+                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = None, robot = ROBOT)"""
                 elif tab[1] == Commands.ERROR.value:
                     self.log("CM returned an error")
                     if tab[2] == Errors.COULD_NOT_READ.value:
