@@ -178,6 +178,7 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
+        self.free()
 
         self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
         self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
@@ -203,12 +204,7 @@ class Actuators(Service):
     # Free
     @Service.action
     def free(self):
-        free_pump_array = []
-        params = []
-        for pump in self.pumps:
-            free_pump_array.append(pump.pump_drop)
-            params.append([])
-        self.queue.run_actions(free_pump_array, params)
+        self.pumps_drop([i for i in range (1, len(self.pumps) + 1)])
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax["%s-%d" % (ROBOT, n)].free()
 
@@ -333,7 +329,10 @@ class Actuators(Service):
     def pumps_drop(self, pumps):
         print(pumps)
         _pumps = [self.pumps[int(p) - 1].pump_drop for p in pumps]
-        self.queue.run_actions(_pumps, [[] * len(pumps)])
+        try:
+            self.queue.launch_multiple_actions(_pumps, [[] for i in range((len(pumps)))])
+        except Exception as e:
+            print (e)
 
 
     ###############
@@ -422,10 +421,7 @@ class Actuators(Service):
         if self.color != self.color1:
             ax = 4
 
-        if self.queue.stop.is_set() == False:
-            self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
-        else :
-            return 
+        self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
         sleep(0.2)
 
         # TODO config
@@ -433,12 +429,12 @@ class Actuators(Service):
             status = self.robot.move_trsl_avoid(
                 500, 125, 125, 800, 1, 2, 2) == Status.reached
         else:
-            return
+            return Status.unreached
 
         if self.queue.stop.is_set() == False:
             self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
         else:
-            return 
+            return Status.unreached
         sleep(0.2)
 
         return status
