@@ -178,6 +178,7 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
+        self.free()
 
         self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
         self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
@@ -209,7 +210,7 @@ class Actuators(Service):
         #     free_pump_array.append(pump.pump_drop)
         #     params.append([])
         # self.queue.run_actions(free_pump_array, params)
-        self.pumps_drop([1..len(self.pumps)])
+        self.pumps_drop([i for i in range (1, len(self.pumps) + 1)])
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax["%s-%d" % (ROBOT, n)].free()
 
@@ -334,8 +335,17 @@ class Actuators(Service):
     def pumps_drop(self, pumps):
         print(pumps)
         _pumps = [self.pumps[int(p) - 1].pump_drop for p in pumps]
-        #self.queue.run_actions(_pumps, [[] * len(pumps)])
-        self.queue.launch_multiple_actions(_pumps, [[] * len(pumps)])
+        try:
+            print(_pumps)
+            self.queue.run_actions(_pumps, [[] for i in range((len(pumps)))])
+            print('it works')
+        except Exception as e:
+            print (e)
+       # try :
+        #    self.queue.launch_multiple_actions(_pumps, [[] * len(pumps)])
+         #   print('it works')
+#        except Exception as e:
+ #           print (e)
 
 
     ###############

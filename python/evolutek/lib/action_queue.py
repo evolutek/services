@@ -13,6 +13,9 @@ class Act_queue():
     #############################
     def launch_multiple_actions(self, actions, args):
         if len(args) != len(actions):
+            print(len(args))
+            print(args)
+            print(len(actions))
             return None
         launched = []
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -44,6 +47,8 @@ class Act_queue():
         tmp = ()
         while not self.stop.is_set():
             tmp = self.task.get()
+            print('tmp')
+            print(tmp)
             if type(tmp[0]) == list:
                 self.response_queue.put(self.launch_multiple_actions(tmp[0], tmp[1]))
             else :
