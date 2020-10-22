@@ -19,7 +19,11 @@ class Test_Goals:
 
         self.test = Test()
         self.sleeped = False
-        self.goals = Goals('/etc/conf.d/tests_goals.json', self)
+        self.goals = Goals('/etc/conf.d/tests_goals.json', self, 'pal')
+
+        if not self.goals.parsed:
+            print('[TEST] Failed to parse goals')
+            return
 
         print('[TEST] Tested goals:')
         print(self.goals)
@@ -35,6 +39,7 @@ class Test_Goals:
         print('[TEST] Testing of a success: %s' % str(self.eval_a()))
         print('[TEST] Testing of b success: %s' % str(self.eval_b()))
         print('[TEST] Testing of strategies success: %s' % str(self.eval_strategies()))
+        print('[TEST] Testing of critical goal success: %s' % str(self.eval_critical_goal()))
         print('[TEST] Testing of goals success: %s' % str(self.eval_goals()))
 
         print('[TEST] End testing')
@@ -59,7 +64,7 @@ class Test_Goals:
             print('[TEST] a has a bad theta')
             passed = False
 
-        if not goal.optional_goal is None:
+        if not goal.secondary_goal is None:
             print('[TEST] a has a bad optional_goal')
             passed = False
 
@@ -148,7 +153,7 @@ class Test_Goals:
         if action.timeout != 42:
             print('[TEST] test action has bad timeout: %d' % action.timeout)
 
-        if goal.optional_goal != "lol":
+        if goal.secondary_goal != "secondary":
             print('[TEST] test goals has bad optional_goals: %s' % goals.optional)
 
         if goal.obstacles != ["lol1", "lol2"]:
@@ -206,6 +211,18 @@ class Test_Goals:
             passed = False
 
         return passed
+
+    def eval_critical_goal(self):
+
+        if self.goals.critical_goal != 'secondary':
+            print('[TEST] Critical goal is not correct: %s' % self.goals.critical_goal)
+            return False
+
+        if self.goals.timeout_critical_goal != 1024:
+            print('[TEST] Critical timeout is not correct: %s' % self.goals.timeout_critical_goal)
+            return False
+
+        return True
 
     def eval_goals(self):
         if self.goals.current_strategy.name != 'A':

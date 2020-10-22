@@ -126,6 +126,15 @@ class Robot:
         self.client_thread.start()
 
 
+    def mirror_pos(self, x = None, y = None, theta = None):
+        if y is not None:
+            y = (y if not self.side else 3000 - y)
+        if theta is not None:
+            theta  = (theta if not self.side else -1 * theta)
+
+        return (x, y, theta)
+
+
     ##########
     # Events #
     ##########
@@ -164,15 +173,17 @@ class Robot:
 
     def set_y(self, y, mirror=True):
         if mirror:
-            self.tm.set_y(1500 + (1500 - y) * (-1 if not self.side else 1))
-        else:
-            self.tm.set_y(y)
+            y = self.mirror_pos(y=y)[1]
+
+        self.tm.set_y(y)
 
     def set_theta(self, theta, mirror=True):
         if mirror:
-            self.tm.set_theta(theta * (1 if not self.side else -1))
-        else:
-            self.tm.set_theta(theta)
+            theta = self.mirror_pos(theta=theta)[2]
+
+        self.tm.set_theta(theta)
+
+
 
     def set_pos(self, x, y, theta=None, mirror=True):
         self.set_x(x)
@@ -188,7 +199,7 @@ class Robot:
     def goto(self, x, y, mirror=True):
 
         if mirror:
-            y = 1500 + (1500 - y) * (-1 if not self.side else 1)
+            y = self.mirror_pos(y=y)[1]
 
         if self.goto_xy_block(x, y):
             return Status.has_avoid
@@ -205,7 +216,7 @@ class Robot:
     def goth(self, th, mirror=True):
 
         if mirror:
-            th = th * (1 if not self.side else -1)
+            theta = self.mirror_pos(theta=th)[2]
 
         if self.goto_theta_block(th):
             return Status.has_avoid
@@ -281,7 +292,7 @@ class Robot:
     def goto_with_path(self, x, y, mirror=True):
 
         if mirror:
-            1500 + (1500 - y) * (-1 if not self.side else 1)
+            y = self.mirror_pos(y=y)[1]
 
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
         path = [Point(dict=self.tm.get_position()), Point(x, y)]
@@ -387,7 +398,6 @@ class Robot:
             print('[ROBOT] Recalibration X')
             theta = pi if side_x[0] ^ side_x[1] else 0
             self.goth(theta)
-            self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_x[0]), decal=float(decal_x))
             sleep(0.5)
 
@@ -398,14 +408,12 @@ class Robot:
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
-            self.tm.enable_avoid()
             self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_x[0])
 
         if y:
             print('[ROBOT] Recalibration Y')
             theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
             self.goth(theta * (-1 if self.side and mirror else 1))
-            self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(0.5)
 
@@ -416,7 +424,6 @@ class Robot:
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
-            self.tm.enable_avoid()
             self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_y[0])
 
         self.tm.set_trsl_max_speed(speeds['trmax'])
@@ -425,13 +432,9 @@ class Robot:
 
 
     """ GO HOME """
-
     def go_home(self, point, point_theta):
-        self.recalibration(init=True)
-        self.goto(300, 700)
-        self.goto(point.x, 700)
-        self.goth(point_theta)
         self.goto(point.x, point.y)
+        self.goth(point_theta)
 
     #########
     # Avoid #
@@ -448,10 +451,15 @@ class Robot:
         while not self.end_avoid.is_set() and not self.timeout.is_set():
             sleep(0.1)
 
+        if self.timeout.is_set():
+            return False
+
         if not watchdog is None:
             watchdog.stop()
             self.timeout.clear()
+
         self.end_avoid.clear()
+        return True
 
     def move_back(self, dist):
         print('[ROBOT] Moving back')
