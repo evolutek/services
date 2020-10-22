@@ -330,7 +330,7 @@ class Actuators(Service):
         print(pumps)
         _pumps = [self.pumps[int(p) - 1].pump_drop for p in pumps]
         try:
-            self.queue.run_actions(_pumps, [[] for i in range((len(pumps)))])
+            self.queue.launch_multiple_actions(_pumps, [[] for i in range((len(pumps)))])
         except Exception as e:
             print (e)
 
