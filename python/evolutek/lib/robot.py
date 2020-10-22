@@ -385,7 +385,6 @@ class Robot:
             print('[ROBOT] Recalibration X')
             theta = pi if side_x[0] ^ side_x[1] else 0
             self.goth(theta)
-            self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_x[0]), decal=float(decal_x))
             sleep(0.5)
 
@@ -396,14 +395,12 @@ class Robot:
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
-            self.tm.enable_avoid()
             self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_x[0])
 
         if y:
             print('[ROBOT] Recalibration Y')
             theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
             self.goth(theta * (-1 if self.side and mirror else 1))
-            self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(0.5)
 
@@ -414,7 +411,6 @@ class Robot:
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
-            self.tm.enable_avoid()
             self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_y[0])
 
         self.tm.set_trsl_max_speed(speeds['trmax'])
