@@ -9,7 +9,7 @@ robot = Robot.get_instance('pal')
 actuators = cs.actuators['pal']
 
 # Flip = ANCHROAGE XOR SIDE
-flip = True
+flip = False
 
 # Need the robot to be in (800, 200, 0)
 def init_drop():
