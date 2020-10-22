@@ -221,6 +221,14 @@ class TrajMan(Service):
         bau_gpio.auto_refresh(callback=self.handle_bau)
 
 
+    @Service.thread
+    def send_telemetry(self):
+        while True:
+            if self.telemetry is not None:
+                self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry, robot = ROBOT)
+            print('Sending telemetry')
+            sleep(0.1)
+
     """ BAU """
     @Service.action
     def handle_bau(self, value, event='', name='', id=0):
@@ -246,8 +254,8 @@ class TrajMan(Service):
     def check_avoid(self):
 
         zones = self.mdb.get_zones()
-        front = zones['front'] if self.telemetry['speed'] > 0.0 else False
-        back = zones['back'] if self.telemetry['speed'] < 0.0 else False
+        front = zones['front']
+        back = zones['back']
         is_robot = zones['is_robot']
 
         # End detection
@@ -298,12 +306,12 @@ class TrajMan(Service):
     def stop_robot(self, side=None):
         stopped = False
         self.side = side
+        self.has_avoid.set()
         try:
             self.stop_asap(self.stop_trsl_dec, self.stop_trsl_rot)
             stopped = True
         except Exception as e:
             print('[AVOID] Failed to abort ai of %s: %s' % (ROBOT, str(e)))
-        self.has_avoid.set()
         print('[AVOID] Stopping robot, %s detection triggered' % side)
         sleep(0.5)
 
@@ -877,10 +885,10 @@ class TrajMan(Service):
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
                     self.telemetry = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
-                    try:
+                    """try:
                         self.publish(ROBOT + '_telemetry', status='successful', telemetry = self.telemetry, robot = ROBOT)
                     except:
-                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = None, robot = ROBOT)
+                        self.publish(ROBOT + '_telemetry', status='failed', telemetry = None, robot = ROBOT)"""
                 elif tab[1] == Commands.ERROR.value:
                     self.log("CM returned an error")
                     if tab[2] == Errors.COULD_NOT_READ.value:
