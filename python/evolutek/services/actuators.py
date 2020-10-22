@@ -204,12 +204,6 @@ class Actuators(Service):
     # Free
     @Service.action
     def free(self):
-        # free_pump_array = []
-        # params = []
-        # for pump in self.pumps:
-        #     free_pump_array.append(pump.pump_drop)
-        #     params.append([])
-        # self.queue.run_actions(free_pump_array, params)
         self.pumps_drop([i for i in range (1, len(self.pumps) + 1)])
         for n in [1, 2, 3, 4, 5]: # TODO : read config
             self.cs.ax["%s-%d" % (ROBOT, n)].free()
@@ -336,16 +330,9 @@ class Actuators(Service):
         print(pumps)
         _pumps = [self.pumps[int(p) - 1].pump_drop for p in pumps]
         try:
-            print(_pumps)
             self.queue.run_actions(_pumps, [[] for i in range((len(pumps)))])
-            print('it works')
         except Exception as e:
             print (e)
-       # try :
-        #    self.queue.launch_multiple_actions(_pumps, [[] * len(pumps)])
-         #   print('it works')
-#        except Exception as e:
- #           print (e)
 
 
     ###############
