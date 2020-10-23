@@ -113,7 +113,7 @@ class Actuators(Service):
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
 
-        
+
         # If the BAU is set at init, free the robot
         # if bau_gpio.read() == 0:
         #     self.free()
@@ -144,7 +144,6 @@ class Actuators(Service):
         # BAU (emergency stop)
         bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=Edge.BOTH)
         bau_gpio.auto_refresh(callback=self.handle_bau)
-
 
 
     ########
@@ -180,8 +179,6 @@ class Actuators(Service):
         self.match_end.clear()
         self.free()
 
-        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(128)
-        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(128)
         self.cs.ax["%s-%d" % (ROBOT, 5)].moving_speed(256)
 
         self.left_arm_open()
@@ -190,7 +187,7 @@ class Actuators(Service):
         self.right_cup_holder_open()
         self.flags_raise()
 
-        sleep(0.5)
+        sleep(1)
 
         self.left_arm_close()
         self.right_arm_close()
@@ -198,7 +195,7 @@ class Actuators(Service):
         self.right_cup_holder_close()
         self.flags_low()
 
-        sleep(0.5)
+        sleep(1)
         self.start()
 
     # Free
@@ -388,25 +385,43 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def left_cup_holder_close(self):
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(256)
         self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=820)
 
     # Left CH Open
     @Service.action
     @if_enabled
     def left_cup_holder_open(self):
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(800)
         self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=512)
+
+    # Left CH Drop
+    @Service.action
+    @if_enabled
+    def left_cup_holder_drop(self):
+        self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(800)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=450)
 
     # Right CH Close
     @Service.action
     @if_enabled
     def right_cup_holder_close(self):
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(256)
         self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=820)
 
     # Right CH Open
     @Service.action
     @if_enabled
     def right_cup_holder_open(self):
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(800)
         self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=512)
+
+    # Right CH Drop
+    @Service.action
+    @if_enabled
+    def right_cup_holder_drop(self):
+        self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(800)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=450)
 
 
     ######################
@@ -416,54 +431,45 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
-    def _windsocks_push(self):
-        ax = 3
-        if self.color != self.color1:
-            ax = 4
+    def windsocks_push(self):
 
-        self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
-        sleep(0.2)
+        cs.actuators[ROBOT].left_arm_open() if ax == 3 else cs.actuators[ROBOT].right_arm_open()
+        sleep(0.5)
 
         # TODO config
-        if self.queue.stop.is_set() == False:
-            status = self.robot.move_trsl_avoid(
-                500, 125, 125, 800, 1, 2, 2) == Status.reached
-        else:
-            return Status.unreached
+        robot.tm.set_delta_max_rot(1)
+        robot.tm.set_delta_max_trsl(500)
 
-        if self.queue.stop.is_set() == False:
-            self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
-        else:
-            return Status.unreached
-        sleep(0.2)
+        robot.move_trsl_block(dest=625, acc=800, dec=800, maxspeed=1000, sens=1)
 
-        return status
+        cs.actuators[ROBOT].left_arm_close() if ax == 3 else cs.actuators[ROBOT].right_arm_close()
+        sleep(0.5)
 
-#    @Service.action
- #   @if_enabled
-  #  def windsocks_push(self):
-   #     result = None
-    #    function = [self._windsocks_push, None]
-     #   self.queue.run_action(*function)
-      #  result = self.queue.response_queue.get()
-       # return result
+        # TODO config
+        robot.tm.set_delta_max_rot(0.2)
+        robot.tm.set_delta_max_trsl(100)
 
-    @Service.action
+        robot.move_trsl_block(100, 400, 400, 500, 0)
+
+    @Serive.action
     @if_enabled
-    def get_floor_buoy(self, pump, buoy='unknown'):
-        self.pump_get(pump, buoy)
-
-    # @Service.action
-    # @if_enabled
-    # def get_sorted_reef():
-    #     self.left_cup_holder_open()
-    #     self.right_cup_holder_open()
-    #     for i in range (5, 9):
-    #         ##self.pumps[i]
-    #         self.get(i)
-    #     self.left_cup_holder_close()
-    #     self.right_cup_holder_close()
-    #    # self.pum
+    @use_queue
+    def get_reef(self):
+        self.left_cup_holder_open()
+        self.right_cup_holder_open()
+        sleep(0.5)
+        self.pump_get(pump=5)
+        self.pump_get(pump=6)
+        self.pump_get(pump=7)
+        self.pump_get(pump=8)
+        self.robot.tm.move_trsl(400, 300, 300, 300, 0)
+        sleep(2)
+        robot.tm.free()
+        sleep(0.5)
+        self.left_cup_holder_close()
+        self.right_cup_holder_close()
+        sleep(1)
+        self.robot.move_trsl_block(200, 300, 300, 300, 1)
 
 
     ##########
