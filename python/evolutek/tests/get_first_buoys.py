@@ -50,6 +50,11 @@ def get_reef():
     sleep(1.5)
     robot.move_trsl_block(200, 300, 300, 300, 1)
 
+def init_robot(_robot):
+    global robot
+    robot = Robot.get_instance(_robot)
+    global actuators
+    actuators = cs.actuators[_robot]
 
 if __name__ == "__main__":
     robot.tm.disable_avoid()
@@ -64,29 +69,41 @@ if __name__ == "__main__":
     init_get()
 
     print('Press a key to continue')
-    input()
+    #input()
     print('Getting reef')
     get_reef()
 
     print('Press a key to continue')
-    input()
+    #input()
     print('going to center zone')
     robot.goto_xy_block(1400, 1900)
     robot.goto_theta_block(0)
 
     print('Press a key to continue')
-    input()
+    #input()
     print('Starting init')
     init_drop()
 
     print('Press a key to continue')
-    input()
+    #input()
     print('Executing drop front')
     drop_front_buoys()
 
     print('Press a key to continue')
-    input()
+    #input()
     print('Executing drop back')
     drop_back_buoys()
+
+    print('Press a key to continue')
+    #input()
+    print('Going back to base')
+    robot.goto_xy_block(800, 700) #Depend of side
+    robot.goto_theta_block(pi) #Depend of anchorage
+    robot.move_trsl_block(500, 500, 500, 500, 1)
+    robot.goto_theta_block(pi/2) #Depend of side
+    sleep(10)
+    robot.move_trsl_block(500, 500, 500, 500, 0)
+    robot.recalibration_block(0)
+    actuators.flags_raise()
 
     print('End testing')

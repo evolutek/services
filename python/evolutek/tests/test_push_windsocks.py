@@ -7,8 +7,8 @@ from math import pi
 from time import sleep
 
 cs = CellaservProxy()
-ROBOT = 'pal'
-robot = None
+ROBOT = 'pmi'
+robot = Robot.get_instance('pmi')
 
 def push_windsocks(robot, ax) :
     #self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)

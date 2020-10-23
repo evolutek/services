@@ -3,25 +3,25 @@ from evolutek.lib.robot import Robot
 
 from test_drop_starting_zone import drop_south_buoys, drop_north_buoys, end_match, init_drop
 from test_push_windsocks import push_windsocks
-from get_first_buoys import get_reef
+from get_first_buoys import get_reef, init_robot
 
 from math import pi
 from time import sleep
 
 cs = CellaservProxy()
-robot = Robot.get_instance('pal')
-actuators = cs.actuators['pal']
+robot = Robot.get_instance('pmi')
+actuators = cs.actuators['pmi']
 
 # side == True if yellow
 side = False
 
 # TODO : think more about back buoy drop
 
-# Need the robot to be in (980, 200, pi)
+# Need the robot to be in (980, 260, pi)
 def init_get():
-    robot.goto_xy_block(800, 200) # Depend of side
+    robot.goto_xy_block(800, 260) # Depend of side
     robot.goto_theta_block(pi/2)
-    robot.move_trsl_block(130, 500, 500, 500, 1)
+    robot.move_trsl_block(70, 500, 500, 500, 1)
     robot.goto_theta_block(pi)
 
 
@@ -78,13 +78,13 @@ if __name__ == "__main__":
     robot.tm.disable_avoid()
     robot.tm.free()
     print('Please place buoys and the robot and press a key to continue')
-    #input()
+    input()
 
-    robot.set_pos(980, 200, pi)
+    robot.set_pos(980, 260, pi)
     robot.tm.unfree()
 
     print('Starting init')
-    sleep(5)
+    sleep(3)
     init_get()
 
     print('Press a key to continue')
@@ -105,6 +105,7 @@ if __name__ == "__main__":
     print('Press a key to continue')
     #input()
     print('Get reef')
+    init_robot('pmi')
     get_reef()
     robot.goto_xy_block(800, 300)
 

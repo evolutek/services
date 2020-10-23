@@ -5,11 +5,11 @@ from math import pi
 from time import sleep
 
 cs = CellaservProxy()
-robot = Robot.get_instance('pal')
-actuators = cs.actuators['pal']
+robot = Robot.get_instance('pmi')
+actuators = cs.actuators['pmi']
 
 # Flip = ANCHROAGE XOR SIDE
-flip = True
+flip = False
 
 # Need the robot to be in (800, 200, 0)
 def init_drop():
