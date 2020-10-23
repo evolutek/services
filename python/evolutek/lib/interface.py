@@ -87,7 +87,7 @@ class Interface:
         self.paths[robot] = []
         self.client.add_subscribe_cb('%s_path' % robot, self.path_handler)
 
-        setattr(self, '%s_watchdog' % robot, Watchdog(self.timeout_robot, self.reset_robot, [robot]))
+        setattr(self, '%s_watchdog' % robot, Watchdog(self.timeout_robot * 2, self.reset_robot, [robot]))
 
         img = Image.open('/etc/conf.d/%s.png' % robot)
         new_size = int((self.robots[robot]['size'] + 35) * 2 * self.interface_ratio)

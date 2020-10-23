@@ -13,7 +13,7 @@ from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
-from evolutek.lib.map.utils import convert_path_to_point
+from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
@@ -51,6 +51,7 @@ class Robot:
 
             watchdog = Watchdog(1, self.timeout_handler)
             watchdog.reset()
+            self.has_avoid.clear()
 
             f(*args, **kwargs)
 
@@ -91,7 +92,7 @@ class Robot:
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.side = False
         try:
-            self.side = self.cs.match.get_color() != self.color1
+            self.color_change(self.cs.match.get_color())
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % (str(e)))
 
@@ -232,7 +233,7 @@ class Robot:
     def goto_avoid(self, x, y, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
         status = self.goto(x, y, mirror)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goto(x, y, mirror)
@@ -242,7 +243,7 @@ class Robot:
     def goth_avoid(self, th, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
         status = self.goth(th, mirror)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goth(th, mirror)
@@ -252,7 +253,7 @@ class Robot:
     def move_trsl_avoid(self, dest, acc, dec, maxspeed, sens, timeout=0.0, nb_try=None):
         tried = 1
         status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
@@ -265,6 +266,9 @@ class Robot:
     ###############
 
     def update_path(self, path):
+
+        print("[ROBOT] Updating path")
+
         new = []
 
         try:
@@ -291,11 +295,16 @@ class Robot:
             y = self.mirror_pos(y=y)[1]
 
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
-        path = [self.tm.get_position(), Point(x, y)]
+        path = [Point(dict=self.tm.get_position()), Point(x, y)]
+
+        if path[1].dist(path[0]) < DELTA_POS:
+            print("[ROBOT] Already at destination")
+            return Status.reached
 
         while len(path) >= 2:
 
-            path = self.update_path(path)
+            if(not self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+                path = self.update_path(path)
 
             if len(path) < 2:
                 print('[ROBOT] Destination unreachable')
@@ -309,6 +318,10 @@ class Robot:
 
             # While the robot is not stopped
             while not self.is_stopped.is_set():
+
+                if(self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+                    sleep(0.1)
+                    continue
 
                 tmp_path = self.update_path(path)
 
@@ -324,20 +337,20 @@ class Robot:
                     self.is_stopped.wait()
                 else:
                     # TODO : manage refresh
-                    sleep(0.2)
+                    sleep(0.1)
 
                 path = tmp_path
 
             print("[ROBOT] Robot stopped")
 
             if self.has_avoid.is_set():
-                self.move_back(path[0], MOVE_BACK)
+                self.move_back(MOVE_BACK)
             self.has_avoid.clear()
 
             # We are supposed to be stopped
-            pos = self.tm.get_position()
+            pos = Point(dict=self.tm.get_position())
 
-            if Point(dict=pos).dist(path[1]) < DELTA_POS:
+            if pos.dist(path[1]) < DELTA_POS:
                 # We reached next point (path[1])
                 path.pop(0)
                 path[0] = pos
@@ -428,6 +441,7 @@ class Robot:
     #########
 
     def wait_until(self, timeout=0.0):
+
         watchdog = None
 
         if timeout > 0.0:
@@ -447,22 +461,21 @@ class Robot:
         self.end_avoid.clear()
         return True
 
-    def move_back(self, last_point, max_dist):
+    def move_back(self, dist):
         print('[ROBOT] Moving back')
 
         self.wait_until(timeout=3)
 
         pos = self.tm.get_position()
-        dist = min(last_point.dist(Point(dict=pos)), max_dist)
         side = self.tm.avoid_status()['side']
 
+        print('[ROBOT] Move back direction: ' + str(side))
         if side is None:
             return
 
-
-        if self.move_trsl_block(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(side == 'front')):
+        if self.move_trsl_block(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(side != 'front')):
             print('[ROBOT] Robot avoided, moving front')
-            if self.move_trsl_block(acc=200, dec=200, dest=dist/2, maxspeed=400, sens=int(side != 'front')):
+            if self.move_trsl_block(acc=200, dec=200, dest=dist/2, maxspeed=400, sens=int(side == 'front')):
                 return Status.has_avoid
 
         return Status.reached
