@@ -7,20 +7,20 @@ from math import pi
 from time import sleep
 
 cs = CellaservProxy()
-ROBOT = None
-robot = None
+ROBOT = 'pmi'
+robot = Robot.get_instance('pmi')
 
 def push_windsocks(robot, ax) :
     #self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
-    
+
     cs.actuators[ROBOT].left_arm_open() if ax == 3 else cs.actuators[ROBOT].right_arm_open()
 
 
     # TODO config
-    robot.tm.set_delta_max_rot(0.5)
-    robot.tm.set_delta_max_trsl(300)
+    robot.tm.set_delta_max_rot(1)
+    robot.tm.set_delta_max_trsl(500)
 
-    robot.tm.move_trsl(dest=650, acc=800, dec=800, maxspeed=1000, sens=1)
+    robot.tm.move_trsl(dest=625, acc=800, dec=800, maxspeed=1000, sens=1)
 
     sleep(2)
 

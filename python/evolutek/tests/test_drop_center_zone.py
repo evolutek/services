@@ -9,7 +9,7 @@ robot = Robot.get_instance('pal')
 actuators = cs.actuators['pal']
 
 # side == True if yellow
-side = True
+side = False
 
 # TODO : think more about back buoy drop
 
@@ -63,7 +63,7 @@ def drop_back_buoys():
     else:
         actuators.left_cup_holder_open()
     sleep(1.5)  # TODO recompute
-    actuators.pump_drop(pump=8 if side else 6) # Depend of side
+    actuators.pump_drop(pump=8 if side else 5) # Depend of side
     robot.move_trsl_block(100, 800, 800, 800, 1)
     if side:
         actuators.right_cup_holder_close()
@@ -81,30 +81,31 @@ def drop_back_buoys():
     actuators.left_cup_holder_close()
     actuators.right_cup_holder_close()
 
-robot.tm.disable_avoid()
-robot.tm.free()
-actuators.pump_get(pump=1, buoy='red')
-actuators.pump_get(pump=4, buoy='green')
-actuators.pump_get(pump=5, buoy='green')
-actuators.pump_get(pump=6, buoy='green')
-actuators.pump_get(pump=7, buoy='green')
-actuators.pump_get(pump=8, buoy='green')
-print('Please place buoys and the robot and press a key to continue')
-input()
+if __name__ == "__main__":
+    robot.tm.disable_avoid()
+    robot.tm.free()
+    actuators.pump_get(pump=1, buoy='red')
+    actuators.pump_get(pump=4, buoy='green')
+    actuators.pump_get(pump=5, buoy='green')
+    actuators.pump_get(pump=6, buoy='green')
+    actuators.pump_get(pump=7, buoy='green')
+    actuators.pump_get(pump=8, buoy='green')
+    print('Please place buoys and the robot and press a key to continue')
+    input()
 
-robot.set_pos(1400, 1100 if side else 1900, 0)
-robot.tm.unfree()
+    robot.set_pos(1400, 1100 if side else 1900, 0)
+    robot.tm.unfree()
 
-print('Starting init')
-init_drop()
+    print('Starting init')
+    init_drop()
 
-print('Press a key to continue')
-input()
-print('Executing drop front')
-drop_front_buoys()
+    print('Press a key to continue')
+    input()
+    print('Executing drop front')
+    drop_front_buoys()
 
-print('Press a key to continue')
-input()
-drop_back_buoys()
+    print('Press a key to continue')
+    input()
+    drop_back_buoys()
 
-print('End testing')
+    print('End testing')
