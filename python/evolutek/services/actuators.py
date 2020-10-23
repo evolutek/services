@@ -85,12 +85,12 @@ def use_queue(method):
     """
     @wraps(method)
     def wrapped(self, *args, **kwargs):
-        parameters = [self, args]
+        parameters = [self, args, kwargs]
 
         if self.queue.stop.is_set():
             return
-        print(parameters)
-        self.queue.run_action(method, tuple(parameters))
+
+        self.queue.run_action(method, parameters)
     return wrapped
 
 
@@ -177,7 +177,6 @@ class Actuators(Service):
     def reset(self):
         self.disabled = False
         self.match_end.clear()
-        self.free()
 
         self.cs.ax["%s-%d" % (ROBOT, 5)].moving_speed(256)
 
@@ -363,6 +362,12 @@ class Actuators(Service):
     def left_arm_open(self):
         self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=512)
 
+    # Left Arm Push Windsock
+    @Service.action
+    @if_enabled
+    def left_arm_push(self):
+        self.cs.ax["%s-%d" % (ROBOT, 3)].move(goal=444)
+
     # Right Arm Close
     @Service.action
     @if_enabled
@@ -375,6 +380,11 @@ class Actuators(Service):
     def right_arm_open(self):
         self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=512)
 
+    # Left Arm Push Windsock
+    @Service.action
+    @if_enabled
+    def right_arm_push(self):
+        self.cs.ax["%s-%d" % (ROBOT, 4)].move(goal=580)
 
     ###############
     # CUP HOLDERS #
@@ -447,25 +457,35 @@ class Actuators(Service):
     @use_queue
     def windsocks_push(self):
 
-        cs.actuators[ROBOT].left_arm_open() if ax == 3 else cs.actuators[ROBOT].right_arm_open()
+        print("COUCOU")
+        if self.color == self.color1: self.left_arm_open()
+        else: self.right_arm_open()
+        print("HELLO")
         sleep(0.5)
 
         # TODO config
-        robot.tm.set_delta_max_rot(1)
-        robot.tm.set_delta_max_trsl(500)
+        self.robot.tm.set_delta_max_rot(1)
+        self.robot.tm.set_delta_max_trsl(500)
 
-        robot.move_trsl_block(dest=625, acc=800, dec=800, maxspeed=1000, sens=1)
+        self.robot.move_trsl_block(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
 
-        cs.actuators[ROBOT].left_arm_close() if ax == 3 else cs.actuators[ROBOT].right_arm_close()
+        if self.color == self.color1:
+            self.left_arm_push()
+            sleep(0.2)
+            self.left_arm_close()
+        else:
+            self.right_arm_push()
+            sleep(0.2)
+            self.right_arm_close()
         sleep(0.5)
 
         # TODO config
-        robot.tm.set_delta_max_rot(0.2)
-        robot.tm.set_delta_max_trsl(100)
+        self.robot.tm.set_delta_max_rot(0.2)
+        self.robot.tm.set_delta_max_trsl(100)
 
-        robot.move_trsl_block(100, 400, 400, 500, 0)
+        self.robot.move_trsl_block(100, 400, 400, 500, 0)
 
-    @Serive.action
+    @Service.action
     @if_enabled
     @use_queue
     def get_reef(self):
@@ -478,7 +498,7 @@ class Actuators(Service):
         self.pump_get(pump=8)
         self.robot.tm.move_trsl(400, 300, 300, 300, 0)
         sleep(2)
-        robot.tm.free()
+        self.robot.tm.free()
         sleep(0.5)
         self.left_cup_holder_close()
         self.right_cup_holder_close()
