@@ -12,6 +12,7 @@ from evolutek.lib.watchdog import Watchdog
 
 from enum import Enum
 from functools import wraps
+from math import pi
 from threading import Event
 from time import sleep
 
@@ -443,9 +444,9 @@ class Actuators(Service):
     @use_queue
     def get_reef_buoys(self):
         self.pump_get(pump=4)
-        self.move_trsl_block(200, 500, 500, 500, 1)
-        self.goth(-1 * pi/2)
-        self.move_trsl_block(50, 500, 500, 500, 1)
+        self.robot.move_trsl_block(200, 500, 500, 500, 1)
+        self.robot.goth(-1 * pi/2)
+        self.robot.move_trsl_block(50, 500, 500, 500, 1)
         self.robot.goth(pi)
 
         self.pump_get(pump=1)
