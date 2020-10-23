@@ -9,7 +9,7 @@ robot = Robot.get_instance('pal')
 actuators = cs.actuators['pal']
 
 # Flip = ANCHROAGE XOR SIDE
-flip = False
+flip = True
 
 # Need the robot to be in (800, 200, 0)
 def init_drop():
@@ -60,39 +60,44 @@ def drop_north_buoys():
     actuators.pump_drop(pump=2 if flip else 4) #depend of flip
     robot.move_trsl_block(125, 800, 800, 800, 0)
 
-robot.tm.disable_avoid()
-robot.tm.free()
-actuators.pump_get(pump=1, buoy='red')
-actuators.pump_get(pump=2, buoy='red')
-actuators.pump_get(pump=3, buoy='red')
-actuators.pump_get(pump=4, buoy='green')
-actuators.pump_get(pump=5, buoy='green')
-actuators.pump_get(pump=6, buoy='green')
-actuators.pump_get(pump=7, buoy='green')
-actuators.pump_get(pump=8, buoy='green')
-print('Please place buoys and the robot and press a key to continue')
-input()
+def end_match():
+    robot.goto_theta_block(pi/2)
+    robot.move_trsl_block(200, 500, 500, 500, 0)
+    robot.recalibration_block(0)
+    actuators.flags_raise()
 
-robot.set_pos(800, 200, 0)
-robot.tm.unfree()
 
-print('Starting init')
-init_drop()
+if __name__ == "__main__":
 
-print('Press a key to continue')
-input()
-print('Executing drop front')
-drop_south_buoys()
+    robot.tm.disable_avoid()
+    robot.tm.free()
+    actuators.pump_get(pump=1, buoy='red')
+    actuators.pump_get(pump=2, buoy='red')
+    actuators.pump_get(pump=3, buoy='red')
+    actuators.pump_get(pump=4, buoy='green')
+    actuators.pump_get(pump=5, buoy='green')
+    actuators.pump_get(pump=6, buoy='green')
+    actuators.pump_get(pump=7, buoy='green')
+    actuators.pump_get(pump=8, buoy='green')
+    print('Please place buoys and the robot and press a key to continue')
+    input()
 
-print('Press a key to continue')
-input()
-drop_north_buoys()
+    robot.set_pos(800, 200, 0)
+    robot.tm.unfree()
 
-input()
-robot.goto_theta_block(pi/2)
-robot.move_trsl_block(200, 500, 500, 500, 0)
-robot.tm.recalibration(0)
-sleep(1)
-actuators.flags_raise()
+    print('Starting init')
+    init_drop()
 
-print('End testing')
+    print('Press a key to continue')
+    input()
+    print('Executing drop front')
+    drop_south_buoys()
+
+    print('Press a key to continue')
+    input()
+    drop_north_buoys()
+
+    input()
+    end_match()
+
+    print('End testing')
