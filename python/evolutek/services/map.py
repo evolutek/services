@@ -58,7 +58,7 @@ class Map(Service):
             color = self.cs.match.get_color()
             self.match_color(color)
         except Exception as e:
-            print('[MAP] Failed to get color: %s\nUsing default Yellow' % str(e))
+            print('[MAP] Failed to get color: %s\nUsing default %s' % (str(e), self.color1))
             self.match_color(self.color1) # Default color
 
         self.robot_size = int(self.cs.config.get(section='match', option='robot_size'))
@@ -95,7 +95,7 @@ class Map(Service):
 
     """ ACTION """
     @Service.action
-    def get_opponnents(self):
+    def get_opponents(self):
         return self.robots
 
     """ ACTION """
@@ -264,7 +264,7 @@ class Map(Service):
           if not tim.connected:
             continue
           if self.debug_mode == DebugMode.debug_tims:
-            self.tim_scans[ip] = convert_path_to_dict(tim.get_points())
+            self.tim_scans[ip] = convert_path_to_dict(tim.get_raw_data())
           scan = tim.get_scan()
           scans[tim.ip] = scan
           # merge all robots together
@@ -311,11 +311,11 @@ class Map(Service):
               self.robots.append(d)
 
           #print('[MAP] Detected %d robots' % len(self.robots))
-          self.publish('tim_detected_robots', robots=self.robots)
-          if self.debug_mode == DebugMode.debug_tims:
-            self.publish('tim_scans', scans=self.tim_scans)
-          if self.debug_mode == DebugMode.debug_merge:
-            self.publish('tim_merge', merge= translated_clouds)
+          #self.publish('tim_detected_robots', robots=self.robots)
+          #if self.debug_mode == DebugMode.debug_tims:
+          #  self.publish('tim_scans', scans=self.tim_scans)
+          #if self.debug_mode == DebugMode.debug_merge:
+          #  self.publish('tim_merge', merge= translated_clouds)
         sleep(self.refresh / 1000)
 
 

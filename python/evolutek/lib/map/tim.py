@@ -43,6 +43,7 @@ class RobotCloud:
       self.merged_pos = Point(dict=dict["merged_pos"])
       self.tag = dict["tag"]
 
+
   def to_dict(self):
     temp_points = {}
     temp_pos = {}
@@ -65,16 +66,22 @@ class RobotCloud:
       self.pos[ip] = other.pos[ip]
       # get position from closest lidar
       max_size = 0
+      max_pos = []
       for ip in self.points:
         if len(self.points[ip]) > max_size:
-          self.merged_pos = self.pos[ip]
+          max_pos = [self.pos[ip]]
           max_size = len(self.points[ip])
+        elif len(self.points[ip]) == max_size:
+          max_pos.append(self.pos[ip])
+      self.merged_pos = Point.mean(max_pos)
       return True
     else:
       return False
 
   def add_telemetry(self, pos):
-    self.pos["telemetry"] = pos
+    self.pos["telemetry"] = Point(dict=pos)
+    self.points["telemetry"] = []
+    self.merged_pos = Point(dict = pos)
 
 
 # TIM Class
