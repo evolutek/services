@@ -68,6 +68,8 @@ class Ai(Service):
             print('[AI] Ready')
             print(self.goals)
 
+            self.use_pathfinding = self.goals.current_strategy.use_pathfinding
+
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
 
 
@@ -319,7 +321,10 @@ class Ai(Service):
     """ OTHERS ACTIONS """
     @Service.action
     def set_strategy(self, index):
-        return self.goals.reset(int(index))
+        status = self.goals.reset(int(index))
+        if status:
+            self.use_pathfinding = self.goals.current_strategy.use_pathfinding
+        return status
 
     @Service.action
     def set_recalibration(self, need_recal=True):
