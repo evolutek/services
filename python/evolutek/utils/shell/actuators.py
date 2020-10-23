@@ -16,7 +16,7 @@ def actuators_shell(ctx):
         global ROBOT
         ROBOT = get_robot()
         subshell = make_click_shell(
-            ctx, prompt=get_prompt, intro='Shell to control actuator')
+            ctx, prompt=get_prompt, intro='Shell to control actuators')
         subshell.cmdloop()
     else:
         click.echo('[SHELL] Failed to launch actuators shell')
@@ -75,15 +75,15 @@ def flags_low():
 @actuators_shell.command()
 @click.argument('pump', required=True, type=int)
 @click.argument('buoy', required=False)
-def pump_get(pump, buoy='unknow'):
-    cs.actuators[ROBOT].pump_get(pump, buoy)
+def pump_get(pump, buoy='unknown'):
+    cs.actuators[ROBOT].pump_get(pump, buoy if buoy is not None else 'unknown')
     return
 
 @actuators_shell.command()
 @click.argument('pump', required=True, type=int)
 @click.argument('buoy', required=False)
-def pump_set(pump, buoy='unknow'):
-    cs.actuators[ROBOT].pump_set(pump, buoy)
+def pump_set(pump, buoy='unknown'):
+    cs.actuators[ROBOT].pump_set(pump, buoy if buoy is not None else 'unknown')
     return
 
 @actuators_shell.command()
