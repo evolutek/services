@@ -8,6 +8,12 @@ class Act_queue():
         self.response_queue = queue.LifoQueue()
         self.stop = Event()
 
+    ###############################
+    # GET LAST ELEMENT FROM QUEUE #
+    ###############################
+    def get_response(self):
+        return self.response_queue.get()
+
     #############################
     # EXECUTE A LIST OF ACTIONS #
     #############################
@@ -29,6 +35,7 @@ class Act_queue():
     def run_action(self, action, args):
         tmp = (action, args)
         self.task.put(tmp)
+        return (self.get_response())
 
     ######################
     # ADD A LIST OF TASK #
@@ -36,6 +43,7 @@ class Act_queue():
     def run_actions(self, actions, args_list):
         tmp = (list(actions), list(args_list))
         self.task.put(tmp)
+        return (self.get_response())
 
     #################
     # DEPILATE QUEUE #
