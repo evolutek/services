@@ -85,12 +85,12 @@ def use_queue(method):
     """
     @wraps(method)
     def wrapped(self, *args, **kwargs):
-        parameters = [self, args]
+        parameters = [self, args, kwargs]
 
         if self.queue.stop.is_set():
             return
-        print(parameters)
-        self.queue.run_action(method, tuple(parameters))
+
+        self.queue.run_action(method, parameters)
     return wrapped
 
 
