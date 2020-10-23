@@ -431,6 +431,20 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
+    def get_reef_buoys(self):
+        self.pump_get(pump=4)
+        self.move_trsl_block(200, 500, 500, 500, 1)
+        self.goth(-1 * pi/2)
+        self.move_trsl_block(50, 500, 500, 500, 1)
+        self.robot.goth(pi)
+
+        self.pump_get(pump=1)
+        self.robot.move_trsl_block(325, 500, 500, 500, 1)
+        self.robot.move_trsl_block(150, 500, 500, 500, 0)
+
+    @Service.action
+    @if_enabled
+    @use_queue
     def windsocks_push(self):
 
         cs.actuators[ROBOT].left_arm_open() if ax == 3 else cs.actuators[ROBOT].right_arm_open()
