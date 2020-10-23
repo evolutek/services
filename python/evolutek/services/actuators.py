@@ -21,6 +21,12 @@ SAMPLE_SIZE = 10
 # Emergency stop button
 BAU_GPIO = 21
 
+# pattern
+class Pattern(Enum):
+    Case_1 = "same"
+    Case_2 = "red-green"
+    Case_3 = "green-red"
+
 ##################
 # PUMP ACTUATORS #
 ##################
@@ -470,6 +476,34 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_trsl(100)
 
         self.robot.move_trsl_block(100, 400, 400, 500, 0)
+
+    @Service.action
+    @if_enabled
+    def set_pattern(self):
+        if (self.color == self.color1):
+            pattern_1 = ["green", "green"]
+        else:
+            pattern_1 = ["red", "red"]
+        pattern_2 = ["red", "green"]
+        pattern_3 = ["green", "red"]
+        first_sensor = self.rgb_sensors.read_sensor(1, "match").split(':')[1]
+        second_sensor = self.rgb_sensors.read_sensor(2, "match").split(':')[1]
+        first_sensor = first_sensor.replace(' ', '')
+        second_sensor = second_sensor.replace(' ', '')
+        combo = [first_sensor, second_sensor]
+        print(combo)
+        if combo == pattern_1:
+            print('case 1')
+            return 1 #Pattern.Case_1
+        elif combo == pattern_2:
+            print('case 2')
+            return 2 #Pattern.Case_2
+        elif combo == pattern_3:
+            print('case 3')
+            return 3 #Pattern.Case_3
+        else:
+            print('return case 1 by default')
+            return 42 #Pattern.Case_1
 
     @Service.action
     @if_enabled
