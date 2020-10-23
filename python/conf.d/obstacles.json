@@ -43,6 +43,42 @@
                 "y" : 1650
             },
             "form": "rectangle"
+        },
+        {
+            "center": {
+                "x": 800,
+                "y": 1900
+            },
+            "radius": 20,
+            "tag": "buoy1",
+            "form": "octogon"
+        },
+        {
+            "center": {
+                "x": 1200,
+                "y": 1270
+            },
+            "radius": 20,
+            "tag": "buoy2",
+            "form": "octogon"
+        },
+        {
+            "center": {
+                "x": 800,
+                "y": 1100
+            },
+            "radius": 20,
+            "tag": "buoy3",
+            "form": "octogon"
+        },
+        {
+            "center": {
+                "x": 1200,
+                "y": 1730
+            },
+            "radius": 20,
+            "tag": "buoy4",
+            "form": "octogon"
         }
     ],
 
@@ -50,7 +86,7 @@
         {
             "p1": {
                 "x": 500,
-                "y": 2750
+                "y": 2600
             },
             "p2": {
                 "x": 1100,
