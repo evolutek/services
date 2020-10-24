@@ -557,42 +557,32 @@ class Actuators(Service):
         status = self.robot.goth(-1 * pi/3)
         self.pump_get(pump=2 if side else 3)
         if self.should_stop(status):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(160, 500, 500, 500, 1)
         if self.should_stop(status):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(60, 500, 500, 500, 0)
 
         # Recal the robot in the zone
         if self.should_stop(status):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         if  self.robot.goth(pi) == Status.unreached or self.queue.stop.is_set():
-            pump_drop(pump=2 if side else 3)
             return status.value
         if self.should_stop(self.robot.move_trsl_avoid(200, 500, 500, 500, 0)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         if should_stop(self.robot.recalibration(side_x=(False, True), decal_y=1511)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         if should_stop(self.robot.goto_avoid(1750, 1800)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         status = self.robot.goth(0)
 
         # Drop front buoys
         if should_stop(status):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         if should_stop(self.robot.move_trsl_avoid(70, 500, 500, 500, 1)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         self.pumps_drop([1, 2, 3, 4])
         if should_stop(self.robot.move_trsl_avoid(85, 300, 300, 300, 0)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
 
         pattern = self.get_pattern()
@@ -600,15 +590,12 @@ class Actuators(Service):
  
         # Drop Right zone
         if should_stop(self.robot.goth(pi/2)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         if should_stop(self.robot.move_trsl_avoid(75, 800, 800, 800, 1)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
         if (should_stop(status)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         sleep(0.5)
 
@@ -628,18 +615,14 @@ class Actuators(Service):
         self.left_cup_holder_close()
         self.right_cup_holder_close()
         if (should_stop(status)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         sleep(1)
 
         if should_stop(self.robot.move_trsl_avoid(75, 800, 800, 800, 1)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         if should_stop(self.robot.goth(pi)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         if should_stop(self.robot.move_trsl_avoid(50, 500, 500, 500, 1)):
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
 
         # Drop Left zone
@@ -648,7 +631,6 @@ class Actuators(Service):
         else:
             self.left_cup_holder_drop()
         if self.queue.stop.is_set():
-            pump_drop(pump=2 if side else 3)
             return Status.unreached.value
         sleep(0.5)
 
