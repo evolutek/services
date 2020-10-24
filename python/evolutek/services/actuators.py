@@ -553,7 +553,7 @@ class Actuators(Service):
 
         if self.queue.stop.is_set():
             return Status.unreached
-        self.robot.move_trsl_block(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
+        self.robot.move_trsl_avoid(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
 
         if self.color != self.color1:
             self.left_arm_push()
@@ -571,7 +571,7 @@ class Actuators(Service):
 
         if self.queue.stop.is_set():
             return Status.unreached
-        self.robot.move_trsl_block(100, 400, 400, 500, 0)
+        self.robot.move_trsl_avoid(100, 400, 400, 500, 0)
         return Status.reached
 
     @Service.action
