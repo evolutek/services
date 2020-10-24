@@ -33,7 +33,7 @@ class Point(PointShape):
         return 0
 
     def to_dict(self):
-        return {'x': self.x, 'y': self.y,}
+        return {'x': round(self.x), 'y': round(self.y)}
 
     def to_tuple(self):
         return (self.x, self.y)
