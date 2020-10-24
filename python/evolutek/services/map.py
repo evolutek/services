@@ -128,10 +128,9 @@ class Map(Service):
             # Removes the temporary obstacle that corresponds to the other robot
             self.map.remove_obstacle('otherrobot')
             # Publishes the new path
-            if robot in ['pal', 'pmi']:
-                res = [p.to_dict() for p in self.path]
-                self.publish(robot+'_path', robot=robot, path=res)
             res = convert_path_to_dict(self.path)
+            if robot in ['pal', 'pmi']:
+                self.publish(robot+'_path', robot=robot, path=res)
             print("[MAP] Path: " + str(res))
             return res
 
@@ -148,6 +147,8 @@ class Map(Service):
               obstacles = obstacles.union(obstacle)
             for tag in self.map.color_obstacles:
               obstacles = obstacles.union(self.map.color_obstacles[tag])
+            for tag in self.map.robots:
+              obstacles = obstacles.union(self.map.robots[tag])
 
             polygons = self.map.borders
             if isinstance(obstacles, Polygon):

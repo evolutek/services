@@ -357,9 +357,7 @@ class Map:
                         Point(tuple=poly.exterior.coords[i + 1]).round()
                     ])
                     if line.crosses(side):
-                        print("Found")
-                        print(line)
-                        print(side)
+                        print("[MAP] Validity check: %s collides with %s" % (line, side))
                         return False
             prev = p
 
