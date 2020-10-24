@@ -448,32 +448,43 @@ class Actuators(Service):
     def start_lighthouse(self):
         self.right_cup_holder_open()
         sleep(0.5)
-        self.robot.move_trsl_block(350, 300, 300, 300, 0)
-        self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
+        if should_stop(self.robot.move_trsl_block(350, 300, 300, 300, 0)):
+            self.right_cup_holder_close()
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
+        return status.value
 
     @Service.action
     @if_enabled
     @use_queue
     def drop_starting_without_sort(self):
         if (self.queue.stop.is_set()):
-            return Status.unreached
-        self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         self.pumps_drop([1, 2, 3, 4])
-        if self.queue.stop.is_set():
-            return Status.unreached
-        self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
-        self.robot.move_rot_block(pi, 5, 5, 5, 1)
+        if should_stop(status):
+            return Status.unreached.value
+        if should_stop()self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
+            return Status.unreached.value
+        status = self.robot.move_rot_block(pi, 5, 5, 5, 1)
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
-        self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
+        if (should_stop(status)):
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
         self.pumps_drop([5, 6, 7, 8])
-        if self.queue.stop.is_set():
-            return Status.unreached
+        if should_stop(status):
+            return Status.unreached.value
 
-        self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
+        status = self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         self.left_arm_close()
         self.right_arm_close()
-        return Status.reached
+        return Status.reached.value
+
+    def should_stop(self, status):
+        if status != Status.reached or self.queue.stop.is_set()
+            return True
+        return False
 
     @Service.action
     @if_enabled
@@ -484,32 +495,49 @@ class Actuators(Service):
 
         flip = self.anchorage ^ (self.color == self.color2)
 
-        self.robot.move_trsl_block(150, 500, 500, 500, 1)
+        status = self.robot.move_trsl_block(150, 500, 500, 500, 1)
         self.pumps_drop([3, 4] if flip else [1, 2])
+        if should_stop(status):
+            return Status.unreached.value
         self.robot.move_trsl_block(200, 800, 800, 800, 0)
 
-        self.robot.goth(pi/2)
-        self.robot.move_trsl_block(100, 500, 500, 500, 0)
-        self.robot.goth(0 if self.anchorage else pi)
+        status = self.robot.goth(pi/2)
+        if self.robot.move_trsl_block(100, 500, 500, 500, 0) == Status.unreached or status != Status.reached:
+            return Status.unreached.value
+        status = self.robot.goth(0 if self.anchorage else pi)
 
+        if (should_stop(status)):
+            return Status.unreached.value
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
         sleep(0.5)
-        self.robot.move_trsl_block(120, 300, 300, 300, 0)
+        status = self.robot.move_trsl_block(120, 300, 300, 300, 0) if not self.queue.stop.is_set() else return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
 
-        self.robot.move_trsl_block(525, 300, 300, 300, 1)
+        status = self.robot.move_trsl_block(525, 300, 300, 300, 1)
+        if self.queue.stop.is_set() or status != Status.reached:
+            return Status.unreached.value
         self.pumps_drop([6, 8] if flip else [5, 7])
-        self.robot.move_trsl_block(100, 800, 800, 800, 1)
+        status = self.robot.move_trsl_block(100, 800, 800, 800, 1) is not self.queue.stop.is_set() else return Status.unreached.value
         self.left_cup_holder_close()
         self.right_cup_holder_close()
 
-        self.robot.goth(pi/2)
-        self.robot.move_trsl_block(225, 500, 500, 500, 1)
-        self.robot.goth(pi if self.anchorage else 0)
-        self.robot.move_trsl_block(150, 300, 300, 300, 1)
+        if (should_stop()):
+            return Status.unreached.value
+        status = self.robot.goth(pi/2)
+        if (self.queue.stop.is_set()):
+            return Status.unreached.value if should_stop(status) else Status.reached.value
+        status = self.robot.move_trsl_block(225, 500, 500, 500, 1)
+        if self.robot.goth(pi if self.anchorage else 0) == Status.unreached:
+            status = Status.unreached
+        if (should_stop(status)):
+            return Status.unreached.value
+        status = self.robot.move_trsl_block(150, 300, 300, 300, 1)
+        if should_stop(status):
+            return Status.unreached.value
         self.pumps_drop([1, 2] if flip else [3, 4])
-        self.robot.move_trsl_block(125, 800, 800, 800, 0)
+        status = self.robot.move_trsl_block(125, 800, 800, 800, 0)
+        return status.value
 
     @Service.action
     @if_enabled
@@ -525,14 +553,23 @@ class Actuators(Service):
     @use_queue
     def get_reef_buoys(self):
         self.pump_get(pump=4)
-        self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
-        self.robot.goth(-1 * pi/2)
-        self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
+        status = self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
+        if should_stop(status):
+            self.pump_drop(4)
+            return Status.unreached.value
+        if should_stop(self.robot.goth(-1 * pi/2)):
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
         self.robot.goth(pi)
 
         self.pump_get(pump=1)
-        self.robot.move_trsl_avoid(325, 500, 500, 500, 1)
-        self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
+        if should_stop(status):
+            self.pump_drop(1)
+            return Status.unreached.value
+        if should_stop(self.robot.move_trsl_avoid(325, 500, 500, 500, 1)):
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
+        return status.value
 
     @Service.action
     @if_enabled
@@ -548,8 +585,8 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_trsl(500)
 
         if self.queue.stop.is_set():
-            return Status.unreached
-        self.robot.move_trsl_avoid(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
 
         if self.color != self.color1:
             self.left_arm_push()
@@ -565,10 +602,10 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(0.2)
         self.robot.tm.set_delta_max_trsl(100)
 
-        if self.queue.stop.is_set():
-            return Status.unreached
-        self.robot.move_trsl_avoid(100, 400, 400, 500, 0)
-        return Status.reached
+        if self.queue.stop.is_set() or status != Status.reached:
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(100, 400, 400, 500, 0)
+        return Status.reached.value
 
     @Service.action
     @if_enabled
@@ -605,9 +642,12 @@ class Actuators(Service):
         self.pump_get(pump=8)
 
         if self.queue.stop.is_set():
+            self.left_cup_holder_close()
+            self.right_cup_holder_close()
+            self.pumps_drop([5, 6, 7, 8])
             return Status.unreached.value
 
-        self.robot.tm.move_trsl(400, 300, 300, 300, 0)
+        status = self.robot.tm.move_trsl(400, 300, 300, 300, 0)
         sleep(2)
         self.robot.tm.free()
         sleep(0.5)
@@ -615,10 +655,10 @@ class Actuators(Service):
         self.right_cup_holder_close()
         sleep(1)
 
-        if self.queue.stop.is_set():
+        if should_stop(status):
             return Status.unreached.value
 
-        self.robot.move_trsl_avoid(200, 300, 300, 300, 1)
+        status = self.robot.move_trsl_avoid(200, 300, 300, 300, 1)
         return Status.reached.value
 
 
