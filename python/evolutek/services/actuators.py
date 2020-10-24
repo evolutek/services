@@ -442,6 +442,20 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
+    def drop_starting_without_sort(self):
+        self.left_cup_holder_drop()
+        self.right_cup_holder_drop()
+        self.robot.move_trsl_block(300, 500, 500, 500, 0)
+        self.pumps_drop([5, 6, 7, 8])
+        self.robot.move_trsl_block(300, 500, 500, 500, 1)
+        self.robot.goth(-1 * pi/2)
+        self.robot.move_trsl_block(300, 500, 500, 500, 1)
+        self.pumps_drop([1, 2, 3, 4])
+        self.robot.move_trsl_block(300, 500, 500, 500, 0)
+
+    @Service.action
+    @if_enabled
+    @use_queue
     def get_reef_buoys(self):
         self.pump_get(pump=4)
         self.robot.move_trsl_block(200, 500, 500, 500, 1)
