@@ -171,12 +171,12 @@ class Map:
                     obstacle['p2'].y = 3000 - obstacle['p2'].y
                 self.add_rectangle_obstacle(**obstacle, type=type)
             elif form == 'octogon':
-                if not 'p' in obstacle:
+                if not 'center' in obstacle:
                     print('[MAP] Bad circle obstacle in parsing')
                     continue
-                obstacle['p'] = Point(dict=obstacle['p'])
+                obstacle['center'] = Point(dict=obstacle['center'])
                 if mirror:
-                    obstacle['p'].y = 3000 - obstacle['p'].y
+                    obstacle['center'].y = 3000 - obstacle['center'].y
                 self.add_octogon_obstacle(**obstacle, type=type)
             else:
                 print('[MAP] Obstacle form not found')
@@ -357,9 +357,7 @@ class Map:
                         Point(tuple=poly.exterior.coords[i + 1]).round()
                     ])
                     if line.crosses(side):
-                        print("Found")
-                        print(line)
-                        print(side)
+                        print("[MAP] Validity check: %s collides with %s" % (line, side))
                         return False
             prev = p
 

@@ -89,9 +89,9 @@ def use_queue(method):
         parameters = [self, args, kwargs]
 
         if self.queue.stop.is_set():
-            return
+            return 
 
-        self.queue.run_action(method, parameters)
+        return self.queue.run_action(method, parameters)
     return wrapped
 
 
@@ -173,6 +173,7 @@ class Actuators(Service):
         self.queue.run_queue()
 
     # Stop
+    @Service.action
     def stop(self):
         self.queue.stop_queue()
 
@@ -443,6 +444,9 @@ class Actuators(Service):
     ######################
 
     @Service.action
+    def windsocks_push(self):
+        return Status(self._windsocks_push()).value
+    
     @if_enabled
     @use_queue
     def start_lighthouse(self):
@@ -455,17 +459,25 @@ class Actuators(Service):
     @if_enabled
     @use_queue
     def drop_starting_without_sort(self):
+        if (self.queue.stop.is_set()):
+            return Status.unreached
         self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         self.pumps_drop([1, 2, 3, 4])
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
         self.robot.move_rot_block(pi, 5, 5, 5, 1)
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
         self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
         self.pumps_drop([5, 6, 7, 8])
+        if self.queue.stop.is_set():
+            return Status.unreached
+
         self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         self.left_arm_close()
         self.right_arm_close()
+        return Status.reached
 
     @Service.action
     @if_enabled
@@ -528,18 +540,18 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
-    def windsocks_push(self):
+    def _windsocks_push(self):
 
-        print("COUCOU")
         if self.color == self.color1: self.left_arm_open()
         else: self.right_arm_open()
-        print("HELLO")
         sleep(0.5)
 
         # TODO config
         self.robot.tm.set_delta_max_rot(1)
         self.robot.tm.set_delta_max_trsl(500)
 
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.move_trsl_block(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
 
         if self.color == self.color1:
@@ -556,12 +568,41 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(0.2)
         self.robot.tm.set_delta_max_trsl(100)
 
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.move_trsl_block(100, 400, 400, 500, 0)
+        return Status.reached
 
     @Service.action
     @if_enabled
-    @use_queue
+    def set_pattern(self):
+        if (self.color == self.color1):
+            pattern_1 = ["green", "green"]
+        else:
+            pattern_1 = ["red", "red"]
+        pattern_2 = ["red", "green"]
+        pattern_3 = ["green", "red"]
+        first_sensor = self.rgb_sensors.read_sensor(1, "match").split(':')[1]
+        second_sensor = self.rgb_sensors.read_sensor(2, "match").split(':')[1]
+        first_sensor = first_sensor.replace(' ', '')
+        second_sensor = second_sensor.replace(' ', '')
+        combo = [first_sensor, second_sensor]
+        if combo == pattern_1:
+            return 1 # red - red or green - green
+        elif combo == pattern_2:
+            return 2 # red - green
+        elif combo == pattern_3:
+            return 3 # green - red
+        else:
+            return -1
+
+    @Service.action
     def get_reef(self):
+        return self._get_reef().value
+
+    @if_enabled
+    @use_queue
+    def _get_reef(self):
         self.left_cup_holder_open()
         self.right_cup_holder_open()
         sleep(0.5)
@@ -569,6 +610,8 @@ class Actuators(Service):
         self.pump_get(pump=6)
         self.pump_get(pump=7)
         self.pump_get(pump=8)
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.tm.move_trsl(400, 300, 300, 300, 0)
         sleep(2)
         self.robot.tm.free()
@@ -576,7 +619,10 @@ class Actuators(Service):
         self.left_cup_holder_close()
         self.right_cup_holder_close()
         sleep(1)
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.move_trsl_block(200, 300, 300, 300, 1)
+        return Status.reached
 
 
     ##########
