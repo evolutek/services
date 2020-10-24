@@ -425,7 +425,7 @@ class Robot:
         if y:
             print('[ROBOT] Recalibration Y')
             theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
-            self.goth(theta * (-1 if self.side and mirror else 1))
+            self.goth(theta)
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(0.5)
 
