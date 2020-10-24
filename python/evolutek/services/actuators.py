@@ -114,6 +114,9 @@ class Actuators(Service):
         self.color1 = self.cs.config.get(section='match', option='color1')
         self.color2 = self.cs.config.get(section='match', option='color2')
 
+        # False = North
+        # True = South
+        self.anchorage = False
 
         # If the BAU is set at init, free the robot
         # if bau_gpio.read() == 0:
@@ -479,6 +482,50 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
+    def drop_starting_with_sort(self):
+
+        self.robot.goth(pi if self.anchorage else 0)
+
+        flip = self.anchorage ^ (self.color == self.color2)
+
+        self.robot.move_trsl_block(150, 500, 500, 1)
+        self.pumps_drop([3, 4] if flip else [1, 2])
+        self.robot.move_trsl_block(200, 800, 800, 800, 0)
+
+        self.robot.goth(pi/2)
+        self.robot.move_trsl_block(100, 500, 500, 500, 0)
+        self.robot.goth(0 if self.anchorage else pi)
+
+        self.left_cup_holder_drop()
+        self.right_cup_holder_drop()
+        sleep(0.5)
+        self.robot.move_trsl_block(120, 300, 300, 300, 0)
+        self.pumps_drop([5, 7] if flip else [6, 7])
+
+        self.robot.move_trsl_block(525, 300, 300, 300, 1)
+        self.pumps_drop([6, 8] if flip else [5, 7])
+        self.robot.move_trsl_block(100, 800, 800, 800, 1)
+        self.left_cup_holder_close()
+        self.right_cup_holder_close()
+
+        self.robot.goth(pi/2)
+        self.robot.move_trsl_block(225, 500, 500, 500, 1)
+        self.robot.goth(pi if self.anchorage else 0)
+        self.pumps_drop([1, 2] if flip else [3, 4])
+        self.robot.move_trsl_block(125, 800, 800, 800, 0)
+
+    @Service.action
+    @if_enabled
+    @use_queue
+    def wait_for_match_end():
+        status = self.cs.match.get_status()
+        while stats['time'] < 90:
+            sleep(0.5)
+            status = self.cs.match.get_status()
+
+    @Service.action
+    @if_enabled
+    @use_queue
     def get_reef_buoys(self):
         self.pump_get(pump=4)
         self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
@@ -598,9 +645,8 @@ class Actuators(Service):
 
     #Handle anchorage area
     @Service.event("anchorage")
-    def anchorage_set(self):
-        # TODO
-        pass
+    def anchorage_set(self, side):
+        self.anchorage = side == "south"
 
 
 def main():

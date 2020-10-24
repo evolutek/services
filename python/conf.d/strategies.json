@@ -75,7 +75,7 @@
         "y": 300
       },
       "theta": 0,
-      "score": 16,
+      "score": 18,
       "actions": [
         {
           "fct": "drop_starting_without_sort",

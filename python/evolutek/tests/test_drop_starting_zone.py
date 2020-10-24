@@ -27,7 +27,7 @@ def drop_south_buoys():
 
     robot.goto_theta_block(pi/2)
     robot.move_trsl_block(100, 500, 500, 500, 0)
-    robot.goto_theta_block(0 if flip else pi) #depend of flip
+    robot.goto_theta_block(0 if flip else pi) #depend of anchorage
 
     actuators.left_cup_holder_open()
     actuators.right_cup_holder_open()
