@@ -446,7 +446,7 @@ class Actuators(Service):
     def start_lighthouse(self):
         self.right_cup_holder_open()
         sleep(0.5)
-        if should_stop(self.robot.move_trsl_block(350, 300, 300, 300, 0)):
+        if self.should_stop(self.robot.move_trsl_block(350, 300, 300, 300, 0)):
             self.right_cup_holder_close()
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
@@ -460,18 +460,18 @@ class Actuators(Service):
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         self.pumps_drop([1, 2, 3, 4])
-        if should_stop(status):
+        if self.should_stop(status):
             return Status.unreached.value
-        if should_stop(self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
+        if self.should_stop(self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
             return Status.unreached.value
         status = self.robot.move_rot_block(pi, 5, 5, 5, 1)
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
-        if (should_stop(status)):
+        if (self.should_stop(status)):
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
         self.pumps_drop([5, 6, 7, 8])
-        if should_stop(status):
+        if self.should_stop(status):
             return Status.unreached.value
 
         status = self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
@@ -495,7 +495,7 @@ class Actuators(Service):
 
         status = self.robot.move_trsl_block(150, 500, 500, 500, 1)
         self.pumps_drop([3, 4] if flip else [1, 2])
-        if should_stop(status):
+        if self.should_stop(status):
             return Status.unreached.value
         self.robot.move_trsl_block(200, 800, 800, 800, 0)
 
@@ -504,7 +504,7 @@ class Actuators(Service):
             return Status.unreached.value
         status = self.robot.goth(0 if self.anchorage else pi)
 
-        if (should_stop(status)):
+        if (self.should_stop(status)):
             return Status.unreached.value
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
@@ -526,18 +526,18 @@ class Actuators(Service):
         self.left_cup_holder_close()
         self.right_cup_holder_close()
 
-        if (should_stop(status)):
+        if (self.should_stop(status)):
             return Status.unreached.value
         status = self.robot.goth(pi/2)
         if (self.queue.stop.is_set()):
-            return Status.unreached.value if should_stop(status) else Status.reached.value
+            return Status.unreached.value if self.should_stop(status) else Status.reached.value
         status = self.robot.move_trsl_block(225, 500, 500, 500, 1)
         if self.robot.goth(pi if self.anchorage else 0) == Status.unreached:
             status = Status.unreached
-        if (should_stop(status)):
+        if (self.should_stop(status)):
             return Status.unreached.value
         status = self.robot.move_trsl_block(150, 300, 300, 300, 1)
-        if should_stop(status):
+        if self.should_stop(status):
             return Status.unreached.value
         self.pumps_drop([1, 2] if flip else [3, 4])
         status = self.robot.move_trsl_block(125, 800, 800, 800, 0)
@@ -570,32 +570,32 @@ class Actuators(Service):
             return status.value
         if self.should_stop(self.robot.move_trsl_avoid(200, 500, 500, 500, 0)):
             return Status.unreached.value
-        if should_stop(self.robot.recalibration(side_x=(False, True), decal_y=1511)):
+        if self.should_stop(self.robot.recalibration(side_x=(False, True), decal_y=1511)):
             return Status.unreached.value
-        if should_stop(self.robot.goto_avoid(1750, 1800)):
+        if self.should_stop(self.robot.goto_avoid(1750, 1800)):
             return Status.unreached.value
         status = self.robot.goth(0)
 
         # Drop front buoys
-        if should_stop(status):
+        if self.should_stop(status):
             return Status.unreached.value
-        if should_stop(self.robot.move_trsl_avoid(70, 500, 500, 500, 1)):
+        if self.should_stop(self.robot.move_trsl_avoid(70, 500, 500, 500, 1)):
             return Status.unreached.value
         self.pumps_drop([1, 2, 3, 4])
-        if should_stop(self.robot.move_trsl_avoid(85, 300, 300, 300, 0)):
+        if self.should_stop(self.robot.move_trsl_avoid(85, 300, 300, 300, 0)):
             return Status.unreached.value
 
         pattern = self.get_pattern()
         print("PATTERN: %d" % pattern)
  
         # Drop Right zone
-        if should_stop(self.robot.goth(pi/2)):
+        if self.should_stop(self.robot.goth(pi/2)):
             return Status.unreached.value
-        if should_stop(self.robot.move_trsl_avoid(75, 800, 800, 800, 1)):
+        if self.should_stop(self.robot.move_trsl_avoid(75, 800, 800, 800, 1)):
             return Status.unreached.value
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
-        if (should_stop(status)):
+        if (self.should_stop(status)):
             return Status.unreached.value
         sleep(0.5)
 
@@ -614,15 +614,15 @@ class Actuators(Service):
         self.pumps_drop(pumps)
         self.left_cup_holder_close()
         self.right_cup_holder_close()
-        if (should_stop(status)):
+        if (self.should_stop(status)):
             return Status.unreached.value
         sleep(1)
 
-        if should_stop(self.robot.move_trsl_avoid(75, 800, 800, 800, 1)):
+        if self.should_stop(self.robot.move_trsl_avoid(75, 800, 800, 800, 1)):
             return Status.unreached.value
-        if should_stop(self.robot.goth(pi)):
+        if self.should_stop(self.robot.goth(pi)):
             return Status.unreached.value
-        if should_stop(self.robot.move_trsl_avoid(50, 500, 500, 500, 1)):
+        if self.should_stop(self.robot.move_trsl_avoid(50, 500, 500, 500, 1)):
             return Status.unreached.value
 
         # Drop Left zone
@@ -641,7 +641,7 @@ class Actuators(Service):
             self.right_cup_holder_close()
         else:
             self.left_cup_holder_close()
-        if (should_stop(status)):
+        if (self.should_stop(status)):
             self.right_cup_holder_drop() if side else self.left_cup_holder_drop()
             return Status.unreached.value
         sleep(1)
@@ -653,13 +653,13 @@ class Actuators(Service):
             self.left_cup_holder_drop()
         else:
             self.right_cup_holder_drop()
-        if should_stop(status):
+        if self.should_stop(status):
             self.left_cup_holder_close() if (pattern == 3) ^ side else self.right_cup_holder_close()
             return Status.unreached.value
         sleep(0.5)
 
         self.pumps_drop([4 + pattern] if side else [9 - pattern])
-        if should_stop(self.robot.move_trsl_avoid(100, 800, 800, 800, 1)):
+        if self.should_stop(self.robot.move_trsl_avoid(100, 800, 800, 800, 1)):
             self.left_cup_holder_close() if (pattern == 3) ^ side else self.right_cup_holder_close()
             return Status.unreached.value
 
@@ -685,19 +685,19 @@ class Actuators(Service):
     def get_reef_buoys(self):
         self.pump_get(pump=4)
         status = self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
-        if should_stop(status):
+        if self.should_stop(status):
             self.pump_drop(4)
             return Status.unreached.value
-        if should_stop(self.robot.goth(-1 * pi/2)):
+        if self.should_stop(self.robot.goth(-1 * pi/2)):
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
         self.robot.goth(pi)
 
         self.pump_get(pump=1)
-        if should_stop(status):
+        if self.should_stop(status):
             self.pump_drop(1)
             return Status.unreached.value
-        if should_stop(self.robot.move_trsl_avoid(325, 500, 500, 500, 1)):
+        if self.should_stop(self.robot.move_trsl_avoid(325, 500, 500, 500, 1)):
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
         return status.value
