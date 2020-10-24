@@ -82,6 +82,97 @@
           "handler": "actuators"
         }
       ]
+    },
+    {
+      "name": "push_windsocks",
+      "position": {
+        "x": 1700,
+        "y": 300
+      },
+      "theta": "3*pi/4",
+      "score": 15,
+      "actions": [
+        {
+          "fct": "goto",
+          "handler": "robot",
+          "avoid": false,
+          "args": {
+            "x": 1825,
+            "y": 175
+          }
+        },
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "avoid": false,
+          "args": {
+            "theta": "pi/2"
+          }
+        },
+        {
+          "fct": "recalibration_block",
+          "handler": "robot",
+          "avoid": false,
+          "args": {
+            "sens": 0
+          }
+        },
+        {
+          "fct": "windsocks_push",
+          "handler": "actuators",
+          "score": 15
+        },
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "args": {
+            "theta": "pi"
+          }
+        },
+        {
+          "fct": "move_trsl_avoid",
+          "handler": "robot",
+          "args": {
+            "dest": 100,
+            "acc": 500,
+            "dec": 500,
+            "maxspeed": 500,
+            "sens": 1
+          }
+        },
+        {
+          "fct": "flags_raise",
+          "handler": "actuators"
+        }
+      ]
+    },
+    {
+      "name": "get_fucking_buoy",
+      "position": {
+        "x": 980,
+        "y": 260
+      },
+      "theta": 0,
+      "actions": [
+        {
+          "fct": "pump_get",
+          "handler": "actuators",
+          "args": {
+            "pump": 2
+          }
+        },
+        {
+          "fct": "move_trsl_avoid",
+          "handler": "robot",
+          "args": {
+            "dest": 200,
+            "acc": 500,
+            "dec": 500,
+            "maxspeed": 500,
+            "sens": 1
+          }
+        }
+      ]
     }
   ],
   "strategies": [
@@ -96,6 +187,17 @@
         "pal"
       ],
       "use_pathfinding": false
+    },
+    {
+      "name": "homologation_pmi",
+      "goals": [
+        "get_fucking_buoy",
+        "push_windsocks"
+      ],
+      "available": [
+        "pmi"
+      ],
+      "use_pathfinding": false
     }
   ],
   "starting_pos": {
@@ -103,6 +205,11 @@
       "x": 700,
       "y": 280,
       "theta": "pi/2"
+    },
+    "pmi": {
+      "x": 980,
+      "y": 260,
+      "theta": "pi"
     }
   }
 }
