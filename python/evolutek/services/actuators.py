@@ -442,6 +442,15 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
+    def start_lighthouse(self):
+        self.right_cup_holder_open()
+        sleep(0.5)
+        self.robot.move_trsl_block(350, 300, 300, 300, 0)
+        self.robot.move_trsl_block(350, 300, 300, 300, 1)
+
+    @Service.action
+    @if_enabled
+    @use_queue
     def drop_starting_without_sort(self):
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
