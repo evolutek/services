@@ -264,6 +264,7 @@ class Robot:
     def move_trsl_avoid(self, dest, acc, dec, maxspeed, sens, timeout=0.0, nb_try=None):
         tried = 1
         status = Status.has_avoid if self.move_trsl_block(dest, acc, dec, maxspeed, sens) else Status.reached
+
         while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
