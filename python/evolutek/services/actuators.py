@@ -488,7 +488,7 @@ class Actuators(Service):
 
         flip = self.anchorage ^ (self.color == self.color2)
 
-        self.robot.move_trsl_block(150, 500, 500, 1)
+        self.robot.move_trsl_block(150, 500, 500, 500, 1)
         self.pumps_drop([3, 4] if flip else [1, 2])
         self.robot.move_trsl_block(200, 800, 800, 800, 0)
 
@@ -500,7 +500,7 @@ class Actuators(Service):
         self.right_cup_holder_drop()
         sleep(0.5)
         self.robot.move_trsl_block(120, 300, 300, 300, 0)
-        self.pumps_drop([5, 7] if flip else [6, 7])
+        self.pumps_drop([5, 7] if flip else [6, 8])
 
         self.robot.move_trsl_block(525, 300, 300, 300, 1)
         self.pumps_drop([6, 8] if flip else [5, 7])
@@ -511,6 +511,7 @@ class Actuators(Service):
         self.robot.goth(pi/2)
         self.robot.move_trsl_block(225, 500, 500, 500, 1)
         self.robot.goth(pi if self.anchorage else 0)
+        self.robot.move_trsl_block(150, 300, 300, 300, 1)
         self.pumps_drop([1, 2] if flip else [3, 4])
         self.robot.move_trsl_block(125, 800, 800, 800, 0)
 
@@ -542,7 +543,7 @@ class Actuators(Service):
     @use_queue
     def _windsocks_push(self):
 
-        if self.color == self.color1: self.left_arm_open()
+        if self.color != self.color1: self.left_arm_open()
         else: self.right_arm_open()
         sleep(0.5)
 
@@ -554,7 +555,7 @@ class Actuators(Service):
             return Status.unreached
         self.robot.move_trsl_block(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
 
-        if self.color == self.color1:
+        if self.color != self.color1:
             self.left_arm_push()
             sleep(0.2)
             self.left_arm_close()
