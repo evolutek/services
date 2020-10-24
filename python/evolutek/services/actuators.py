@@ -462,7 +462,7 @@ class Actuators(Service):
         self.pumps_drop([1, 2, 3, 4])
         if should_stop(status):
             return Status.unreached.value
-        if should_stop()self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
+        if should_stop(self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
             return Status.unreached.value
         status = self.robot.move_rot_block(pi, 5, 5, 5, 1)
         self.left_cup_holder_drop()
@@ -480,7 +480,7 @@ class Actuators(Service):
         return Status.reached.value
 
     def should_stop(self, status):
-        if status != Status.reached or self.queue.stop.is_set()
+        if status != Status.reached or self.queue.stop.is_set():
             return True
         return False
 
@@ -509,18 +509,24 @@ class Actuators(Service):
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
         sleep(0.5)
-        status = self.robot.move_trsl_block(120, 300, 300, 300, 0) if not self.queue.stop.is_set() else return Status.unreached.value
+        if not self.queue.stop.is_set():
+            status = self.robot.move_trsl_block(120, 300, 300, 300, 0)
+        else: 
+            return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
 
         status = self.robot.move_trsl_block(525, 300, 300, 300, 1)
         if self.queue.stop.is_set() or status != Status.reached:
             return Status.unreached.value
         self.pumps_drop([6, 8] if flip else [5, 7])
-        status = self.robot.move_trsl_block(100, 800, 800, 800, 1) is not self.queue.stop.is_set() else return Status.unreached.value
+        if not self.queue.stop.is_set():
+        status = self.robot.move_trsl_block(100, 800, 800, 800, 1)
+        else:
+            return Status.unreached.value
         self.left_cup_holder_close()
         self.right_cup_holder_close()
 
-        if (should_stop()):
+        if (should_stop(status)):
             return Status.unreached.value
         status = self.robot.goth(pi/2)
         if (self.queue.stop.is_set()):
@@ -774,6 +780,7 @@ class Actuators(Service):
         else:
             return -1
 
+    @Service.action
     @if_enabled
     @use_queue
     def get_reef(self):
