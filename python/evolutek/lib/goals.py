@@ -214,7 +214,7 @@ class Goals:
 
         except Exception as e:
             print('[GOALS] Failed to parse start point: %s' % str(e))
-            return Falseoptional
+            return False
 
         # Parse goals
         for goal in goals['goals']:

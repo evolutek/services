@@ -89,7 +89,7 @@ def use_queue(method):
         parameters = [self, args, kwargs]
 
         if self.queue.stop.is_set():
-            return 
+            return
 
         return self.queue.run_action(method, parameters)
     return wrapped
@@ -443,10 +443,6 @@ class Actuators(Service):
     # HIGH LEVEL ACTIONS #
     ######################
 
-    @Service.action
-    def windsocks_push(self):
-        return Status(self._windsocks_push()).value
-    
     @if_enabled
     @use_queue
     def start_lighthouse(self):
@@ -541,7 +537,7 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
-    def _windsocks_push(self):
+    def windsocks_push(self):
 
         if self.color != self.color1: self.left_arm_open()
         else: self.right_arm_open()
@@ -597,13 +593,9 @@ class Actuators(Service):
         else:
             return -1
 
-    @Service.action
-    def get_reef(self):
-        return self._get_reef().value
-
     @if_enabled
     @use_queue
-    def _get_reef(self):
+    def get_reef(self):
         self.left_cup_holder_open()
         self.right_cup_holder_open()
         sleep(0.5)
@@ -611,8 +603,10 @@ class Actuators(Service):
         self.pump_get(pump=6)
         self.pump_get(pump=7)
         self.pump_get(pump=8)
+
         if self.queue.stop.is_set():
-            return Status.unreached
+            return Status.unreached.value
+
         self.robot.tm.move_trsl(400, 300, 300, 300, 0)
         sleep(2)
         self.robot.tm.free()
@@ -620,10 +614,12 @@ class Actuators(Service):
         self.left_cup_holder_close()
         self.right_cup_holder_close()
         sleep(1)
+
         if self.queue.stop.is_set():
-            return Status.unreached
-        self.robot.move_trsl_block(200, 300, 300, 300, 1)
-        return Status.reached
+            return Status.unreached.value
+
+        self.robot.move_trsl_avoid(200, 300, 300, 300, 1)
+        return Status.reached.value
 
 
     ##########
