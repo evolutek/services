@@ -16,7 +16,7 @@ from math import pi
 from threading import Event
 from time import sleep
 
-DELAY_EV = 0.5
+DELAY_EV = 1.0
 SAMPLE_SIZE = 10
 
 # Emergency stop button
@@ -123,11 +123,10 @@ class Actuators(Service):
         #     self.free()
 
 
-        self.color = self.color1
-
         try:
-            self.color = self.cs.match.get_match()['color']
+            self.color = self.cs.match.get_color()
         except Exception as e:
+            self.color = self.color1
             print("Failed to get color: %s" % str(e))
 
         for n in [1, 2, 3, 4, 5]:
@@ -328,7 +327,6 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     def pumps_drop(self, pumps):
-        print(pumps)
         _pumps = [self.pumps[int(p) - 1].pump_drop for p in pumps]
         try:
             self.queue.launch_multiple_actions(_pumps, [[] for i in range((len(pumps)))])
@@ -415,7 +413,7 @@ class Actuators(Service):
     @if_enabled
     def left_cup_holder_drop(self):
         self.cs.ax["%s-%d" % (ROBOT, 1)].moving_speed(800)
-        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=450)
+        self.cs.ax["%s-%d" % (ROBOT, 1)].move(goal=490)
 
     # Right CH Close
     @Service.action
@@ -436,7 +434,7 @@ class Actuators(Service):
     @if_enabled
     def right_cup_holder_drop(self):
         self.cs.ax["%s-%d" % (ROBOT, 2)].moving_speed(800)
-        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=450)
+        self.cs.ax["%s-%d" % (ROBOT, 2)].move(goal=490)
 
 
     ######################
@@ -542,6 +540,99 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
+    def drop_center_zone(self):
+
+        side = self.color == self.color2
+
+        # Get the two buoys on the front of the zone
+        self.pump_get(pump=3 if side else 2)
+        self.robot.move_trsl_avoid(150, 500, 500, 500, 1)
+        self.robot.goth(-1 * pi/3)
+        self.pump_get(pump=2 if side else 3)
+        self.robot.move_trsl_avoid(160, 500, 500, 500, 1)
+        self.robot.move_trsl_avoid(60, 500, 500, 500, 0)
+
+        # Recal the robot in the zone
+        self.robot.goth(pi)
+        self.robot.move_trsl_avoid(200, 500, 500, 500, 0)
+        self.robot.recalibration(side_x=(False, True), decal_y=1511)
+        self.robot.goto_avoid(1750, 1800)
+        self.robot.goth(0)
+
+        # Drop front buoys
+        self.robot.move_trsl_avoid(70, 500, 500, 500, 1)
+        self.pumps_drop([1, 2, 3, 4])
+        self.robot.move_trsl_avoid(85, 300, 300, 300, 0)
+
+        pattern = self.get_pattern()
+        print("PATTERN: %d" % pattern)
+ 
+        # Drop Right zone
+        self.robot.goth(pi/2)
+        self.robot.move_trsl_avoid(75, 800, 800, 800, 1)
+        self.left_cup_holder_drop()
+        self.right_cup_holder_drop()
+        sleep(0.5)
+
+
+        pumps = None
+        if pattern == -1:
+            pattern = 3
+
+        if pattern == 1:
+            pumps = ([6, 7])
+        elif pattern == 2:
+            pumps = ([5, 7] if side else [6, 8])
+        else:
+            pumps = ([5, 6] if side else [7, 8])
+
+        self.pumps_drop(pumps)
+        self.left_cup_holder_close()
+        self.right_cup_holder_close()
+        sleep(1)
+
+        self.robot.move_trsl_avoid(75, 800, 800, 800, 1)
+        self.robot.goth(pi)
+        self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
+
+        # Drop Left zone
+        if side:
+            self.right_cup_holder_drop()
+        else:
+            self.left_cup_holder_drop()
+        sleep(0.5)
+
+        self.pumps_drop([8] if side else [5])
+        self.robot.move_trsl_avoid(100, 800, 800, 800, 1)
+
+        if side:
+            self.right_cup_holder_close()
+        else:
+            self.left_cup_holder_close()
+        sleep(1)
+
+        move = 3 - pattern
+        self.robot.move_rot_block(pi/12 * move, 5, 5, 5, side)
+
+        if (pattern == 3) ^ side:
+            self.left_cup_holder_drop()
+        else:
+            self.right_cup_holder_drop()
+        sleep(0.5)
+
+        self.pumps_drop([4 + pattern] if side else [9 - pattern])
+        self.robot.move_trsl_avoid(100, 800, 800, 800, 1)
+
+        if (pattern == 3) ^ side:
+            self.left_cup_holder_close()
+        else:
+            self.right_cup_holder_close()
+
+
+
+    @Service.action
+    @if_enabled
+    @use_queue
     def wait_for_match_end():
         status = self.cs.match.get_status()
         while stats['time'] < 90:
@@ -608,19 +699,20 @@ class Actuators(Service):
         return Status.reached.value
 
     @Service.action
-    @if_enabled
-    def set_pattern(self):
-        if (self.color == self.color1):
+    def get_pattern(self):
+        if self.color == self.color1:
             pattern_1 = ["green", "green"]
         else:
             pattern_1 = ["red", "red"]
-        pattern_2 = ["red", "green"]
-        pattern_3 = ["green", "red"]
+        pattern_2 = ["green", "red"]
+        pattern_3 = ["red", "green"]
+
         first_sensor = self.rgb_sensors.read_sensor(1, "match").split(':')[1]
         second_sensor = self.rgb_sensors.read_sensor(2, "match").split(':')[1]
         first_sensor = first_sensor.replace(' ', '')
         second_sensor = second_sensor.replace(' ', '')
         combo = [first_sensor, second_sensor]
+
         if combo == pattern_1:
             return 1 # red - red or green - green
         elif combo == pattern_2:

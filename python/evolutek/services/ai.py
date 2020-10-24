@@ -2,6 +2,7 @@
 
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
+from evolutek.lib.ai_interface import AIInterface
 
 from evolutek.lib.fsm import Fsm
 from evolutek.lib.goals import Goals, AvoidStrategy
@@ -70,8 +71,8 @@ class Ai(Service):
 
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
 
+            Thread(target=AIInterface, args=[self]).start()
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
-
 
     """ SETUP """
     def setup(self):

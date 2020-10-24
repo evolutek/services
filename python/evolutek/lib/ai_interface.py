@@ -1,5 +1,6 @@
 import os
 
+from cellaserv.service import Service
 from evolutek.lib.interface import Interface
 from evolutek.lib.settings import SIMULATION
 from evolutek.lib.watchdog import Watchdog
@@ -7,6 +8,7 @@ if SIMULATION:
 	from evolutek.simulation.simulator import read_config
 
 from tkinter import Button, Canvas, Label, ttk
+from evolutek.lib.gpio import Gpio, Edge as GpioEdge
 
 
 # TODO: clean
@@ -14,11 +16,10 @@ from tkinter import Button, Canvas, Label, ttk
 class AIInterface(Interface):
 
 	def __init__(self, ai):
-		super().__init__('Ai interface', 3)
-
 		self.ai = ai
-		self.init_robot(self.ai.robot)
 
+		super().__init__('Ai interface', 3)
+		self.init_robot(self.ai.robot.robot)
 		self.match_status = None
 		self.client.add_subscribe_cb('match_status', self.match_status_handler)
 		self.match_status_watchdog = Watchdog(3, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
@@ -142,9 +143,10 @@ class AIInterface(Interface):
 		self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
 	def update_interface(self):
+		#print(self.ai.robot.tm.bau_gpio.__dict__)
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
-		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.ai.bau.read == 0 else 'Bau Status: OFF')
+		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.ai.robot.tm.get_bau_status() else 'Bau Status: OFF')
 		self.status.config(text='State ai: %s' % self.ai.fsm.running)
 
 		if self.match_status is not None:
@@ -169,7 +171,7 @@ class AIInterface(Interface):
 			else:
 				self.print_robot(*self.robots[robot].values())
 
-		self.print_path(self.paths['pal'], 'yellow', 'violet')
+		self.print_path(self.paths[self.ai.robot.robot], 'yellow', 'violet')
 
 		self.window.after(self.interface_refresh, self.update_interface)
 
