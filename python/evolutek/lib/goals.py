@@ -129,10 +129,11 @@ class Goal:
 
 """ Strategy Class """
 class Strategy:
-    def __init__(self, name, goals=None, available=None):
+    def __init__(self, name, goals=None, available=None, use_pathfinding=True):
         self.name = name
         self.goals = [] if goals is None else goals
         self.available = [] if available is None else available
+        self.use_pathfinding = use_pathfinding
 
     def __str__(self):
         s = "--- %s ---" % self.name
@@ -141,6 +142,7 @@ class Strategy:
         s += "\navailable for:"
         for robot in self.available:
             s += '\n-->%s' % robot
+        s += "\nuse pathfinding: " + str(self.use_pathfinding)
         return s
 
     @classmethod
@@ -155,7 +157,9 @@ class Strategy:
 
             _goals.append(goal)
 
-        new = Strategy(strategy['name'], _goals, strategy['available'])
+        use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else True
+
+        new = Strategy(strategy['name'], _goals, strategy['available'], use_pathfinding)
 
         return new
 

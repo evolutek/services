@@ -20,35 +20,10 @@ def init_get():
     robot.goto_xy_block(700, 830) # Depend of side
     robot.goto_theta_block(pi)
 
-    actuators.pump_get(pump=4, buoy='green') # Depend of side
-    robot.move_trsl_block(200, 500, 500, 500, 1)
-    robot.goto_theta_block(-1 * pi/2)
-    robot.move_trsl_block(50, 500, 500, 500, 1)
-    robot.goto_theta_block(pi)
+    actuators.get_reef_buoys()
 
-    actuators.pump_get(pump=1, buoy='red') # Depend of side
-    robot.move_trsl_block(325, 500, 500, 500, 1)
-    robot.move_trsl_block(150, 500, 500, 500, 0)
     robot.goto_xy_block(250, 880) # Depend of side
     robot.goto_theta_block(0)
-
-# Suppose we are in (200, 850, 0)
-def get_reef():
-    actuators.left_cup_holder_open()
-    actuators.right_cup_holder_open()
-    sleep(1.5)
-    actuators.pump_get(pump=5)
-    actuators.pump_get(pump=6)
-    actuators.pump_get(pump=7)
-    actuators.pump_get(pump=8)
-    robot.tm.move_trsl(400, 300, 300, 300, 0)
-    sleep(2)
-    robot.tm.free()
-    sleep(1)
-    actuators.left_cup_holder_close()
-    actuators.right_cup_holder_close()
-    sleep(1.5)
-    robot.move_trsl_block(200, 300, 300, 300, 1)
 
 def init_robot(_robot):
     global robot
@@ -71,7 +46,7 @@ if __name__ == "__main__":
     print('Press a key to continue')
     #input()
     print('Getting reef')
-    get_reef()
+    actuators.get_reef()
 
     print('Press a key to continue')
     #input()

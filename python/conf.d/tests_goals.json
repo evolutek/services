@@ -55,7 +55,8 @@
       "available": [
         "pal",
         "pmi"
-      ]
+      ],
+      "use_pathfinding": false
     },
     {
       "name": "B",

@@ -110,7 +110,7 @@ class Robot:
         self.client.add_subscribe_cb(self.robot + '_started', self.robot_started)
         self.client.add_subscribe_cb('match_color', self.color_change)
         self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
-        self.client.add_subscribe_cb(self.robot + '_telemetry', self.telemetry_handler)
+        #self.client.add_subscribe_cb(self.robot + '_telemetry', self.telemetry_handler)
 
         # Blocking wrapper
         self.recalibration_block = self.wrap_block(self.tm.recalibration)
@@ -204,31 +204,41 @@ class Robot:
         if self.goto_xy_block(x, y):
             return Status.has_avoid
 
-        if self.telemetry is None:
-            pos = self.tm.get_position()
-        else:
-            pos = self.telemetry
+        #if self.telemetry is None:
+        print('getting position')
+        pos = self.tm.get_position()
+        print('position getted')
+        #else:
+        #    pos = self.telemetry
 
         if Point(x=x, y=y).dist(Point(dict=pos)) < DELTA_POS:
-            return Status.unreached
-        return Status.reached
+            return Status.reached
+        return Status.unreached
 
-    def goth(self, th, mirror=True):
+    def goth(self, theta, mirror=True):
 
         if mirror:
-            theta = self.mirror_pos(theta=th)[2]
+            theta = self.mirror_pos(theta=theta)[2]
 
-        if self.goto_theta_block(th):
+        if self.goto_theta_block(theta):
             return Status.has_avoid
 
-        if self.telemetry is None:
-            pos = self.tm.get_position()
-        else:
-            pos = self.telemetry
+        #if self.telemetry is None:
+        print('getting position')
+        pos = self.tm.get_position()
+        print('position getted')
+        #else:
+        #    pos = self.telemetry
 
-        if abs(th - float(pos['theta'])) < DELTA_THETA:
-            return Status.unreached
-        return Status.reached
+        error = abs(theta - float(pos['theta']))
+        if error > pi:
+            error = error - (2 * pi)
+
+        print(error)
+
+        if abs(error) < DELTA_THETA:
+            return Status.reached
+        return Status.unreached
 
     def goto_avoid(self, x, y, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
@@ -240,13 +250,13 @@ class Robot:
 
         return status
 
-    def goth_avoid(self, th, timeout=0.0, nb_try=None, mirror=True):
+    def goth_avoid(self, theta, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
-        status = self.goth(th, mirror)
+        status = self.goth(theta, mirror)
         while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
-            status = self.goth(th, mirror)
+            status = self.goth(theta, mirror)
 
         return status
 
@@ -272,10 +282,10 @@ class Robot:
         new = []
 
         try:
-            if self.telemetry is None:
-                pos = self.tm.get_position()
-            else:
-                pos = self.telemetry
+            #if self.telemetry is None:
+            pos = self.tm.get_position()
+            #else:
+            #    pos = self.telemetry
 
             new = self.cs.map.get_path(pos, path[-1].to_dict(), self.robot)
             new = convert_path_to_point(new)
@@ -401,10 +411,10 @@ class Robot:
             self.recalibration_block(sens=int(side_x[0]), decal=float(decal_x))
             sleep(0.5)
 
-            if self.telemetry is None:
-                pos = self.tm.get_position()
-            else:
-                pos = self.telemetry
+            #if self.telemetry is None:
+            pos = self.tm.get_position()
+            #else:
+            #    pos = self.telemetry
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
@@ -417,10 +427,10 @@ class Robot:
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(0.5)
 
-            if self.telemetry is None:
-                pos = self.tm.get_position()
-            else:
-                pos = self.telemetry
+            #if self.telemetry is None:
+            pos = self.tm.get_position()
+            #else:
+            #    pos = self.telemetry
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))

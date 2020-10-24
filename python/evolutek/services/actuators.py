@@ -12,6 +12,7 @@ from evolutek.lib.watchdog import Watchdog
 
 from enum import Enum
 from functools import wraps
+from math import pi
 from threading import Event
 from time import sleep
 
@@ -443,6 +444,53 @@ class Actuators(Service):
     def windsocks_push(self):
         return Status(self._windsocks_push()).value
     
+    @if_enabled
+    @use_queue
+    def start_lighthouse(self):
+        self.right_cup_holder_open()
+        sleep(0.5)
+        self.robot.move_trsl_block(350, 300, 300, 300, 0)
+        self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
+
+    @Service.action
+    @if_enabled
+    @use_queue
+    def drop_starting_without_sort(self):
+        if (self.queue.stop.is_set()):
+            return Status.unreached
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
+        self.pumps_drop([1, 2, 3, 4])
+        if self.queue.stop.is_set():
+            return Status.unreached
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
+        self.robot.move_rot_block(pi, 5, 5, 5, 1)
+        self.left_cup_holder_drop()
+        self.right_cup_holder_drop()
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
+        self.pumps_drop([5, 6, 7, 8])
+        if self.queue.stop.is_set():
+            return Status.unreached
+
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
+        self.left_arm_close()
+        self.right_arm_close()
+        return Status.reached
+
+    @Service.action
+    @if_enabled
+    @use_queue
+    def get_reef_buoys(self):
+        self.pump_get(pump=4)
+        self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
+        self.robot.goth(-1 * pi/2)
+        self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
+        self.robot.goth(pi)
+
+        self.pump_get(pump=1)
+        self.robot.move_trsl_avoid(325, 500, 500, 500, 1)
+        self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
+
+    @Service.action
     @if_enabled
     @use_queue
     def _windsocks_push(self):
