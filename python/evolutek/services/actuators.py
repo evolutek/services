@@ -21,12 +21,6 @@ SAMPLE_SIZE = 10
 # Emergency stop button
 BAU_GPIO = 21
 
-# pattern
-class Pattern(Enum):
-    Case_1 = "same"
-    Case_2 = "red-green"
-    Case_3 = "green-red"
-
 ##################
 # PUMP ACTUATORS #
 ##################
@@ -94,9 +88,9 @@ def use_queue(method):
         parameters = [self, args, kwargs]
 
         if self.queue.stop.is_set():
-            return
+            return 
 
-        self.queue.run_action(method, parameters)
+        return self.queue.run_action(method, parameters)
     return wrapped
 
 
@@ -175,6 +169,7 @@ class Actuators(Service):
         self.queue.run_queue()
 
     # Stop
+    @Service.action
     def stop(self):
         self.queue.stop_queue()
 
@@ -445,20 +440,23 @@ class Actuators(Service):
     ######################
 
     @Service.action
+    def windsocks_push(self):
+        return Status(self._windsocks_push()).value
+    
     @if_enabled
     @use_queue
-    def windsocks_push(self):
+    def _windsocks_push(self):
 
-        print("COUCOU")
         if self.color == self.color1: self.left_arm_open()
         else: self.right_arm_open()
-        print("HELLO")
         sleep(0.5)
 
         # TODO config
         self.robot.tm.set_delta_max_rot(1)
         self.robot.tm.set_delta_max_trsl(500)
 
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.move_trsl_block(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
 
         if self.color == self.color1:
@@ -475,7 +473,10 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(0.2)
         self.robot.tm.set_delta_max_trsl(100)
 
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.move_trsl_block(100, 400, 400, 500, 0)
+        return Status.reached
 
     @Service.action
     @if_enabled
@@ -491,24 +492,22 @@ class Actuators(Service):
         first_sensor = first_sensor.replace(' ', '')
         second_sensor = second_sensor.replace(' ', '')
         combo = [first_sensor, second_sensor]
-        print(combo)
         if combo == pattern_1:
-            print('case 1')
-            return 1 #Pattern.Case_1
+            return 1 # red - red or green - green
         elif combo == pattern_2:
-            print('case 2')
-            return 2 #Pattern.Case_2
+            return 2 # red - green
         elif combo == pattern_3:
-            print('case 3')
-            return 3 #Pattern.Case_3
+            return 3 # green - red
         else:
-            print('return case 1 by default')
-            return 42 #Pattern.Case_1
+            return -1
 
     @Service.action
+    def get_reef(self):
+        return self._get_reef().value
+
     @if_enabled
     @use_queue
-    def get_reef(self):
+    def _get_reef(self):
         self.left_cup_holder_open()
         self.right_cup_holder_open()
         sleep(0.5)
@@ -516,6 +515,8 @@ class Actuators(Service):
         self.pump_get(pump=6)
         self.pump_get(pump=7)
         self.pump_get(pump=8)
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.tm.move_trsl(400, 300, 300, 300, 0)
         sleep(2)
         self.robot.tm.free()
@@ -523,7 +524,10 @@ class Actuators(Service):
         self.left_cup_holder_close()
         self.right_cup_holder_close()
         sleep(1)
+        if self.queue.stop.is_set():
+            return Status.unreached
         self.robot.move_trsl_block(200, 300, 300, 300, 1)
+        return Status.reached
 
 
     ##########
