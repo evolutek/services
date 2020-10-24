@@ -165,7 +165,19 @@ class Ai(Service):
         print("[AI] Going %d %d" % (pos[0], pos[1]))
         #status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
 
-        if status == Status.unreachable:
+        if self.use_pathfinding:
+            print('[AI] Going with pathfinding')
+            #status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+
+        else:
+            print('[AI] Going without pathfinding')
+
+        status = self.robot.goto_avoid(self.current_goal.position.x, self.current_goal.position.y)
+
+        """
+        if status == Status.unreachable || status == Status.has_avoid:
+
+            # TODO : Move back ?
 
             if self.current_goal.secondary_goal is not None:
 
@@ -178,18 +190,19 @@ class Ai(Service):
                         if status == Status.reached:
                             break
 
-                        sleep(0.100)
-                        t += 0.100
+                            sleep(0.100)
+                            t += 0.100
 
-                self.current_goal = self.goals.get_secondary(self.current_goal.secondary_goal)
+                            self.current_goal = self.goals.get_secondary(self.current_goal.secondary_goal)
 
             return States.Making
+        """
 
         if not self.current_goal.theta is None:
 
             print('[AI] Going to %s' % self.robot.mirror_pos(theta=self.current_goal.theta)[2])
             status = None
-            #status = self.robot.goth(self.current_goal.theta)
+            status = self.robot.goth(self.current_goal.theta)
 
             if status == Status.has_avoid:
                 return States.error
@@ -213,14 +226,18 @@ class Ai(Service):
 
             if avoid and not action.avoid:
                 self.robot.tm.disable_avoid()
+                avoid = False
 
             if not avoid and action.avoid:
                 self.robot.tm.enable_avoid()
+                avoid = True
 
             print("[AI] Making action:\n%s" % str(action))
 
             status = None
-            #status = action.make()
+            action.make()
+
+            print(status)
 
             if status == Status.unreached:
 
@@ -230,7 +247,7 @@ class Ai(Service):
                 if self.critical.is_set():
                     return States.Selecting
 
-                return States.error
+                return States.Error
 
             if status == Status.has_avoid:
                 # TODO: move_back
