@@ -520,7 +520,7 @@ class Actuators(Service):
             return Status.unreached.value
         self.pumps_drop([6, 8] if flip else [5, 7])
         if not self.queue.stop.is_set():
-        status = self.robot.move_trsl_block(100, 800, 800, 800, 1)
+            status = self.robot.move_trsl_block(100, 800, 800, 800, 1)
         else:
             return Status.unreached.value
         self.left_cup_holder_close()
