@@ -455,7 +455,7 @@ class Actuators(Service):
         self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         self.pumps_drop([1, 2, 3, 4])
         self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
-        self.robot.move_rot_avoid(pi, 5, 5, 5, 1)
+        self.robot.move_rot_block(pi, 5, 5, 5, 1)
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
         self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
