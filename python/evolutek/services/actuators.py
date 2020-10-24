@@ -446,35 +446,37 @@ class Actuators(Service):
         self.right_cup_holder_open()
         sleep(0.5)
         self.robot.move_trsl_block(350, 300, 300, 300, 0)
-        self.robot.move_trsl_block(350, 300, 300, 300, 1)
+        self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
 
     @Service.action
     @if_enabled
     @use_queue
     def drop_starting_without_sort(self):
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
+        self.pumps_drop([1, 2, 3, 4])
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
+        self.robot.move_rot_avoid(pi, 5, 5, 5, 1)
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
-        self.robot.move_trsl_block(100, 500, 500, 500, 1)
-        self.pumps_drop([1, 2, 3, 4])
-        self.robot.move_trsl_block(100, 500, 500, 500, 0)
-        self.robot.move_rot_block(pi, 5, 5, 5, 1)
-        self.robot.move_trsl_block(100, 500, 500, 500, 0)
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
         self.pumps_drop([5, 6, 7, 8])
-        self.robot.move_trsl_block(100, 500, 500, 500, 1)
+        self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
+        self.left_arm_close()
+        self.right_arm_close()
 
     @Service.action
     @if_enabled
     @use_queue
     def get_reef_buoys(self):
         self.pump_get(pump=4)
-        self.robot.move_trsl_block(200, 500, 500, 500, 1)
+        self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
         self.robot.goth(-1 * pi/2)
-        self.robot.move_trsl_block(50, 500, 500, 500, 1)
+        self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
         self.robot.goth(pi)
 
         self.pump_get(pump=1)
-        self.robot.move_trsl_block(325, 500, 500, 500, 1)
-        self.robot.move_trsl_block(150, 500, 500, 500, 0)
+        self.robot.move_trsl_avoid(325, 500, 500, 500, 1)
+        self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
 
     @Service.action
     @if_enabled

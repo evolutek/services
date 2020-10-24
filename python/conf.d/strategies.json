@@ -59,7 +59,8 @@
       "actions": [
         {
           "fct": "start_lighthouse",
-          "handler": "actuators"
+          "handler": "actuators",
+          "avoid": false
         },
         {
           "fct": "flags_raise",
@@ -78,8 +79,7 @@
       "actions": [
         {
           "fct": "drop_starting_without_sort",
-          "handler": "actuators",
-          "avoid": false
+          "handler": "actuators"
         }
       ]
     }
