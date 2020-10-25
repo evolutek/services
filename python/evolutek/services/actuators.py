@@ -292,7 +292,7 @@ class Actuators(Service):
     # Get Buoy
     @Service.action
     @if_enabled
-    def pump_get(self, pump, buoy='unknown'):
+    def pump_get(self, pump, buoy='unknown', mirror=False):
         valid = True
         pump = int(pump)
         try:
@@ -300,7 +300,12 @@ class Actuators(Service):
         except:
             valid = False
         if pump > 0 and pump <= 8 and valid:
-            self.pumps[pump - 1].pump_get(Buoy(buoy))
+            p = pump
+            if mirror:
+                p = 5 - pump % 5
+                if pump > 4:
+                    p = p + 3
+            self.pumps[p - 1].pump_get(Buoy(buoy))
             return True
         else:
             print('[ACTUATORS] Not a valid pump or color: %d' % pump)
@@ -511,7 +516,7 @@ class Actuators(Service):
         sleep(0.5)
         if not self.queue.stop.is_set():
             status = self.robot.move_trsl_block(120, 300, 300, 300, 0)
-        else: 
+        else:
             return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
 
@@ -542,6 +547,11 @@ class Actuators(Service):
         self.pumps_drop([1, 2] if flip else [3, 4])
         status = self.robot.move_trsl_block(125, 800, 800, 800, 0)
         return status.value
+
+        robot.goth(pi/2)
+        robot.move_trsl_avoid(200, 500, 500, 500, 0)
+        robot.recalibration_block(0)
+
 
     @Service.action
     @if_enabled
@@ -587,7 +597,7 @@ class Actuators(Service):
 
         pattern = self.get_pattern()
         print("PATTERN: %d" % pattern)
- 
+
         # Drop Right zone
         if self.should_stop(self.robot.goth(pi/2)):
             return Status.unreached.value
@@ -598,7 +608,6 @@ class Actuators(Service):
         if (self.should_stop(status)):
             return Status.unreached.value
         sleep(0.5)
-
 
         pumps = None
         if pattern == -1:
@@ -669,7 +678,6 @@ class Actuators(Service):
             self.right_cup_holder_close()
 
 
-
     @Service.action
     @if_enabled
     @use_queue
@@ -683,7 +691,8 @@ class Actuators(Service):
     @if_enabled
     @use_queue
     def get_reef_buoys(self):
-        self.pump_get(pump=4)
+
+        self.pump_get(pump=4, mirror=True)
         status = self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
         if self.should_stop(status):
             self.pump_drop(4)
@@ -693,7 +702,7 @@ class Actuators(Service):
         status = self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
         self.robot.goth(pi)
 
-        self.pump_get(pump=1)
+        self.pump_get(pump=1, mirror=True)
         if self.should_stop(status):
             self.pump_drop(1)
             return Status.unreached.value
@@ -794,6 +803,16 @@ class Actuators(Service):
         status = self.robot.move_trsl_avoid(200, 300, 300, 300, 1)
         return Status.reached.value
 
+    @Service.action
+    @if_enabled
+    @use_queue
+    def go_to_anchorage(self):
+        # Suppose we are in (800, 700)
+        self.robot.goth(pi if self.anchorage else 0)
+        self.robot.move_trsl_avoid(500, 500, 500, 500, 1)
+        self.goth(pi/2)
+        self.robot.move_trsl_avoid(500, 500, 500, 0)
+        self.robot.recalibration_block(0)
 
     ##########
     # EVENTS #
