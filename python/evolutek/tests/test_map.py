@@ -20,7 +20,7 @@ class Test_Map:
 
     def loop_path(self):
 
-        sleep(5) # Ensures that the interface has started
+        sleep(1) # Ensures that the interface has started
 
         right = True
         y = 500

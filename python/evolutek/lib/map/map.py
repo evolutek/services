@@ -328,7 +328,7 @@ class Map:
         path = [start] + nodes + [end]
 
         # Applies an additionnal smooth to handle some edge cases
-        self.smooth_path(path, obstacles)
+        #self.smooth_path(path, obstacles)
 
         return path
 
