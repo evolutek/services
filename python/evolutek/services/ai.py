@@ -10,8 +10,6 @@ from evolutek.lib.gpio import Edge, Gpio
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.settings import ROBOT
 
-ROBOT = "pal"
-
 from enum import Enum
 from threading import Event, Thread, Timer
 from time import sleep
@@ -71,7 +69,6 @@ class Ai(Service):
 
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
 
-            Thread(target=AIInterface, args=[self]).start()
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
 
     """ SETUP """
@@ -329,6 +326,21 @@ class Ai(Service):
         print('[AI] I am sleeping')
         sleep(float(time))
 
+    @Service.action
+    def get_strategy(self):
+        new_list = []
+
+        for i in self.goals.strategies:
+            new_list.append(i.name)
+
+        return new_list
+
+    @Service.thread
+    def infos_interfaces(self):
+        while True:
+            self.publish(self.robot.robot + "_infos_interfaces", states_ai=self.fsm.running.state.name,
+                         bau_status=self.robot.tm.get_bau_status())
+            sleep(1)
 
 def main():
     ai = Ai()

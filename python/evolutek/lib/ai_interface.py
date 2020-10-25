@@ -1,5 +1,6 @@
 import os
 
+from evolutek.lib.settings import ROBOT
 from cellaserv.service import Service
 from evolutek.lib.interface import Interface
 from evolutek.lib.settings import SIMULATION
@@ -7,21 +8,23 @@ from evolutek.lib.watchdog import Watchdog
 if SIMULATION:
 	from evolutek.simulation.simulator import read_config
 
+from sys import argv
 from tkinter import Button, Canvas, Label, ttk
-from evolutek.lib.gpio import Gpio, Edge as GpioEdge
 
 
 # TODO: clean
 
 class AIInterface(Interface):
 
-	def __init__(self, ai):
-		self.ai = ai
+	def __init__(self):
 
 		super().__init__('Ai interface', 3)
-		self.init_robot(self.ai.robot.robot)
+		self.init_robot(ROBOT)
 		self.match_status = None
+		self.bau_status = None
+		self.states_ai = None
 		self.client.add_subscribe_cb('match_status', self.match_status_handler)
+		self.client.add_subscribe_cb(ROBOT + '_infos_interfaces', self.infos_ai)
 		self.match_status_watchdog = Watchdog(3, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
 		if SIMULATION:
 			self.init_simulation()
@@ -29,6 +32,10 @@ class AIInterface(Interface):
 		self.window.after(self.interface_refresh, self.update_interface)
 		print('[AI NTERFACE] Window looping')
 		self.window.mainloop()
+
+	def infos_ai(self, states_ai, bau_status):
+		self.bau_status = bau_status
+		self.states_ai = states_ai
 
 	def init_simulation(self):
 		enemies = read_config('enemies')
@@ -55,22 +62,24 @@ class AIInterface(Interface):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def action_color(self):
-		if self.match_status["color"] == self.ai.robot.color1:
+		if self.match_status["color"] == self.color1:
 			self.cs.match.set_color(self.color2)
 		else:
-			self.cs.match.set_color(self.ai.robot.color1)
+			self.cs.match.set_color(self.color1)
 
 	def action_strategy(self):
-		self.ai.goals.reset(self.select_strategy.get())
+		self.cs.ai[ROBOT].set_strategy(self.select_strategy.get())
 
 	def shutdown(self):
 		os.system("poweroff")
 
 	def event_recalibration(self):
-		self.ai.set_recalibration(True)
+		self.cs.ai[ROBOT].set_recalibration(True)
+		self.cs.ai[ROBOT].reset()
 
 	def event_set_pos(self):
-		self.ai.set_recalibration(False)
+		self.cs.ai[ROBOT].set_recalibration(False)
+		self.cs.ai[ROBOT].reset()
 
 	# Init match interface
 	def init_interface(self):
@@ -92,17 +101,15 @@ class AIInterface(Interface):
 
 		self.recalibration_button = Button(self.window, text='Recalibration', command=self.event_recalibration)
 		self.recalibration_button.grid(row=11, column=0)
-		#
-		# self.homologation_button = Button(self.window, text='Homologation', command=self.event_homologation)
-		# self.homologation_button.grid(row=12, column=0)
 
 		# Reset Button
 		self.resset_pos = Button(self.window, text='Reset position', command=self.event_set_pos)
 		self.resset_pos.grid(row=13, column=0)
 
 		# select strategy
-		list_strategy = self.ai.goals.strategies
-		self.select_strategy = ttk.Combobox(self.window, values=list_strategy)
+		list_strategy = self.cs.ai[ROBOT].get_strategy()
+
+		self.select_strategy = ttk.Combobox(self.window, values=list_strategy[0])
 		self.select_strategy.current(0)
 		self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
 		self.select_strategy.grid(row=6, column=0)
@@ -126,7 +133,7 @@ class AIInterface(Interface):
 		self.match_status_label.grid(row=0, column=2)
 		self.match_status_label.config(font=('Arial', 12))
 
-		# BAU STATUS
+		# # BAU STATUS
 		self.bau_status_label = Label(self.window)
 		self.bau_status_label.grid(row=0, column=3)
 		self.bau_status_label.config(font=('Arial', 12))
@@ -143,14 +150,12 @@ class AIInterface(Interface):
 		self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
 	def update_interface(self):
-		#print(self.ai.robot.tm.bau_gpio.__dict__)
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
-		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.ai.robot.tm.get_bau_status() else 'Bau Status: OFF')
-		self.status.config(text='State ai: %s' % self.ai.fsm.running)
+		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.bau_status else 'Bau Status: OFF')
+		self.status.config(text='State ai: %s' % self.states_ai)
 
 		if self.match_status is not None:
-
 			self.color_label.config(text="Color: %s" % self.match_status['color'], fg=self.match_status['color'])
 			self.score_label.config(text="Score: %d" % self.match_status['score'])
 			self.match_status_label.config(text="Match status: %s" % self.match_status['status'])
@@ -158,6 +163,7 @@ class AIInterface(Interface):
 			self.color_button.config(bg=self.match_status["color"])
 
 		else:
+			print("[FIX] lol")
 
 			self.color_label.config(text="Color: %s" % 'M.C')
 			self.score_label.config(text="Score: %s" % 'M.C')
@@ -171,12 +177,15 @@ class AIInterface(Interface):
 			else:
 				self.print_robot(*self.robots[robot].values())
 
-		self.print_path(self.paths[self.ai.robot.robot], 'yellow', 'violet')
+		self.print_path(self.paths[ROBOT], 'yellow', 'violet')
 
 		self.window.after(self.interface_refresh, self.update_interface)
 
 def main():
-	pass
+	if len(argv) > 1:
+		global ROBOT
+		ROBOT = argv[1]
+	AIInterface()
 
 
 if __name__ == "__main__":
