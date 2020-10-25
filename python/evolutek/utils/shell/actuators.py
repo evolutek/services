@@ -140,12 +140,49 @@ def right_cup_holder_open():
     cs.actuators[ROBOT].right_cup_holder_open()
     return
 
+# High level actions
+
 @actuators_shell.command()
-def _windsocks_push():
-    cs.actuators[ROBOT]._windsocks_push()
+def start_lighthouse():
+    cs.actuators[ROBOT].start_lighthouse()
+    return
+
+@actuators_shell.command()
+def drop_starting_without_sort():
+    cs.actuators[ROBOT].drop_starting_without_sort()
+    return
+
+@actuators_shell.command()
+def drop_starting_with_sort():
+    cs.actuators[ROBOT].drop_starting_with_sort()
+    return
+
+@actuators_shell.command()
+def drop_center_zone():
+    cs.actuators[ROBOT].drop_center_zone()
+    return
+
+@actuators_shell.command()
+def get_reef_buoys():
+    cs.actuators[ROBOT].get_reef_buoys()
     return
 
 @actuators_shell.command()
 def windsocks_push():
     cs.actuators[ROBOT].windsocks_push()
+    return
+
+@actuators_shell.command()
+def get_pattern():
+    cs.actuators[ROBOT].get_pattern()
+    return
+
+@actuators_shell.command()
+def get_reef():
+    cs.actuators[ROBOT].get_reef()
+    return
+
+@actuators_shell.command()
+def go_to_anchorage():
+    cs.actuators[ROBOT].go_to_anchorage()
     return
