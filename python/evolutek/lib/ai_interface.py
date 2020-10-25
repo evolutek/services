@@ -1,5 +1,6 @@
 import os
 
+from evolutek.lib.settings import ROBOT
 from cellaserv.service import Service
 from evolutek.lib.interface import Interface
 from evolutek.lib.settings import SIMULATION
@@ -8,21 +9,19 @@ if SIMULATION:
 	from evolutek.simulation.simulator import read_config
 
 from tkinter import Button, Canvas, Label, ttk
-from evolutek.lib.gpio import Gpio, Edge as GpioEdge
 
 
 # TODO: clean
 
 class AIInterface(Interface):
 
-	def __init__(self, ai):
-		self.ai = ai
+	def __init__(self):
 
 		super().__init__('Ai interface', 3)
-		self.init_robot(self.ai.robot.robot)
+		self.init_robot(ROBOT)
 		self.match_status = None
 		self.client.add_subscribe_cb('match_status', self.match_status_handler)
-		self.match_status_watchdog = Watchdog(3, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
+		self.match_status_watchdog = Watchdog(2, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
 		if SIMULATION:
 			self.init_simulation()
 
@@ -55,22 +54,23 @@ class AIInterface(Interface):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def action_color(self):
-		if self.match_status["color"] == self.ai.robot.color1:
+		if self.match_status["color"] == self.color1:
 			self.cs.match.set_color(self.color2)
 		else:
-			self.cs.match.set_color(self.ai.robot.color1)
+			self.cs.match.set_color(self.color1)
 
 	def action_strategy(self):
-		self.ai.goals.reset(self.select_strategy.get())
+		self.cs.ai[ROBOT].set_strategy(self.select_strategy.get())
 
 	def shutdown(self):
 		os.system("poweroff")
 
 	def event_recalibration(self):
-		self.ai.set_recalibration(True)
+		self.cs.ai[ROBOT].set_recalibration(True)
+		self.cs.ai[ROBOT].reset_handler()
 
 	def event_set_pos(self):
-		self.ai.set_recalibration(False)
+		self.cs.ai[ROBOT].set_recalibration(False)
 
 	# Init match interface
 	def init_interface(self):
@@ -101,8 +101,9 @@ class AIInterface(Interface):
 		self.resset_pos.grid(row=13, column=0)
 
 		# select strategy
-		list_strategy = self.ai.goals.strategies
-		self.select_strategy = ttk.Combobox(self.window, values=list_strategy)
+		list_strategy = self.cs.ai[ROBOT].get_strategy()
+
+		self.select_strategy = ttk.Combobox(self.window, values=list_strategy[0])
 		self.select_strategy.current(0)
 		self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
 		self.select_strategy.grid(row=6, column=0)
@@ -126,10 +127,10 @@ class AIInterface(Interface):
 		self.match_status_label.grid(row=0, column=2)
 		self.match_status_label.config(font=('Arial', 12))
 
-		# BAU STATUS
-		self.bau_status_label = Label(self.window)
-		self.bau_status_label.grid(row=0, column=3)
-		self.bau_status_label.config(font=('Arial', 12))
+		# # BAU STATUS
+		# self.bau_status_label = Label(self.window)
+		# self.bau_status_label.grid(row=0, column=3)
+		# self.bau_status_label.config(font=('Arial', 12))
 
 		# Match time
 		self.match_time_label = Label(self.window)
@@ -143,14 +144,15 @@ class AIInterface(Interface):
 		self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
 	def update_interface(self):
-		#print(self.ai.robot.tm.bau_gpio.__dict__)
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
-		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.ai.robot.tm.get_bau_status() else 'Bau Status: OFF')
-		self.status.config(text='State ai: %s' % self.ai.fsm.running)
+
+		# val = self.cs.ai[ROBOT].get_bau_status()
+
+		# self.bau_status_label.config(text='%s' % ' Bau Status: ON' if val else 'Bau Status: OFF')
+		self.status.config(text='State ai: %s' % self.cs.ai[ROBOT].get_state_ai())
 
 		if self.match_status is not None:
-
 			self.color_label.config(text="Color: %s" % self.match_status['color'], fg=self.match_status['color'])
 			self.score_label.config(text="Score: %d" % self.match_status['score'])
 			self.match_status_label.config(text="Match status: %s" % self.match_status['status'])
@@ -158,6 +160,7 @@ class AIInterface(Interface):
 			self.color_button.config(bg=self.match_status["color"])
 
 		else:
+			print("[FIX] lol")
 
 			self.color_label.config(text="Color: %s" % 'M.C')
 			self.score_label.config(text="Score: %s" % 'M.C')
@@ -171,12 +174,12 @@ class AIInterface(Interface):
 			else:
 				self.print_robot(*self.robots[robot].values())
 
-		self.print_path(self.paths[self.ai.robot.robot], 'yellow', 'violet')
+		self.print_path(self.paths[ROBOT], 'yellow', 'violet')
 
 		self.window.after(self.interface_refresh, self.update_interface)
 
 def main():
-	pass
+	AIInterface()
 
 
 if __name__ == "__main__":
