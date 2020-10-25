@@ -122,7 +122,7 @@ class Robot:
 
         # Start the event listening thread
         self.client_thread = Thread(target=asyncore.loop)
-        self.client_thread.daemon = True
+        # self.client_thread.daemon = True
         self.client_thread.start()
 
 

@@ -50,9 +50,9 @@ class AIInterface(Interface):
 	# 	self.match_status_watchdog.reset()
 	# 	print(status, end="\n")
 	# 	self.match_status = status
-	#
-	# def reset_match_status(self):
-	# 	self.match_status = None
+
+	def reset_match_status(self):
+	    self.match_status = 1
 
 	def reset_match(self):
 		try:
@@ -154,11 +154,11 @@ class AIInterface(Interface):
 		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.bau_status else 'Bau Status: OFF')
 		self.status.config(text='State ai: %s' % self.states_ai)
 
-		if self.match_status is not None:
-			self.color_label.config(text="Color: %s" % self.cs.match.get_color(), fg=self.cs.match.get_color())
-			self.score_label.config(text="Score: %d" % self.cs.match_status.get_color())
+		if self.cs.match.get_status() is not None:
+			self.color_label.config(text="Color: %s" % self.cs.match.get_color(), fg=self.cs.match.get_status()['color'])
+			self.score_label.config(text="Score: %d" % self.cs.match.get_status()['score'])
 			self.match_status_label.config(text="Match status: %s" % self.cs.match.get_status()['status'])
-			self.match_time_label.config(text="Match time: %d" % self.cs.match.get_status['time'])
+			self.match_time_label.config(text="Match time: %d" % self.cs.match.get_status()['time'])
 			self.color_button.config(bg=self.cs.match.get_color())
 
 		else:
