@@ -44,7 +44,6 @@ class Tim(_Tim):
 
          # Start the event listening thread
         self.client_thread = Thread(target=asyncore.loop)
-        self.client_thread.daemon = True
         self.client_thread.start()
 
     def reset_robot(self, robot):

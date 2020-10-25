@@ -160,7 +160,6 @@ class TrajMan(Service):
         self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
 
         self.thread = Thread(target=self.async_read)
-        self.thread.daemon = True
         self.thread.start()
 
         """ AVOID """
