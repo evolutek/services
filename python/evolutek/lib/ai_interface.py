@@ -20,14 +20,21 @@ class AIInterface(Interface):
 		super().__init__('Ai interface', 3)
 		self.init_robot(ROBOT)
 		self.match_status = None
+		self.bau_status = None
+		self.states_ai = None
 		self.client.add_subscribe_cb('match_status', self.match_status_handler)
-		self.match_status_watchdog = Watchdog(2, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
+		self.client.add_subscribe_cb(ROBOT + '_infos_interfaces', self.infos_ai)
+		self.match_status_watchdog = Watchdog(3, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
 		if SIMULATION:
 			self.init_simulation()
 
 		self.window.after(self.interface_refresh, self.update_interface)
 		print('[AI NTERFACE] Window looping')
 		self.window.mainloop()
+
+	def infos_ai(self, states_ai, bau_status):
+		self.bau_status = bau_status
+		self.states_ai = states_ai
 
 	def init_simulation(self):
 		enemies = read_config('enemies')
@@ -128,9 +135,9 @@ class AIInterface(Interface):
 		self.match_status_label.config(font=('Arial', 12))
 
 		# # BAU STATUS
-		# self.bau_status_label = Label(self.window)
-		# self.bau_status_label.grid(row=0, column=3)
-		# self.bau_status_label.config(font=('Arial', 12))
+		self.bau_status_label = Label(self.window)
+		self.bau_status_label.grid(row=0, column=3)
+		self.bau_status_label.config(font=('Arial', 12))
 
 		# Match time
 		self.match_time_label = Label(self.window)
@@ -146,11 +153,8 @@ class AIInterface(Interface):
 	def update_interface(self):
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
-
-		# val = self.cs.ai[ROBOT].get_bau_status()
-
-		# self.bau_status_label.config(text='%s' % ' Bau Status: ON' if val else 'Bau Status: OFF')
-		self.status.config(text='State ai: %s' % self.cs.ai[ROBOT].get_state_ai())
+		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.bau_status else 'Bau Status: OFF')
+		self.status.config(text='State ai: %s' % self.states_ai)
 
 		if self.match_status is not None:
 			self.color_label.config(text="Color: %s" % self.match_status['color'], fg=self.match_status['color'])
