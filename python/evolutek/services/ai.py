@@ -2,14 +2,13 @@
 
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
+from evolutek.lib.ai_interface import AIInterface
 
 from evolutek.lib.fsm import Fsm
 from evolutek.lib.goals import Goals, AvoidStrategy
 from evolutek.lib.gpio import Edge, Gpio
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.settings import ROBOT
-
-ROBOT = "pal"
 
 from enum import Enum
 from threading import Event, Thread, Timer
@@ -71,7 +70,6 @@ class Ai(Service):
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
 
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
-
 
     """ SETUP """
     def setup(self):
@@ -163,49 +161,39 @@ class Ai(Service):
         status = None
         pos = self.robot.mirror_pos(x=self.current_goal.position.x, y=self.current_goal.position.y)
         print("[AI] Going %d %d" % (pos[0], pos[1]))
-        #status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
 
         if self.use_pathfinding:
             print('[AI] Going with pathfinding')
-            #status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+            status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+
+            while status != Status.reached:
+
+                t = 0.0
+
+                if (self.current_goal.timeout is not None  and t > self.current_goal.timeout)\
+                    or self.current_goal.secondary_goal is not None:
+
+                    self.current_goal = self.goals.get_secondary(self.current_goal.secondary_goal)
+                    return Status.Making
+
+                t += 100
+                sleep(0.1)
+
+                status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+
 
         else:
             print('[AI] Going without pathfinding')
 
-        status = self.robot.goto_avoid(self.current_goal.position.x, self.current_goal.position.y)
-
-        """
-        if status == Status.unreachable || status == Status.has_avoid:
-
-            # TODO : Move back ?
-
-            if self.current_goal.secondary_goal is not None:
-
-                if self.current_goal.timeout is not None:
-                    t = 0.0
-
-                    while t < self.current_goal.timeout:
-                        status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
-
-                        if status == Status.reached:
-                            break
-
-                            sleep(0.100)
-                            t += 0.100
-
-                            self.current_goal = self.goals.get_secondary(self.current_goal.secondary_goal)
-
-            return States.Making
-        """
+            status = self.robot.goto_avoid(self.current_goal.position.x, self.current_goal.position.y)
+            # TODO : timeout ?
+            # TODO : move_back
 
         if not self.current_goal.theta is None:
 
             print('[AI] Going to %s' % self.robot.mirror_pos(theta=self.current_goal.theta)[2])
-            status = None
             status = self.robot.goth(self.current_goal.theta)
 
-            if status == Status.has_avoid:
-                return States.error
 
             if status == Status.unreached:
                 status = self.robot.goth(self.current_goal.theta)
@@ -236,31 +224,6 @@ class Ai(Service):
 
             status = None
             action.make()
-
-            print(status)
-
-            if status == Status.unreached:
-
-                if self.match_end.is_set():
-                    return States.Ending
-
-                if self.critical.is_set():
-                    return States.Selecting
-
-                return States.Error
-
-            if status == Status.has_avoid:
-                # TODO: move_back
-
-                if action.avoid_strategy == AvoidStrategy.Skip:
-                    continue
-
-                timeout = action.timeout
-                if self.robot.wait_until(timeout):
-                    status = action.make()
-
-                    if status == Status.unreached:
-                        continue
 
             if action.score > 0:
                 self.publish("score", value=action.score)
@@ -363,6 +326,21 @@ class Ai(Service):
         print('[AI] I am sleeping')
         sleep(float(time))
 
+    @Service.action
+    def get_strategy(self):
+        new_list = []
+
+        for i in self.goals.strategies:
+            new_list.append(i.name)
+
+        return new_list
+
+    @Service.thread
+    def infos_interfaces(self):
+        while True:
+            self.publish(self.robot.robot + "_infos_interfaces", states_ai=self.fsm.running.state.name,
+                         bau_status=self.robot.tm.get_bau_status())
+            sleep(1)
 
 def main():
     ai = Ai()

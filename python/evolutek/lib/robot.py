@@ -17,7 +17,7 @@ from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
-DELTA_POS = 5
+DELTA_POS = 15
 DELTA_THETA = 0.1
 TIMEOUT_PATH = 5
 MOVE_BACK = 250
@@ -212,6 +212,7 @@ class Robot:
 
         if Point(x=x, y=y).dist(Point(dict=pos)) < DELTA_POS:
             return Status.reached
+        print("x: {} y: {} -- pos: {}".format(x, y, pos))
         return Status.unreached
 
     def goth(self, theta, mirror=True):
@@ -242,10 +243,13 @@ class Robot:
     def goto_avoid(self, x, y, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
         status = self.goto(x, y, mirror)
+        print("avoid status: ")
+        print(status)
         while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goto(x, y, mirror)
+            print(status)
 
         return status
 
@@ -424,7 +428,7 @@ class Robot:
         if y:
             print('[ROBOT] Recalibration Y')
             theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
-            self.goth(theta * (-1 if self.side and mirror else 1))
+            self.goth(theta)
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(0.5)
 

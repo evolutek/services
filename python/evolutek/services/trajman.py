@@ -212,9 +212,9 @@ class TrajMan(Service):
 
         # BAU (emergency stop)
         bau_gpio = Gpio(BAU_GPIO, 'bau', dir=False, edge=GpioEdge.BOTH)
-
+        self.bau_status = bau_gpio.read()
         # If the BAU is set at init, free the robot
-        if bau_gpio.read() == 0:
+        if not self.bau_status:
             self.free()
 
         bau_gpio.auto_refresh(callback=self.handle_bau)
@@ -231,12 +231,17 @@ class TrajMan(Service):
     """ BAU """
     @Service.action
     def handle_bau(self, value, event='', name='', id=0):
+        self.bau_status = value
         if value == 0:
             self.free()
             self.disable()
         else:
             self.enable()
             self.unfree()
+
+    @Service.action
+    def get_bau_status(self):
+        return self.bau_status
 
     """ AVOID """
     @Service.thread
