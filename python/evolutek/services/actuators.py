@@ -499,14 +499,16 @@ class Actuators(Service):
 
         flip = self.anchorage ^ (self.color == self.color2)
 
-        status = self.robot.move_trsl_block(150, 500, 500, 500, 1)
+        self.robot.move_trsl_avoid(150, 500, 500, 500, 1)
         self.pumps_drop([3, 4] if flip else [1, 2])
-        if self.should_stop(status):
+        if self.queue.stop.is_set():
             return Status.unreached.value
-        self.robot.move_trsl_block(200, 800, 800, 800, 0)
+        self.robot.move_trsl_avoid(200, 800, 800, 800, 0)
 
         status = self.robot.goth(pi/2)
-        if self.robot.move_trsl_block(100, 500, 500, 500, 0) == Status.unreached or status != Status.reached:
+        if not self.queue.stop.is_set():
+            self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
+        else:
             return Status.unreached.value
         status = self.robot.goth(0 if self.anchorage else pi)
 
@@ -516,17 +518,17 @@ class Actuators(Service):
         self.right_cup_holder_drop()
         sleep(0.5)
         if not self.queue.stop.is_set():
-            status = self.robot.move_trsl_block(120, 300, 300, 300, 0)
+            status = self.robot.move_trsl_avoid(120, 300, 300, 300, 0)
         else:
             return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
 
-        status = self.robot.move_trsl_block(525, 300, 300, 300, 1)
+        status = self.robot.move_trsl_avoid(525, 300, 300, 300, 1)
         if self.queue.stop.is_set() or status != Status.reached:
             return Status.unreached.value
         self.pumps_drop([6, 8] if flip else [5, 7])
         if not self.queue.stop.is_set():
-            status = self.robot.move_trsl_block(100, 800, 800, 800, 1)
+            status = self.robot.move_trsl_avoid(100, 800, 800, 800, 1)
         else:
             return Status.unreached.value
         self.left_cup_holder_close()
@@ -537,16 +539,16 @@ class Actuators(Service):
         status = self.robot.goth(pi/2)
         if (self.queue.stop.is_set()):
             return Status.unreached.value if self.should_stop(status) else Status.reached.value
-        status = self.robot.move_trsl_block(225, 500, 500, 500, 1)
+        status = self.robot.move_trsl_avoid(225, 500, 500, 500, 1)
         if self.robot.goth(pi if self.anchorage else 0) == Status.unreached:
             status = Status.unreached
         if (self.should_stop(status)):
             return Status.unreached.value
-        status = self.robot.move_trsl_block(150, 300, 300, 300, 1)
+        status = self.robot.move_trsl_avoid(150, 300, 300, 300, 1)
         if self.should_stop(status):
             return Status.unreached.value
         self.pumps_drop([1, 2] if flip else [3, 4])
-        status = self.robot.move_trsl_block(125, 800, 800, 800, 0)
+        status = self.robot.move_trsl_avoid(125, 800, 800, 800, 0)
         return status.value
 
         robot.goth(pi/2)
