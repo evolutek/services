@@ -49,6 +49,7 @@ class Map(Service):
             self.tim_config = tim_file.read()
             self.tim_config = json.loads(self.tim_config)
         self.robots = []
+        self.nbrobots = 0
 
         # Gets the color (side) of the robot
         self.color = None
@@ -147,8 +148,6 @@ class Map(Service):
               obstacles = obstacles.union(obstacle)
             for tag in self.map.color_obstacles:
               obstacles = obstacles.union(self.map.color_obstacles[tag])
-            for tag in self.map.robots:
-              obstacles = obstacles.union(self.map.robots[tag])
 
             polygons = self.map.borders
             if isinstance(obstacles, Polygon):
@@ -300,6 +299,10 @@ class Map(Service):
           self.clouds.clear()
           self.clouds = clouds[:]
           translated_clouds = [cloud.to_dict() for cloud in self.clouds]
+          # Remove robots from the map #TODO: I think it could be greatly optimized
+          for i in range(self.nbrobots):
+            tag = "robot%d" % i
+            self.map.remove_obstacle(tag)
           # Add robots on the map
           i = 0
           self.robots.clear()
@@ -310,6 +313,7 @@ class Map(Service):
               d['tag'] = tag
               i += 1
               self.robots.append(d)
+          self.nbrobots = len(robots)
 
           #print('[MAP] Detected %d robots' % len(self.robots))
           #self.publish('tim_detected_robots', robots=self.robots)
