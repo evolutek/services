@@ -8,6 +8,7 @@ from evolutek.lib.watchdog import Watchdog
 if SIMULATION:
 	from evolutek.simulation.simulator import read_config
 
+from sys import argv
 from tkinter import Button, Canvas, Label, ttk
 
 
@@ -74,10 +75,11 @@ class AIInterface(Interface):
 
 	def event_recalibration(self):
 		self.cs.ai[ROBOT].set_recalibration(True)
-		self.cs.ai[ROBOT].reset_handler()
+		self.cs.ai[ROBOT].reset()
 
 	def event_set_pos(self):
 		self.cs.ai[ROBOT].set_recalibration(False)
+		self.cs.ai[ROBOT].reset()
 
 	# Init match interface
 	def init_interface(self):
@@ -99,9 +101,6 @@ class AIInterface(Interface):
 
 		self.recalibration_button = Button(self.window, text='Recalibration', command=self.event_recalibration)
 		self.recalibration_button.grid(row=11, column=0)
-		#
-		# self.homologation_button = Button(self.window, text='Homologation', command=self.event_homologation)
-		# self.homologation_button.grid(row=12, column=0)
 
 		# Reset Button
 		self.resset_pos = Button(self.window, text='Reset position', command=self.event_set_pos)
@@ -183,6 +182,9 @@ class AIInterface(Interface):
 		self.window.after(self.interface_refresh, self.update_interface)
 
 def main():
+	if len(argv) > 1:
+		global ROBOT
+		ROBOT = argv[1]
 	AIInterface()
 
 

@@ -10,8 +10,6 @@ from evolutek.lib.gpio import Edge, Gpio
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.settings import ROBOT
 
-ROBOT = "pal"
-
 from enum import Enum
 from threading import Event, Thread, Timer
 from time import sleep
