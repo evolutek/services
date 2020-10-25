@@ -481,6 +481,8 @@ class Actuators(Service):
 
     def should_stop(self, status):
         if status != Status.reached or self.queue.stop.is_set():
+            print("non reached status detected!: ")
+            print(status)
             return True
         return False
 
@@ -570,8 +572,7 @@ class Actuators(Service):
             return status.value
         if self.should_stop(self.robot.move_trsl_avoid(200, 500, 500, 500, 0)):
             return Status.unreached.value
-        if self.should_stop(self.robot.recalibration(side_x=(False, True), decal_y=1511)):
-            return Status.unreached.value
+        self.robot.recalibration(side_x=(False, True), decal_y=1511)
         if self.should_stop(self.robot.goto_avoid(1750, 1800)):
             return Status.unreached.value
         status = self.robot.goth(0)
@@ -647,13 +648,13 @@ class Actuators(Service):
         sleep(1)
 
         move = 3 - pattern
-        status = self.robot.move_rot_block(pi/12 * move, 5, 5, 5, side)
+        self.robot.move_rot_block(pi/12 * move, 5, 5, 5, side)
 
         if (pattern == 3) ^ side:
             self.left_cup_holder_drop()
         else:
             self.right_cup_holder_drop()
-        if self.should_stop(status):
+        if self.queue.stop.is_set():
             self.left_cup_holder_close() if (pattern == 3) ^ side else self.right_cup_holder_close()
             return Status.unreached.value
         sleep(0.5)
@@ -667,6 +668,7 @@ class Actuators(Service):
             self.left_cup_holder_close()
         else:
             self.right_cup_holder_close()
+        return Status.reached.value
 
 
 
@@ -675,7 +677,7 @@ class Actuators(Service):
     @use_queue
     def wait_for_match_end():
         status = self.cs.match.get_status()
-        while stats['time'] < 90:
+        while status['time'] < 90:
             sleep(0.5)
             status = self.cs.match.get_status()
 
