@@ -46,7 +46,7 @@ def get_first_buoys():
     robot.goto_xy_block(800, 330)
     robot.goto_theta_block(0)
 
-# Suppose we are in (800, 300, 0)
+# Suppose we are in (800, 330, 0)
 def get_next_buoys():
     actuators.pump_get(pump=3, buoy='green') # Depend of side
     actuators.pump_get(pump=1, buoy='red') # Depend of side
