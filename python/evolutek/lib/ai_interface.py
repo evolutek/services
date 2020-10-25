@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 import os
 
 from evolutek.lib.settings import ROBOT
@@ -71,7 +73,8 @@ class AIInterface(Interface):
 		self.cs.ai[ROBOT].set_strategy(self.select_strategy.get())
 
 	def shutdown(self):
-		os.system("poweroff")
+                os.system("sudo shutdown now")
+                print('Gros je me casse')
 
 	def event_recalibration(self):
 		self.cs.ai[ROBOT].set_recalibration(True)
@@ -96,7 +99,7 @@ class AIInterface(Interface):
 		self.reset_button = Button(self.window, text='Reset Match', command=self.reset_match)
 		self.reset_button.grid(row=8, column=0)
 
-		self.shutdown_button = Button(self.window, text='shutdown', command=self.close)
+		self.shutdown_button = Button(self.window, text='shutdown', command=self.shutdown)
 		self.shutdown_button.grid(row=10, column=0)
 
 		self.recalibration_button = Button(self.window, text='Recalibration', command=self.event_recalibration)

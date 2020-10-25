@@ -316,7 +316,6 @@ class Ai(Service):
     @Service.action("reset")
     def reset_handler(self):
         self.reset.set()
-
     @Service.action
     def set_pathfinding(self, use_pathfinding=True):
         self.use_pathfinding = use_pathfinding
