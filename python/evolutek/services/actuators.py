@@ -558,12 +558,15 @@ class Actuators(Service):
         if self.should_stop(status):
             return Status.unreached.value
         self.pumps_drop([1, 2] if flip else [3, 4])
-        status = self.robot.move_trsl_avoid(125, 800, 800, 800, 0)
-        return status.value
+        self.robot.move_trsl_avoid(125, 800, 800, 800, 0)
 
-        robot.goth(pi/2)
-        robot.move_trsl_avoid(200, 500, 500, 500, 0)
-        robot.recalibration_block(0)
+        self.robot.goth(pi/2)
+
+        if self.queue.stop.is_set():
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(200, 500, 500, 500, 0)
+        self.robot.recalibration_block(0)
+        return status.value
 
 
     @Service.action
@@ -700,42 +703,6 @@ class Actuators(Service):
             sleep(0.5)
             status = self.cs.match.get_status()
         return Status.reached.value
-
-    @Service.action
-    @if_enabled
-    @use_queue
-    def drop_starting_with_sort(self):
-
-        self.robot.goth(pi if self.anchorage else 0)
-
-        flip = self.anchorage ^ (self.color == self.color2)
-
-        self.robot.move_trsl_block(150, 500, 500, 500, 1)
-        self.pumps_drop([3, 4] if flip else [1, 2])
-        self.robot.move_trsl_block(200, 800, 800, 800, 0)
-
-        self.robot.goth(pi/2)
-        self.robot.move_trsl_block(100, 500, 500, 500, 0)
-        self.robot.goth(0 if self.anchorage else pi)
-
-        self.left_cup_holder_drop()
-        self.right_cup_holder_drop()
-        sleep(0.5)
-        self.robot.move_trsl_block(120, 300, 300, 300, 0)
-        self.pumps_drop([5, 7] if flip else [6, 8])
-
-        self.robot.move_trsl_block(525, 300, 300, 300, 1)
-        self.pumps_drop([6, 8] if flip else [5, 7])
-        self.robot.move_trsl_block(100, 800, 800, 800, 1)
-        self.left_cup_holder_close()
-        self.right_cup_holder_close()
-
-        self.robot.goth(pi/2)
-        self.robot.move_trsl_block(225, 500, 500, 500, 1)
-        self.robot.goth(pi if self.anchorage else 0)
-        self.robot.move_trsl_block(150, 300, 300, 300, 1)
-        self.pumps_drop([1, 2] if flip else [3, 4])
-        self.robot.move_trsl_block(125, 800, 800, 800, 0)
 
     @Service.action
     @if_enabled
