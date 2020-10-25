@@ -446,14 +446,13 @@ class Actuators(Service):
     # HIGH LEVEL ACTIONS #
     ######################
 
+    @Service.action
     @if_enabled
     @use_queue
     def start_lighthouse(self):
         self.right_cup_holder_open()
         sleep(0.5)
-        if self.should_stop(self.robot.move_trsl_block(350, 300, 300, 300, 0)):
-            self.right_cup_holder_close()
-            return Status.unreached.value
+        self.robot.move_trsl_block(350, 300, 300, 300, 0)
         status = self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
         return status.value
 
@@ -688,6 +687,7 @@ class Actuators(Service):
         while status['time'] < 90:
             sleep(0.5)
             status = self.cs.match.get_status()
+        return Status.reached.value
 
     @Service.action
     @if_enabled
@@ -799,7 +799,7 @@ class Actuators(Service):
         self.right_cup_holder_close()
         sleep(1)
 
-        if should_stop(status):
+        if self.should_stop(status):
             return Status.unreached.value
 
         status = self.robot.move_trsl_avoid(200, 300, 300, 300, 1)
@@ -810,11 +810,16 @@ class Actuators(Service):
     @use_queue
     def go_to_anchorage(self):
         # Suppose we are in (800, 700)
-        self.robot.goth(pi if self.anchorage else 0)
-        self.robot.move_trsl_avoid(500, 500, 500, 500, 1)
-        self.goth(pi/2)
-        self.robot.move_trsl_avoid(500, 500, 500, 0)
+        status = self.robot.goth(pi if self.anchorage else 0)
+        if self.should_stop():
+            return Status.unreached.value
+        if self.should_stop(self.robot.move_trsl_avoid(500, 500, 500, 500, 1)):
+            return Status.unreached.value
+        if self.should_stop(self.goth(pi/2)):
+            return Status.unreached.value
+        status = self.robot.move_trsl_avoid(500, 500, 500, 0)
         self.robot.recalibration_block(0)
+        return status.value
 
     ##########
     # EVENTS #
