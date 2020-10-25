@@ -321,7 +321,7 @@
           "fct": "pump_get",
           "handler": "actuators",
           "args": {
-            "pump": 2,
+            "pump": 1,
             "mirror": true
           }
         },
@@ -329,7 +329,7 @@
           "fct": "pump_get",
           "handler": "actuators",
           "args": {
-            "pump": 4,
+            "pump": 3,
             "mirror": true
           }
         },

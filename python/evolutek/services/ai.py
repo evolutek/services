@@ -335,13 +335,6 @@ class Ai(Service):
 
         return new_list
 
-    @Service.thread
-    def infos_interfaces(self):
-        while True:
-            self.publish(self.robot.robot + "_infos_interfaces", states_ai=self.fsm.running.state.name,
-                         bau_status=self.robot.tm.get_bau_status())
-            sleep(1)
-
 def main():
     ai = Ai()
     ai.run()

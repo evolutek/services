@@ -450,10 +450,20 @@ class Actuators(Service):
     @if_enabled
     @use_queue
     def start_lighthouse(self):
-        self.right_cup_holder_open()
+        if self.color == self.color1:
+            self.right_cup_holder_open()
+        else:
+            self.left_cup_holder_open()
+
         sleep(0.5)
         self.robot.move_trsl_block(350, 300, 300, 300, 0)
         status = self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
+
+        if self.color == self.color1:
+            self.right_cup_holder_close()
+        else:
+            self.left_cup_holder_close()
+
         return status.value
 
     @Service.action
@@ -838,7 +848,7 @@ class Actuators(Service):
             self.pumps_drop([5, 6, 7, 8])
             return Status.unreached.value
 
-        status = self.robot.tm.move_trsl(400, 300, 300, 300, 0)
+        self.robot.tm.move_trsl(400, 300, 300, 300, 0)
         sleep(2)
         self.robot.tm.free()
         sleep(0.5)
@@ -846,7 +856,7 @@ class Actuators(Service):
         self.right_cup_holder_close()
         sleep(1)
 
-        if self.should_stop(status):
+        if self.queue.stop.is_set():
             return Status.unreached.value
 
         status = self.robot.move_trsl_avoid(200, 300, 300, 300, 1)
