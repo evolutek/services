@@ -164,49 +164,39 @@ class Ai(Service):
         status = None
         pos = self.robot.mirror_pos(x=self.current_goal.position.x, y=self.current_goal.position.y)
         print("[AI] Going %d %d" % (pos[0], pos[1]))
-        #status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
 
         if self.use_pathfinding:
             print('[AI] Going with pathfinding')
-            #status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+            status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+
+            while status != Status.reached:
+
+                t = 0.0
+
+                if (self.current_goal.timeout is not None  and t > self.current_goal.timeout)\
+                    or self.current_goal.secondary_goal is not None:
+
+                    self.current_goal = self.goals.get_secondary(self.current_goal.secondary_goal)
+                    return Status.Making
+
+                t += 100
+                sleep(0.1)
+
+                status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+
 
         else:
             print('[AI] Going without pathfinding')
 
-        status = self.robot.goto_avoid(self.current_goal.position.x, self.current_goal.position.y)
-
-        """
-        if status == Status.unreachable || status == Status.has_avoid:
-
-            # TODO : Move back ?
-
-            if self.current_goal.secondary_goal is not None:
-
-                if self.current_goal.timeout is not None:
-                    t = 0.0
-
-                    while t < self.current_goal.timeout:
-                        status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
-
-                        if status == Status.reached:
-                            break
-
-                            sleep(0.100)
-                            t += 0.100
-
-                            self.current_goal = self.goals.get_secondary(self.current_goal.secondary_goal)
-
-            return States.Making
-        """
+            status = self.robot.goto_avoid(self.current_goal.position.x, self.current_goal.position.y)
+            # TODO : timeout ?
+            # TODO : move_back
 
         if not self.current_goal.theta is None:
 
             print('[AI] Going to %s' % self.robot.mirror_pos(theta=self.current_goal.theta)[2])
-            status = None
             status = self.robot.goth(self.current_goal.theta)
 
-            if status == Status.has_avoid:
-                return States.error
 
             if status == Status.unreached:
                 status = self.robot.goth(self.current_goal.theta)
@@ -237,31 +227,6 @@ class Ai(Service):
 
             status = None
             action.make()
-
-            print(status)
-
-            if status == Status.unreached:
-
-                if self.match_end.is_set():
-                    return States.Ending
-
-                if self.critical.is_set():
-                    return States.Selecting
-
-                return States.Error
-
-            if status == Status.has_avoid:
-                # TODO: move_back
-
-                if action.avoid_strategy == AvoidStrategy.Skip:
-                    continue
-
-                timeout = action.timeout
-                if self.robot.wait_until(timeout):
-                    status = action.make()
-
-                    if status == Status.unreached:
-                        continue
 
             if action.score > 0:
                 self.publish("score", value=action.score)
