@@ -23,7 +23,6 @@ class AIInterface(Interface):
 		self.match_status = None
 		self.bau_status = None
 		self.states_ai = None
-		self.client.add_subscribe_cb('match_status', self.match_status_handler)
 		self.client.add_subscribe_cb(ROBOT + '_infos_interfaces', self.infos_ai)
 		self.match_status_watchdog = Watchdog(3, self.reset_match_status)  # float(match_config['refresh']) * 2, self.reset_match_status)
 		if SIMULATION:
@@ -46,14 +45,14 @@ class AIInterface(Interface):
 		for enemy, config in enemies['robots'].items():
 			self.robots[enemy] = {'telemetry': None, 'size': config['config']['robot_size_y'], 'color': 'red'}
 			self.client.add_subscribe_cb(enemy + '_telemetry', self.telemetry_handler)
-
-	def match_status_handler(self, status):
-		self.match_status_watchdog.reset()
-		print(status, end="\n")
-		self.match_status = status
-
-	def reset_match_status(self):
-		self.match_status = None
+	#
+	# def match_status_handler(self, status):
+	# 	self.match_status_watchdog.reset()
+	# 	print(status, end="\n")
+	# 	self.match_status = status
+	#
+	# def reset_match_status(self):
+	# 	self.match_status = None
 
 	def reset_match(self):
 		try:
@@ -62,7 +61,7 @@ class AIInterface(Interface):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def action_color(self):
-		if self.match_status["color"] == self.color1:
+		if self.cs.match.get_color() == self.color1:
 			self.cs.match.set_color(self.color2)
 		else:
 			self.cs.match.set_color(self.color1)
@@ -156,11 +155,11 @@ class AIInterface(Interface):
 		self.status.config(text='State ai: %s' % self.states_ai)
 
 		if self.match_status is not None:
-			self.color_label.config(text="Color: %s" % self.match_status['color'], fg=self.match_status['color'])
-			self.score_label.config(text="Score: %d" % self.match_status['score'])
-			self.match_status_label.config(text="Match status: %s" % self.match_status['status'])
-			self.match_time_label.config(text="Match time: %d" % self.match_status['time'])
-			self.color_button.config(bg=self.match_status["color"])
+			self.color_label.config(text="Color: %s" % self.cs.match.get_color(), fg=self.cs.match.get_color())
+			self.score_label.config(text="Score: %d" % self.cs.match_status.get_color())
+			self.match_status_label.config(text="Match status: %s" % self.cs.match.get_status()['status'])
+			self.match_time_label.config(text="Match time: %d" % self.cs.match.get_status['time'])
+			self.color_button.config(bg=self.cs.match.get_color())
 
 		else:
 			print("[FIX] lol")
