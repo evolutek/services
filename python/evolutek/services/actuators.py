@@ -520,7 +520,7 @@ class Actuators(Service):
         status = self.robot.goth(pi/2)
         if not self.should_stop(status):
             #self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
-            if self.should_stop(self.robot.goto_avoid(x=450, y=200):
+            if self.should_stop(self.robot.goto_avoid(x=450, y=200)):
                 return Status.unreached.value
         else:
             return Status.unreached.value
@@ -533,7 +533,7 @@ class Actuators(Service):
         sleep(0.5)
         if not self.queue.stop.is_set():
             #status = self.robot.move_trsl_avoid(120, 300, 300, 300, 0)
-            status = self.robot.goto_avoid(x=330, y=200) if self.robot.goto_avoid(x=570, y=200)
+            status = self.robot.goto_avoid(x=330, y=200) if self.anchorage else self.robot.goto_avoid(x=570, y=200)
         else:
             return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
