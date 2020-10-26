@@ -35,7 +35,7 @@ class Ai(Service):
         # Robot handlers
         self.cs = CellaservProxy()
         self.actuators = self.cs.actuators[ROBOT]
-        self.robot = Robot.get_instance(robot=ROBOT)
+        self.robot = self.cs.robot[ROBOT]
 
         # Runtime variables
         self.score = 0
@@ -93,7 +93,10 @@ class Ai(Service):
             print('[AI] Recalibrating robot')
             self.recalibration.clear()
             self.robot.recalibration(init=True)
-            self.robot.go_home(self.goals.starting_position, self.goals.starting_theta)
+            self.robot.go_home(
+                    self.goals.starting_position.x,
+                    self.goals.starting_position.y,
+                    self.goals.starting_theta)
 
         # No recalibration wanted
         else:
