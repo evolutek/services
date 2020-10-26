@@ -106,7 +106,7 @@ class Actuators(Service):
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
-        self.robot = self.cs.robot[ROBOT]
+        self.robot = Robot(robot=ROBOT)
         self.queue = Act_queue()
         self.rgb_sensors = RGBSensors([1, 2], SAMPLE_SIZE)
         self.disabled = False
@@ -596,7 +596,7 @@ class Actuators(Service):
             return status.value
         if self.should_stop(self.robot.move_trsl_avoid(200, 500, 500, 500, 0)):
             return Status.unreached.value
-        self.robot.recalibration(side_x=False, upper_x=True, decal_y=1511)
+        self.robot.recalibration(side_x=(False, True), decal_y=1511)
         if self.should_stop(self.robot.goto_avoid(1750, 1800)):
             return Status.unreached.value
         status = self.robot.goth(0)
