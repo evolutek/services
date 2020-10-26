@@ -135,13 +135,14 @@ class Match(Service):
 
 
     """ THREAD """
-
-    """ Match status thread """
-    @Service.thread
+    #
+    # """ Match status thread """
+    # @Service.thread
     def match_status(self):
-      while True:
-        self.publish('match_status', status=self.get_status())
-        sleep(self.refresh)
+        # while True:
+            #self.publish('match_status', status=self.get_status())
+            #sleep(self.refresh)
+        return
 
     def match_time_loop(self):
         while self.match_status == MatchStatus.started:
