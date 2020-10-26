@@ -520,7 +520,7 @@ class Actuators(Service):
         status = self.robot.goth(pi/2)
         if not self.should_stop(status):
             #self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
-            if self.should_stop(self.robot.goto_avoid(x=450, y=200):
+            if self.should_stop(self.robot.goto_avoid(x=450, y=200)):
                 return Status.unreached.value
         else:
             return Status.unreached.value
@@ -533,7 +533,7 @@ class Actuators(Service):
         sleep(0.5)
         if not self.queue.stop.is_set():
             #status = self.robot.move_trsl_avoid(120, 300, 300, 300, 0)
-            status = self.robot.goto_avoid(x=330, y=200) if self.robot.goto_avoid(x=570, y=200)
+            status = self.robot.goto_avoid(x=330, y=200) if self.anchorage else self.robot.goto_avoid(x=570, y=200)
         else:
             return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
@@ -545,7 +545,9 @@ class Actuators(Service):
             return Status.unreached.value
         self.pumps_drop([6, 8] if flip else [5, 7])
         if not self.queue.stop.is_set():
-            status = self.robot.move_trsl_avoid(100, 800, 800, 800, 1)
+            pos = self.robot.tm.get_position()
+            #status = self.robot.move_trsl_avoid(100, 800, 800, 800, 1)
+            status = self.robot.goto_avoid(x=pos['x'] + 100, y=200) if self.anchorage else self.robot.goto_avoid(x=pos['x'] - 100, y=200)
         else:
             return Status.unreached.value
         self.left_cup_holder_close()
@@ -554,24 +556,33 @@ class Actuators(Service):
         if (self.should_stop(status)):
             return Status.unreached.value
         status = self.robot.goth(pi/2)
-        if (self.queue.stop.is_set()):
+        if self.queue.stop.is_set():
             return Status.unreached.value if self.should_stop(status) else Status.reached.value
-        status = self.robot.move_trsl_avoid(225, 500, 500, 500, 1)
+        #status = self.robot.move_trsl_avoid(225, 500, 500, 500, 1)
+        pos = self.robot.tm.get_position()
+        status = self.robot.goto_avoid(pos['x'], pos['y'] + 225)
         if self.robot.goth(pi if self.anchorage else 0) == Status.unreached:
             status = Status.unreached
         if (self.should_stop(status)):
             return Status.unreached.value
-        status = self.robot.move_trsl_avoid(150, 300, 300, 300, 1)
+        #status = self.robot.move_trsl_avoid(150, 300, 300, 300, 1)
+        pos = self.robot.tm.get_position()
+        status = self.robot.goto_avoid(x=pos['x'] - 150, y=pos['y']) if self.anchorage else self.robot.goto_avoid(x=pos['x'] + 150, y=pos['y'])
         if self.should_stop(status):
             return Status.unreached.value
         self.pumps_drop([1, 2] if flip else [3, 4])
-        self.robot.move_trsl_avoid(125, 800, 800, 800, 0)
-
-        self.robot.goth(pi/2)
-
-        if self.queue.stop.is_set():
+        #robot.move_trsl_avoid(125, 800, 800, 800, 0)
+        pos = self.robot.tm.get_position()
+        if self.should_stop(self.robot.goto_avoid(x=pos['x'] + 125, y=pos['y']) if self.anchorage else self.robot.goto_avoid(x=pos['x'] - 125, y=pos['y'])):
             return Status.unreached.value
-        status = self.robot.move_trsl_avoid(200, 500, 500, 500, 0)
+
+        status = self.robot.goth(pi/2)
+
+        if self.should_stop(status):
+            return Status.unreached.value
+        #status = self.robot.move_trsl_avoid(200, 500, 500, 500, 0)
+        pos = self.robot.tm.get_position()
+        status = self.robot.goto_avoid(pos['x'], pos['y']) - 200)
         self.robot.recalibration_block(0)
         return status.value
 
@@ -726,22 +737,30 @@ class Actuators(Service):
     def get_reef_buoys(self):
 
         self.pump_get(pump=4, mirror=True)
-        status = self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
+        #status = self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
+        pos = self.robot.tm.get_position()
+        status = self.robot.goto_avoid(x=pos['x' - 200, y=pos['y']])
         if self.should_stop(status):
             self.pump_drop(4)
             return Status.unreached.value
         if self.should_stop(self.robot.goth(-1 * pi/2)):
             return Status.unreached.value
-        status = self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
+        #status = self.robot.move_trsl_avoid(50, 500, 500, 500, 1)
+        pos = self.robot.tm.get_position()
+        status = self.robot.goto_avoid(x=pos['x'], y=pos['y'] - 50)
         self.robot.goth(pi)
 
         self.pump_get(pump=1, mirror=True)
         if self.should_stop(status):
             self.pump_drop(1)
             return Status.unreached.value
-        if self.should_stop(self.robot.move_trsl_avoid(325, 500, 500, 500, 1)):
+            pos = self.robot.tm.get_position()
+        #if self.should_stop(self.robot.move_trsl_avoid(325, 500, 500, 500, 1)):
+        if self.should_stop(self.robot.goto_avoid(x=pos['x'], y=pos['y'] + 325))
             return Status.unreached.value
-        status = self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
+        #status = self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
+        pos = self.robot.tm.get_position()
+        status = self.robot.goto_avoid(x=pos['x'], y=pos['y'] - 150)
         return status.value
 
     @Service.action
@@ -759,7 +778,8 @@ class Actuators(Service):
 
         if self.queue.stop.is_set():
             return Status.unreached.value
-        status = self.robot.move_trsl_avoid(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
+        #status = self.robot.move_trsl_avoid(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
+        status = self.robot.goto_avoid(x=1870, y=780, mirror=True)
 
         if self.color != self.color1:
             self.left_arm_push()
@@ -775,9 +795,10 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(0.2)
         self.robot.tm.set_delta_max_trsl(100)
 
-        if self.queue.stop.is_set() or status != Status.reached:
+        if self.should_stop(status):
             return Status.unreached.value
-        status = self.robot.move_trsl_avoid(100, 400, 400, 500, 0)
+        #status = self.robot.move_trsl_avoid(100, 400, 400, 500, 0)
+        status = self.robot.goto_avoid(x=1870, y=680, mirror=True)
         return Status.reached.value
 
     @Service.action
