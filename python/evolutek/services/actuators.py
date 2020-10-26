@@ -9,7 +9,6 @@ from evolutek.lib.robot import Robot, Status
 from evolutek.lib.rgb_sensors import RGBSensors
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
-from evolutek.services.match import get_anchorage
 
 from enum import Enum
 from functools import wraps
@@ -507,7 +506,7 @@ class Actuators(Service):
     def drop_starting_with_sort(self):
         #true == sud
 
-        self.anchorage = match.get_anchorage() == "south"
+        self.anchorage = self.cs.match.get_anchorage() == "south"
         self.robot.goth(pi if self.anchorage else 0)
 
         flip = self.anchorage ^ (self.color == self.color2)
@@ -536,7 +535,7 @@ class Actuators(Service):
         sleep(0.5)
         if not self.queue.stop.is_set():
             #status = self.robot.move_trsl_avoid(120, 300, 300, 300, 0)
-            status = self.robot.goto_avoid(x=330, y=200) if self.robot.goto_avoid(x=570, y=200)
+            status = self.robot.goto_avoid(x=330, y=200) if self.anchorage else self.robot.goto_avoid(x=570, y=200)
         else:
             return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
