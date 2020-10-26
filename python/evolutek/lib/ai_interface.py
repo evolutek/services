@@ -52,7 +52,7 @@ class AIInterface(Interface):
 	# 	self.match_status = status
 
 	def reset_match_status(self):
-	    self.match_status = 1
+	    self.match_status = None
 
 	def reset_match(self):
 		try:
@@ -77,7 +77,7 @@ class AIInterface(Interface):
 		self.cs.ai[ROBOT].reset()
 
 	def event_set_pos(self):
-		self.cs.ai[ROBOT].set_recalibration(False)
+		self.cs.ai[ROBOT].set_recalibration(True)
 		self.cs.ai[ROBOT].reset()
 
 	# Init match interface
@@ -133,9 +133,9 @@ class AIInterface(Interface):
 		self.match_status_label.config(font=('Arial', 12))
 
 		# # BAU STATUS
-		self.bau_status_label = Label(self.window)
-		self.bau_status_label.grid(row=0, column=3)
-		self.bau_status_label.config(font=('Arial', 12))
+		#self.bau_status_label = Label(self.window)
+		#self.bau_status_label.grid(row=0, column=3)
+		#self.bau_status_label.config(font=('Arial', 12))
 
 		# Match time
 		self.match_time_label = Label(self.window)
@@ -151,7 +151,7 @@ class AIInterface(Interface):
 	def update_interface(self):
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
-		self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.bau_status else 'Bau Status: OFF')
+		#self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.bau_status else 'Bau Status: OFF')
 		self.status.config(text='State ai: %s' % self.states_ai)
 
 		if self.cs.match.get_status() is not None:
@@ -162,7 +162,7 @@ class AIInterface(Interface):
 			self.color_button.config(bg=self.cs.match.get_color())
 
 		else:
-			print("[FIX] lol")
+			print("[FIX] match not running or problem with this")
 
 			self.color_label.config(text="Color: %s" % 'M.C')
 			self.score_label.config(text="Score: %s" % 'M.C')
