@@ -582,7 +582,7 @@ class Actuators(Service):
             return Status.unreached.value
         #status = self.robot.move_trsl_avoid(200, 500, 500, 500, 0)
         pos = self.robot.tm.get_position()
-        status = self.robot.goto_avoid(pos['x'], pos['y']) - 200)
+        status = self.robot.goto_avoid(pos['x'], pos['y'] - 200)
         self.robot.recalibration_block(0)
         return status.value
 
@@ -739,7 +739,7 @@ class Actuators(Service):
         self.pump_get(pump=4, mirror=True)
         #status = self.robot.move_trsl_avoid(200, 500, 500, 500, 1)
         pos = self.robot.tm.get_position()
-        status = self.robot.goto_avoid(x=pos['x' - 200, y=pos['y']])
+        status = self.robot.goto_avoid(x=pos['x'] - 200, y=pos['y'])
         if self.should_stop(status):
             self.pump_drop(4)
             return Status.unreached.value
@@ -756,7 +756,7 @@ class Actuators(Service):
             return Status.unreached.value
             pos = self.robot.tm.get_position()
         #if self.should_stop(self.robot.move_trsl_avoid(325, 500, 500, 500, 1)):
-        if self.should_stop(self.robot.goto_avoid(x=pos['x'], y=pos['y'] + 325))
+        if self.should_stop(self.robot.goto_avoid(x=pos['x'], y=pos['y'] + 325)):
             return Status.unreached.value
         #status = self.robot.move_trsl_avoid(150, 500, 500, 500, 0)
         pos = self.robot.tm.get_position()
