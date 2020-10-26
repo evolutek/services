@@ -7,10 +7,10 @@ from time import sleep
 import asyncore
 from math import pi
 
-from cellaserv.client import RequestTimeout
+#from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
-from cellaserv.service import AsynClient
-from cellaserv.settings import get_socket
+#from cellaserv.service import AsynClient
+#from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
 from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
@@ -83,6 +83,7 @@ class Robot:
         self.robot = robot if not robot is None else ROBOT
         self.tm = self.cs.trajman[self.robot]
 
+
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=self.robot, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=self.robot, option='robot_size_y'))
@@ -104,6 +105,7 @@ class Robot:
         self.timeout = Event()
         self.telemetry = None
 
+        """
         # AsynClient
         self.client = AsynClient(get_socket())
         self.client.add_subscribe_cb(self.robot + '_stopped', self.robot_stopped)
@@ -111,6 +113,7 @@ class Robot:
         self.client.add_subscribe_cb('match_color', self.color_change)
         self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
         #self.client.add_subscribe_cb(self.robot + '_telemetry', self.telemetry_handler)
+        """
 
         # Blocking wrapper
         self.recalibration_block = self.wrap_block(self.tm.recalibration)

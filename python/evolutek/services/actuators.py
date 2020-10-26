@@ -868,6 +868,24 @@ class Actuators(Service):
     def anchorage_set(self, side):
         self.anchorage = side == "south"
 
+    @Service.event("%s_started" % ROBOT)
+    def robot_started(self):
+        self.robot.robot_started()
+
+    @Service.event("%s_stopped" % ROBOT)
+    def robot_stopped(self, has_avoid=False):
+        if isinstance(has_avoid, str):
+            has_avoid = has_avoid == 'true'
+        self.robot.robot_stopped(has_avoid)
+
+    @Service.action("match_color")
+    def color_change(self, color):
+        self.robot.color_change(color)
+
+    @Service.event("%s_end_avoid" % ROBOT)
+    def end_avoid_handler(self):
+        self.robot.end_avoid()
+
 
 def main():
     actuators = Actuators()
