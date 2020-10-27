@@ -490,6 +490,7 @@ class Actuators(Service):
             return Status.unreached.value
         #status = self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
 #        status = self.robot.goto_avoid(x=700, y=300)
+        sleep(0.5)
         self.pumps_drop([5, 6, 7, 8])
         if self.should_stop(status):
             return Status.unreached.value
