@@ -287,8 +287,8 @@ class Ai():
         self.robot.match_end.set()
         self.robot.tm.free()
         self.robot.tm.disable()
-        self.actuators.free()
-        self.actuators.disable()
+        #self.actuators.free()
+        #self.actuators.disable()
 
         self.robot.tm.disable_avoid()
         self.robot.tm.set_mdb_config(mode=2)
