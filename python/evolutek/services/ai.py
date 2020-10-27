@@ -14,6 +14,7 @@ import json
 from threading import Event, Thread, Timer
 from time import sleep
 from math import pi
+import sys
 
 class States(Enum):
     Setup = "Setup"
@@ -23,7 +24,10 @@ class States(Enum):
     Ending = "Ending"
     Error = "Error"
 
-ROBOT='pmi'
+if len(sys.argv) < 2 or sys.argv[1].lower() not in ['pal', 'pmi']:
+    print("Usage: python3 ai.py <robot>")
+    print("Robot can be pmi or pal")
+ROBOT=sys.argv[1].lower()
 
 class Ai():
 
