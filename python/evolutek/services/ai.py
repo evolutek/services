@@ -10,6 +10,7 @@ from evolutek.lib.robot import Robot, Status, DELTA_POS
 from evolutek.lib.settings import ROBOT
 
 from enum import Enum
+import json
 from threading import Event, Thread, Timer
 from time import sleep
 from math import pi
@@ -228,7 +229,7 @@ class Ai():
             action.make()
 
             if action.score > 0:
-                self.publish("score", value=action.score)
+                self.robot.client.publish("score", data=json.dumps({"value" : action.score}).encode())
                 self.score += action.score
                 goal_score -= action.score
 
@@ -237,7 +238,7 @@ class Ai():
 
         self.goals.finish_goal()
         if self.current_goal.score > 0:
-            self.publish("score", value=goal_score)
+            self.robot.client.publish("score", data=json.dumps({"value" : goal_score}).encode())
             self.score += goal_score
 
         return States.Selecting
