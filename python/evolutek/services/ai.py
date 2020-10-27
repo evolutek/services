@@ -27,6 +27,7 @@ class States(Enum):
 if len(sys.argv) < 2 or sys.argv[1].lower() not in ['pal', 'pmi']:
     print("Usage: python3 ai.py <robot>")
     print("Robot can be pmi or pal")
+    return
 ROBOT=sys.argv[1].lower()
 
 class Ai():
