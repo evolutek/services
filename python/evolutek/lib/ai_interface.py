@@ -126,7 +126,7 @@ class AIInterface(Interface):
 		# Score
 		self.score_label = Label(self.window)
 		self.score_label.grid(row=0, column=0)
-		self.score_label.config(font=('Arial', 16))
+		self.score_label.config(font=('Arial', 25))
 
 		# Match status
 		self.match_status_label = Label(self.window)
