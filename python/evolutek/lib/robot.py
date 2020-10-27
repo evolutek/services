@@ -466,11 +466,6 @@ class Robot:
 
     """ GO HOME """
     def go_home(self, point, point_theta):
-        if ROBOT == "pmi":
-            self.goto(point.x, point.y)
-            self.goth(point_theta)
-            self.goto(point.x + 50, point.y)
-            sleep(60)  
         self.goto(point.x, point.y)
         self.goth(point_theta)
 
