@@ -475,7 +475,7 @@ class Actuators(Service):
         if self.should_stop(status):
             return Status.unreached.value
         #if self.should_stop(self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
-        if self.robot.goto_avoid(x=500, y=300):
+        if self.should_stop(self.robot.goto_avoid(x=500, y=300)):
             return Status.unreached.value
         self.robot.move_rot_block(pi, 5, 5, 5, 1)
         self.left_cup_holder_drop()
@@ -756,6 +756,7 @@ class Actuators(Service):
     @if_enabled
     @use_queue
     def get_reef_buoys(self):
+        # 700 830 PI
 
         self.pump_get(pump=4, mirror=True)
         status = self.robot.goto_avoid(x=500, y=830)
@@ -764,16 +765,17 @@ class Actuators(Service):
             return Status.unreached.value
         if self.should_stop(self.robot.goth(-1 * pi/2)):
             return Status.unreached.value
-        status = self.robot.goto_avoid(x=900, y=880)
+        status = self.robot.goto_avoid(x=500, y=780)
+        self.robot.goth(pi)
 
         self.pump_get(pump=1, mirror=True)
         if self.should_stop(status):
             self.pump_drop(1)
             return Status.unreached.value
             pos = self.robot.tm.get_position()
-        if self.should_stop(self.robot.goto_avoid(x=900, y=555)):
+        if self.should_stop(self.robot.goto_avoid(x=200, y=780)):
             return Status.unreached.value
-        status = self.robot.goto_avoid(x=900, y=705)
+        status = self.robot.goto_avoid(x=350, y=780)
         return status.value
 
     @Service.action
