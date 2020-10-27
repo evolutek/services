@@ -221,7 +221,7 @@ class TrajMan(Service):
         bau_gpio.auto_refresh(callback=self.handle_bau)
 
 
-    @Service.thread
+    #@Service.thread
     def send_telemetry(self):
         while True:
             if self.telemetry is not None:
