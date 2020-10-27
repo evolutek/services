@@ -299,7 +299,7 @@
           "fct": "wait_for_match_end",
           "handler": "actuators",
           "args": {
-            "match_time": 90
+            "match_time": 95
           }
         },
         {
