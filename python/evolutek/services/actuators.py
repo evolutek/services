@@ -758,7 +758,7 @@ class Actuators(Service):
     def get_reef_buoys(self):
 
         self.pump_get(pump=4, mirror=True)
-        status = self.robot.goto_avoid(x=900, y=830)
+        status = self.robot.goto_avoid(x=500, y=830)
         if self.should_stop(status):
             self.pump_drop(4)
             return Status.unreached.value
@@ -789,7 +789,7 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(1)
         self.robot.tm.set_delta_max_trsl(500)
 
-        if self.should_stop(self.robot.goto_avoid(x=1825, y=720, mirror=True))
+        if self.should_stop(self.robot.goto_avoid(x=1825, y=720, mirror=True)):
             return Status.unreached.value
 
         if self.robot.color != self.color1:
@@ -806,7 +806,7 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(0.2)
         self.robot.tm.set_delta_max_trsl(100)
 
-        if self.should_stop(self.robot.goto_avoid(x=1825, y=600, mirror=True))
+        if self.should_stop(self.robot.goto_avoid(x=1825, y=600, mirror=True)):
             return Status.unreached.value
         return Status.reached.value
 
