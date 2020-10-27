@@ -288,6 +288,10 @@ class Actuators(Service):
     def pump_get(self, pump, buoy='unknown', mirror=False):
         valid = True
         pump = int(pump)
+
+        if isinstance(mirror, str):
+            mirror = mirror == 'true'
+
         try:
             buoy = Buoy(buoy)
         except:
