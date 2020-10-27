@@ -289,9 +289,6 @@ class Actuators(Service):
         valid = True
         pump = int(pump)
 
-        if isinstance(mirror, str):
-            mirror = mirror == 'true'
-
         try:
             buoy = Buoy(buoy)
         except:
@@ -319,10 +316,15 @@ class Actuators(Service):
     # Drop Buoy
     @Service.action
     @if_enabled
-    def pump_drop(self, pump):
+    def pump_drop(self, pump, mirror=False):
         pump = int(pump)
         if pump > 0 and pump <= 8:
-            self.pumps[pump - 1].pump_drop()
+            p = pump
+            if mirror and self.robot.color == self.color2:
+                p = 5 - pump % 5
+                if pump > 4:
+                    p = p + 3
+            self.pumps[p - 1].pump_drop()
         else:
             print('[ACTUATORS] Not a valid pump: %d' % pump)
 
