@@ -55,7 +55,7 @@ class Ai():
         self.fsm.add_state(States.Ending, self.ending, prevs=[States.Setup, States.Waiting, States.Selecting, States.Making])
         self.fsm.add_error_state(self.error)
 
-        #Gpio(17, "tirette", False, edge=Edge.FALLING).auto_refresh(callback=self.publish)
+        Gpio(17, "tirette", False, edge=Edge.FALLING).auto_refresh(callback=self.handle_tirette)
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
 
@@ -309,6 +309,11 @@ class Ai():
         print('[AI] I am sleeping')
         sleep(float(time))
 
+
+    def handle_tirette(self, **kwargs):
+        del(kwargs['event'])
+        data = json.dumps(kwargs).encode()
+        self.robot.client.publish('tirette', data=data)
 
 def main():
     ai = Ai()
