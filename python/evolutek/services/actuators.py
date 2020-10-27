@@ -516,7 +516,7 @@ class Actuators(Service):
         self.anchorage = self.cs.match.get_anchorage() == "south"
         self.robot.goth(pi if self.anchorage else 0)
 
-        flip = self.anchorage ^ (self.color == self.color2)
+        flip = self.anchorage ^ (self.robot.color == self.color2)
 
         status = self.robot.move_trsl_avoid(150, 500, 500, 500, 1)
         self.pumps_drop([3, 4] if flip else [1, 2])
@@ -526,7 +526,7 @@ class Actuators(Service):
 
         status = self.robot.goth(pi/2)
         if not self.should_stop(status):
-            if self.should_stop(robot.move_trsl_avoid(100, 500, 500, 500, 0)):
+            if self.should_stop(self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
                 return Status.unreached.value
         else:
             return Status.unreached.value
@@ -584,13 +584,13 @@ class Actuators(Service):
     @use_queue
     def drop_center_zone(self):
 
-        side = self.color == self.color2
+        side = self.robot.color == self.color2
 
         # Get the two buoys on the front of the zone
         self.pump_get(pump=3 if side else 2)
         if self.should_stop(self.robot.move_trsl_avoid(150, 500, 500, 500, 1)):
             return Status.unreached.value
-        status = self.robot.goth(-1 * pi/3)
+        status = self.robot.goth(1 * pi/3)
         self.pump_get(pump=2 if side else 3)
         if self.should_stop(status):
             return Status.unreached.value
