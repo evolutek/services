@@ -30,7 +30,7 @@ class AIInterface(Interface):
 		if SIMULATION:
 			self.init_simulation()
 
-		self.window.after(self.interface_refresh, self.update_interface)
+		self.window.after(500, self.update_interface)
 		print('[AI NTERFACE] Window looping')
 		self.window.mainloop()
 
@@ -80,7 +80,6 @@ class AIInterface(Interface):
 		self.client.publish(ROBOT + "_reset")
 
 	def event_set_pos(self):
-		self.client.publish(ROBOT + "_recalibration")
 		self.client.publish(ROBOT + "_reset")
 
 	# Init match interface
@@ -175,7 +174,7 @@ class AIInterface(Interface):
 
 		self.print_path(self.paths[ROBOT], 'yellow', 'violet')
 
-		self.window.after(self.interface_refresh, self.update_interface)
+		self.window.after(500, self.update_interface)
 
 def main():
 	if len(argv) > 1:
