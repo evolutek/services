@@ -374,7 +374,7 @@
         "push_windsocks"
       ],
       "available": [
-        "pmi"
+        ""
       ],
       "use_pathfinding": false
     },
@@ -415,7 +415,7 @@
     },
     "pmi": {
       "x": 980,
-      "y": 260,
+      "y": 259,
       "theta": "pi"
     }
   }
