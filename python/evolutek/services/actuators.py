@@ -496,8 +496,8 @@ class Actuators(Service):
 
         #status = self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         status = self.robot.goto_avoid(x=600, y=300)
-        self.left_arm_close()
-        self.right_arm_close()
+        self.left_cup_holder_close()
+        self.right_cup_holder_close()
         return Status.reached.value
 
     def should_stop(self, status):
