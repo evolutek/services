@@ -834,12 +834,13 @@ class Actuators(Service):
     @use_queue
     def go_to_anchorage(self):
         self.anchorage = self.cs.match.get_anchorage() == "south"
-        posx = 300 if self.anchorage else 1300
+        print(self.anchorage)
+        posx = 1300 if self.anchorage else 300
         status = Status.reached
         if self.should_stop(self.robot.goto(posx, 700)):
             return Status.unreached.value
         self.robot.goth(pi/2)
-        if self.should_stop(self.robot.goto(posx, 200)):
+        if self.should_stop(self.robot.goto(posx, 400)):
             return Status.unreached.value
         self.robot.recalibration_block(0)
         return status.value
