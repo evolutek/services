@@ -189,7 +189,8 @@ class TrajMan(Service):
 
         self.set_trsl_acc(self.trslacc())
         self.set_trsl_dec(self.trsldec())
-        self.set_trsl_max_speed(self.trslmax())
+        self.trsl_max_speed = self.trslmax()
+        self.set_trsl_max_speed(self.trsl_max_speed)
 
         self.set_rot_acc(self.rotacc())
         self.set_rot_dec(self.rotdec())
@@ -517,10 +518,13 @@ class TrajMan(Service):
 
     @Service.action
     def set_trsl_max_speed(self, maxspeed):
+        if maxspeed is None:
+            maxspeed = self.trsl_max_speed
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_TRSL_MAXSPEED.value)
         tab += pack('f', float(maxspeed))
         self.command(bytes(tab))
+
 
     @Service.action
     def set_trsl_dec(self, dec):
