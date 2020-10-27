@@ -294,7 +294,7 @@ class Actuators(Service):
             valid = False
         if pump > 0 and pump <= 8 and valid:
             p = pump
-            if mirror:
+            if mirror and str(self.cs.robot.color) == self.color2:
                 p = 5 - pump % 5
                 if pump > 4:
                     p = p + 3
