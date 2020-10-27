@@ -758,20 +758,22 @@ class Actuators(Service):
     def get_reef_buoys(self):
 
         self.pump_get(pump=4, mirror=True)
-        status = self.robot.goto_avoid(x=500, y=280)
+        status = self.robot.goto_avoid(x=900, y=830)
         if self.should_stop(status):
             self.pump_drop(4)
             return Status.unreached.value
-        status = self.robot.goto_avoid(x=500, y=230)
+        if self.should_stop(self.robot.goth(-1 * pi/2)):
+            return Status.unreached.value
+        status = self.robot.goto_avoid(x=900, y=880)
 
         self.pump_get(pump=1, mirror=True)
         if self.should_stop(status):
             self.pump_drop(1)
             return Status.unreached.value
             pos = self.robot.tm.get_position()
-        if self.should_stop(self.robot.goto_avoid(x=500, y=555)):
+        if self.should_stop(self.robot.goto_avoid(x=900, y=555)):
             return Status.unreached.value
-        status = self.robot.goto_avoid(x=500, y=405)
+        status = self.robot.goto_avoid(x=900, y=705)
         return status.value
 
     @Service.action
