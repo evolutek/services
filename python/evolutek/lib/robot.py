@@ -6,6 +6,7 @@ from threading import Event, Thread
 from time import sleep
 import asyncore
 from math import pi
+from time import sleep 
 
 #from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
@@ -465,6 +466,10 @@ class Robot:
 
     """ GO HOME """
     def go_home(self, point, point_theta):
+        if ROBOT == "pmi":
+            self.goto(point.x + 50, point.y)
+            self.goth(point_theta)
+            sleep(60)  
         self.goto(point.x, point.y)
         self.goth(point_theta)
 
