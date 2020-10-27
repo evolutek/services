@@ -313,7 +313,7 @@
       "name": "get_starting_bot_buoys",
       "position": {
         "x": 900,
-        "y": 330
+        "y": 320
       },
       "theta": "0",
       "actions": [
@@ -334,14 +334,11 @@
           }
         },
         {
-          "fct": "move_trsl_avoid",
+          "fct": "goto_avoid",
           "handler": "robot",
           "args": {
-            "dest": 300,
-            "acc": 500,
-            "dec": 500,
-            "maxspeed": 500,
-            "sens": 1
+            "x": 1200,
+            "y": 320
           }
         }
       ]
