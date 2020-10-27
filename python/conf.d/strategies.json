@@ -283,23 +283,23 @@
           "fct": "goto_avoid",
           "handler": "robot",
           "args": {
-            "x": 300,
-            "y": 1200
+            "x": 1000,
+            "y": 1500
           }
         },
         {
           "fct": "goto_avoid",
           "handler": "robot",
           "args": {
-            "x": 800,
-            "y": 1000
+            "x": 1000,
+            "y": 800
           }
         },
         {
           "fct": "wait_for_match_end",
           "handler": "actuators",
           "args": {
-            "n": 85
+            "match_time": 90
           }
         },
         {
