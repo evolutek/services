@@ -89,9 +89,9 @@ class Ai():
         if self.goals.critical_goal is not None:
             self.critical_timer = Timer(self.goals.timeout_critical_goal, self.critical_timeout_handler)
 
-        if self.cs.match.change_strategy.is_set():
-            self.cs.match.get_strategy(ROBOT)
-            self.cs.match.change_strategy.is_set()
+        #if self.cs.match.change_strategy.is_set():
+        #    self.cs.match.get_strategy(ROBOT)
+        #    self.cs.match.change_strategy.is_set()
         # Recalibration wanted
         if self.robot._recalibration.is_set():
             print('[AI] Recalibrating robot')

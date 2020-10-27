@@ -45,6 +45,14 @@
           "fct": "get_reef",
           "handler": "actuators",
           "avoid": false
+	},
+	{
+          "fct": "recalibration",
+          "handler": "robot",
+          "avoid": false,
+          "args": {
+            "y": false
+          }
         }
       ]
     },
@@ -266,7 +274,7 @@
     {
       "name": "anchorage",
       "position": {
-        "x": 1200,
+        "x": 1400,
         "y": 1500
       },
       "score": 5,
@@ -275,15 +283,23 @@
           "fct": "goto_avoid",
           "handler": "robot",
           "args": {
-            "x": 800,
+            "x": 300,
             "y": 1200
+          }
+        },
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 800,
+            "y": 1000
           }
         },
         {
           "fct": "wait_for_match_end",
           "handler": "actuators",
           "args": {
-            "n": 90
+            "n": 85
           }
         },
         {

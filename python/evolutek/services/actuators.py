@@ -591,7 +591,7 @@ class Actuators(Service):
         self.pump_get(pump=3 if side else 2)
         if self.should_stop(self.robot.move_trsl_avoid(150, 500, 500, 500, 1)):
             return Status.unreached.value
-        status = self.robot.goth(1 * pi/3)
+        status = self.robot.goth(-1 * pi/3)
         self.pump_get(pump=2 if side else 3)
         if self.should_stop(status):
             return Status.unreached.value
@@ -706,10 +706,10 @@ class Actuators(Service):
 
     @Service.action
     @if_enabled
-    @use_queue
-    def wait_for_match_end():
+    def wait_for_match_end(self, match_time=90):
+        time = int(match_time)
         status = self.cs.match.get_status()
-        while status['time'] < 90:
+        while status['time'] < time:
             sleep(0.5)
             status = self.cs.match.get_status()
         return Status.reached.value
