@@ -106,7 +106,7 @@ class Actuators(Service):
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
-        self.robot = Robot(robot=ROBOT)
+        self.robot = Robot(robot=ROBOT, match_end_cb=self.match_end_handler)
         self.queue = Act_queue()
         self.rgb_sensors = RGBSensors([1, 2], SAMPLE_SIZE)
         self.disabled = False
@@ -121,13 +121,6 @@ class Actuators(Service):
         # If the BAU is set at init, free the robot
         # if bau_gpio.read() == 0:
         #     self.free()
-
-
-        try:
-            self.color = self.cs.match.get_color()
-        except Exception as e:
-            self.color = self.color1
-            print("Failed to get color: %s" % str(e))
 
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax["%s-%d" % (ROBOT, n)].mode_joint()
@@ -450,7 +443,7 @@ class Actuators(Service):
     @if_enabled
     @use_queue
     def start_lighthouse(self):
-        if self.color == self.color1:
+        if self.robot.color == self.color1:
             self.right_cup_holder_open()
         else:
             self.left_cup_holder_open()
@@ -459,7 +452,7 @@ class Actuators(Service):
         self.robot.move_trsl_block(350, 300, 300, 300, 0)
         status = self.robot.move_trsl_avoid(350, 300, 300, 300, 1)
 
-        if self.color == self.color1:
+        if self.robot.color == self.color1:
             self.right_cup_holder_close()
         else:
             self.left_cup_holder_close()
@@ -509,7 +502,7 @@ class Actuators(Service):
         self.anchorage = self.cs.match.get_anchorage() == "south"
         self.robot.goth(pi if self.anchorage else 0)
 
-        flip = self.anchorage ^ (self.color == self.color2)
+        flip = self.anchorage ^ (self.robot.color == self.color2)
 
         #self.robot.move_trsl_avoid(150, 500, 500, 500, 1)
         status = self.robot.goto_avoid(x=650, y=300, mirror=True)
@@ -583,7 +576,7 @@ class Actuators(Service):
     @use_queue
     def drop_center_zone(self):
 
-        side = self.color == self.color2
+        side = self.robot.color == self.color2
 
         # Get the two buoys on the front of the zone
         self.pump_get(pump=3 if side else 2)
@@ -716,15 +709,6 @@ class Actuators(Service):
     @Service.action
     @if_enabled
     @use_queue
-    def wait_for_match_end():
-        status = self.cs.match.get_status()
-        while stats['time'] < 90:
-            sleep(0.5)
-            status = self.cs.match.get_status()
-
-    @Service.action
-    @if_enabled
-    @use_queue
     def get_reef_buoys(self):
 
         self.pump_get(pump=4, mirror=True)
@@ -751,7 +735,7 @@ class Actuators(Service):
     @use_queue
     def windsocks_push(self):
 
-        if self.color != self.color1: self.left_arm_open()
+        if self.robot.color != self.color1: self.left_arm_open()
         else: self.right_arm_open()
         sleep(0.5)
 
@@ -763,7 +747,7 @@ class Actuators(Service):
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(dest=600, acc=300, dec=300, maxspeed=400, sens=1)
 
-        if self.color != self.color1:
+        if self.robot.color != self.color1:
             self.left_arm_push()
             sleep(0.2)
             self.left_arm_close()
@@ -784,7 +768,7 @@ class Actuators(Service):
 
     @Service.action
     def get_pattern(self):
-        if self.color == self.color1:
+        if self.robot.color == self.color1:
             pattern_1 = ["green", "green"]
         else:
             pattern_1 = ["red", "red"]
@@ -843,6 +827,7 @@ class Actuators(Service):
     @use_queue
     def go_to_anchorage(self):
         # Suppose we are in (800, 700)
+        self.anchorage = self.cs.match.get_anchorage() == "south"
         status = self.robot.goth(pi if self.anchorage else 0)
         if self.should_stop():
             return Status.unreached.value
@@ -854,46 +839,13 @@ class Actuators(Service):
         self.robot.recalibration_block(0)
         return status.value
 
-    ##########
-    # EVENTS #
-    ##########
-
-    # Handle color changing event
-    @Service.event("match_color")
-    def color_handler(self, color):
-        if color != self.color1 or color != self.color2:
-            return
-        self.color = color
-
-    # Handle Match End
-    @Service.event("match_end")
+    @Service.action
     def handle_match_end(self):
+        self.enable()
+        self.flags_raise()
         self.free()
         self.match_end.set()
         self.disable()
-
-    # #Handle anchorage area
-    # @Service.event("anchorage")
-    # def anchorage_set(self, side):
-    #     self.anchorage = side == "south"
-
-    @Service.event("%s_started" % ROBOT)
-    def robot_started(self):
-        self.robot.robot_started()
-
-    @Service.event("%s_stopped" % ROBOT)
-    def robot_stopped(self, has_avoid=False):
-        if isinstance(has_avoid, str):
-            has_avoid = has_avoid == 'true'
-        self.robot.robot_stopped(has_avoid)
-
-    @Service.action("match_color")
-    def color_change(self, color):
-        self.robot.color_change(color)
-
-    @Service.event("%s_end_avoid" % ROBOT)
-    def end_avoid_handler(self):
-        self.robot.end_avoid()
 
 
 def main():

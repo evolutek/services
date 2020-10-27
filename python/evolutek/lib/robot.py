@@ -9,8 +9,8 @@ from math import pi
 
 #from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
-#from cellaserv.service import AsynClient
-#from cellaserv.settings import get_socket
+from cellaserv.service import AsynClient
+from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
 from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
@@ -75,7 +75,7 @@ class Robot:
         return _f
 
 
-    def __init__(self, robot=None):
+    def __init__(self, robot=None, match_end_cb=None):
 
         self.cs = CellaservProxy()
 
@@ -83,6 +83,7 @@ class Robot:
         self.robot = robot if not robot is None else ROBOT
         self.tm = self.cs.trajman[self.robot]
 
+        self.match_end_cb = match_end_cb
 
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=self.robot, option='robot_size_x'))
@@ -91,6 +92,7 @@ class Robot:
 
         # Side config
         self.color1 = self.cs.config.get(section='match', option='color1')
+        self.color = self.color1
         self.side = False
         try:
             self.color_change(self.cs.match.get_color())
@@ -102,10 +104,13 @@ class Robot:
         self.is_started = Event()
         self.has_avoid = Event()
         self.end_avoid = Event()
+        self.reset = Event()
+        self._recalibration = Event()
+        self.match_start = Event()
+        self.match_end = Event()
         self.timeout = Event()
         self.telemetry = None
 
-        """
         # AsynClient
         self.client = AsynClient(get_socket())
         self.client.add_subscribe_cb(self.robot + '_stopped', self.robot_stopped)
@@ -113,7 +118,10 @@ class Robot:
         self.client.add_subscribe_cb('match_color', self.color_change)
         self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
         #self.client.add_subscribe_cb(self.robot + '_telemetry', self.telemetry_handler)
-        """
+        self.client.add_subscribe_cb("match_start", self.match_start_handler)
+        self.client.add_subscribe_cb("match_end", self.match_end_handler)
+        self.client.add_subscribe_cb("%s_reset" % self.robot, self.reset_handler)
+        self.client.add_subscribe_cb("%s_recalibration" % self.robot, self._recalibration_handler)
 
         # Blocking wrapper
         self.recalibration_block = self.wrap_block(self.tm.recalibration)
@@ -151,6 +159,7 @@ class Robot:
 
     def color_change(self, color):
         self.side = color != self.color1
+        self.color = color
         self.tm.set_mdb_config(yellow=self.side)
 
     def end_avoid_handler(self):
@@ -164,6 +173,21 @@ class Robot:
             self.telemetry = telemetry
         else:
             self.telemetry = None
+
+    def reset_handler(self):
+        self.reset.set()
+
+    def _recalibration_handler(self):
+        self._recalibration.set()
+        self.reset.set()
+
+    def match_start_handler(self):
+        self.match_start.set()
+
+    def match_end_handler(self):
+        self.match_end.set()
+        if self.match_end_cb is not None:
+            self.match_end_cb()
 
 
     ########
@@ -207,15 +231,12 @@ class Robot:
             return Status.has_avoid
 
         #if self.telemetry is None:
-        print('getting position')
         pos = self.tm.get_position()
-        print('position getted')
         #else:
         #    pos = self.telemetry
 
         if Point(x=x, y=y).dist(Point(dict=pos)) < DELTA_POS:
             return Status.reached
-        print("x: {} y: {} -- pos: {}".format(x, y, pos))
         return Status.unreached
 
     def goth(self, theta, mirror=True):
@@ -227,17 +248,13 @@ class Robot:
             return Status.has_avoid
 
         #if self.telemetry is None:
-        print('getting position')
         pos = self.tm.get_position()
-        print('position getted')
         #else:
         #    pos = self.telemetry
 
         error = abs(theta - float(pos['theta']))
         if error > pi:
             error = error - (2 * pi)
-
-        print(error)
 
         if abs(error) < DELTA_THETA:
             return Status.reached
@@ -246,13 +263,10 @@ class Robot:
     def goto_avoid(self, x, y, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
         status = self.goto(x, y, mirror)
-        print("avoid status: ")
-        print(status)
         while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goto(x, y, mirror)
-            print(status)
 
         return status
 
