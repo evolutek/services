@@ -76,12 +76,12 @@ class AIInterface(Interface):
                 print('Gros je me casse')
 
 	def event_recalibration(self):
-		self.cs.ai[ROBOT].set_recalibration(True)
-		self.cs.ai[ROBOT].reset()
+		self.client.publish(ROBOT + "_recalibration")
+		self.client.publish(ROBOT + "_reset")
 
 	def event_set_pos(self):
-		self.cs.ai[ROBOT].set_recalibration(True)
-		self.cs.ai[ROBOT].reset()
+		self.client.publish(ROBOT + "_recalibration")
+		self.client.publish(ROBOT + "_reset")
 
 	# Init match interface
 	def init_interface(self):
@@ -109,12 +109,11 @@ class AIInterface(Interface):
 		self.resset_pos.grid(row=13, column=0)
 
 		# select strategy
-		list_strategy = self.cs.ai[ROBOT].get_strategy()
-
-		self.select_strategy = ttk.Combobox(self.window, values=list_strategy[0])
-		self.select_strategy.current(0)
-		self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
-		self.select_strategy.grid(row=6, column=0)
+		#list_strategy = self.cs.ai[ROBOT].get_strategy()
+		#self.select_strategy = ttk.Combobox(self.window, values=list_strategy[0])
+		#self.select_strategy.current(0)
+		#self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
+		#self.select_strategy.grid(row=6, column=0)
 
 		# Map
 		self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height=2000 * self.interface_ratio)
@@ -145,17 +144,12 @@ class AIInterface(Interface):
 		self.match_time_label.grid(row=0, column=4)
 		self.match_time_label.config(font=('Arial', 12))
 
-		self.status = Label(self.window)
-		self.status.grid(row=0, column=5)
-		self.status.config(font=('Arial', 12))
-
 		self.canvas.create_image(1500 * self.interface_ratio, 1000 * self.interface_ratio, image=self.map)
 
 	def update_interface(self):
 		self.canvas.delete('all')
 		self.canvas.create_image((3000 * self.interface_ratio) / 2, (2000 * self.interface_ratio) / 2, image=self.map)
 		#self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.bau_status else 'Bau Status: OFF')
-		self.status.config(text='State ai: %s' % self.states_ai)
 
 		if self.cs.match.get_status() is not None:
 			self.color_label.config(text="Color: %s" % self.cs.match.get_color(), fg=self.cs.match.get_status()['color'])
