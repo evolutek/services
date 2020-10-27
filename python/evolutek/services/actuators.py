@@ -106,7 +106,7 @@ class Actuators(Service):
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
-        self.robot = Robot(robot=ROBOT, match_end_cb=self.match_end_handler)
+        self.robot = Robot(robot=ROBOT, match_end_cb=self.handle_match_end)
         self.queue = Act_queue()
         self.rgb_sensors = RGBSensors([1, 2], SAMPLE_SIZE)
         self.disabled = False
