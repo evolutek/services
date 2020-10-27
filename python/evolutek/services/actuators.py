@@ -438,7 +438,7 @@ class Actuators(Service):
     ######################
     # HIGH LEVEL ACTIONS #
     ######################
-    
+
     @Service.action
     @if_enabled
     @use_queue
@@ -787,9 +787,8 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(1)
         self.robot.tm.set_delta_max_trsl(500)
 
-        if self.queue.stop.is_set():
+        if self.should_stop(self.robot.goto_avoid(x=1825, y=720, mirror=True))
             return Status.unreached.value
-        status = self.robot.goto_avoid(x=1870, y=720, mirror=True)
 
         if self.robot.color != self.color1:
             self.left_arm_push()
@@ -805,9 +804,8 @@ class Actuators(Service):
         self.robot.tm.set_delta_max_rot(0.2)
         self.robot.tm.set_delta_max_trsl(100)
 
-        if self.should_stop(status):
+        if self.should_stop(self.robot.goto_avoid(x=1825, y=600, mirror=True))
             return Status.unreached.value
-        status = self.robot.goto_avoid(x=1870, y=600, mirror=True)
         return Status.reached.value
 
     @Service.action
