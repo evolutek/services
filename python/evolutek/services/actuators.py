@@ -9,6 +9,7 @@ from evolutek.lib.robot import Robot, Status
 from evolutek.lib.rgb_sensors import RGBSensors
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
+from evolutek.services.match import get_anchorage
 
 from enum import Enum
 from functools import wraps
@@ -504,20 +505,26 @@ class Actuators(Service):
     @if_enabled
     @use_queue
     def drop_starting_with_sort(self):
+        #true == sud
 
+        self.anchorage = match.get_anchorage() == "south"
         self.robot.goth(pi if self.anchorage else 0)
 
         flip = self.anchorage ^ (self.color == self.color2)
 
-        self.robot.move_trsl_avoid(150, 500, 500, 500, 1)
+        #self.robot.move_trsl_avoid(150, 500, 500, 500, 1)
+        status = self.robot.goto_avoid(x=650, y=300, mirror=True)
         self.pumps_drop([3, 4] if flip else [1, 2])
-        if self.queue.stop.is_set():
+        if self.should_stop(status):
             return Status.unreached.value
-        self.robot.move_trsl_avoid(200, 800, 800, 800, 0)
+        #self.robot.move_trsl_avoid(200, 800, 800, 800, 0)
+        status = self.robot.goto_avoid(x=450, y=300)
 
         status = self.robot.goth(pi/2)
-        if not self.queue.stop.is_set():
-            self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
+        if not self.should_stop(status):
+            #self.robot.move_trsl_avoid(100, 500, 500, 500, 0)
+            if self.should_stop(self.robot.goto_avoid(x=450, y=200)):
+                return Status.unreached.value
         else:
             return Status.unreached.value
         status = self.robot.goth(0 if self.anchorage else pi)
@@ -528,13 +535,16 @@ class Actuators(Service):
         self.right_cup_holder_drop()
         sleep(0.5)
         if not self.queue.stop.is_set():
-            status = self.robot.move_trsl_avoid(120, 300, 300, 300, 0)
+            #status = self.robot.move_trsl_avoid(120, 300, 300, 300, 0)
+            status = self.robot.goto_avoid(x=330, y=200) if self.robot.goto_avoid(x=570, y=200)
         else:
             return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
 
-        status = self.robot.move_trsl_avoid(525, 300, 300, 300, 1)
-        if self.queue.stop.is_set() or status != Status.reached:
+        #status = self.robot.move_trsl_avoid(525, 300, 300, 300, 1)
+        pos = self.robot.tm.get_position()
+        status = self.robot.goto_avoid(x=pos['x'] + 525, y=200) if self.anchorage else self.robot.move_goto_avoid(x=pos['x'] - 525, y=200)
+        if self.should_stop(status):
             return Status.unreached.value
         self.pumps_drop([6, 8] if flip else [5, 7])
         if not self.queue.stop.is_set():
@@ -863,10 +873,10 @@ class Actuators(Service):
         self.match_end.set()
         self.disable()
 
-    #Handle anchorage area
-    @Service.event("anchorage")
-    def anchorage_set(self, side):
-        self.anchorage = side == "south"
+    # #Handle anchorage area
+    # @Service.event("anchorage")
+    # def anchorage_set(self, side):
+    #     self.anchorage = side == "south"
 
     @Service.event("%s_started" % ROBOT)
     def robot_started(self):

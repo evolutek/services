@@ -37,6 +37,7 @@ class Match(Service):
         self.score = 0
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
+        self.anchorage = None
 
         print('[MATCH] Match ready')
 
@@ -69,9 +70,11 @@ class Match(Service):
         weathercock_timer.start()
 
     def read_weathercock(self):
-        white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
         print('[MATCH] reading weathercock position')
-        self.publish('anchorage', side=('north' if not white else 'south'))
+        white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
+        side = 'north' if not white else 'south'
+        self.publish('anchorage', side=(side))
+        self.anchorage = side
 
     """ ACTION """
 
@@ -124,6 +127,11 @@ class Match(Service):
         match['time'] = self.match_time
 
         return match
+
+    """ GET anchorage """
+    @Service.action
+    def get_anchorage(self):
+        return self.anchorage
 
     """ End match """
     @Service.action
