@@ -836,10 +836,11 @@ class Actuators(Service):
         self.anchorage = self.cs.match.get_anchorage() == "south"
         posx = 300 if self.anchorage else 1300
         status = Status.reached
-        if self.should_stop(self.robot.move_trsl_avoid(posx, 700)):
+        if self.should_stop(self.robot.goto(posx, 700)):
             return Status.unreached.value
-        if self.should_stop(self.robot.move_trsl_avoid(posx, 200)):
+        if self.should_stop(self.robot.goto(posx, 200)):
             return Status.unreached.value
+        self.robot.goth(pi/2)
         self.robot.recalibration_block(0)
         return status.value
 
