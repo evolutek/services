@@ -4,6 +4,7 @@ import os
 
 from evolutek.lib.settings import ROBOT
 from cellaserv.service import Service
+import json
 from evolutek.lib.interface import Interface
 from evolutek.lib.settings import SIMULATION
 from evolutek.lib.watchdog import Watchdog
@@ -69,11 +70,11 @@ class AIInterface(Interface):
 			self.cs.match.set_color(self.color1)
 
 	def action_strategy(self):
-		self.cs.ai[ROBOT].set_strategy(self.select_strategy.get())
+		self.client.publish(ROBOT + "_strategy", strategy=self.select_strategy.get(), ai=ROBOT)
 
 	def shutdown(self):
-                os.system("sudo shutdown now")
-                print('Gros je me casse')
+		os.system("sudo shutdown now")
+		print('Gros je me casse')
 
 	def event_recalibration(self):
 		self.client.publish(ROBOT + "_recalibration")
@@ -81,6 +82,23 @@ class AIInterface(Interface):
 
 	def event_set_pos(self):
 		self.client.publish(ROBOT + "_reset")
+
+	def parse_strategy(self, file):
+		data = None
+		try:
+			with open(file, 'r') as goals_file:
+				data = goals_file.read()
+		except Exception as e:
+			print('[GOALS] Failed to read file: %s' % str(e))
+			return False
+
+		goals = json.loads(data)
+		list_robot = []
+
+		for i in goals["strategies"]:
+			if ROBOT in i["available"]:
+				list_robot.append(i)
+		return list_robot
 
 	# Init match interface
 	def init_interface(self):
@@ -108,11 +126,11 @@ class AIInterface(Interface):
 		self.resset_pos.grid(row=13, column=0)
 
 		# select strategy
-		#list_strategy = self.cs.ai[ROBOT].get_strategy()
-		#self.select_strategy = ttk.Combobox(self.window, values=list_strategy[0])
-		#self.select_strategy.current(0)
-		#self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
-		#self.select_strategy.grid(row=6, column=0)
+		list_strategy = self.parse_strategy(file='/etc/conf.d/strategies.json')
+		self.select_strategy = ttk.Combobox(self.window, values=list_strategy[0])
+		self.select_strategy.current(0)
+		self.select_strategy.bind("<<ComboboxSelected>>", self.action_strategy)
+		self.select_strategy.grid(row=6, column=0)
 
 		# Map
 		self.canvas = Canvas(self.window, width=3000 * self.interface_ratio, height=2000 * self.interface_ratio)

@@ -2,9 +2,10 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
 from evolutek.lib import gpio
+from evolutek.lib.settings import ROBOT
 
 from enum import Enum
-from threading import Timer, Thread
+from threading import Event, Timer, Thread
 from time import sleep
 
 WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
@@ -29,6 +30,7 @@ class Match(Service):
         self.match_duration = int(match_config['duration'])
         self.refresh = float(match_config['refresh'])
         self.timeout_robot = float(match_config['timeout_robot'])
+        self.strategy = {}
 
         # Match Status
         self.color = None
@@ -39,8 +41,16 @@ class Match(Service):
         self.match_time_thread = Thread(target=self.match_time_loop)
         self.anchorage = None
 
+        self.change_strategy = Event()
+        self.add_subscribe_cb(ROBOT + "_strategy", self.set_strategy)
         print('[MATCH] Match ready')
 
+    def set_strategy(self, ai, strategy):
+        self.strategy[ai] = strategy
+
+    @Service.action
+    def get_strategy(self, name_ai):
+        return self.strategy[name_ai]
 
     """ EVENT """
 
