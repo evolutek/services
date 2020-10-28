@@ -838,9 +838,9 @@ class Actuators(Service):
         status = Status.reached
         if self.should_stop(self.robot.goto(posx, 700)):
             return Status.unreached.value
+        self.robot.goth(pi/2)
         if self.should_stop(self.robot.goto(posx, 200)):
             return Status.unreached.value
-        self.robot.goth(pi/2)
         self.robot.recalibration_block(0)
         return status.value
 
