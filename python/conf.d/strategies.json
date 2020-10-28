@@ -59,11 +59,28 @@
     {
       "name": "get_bottom_reef",
       "position": {
-        "x": 1800,
-        "y": 200
+        "x": 1700,
+        "y": 600
       },
-      "theta": "pi",
+      "theta": "pi/2",
       "actions": [
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+	  "avoid": "false",
+          "args": {
+            "x": 1800,
+            "y": 200
+          }
+        },
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "avoid": false,
+          "args": {
+            "theta": "pi"
+          }
+        },
         {
           "fct": "recalibration",
           "handler": "robot",
