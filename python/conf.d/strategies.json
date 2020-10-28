@@ -43,8 +43,7 @@
         },
         {
           "fct": "get_reef",
-          "handler": "actuators",
-          "avoid": false
+          "handler": "actuators"
         }
       ]
     },
