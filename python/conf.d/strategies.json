@@ -43,7 +43,8 @@
         },
         {
           "fct": "get_reef",
-          "handler": "actuators"
+          "handler": "actuators",
+          "avoid": false
         }
       ]
     },
@@ -233,12 +234,28 @@
     {
       "name": "drop_to_center",
       "position": {
-        "x": 1400,
-        "y": 1800
+        "x": 1100,
+        "y": 1900
       },
       "theta": 0,
       "score": 24,
       "actions": [
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 1400,
+            "y": 1900
+          }
+        },
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "avoid": false,
+          "args": {
+            "theta": "0"
+          }
+        },
         {
           "fct": "drop_center_zone",
           "handler": "actuators",
@@ -249,11 +266,19 @@
     {
       "name": "anchorage",
       "position": {
-        "x": 800,
-        "y": 700
+        "x": 1200,
+        "y": 1500
       },
       "score": 5,
       "actions": [
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 800,
+            "y": 1200
+          }
+        },
         {
           "fct": "wait_for_match_end",
           "handler": "actuators",
@@ -354,6 +379,34 @@
   ],
   "strategies": [
     {
+      "name": "full_pal",
+      "goals": [
+        "get_reef_buoys",
+        "drop_to_center",
+        "anchorage"
+      ],
+      "available": [
+        "pal"
+      ],
+      "use_pathfinding": false
+    },
+    {
+      "name": "full_pmi",
+      "goals": [
+        "wait_pal_start",
+        "get_starting_top_buoys",
+        "start_lighthouse",
+        "get_starting_bot_buoys",
+        "push_windsocks",
+        "get_bottom_reef",
+        "drop_starting_with_sort"
+      ],
+      "available": [
+        "pmi"
+      ],
+      "use_pathfinding": false
+    },
+    {
       "name": "homologation_pal",
       "goals": [
          "get_reef_buoys"
@@ -369,34 +422,6 @@
         "wait_pal_start",
         "get_fucking_buoy",
         "push_windsocks"
-      ],
-      "available": [
-        "pmi"
-      ],
-      "use_pathfinding": false
-    },
-    {
-      "name": "full_pal",
-      "goals": [
-        "get_reef_buoys",
-        "drop_to_center",
-        "anchorage"
-      ],
-      "available": [
-        "pal"
-      ],
-      "use_pathfinding": true
-    },
-    {
-      "name": "full_pmi",
-      "goals": [
-        "wait_pal_start",
-        "get_starting_top_buoys",
-        "start_lighthouse",
-        "get_starting_bot_buoys",
-        "push_windsocks",
-        "get_bottom_reef",
-        "drop_starting_with_sort"
       ],
       "available": [
         "pmi"
