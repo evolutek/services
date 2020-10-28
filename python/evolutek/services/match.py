@@ -92,7 +92,7 @@ class Match(Service):
         self.match_time_thread = Thread(target=self.match_time_loop)
 
         if not self.set_color(color):
-            self.color = None
+            self.color = self.color1
 
         return True
 
