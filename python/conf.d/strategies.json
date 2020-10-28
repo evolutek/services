@@ -357,9 +357,7 @@
     {
       "name": "homologation_pal",
       "goals": [
-         "get_reef_buoys",
-         "drop_starting_without_sort",
-         "start_lighthouse"
+         "get_reef_buoys"
       ],
       "available": [
         "pal"
