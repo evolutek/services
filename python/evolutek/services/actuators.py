@@ -818,7 +818,7 @@ class Actuators(Service):
         self.robot.tm.move_trsl(400, 300, 300, 300, 0)
         sleep(2)
         self.robot.tm.free()
-        sleep(0.5)
+        sleep(1)
         self.left_cup_holder_close()
         self.right_cup_holder_close()
         sleep(1)
