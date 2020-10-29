@@ -839,7 +839,7 @@ class Actuators(Service):
         if self.should_stop(self.robot.goto(posx, 800)):
             return Status.unreached.value
         self.robot.goth(pi/2)
-        self.wait_for_match_end(match_time=97)
+        self.wait_for_match_end(match_time=95)
         if self.should_stop(self.robot.goto(posx, 400)):
             return Status.unreached.value
         self.robot.recalibration_block(0)

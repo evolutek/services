@@ -404,7 +404,7 @@
         {
           "fct": "sleep_ai",
           "args": {
-            "time": 3
+            "time": 2
           }
         }
       ]
