@@ -849,6 +849,7 @@ class Actuators(Service):
     def handle_match_end(self):
         self.enable()
         self.flags_raise()
+        sleep(0.5)
         self.free()
         self.match_end.set()
         self.disable()
