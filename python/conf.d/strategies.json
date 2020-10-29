@@ -45,8 +45,8 @@
           "fct": "get_reef",
           "handler": "actuators",
           "avoid": false
-	},
-	{
+	    },
+	    {
           "fct": "recalibration",
           "handler": "robot",
           "avoid": false,
@@ -67,7 +67,7 @@
         {
           "fct": "goto_avoid",
           "handler": "robot",
-	  "avoid": "false",
+	      "avoid": false,
           "args": {
             "x": 1800,
             "y": 200
