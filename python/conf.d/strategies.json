@@ -177,9 +177,16 @@
         "x": 1700,
         "y": 300
       },
-      "theta": "3*pi/4",
       "score": 15,
       "actions": [
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "avoid": false,
+          "args": {
+            "theta": "3*i/4"
+          }
+        },
         {
           "fct": "goto",
           "handler": "robot",
