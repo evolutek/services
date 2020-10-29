@@ -296,13 +296,6 @@
           }
         },
         {
-          "fct": "wait_for_match_end",
-          "handler": "actuators",
-          "args": {
-            "match_time": 95
-          }
-        },
-        {
           "fct": "go_to_anchorage",
           "handler": "actuators",
           "avoid": false
