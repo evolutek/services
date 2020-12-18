@@ -21,9 +21,6 @@ setup(
     },
 
     install_requires = open('requirements.pip').read().splitlines(),
-    extra_requires = {
-        'web': open('requirements_web.pip').read().splitlines(),
-    },
 
     entry_points = {
         'console_scripts': [
