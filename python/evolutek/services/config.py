@@ -12,17 +12,18 @@ from cellaserv.settings import CONFIG_FILE
 
 
 class Config(Service):
-    def __init__(self):
+    def __init__(self, config_file=None):
         super().__init__()
+        self.config_file_path = config_file or CONFIG_FILE
         self.config_file = ConfigParser()
-        self.config_file.read([CONFIG_FILE])
+        self.config_file.read(self.config_file_path)
         self.temporary_config = {}
 
         if not os.path.isfile(CONFIG_FILE):
             logging.warning("Config file does not exist: %s", CONFIG_FILE)
 
     @Service.action
-    def get_section(self, name: str) -> dict:
+    def get_section(self, section: str) -> dict:
         """
         Return section from config file. If the section does not exists, a
         KeyError is raised
@@ -30,11 +31,11 @@ class Config(Service):
 
         tmp = {}
 
-        if name in self.temporary_config:
-            tmp = self.temporary_config[name]
+        if section in self.temporary_config:
+            tmp = self.temporary_config[section]
 
         try:
-            section = self.config_file.items(name)
+            section = self.config_file.items(section)
             ret = {}
             for val in section:
                 ret[val[0]] = val[1]
@@ -89,7 +90,7 @@ class Config(Service):
         self.write_config()
 
     def write_config(self) -> None:
-        with open(CONFIG_FILE, "w") as f:
+        with open(self.config_file_path, "w") as f:
             self.config_file.write(f)
 
     @Service.action
