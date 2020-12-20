@@ -22,18 +22,19 @@ SAMPLE_SIZE = 10
 # Emergency stop button
 BAU_GPIO = 21
 
-##################
-# PUMP ACTUATORS #
-##################
 
-# Buoy Type
+
+# Buoy type enum
 class Buoy(Enum):
     Empty = "empty"
     Green = "green"
     Red = "red"
     Unknown = "unknown"
 
-# Pump actuator
+# Pump actuator class
+# pump_gpio: gpio control number of the pump
+# ev_gpio: gpio control number of the pump
+# pump_nb: number of the pump
 class PumpActuator:
 
     def __init__(self, pump_gpio, ev_gpio, pump_nb):
@@ -44,13 +45,18 @@ class PumpActuator:
 
         self.buoy = Buoy.Empty
 
+    # Get a buoy by turning on the pump
+    # buoy: buoy type
     def pump_get(self, buoy=Buoy.Unknown):
         self.pump_gpio.write(True)
         self.buoy = buoy
 
+    # Set buoy type
+    # buoy: buoy type
     def pump_set(self, buoy=Buoy.Unknown):
         self.buoy = buoy
 
+    # Drop a buoy by turning off the pump and turning on the ev on a small interval
     def pump_drop(self):
         self.pump_gpio.write(False)
         self.ev_gpio.write(True)
@@ -65,7 +71,8 @@ class PumpActuator:
         s += "Buoy: %s" % self.buoy.value
         return s
 
-
+# Decorator wrapper to disable a method if the disabled flag is set
+# method: method to decorate
 def if_enabled(method):
     """
     A method can be disabled so that it cannot be used in any circumstances.
@@ -80,6 +87,8 @@ def if_enabled(method):
 
     return wrapped
 
+# Decorator to use the queue for the method
+# method to decorate
 def use_queue(method):
     """
     Make quit a fucntion waiting for the queue if that one is no longer running
@@ -95,6 +104,8 @@ def use_queue(method):
     return wrapped
 
 
+# Actuators service class
+# Depend on 1-5 AX12s and Trajman
 @Service.require("ax", "%s-1" % ROBOT)
 @Service.require("ax", "%s-2" % ROBOT)
 @Service.require("ax", "%s-3" % ROBOT)
@@ -122,9 +133,11 @@ class Actuators(Service):
         # if bau_gpio.read() == 0:
         #     self.free()
 
+        # Init the AX12s
         for n in [1, 2, 3, 4, 5]:
             self.cs.ax["%s-%d" % (ROBOT, n)].mode_joint()
 
+        # Init pumps
         self.pumps = [
             PumpActuator(27, 18, 1),
             PumpActuator(22, 23, 2),
@@ -160,23 +173,25 @@ class Actuators(Service):
         self.queue.run_queue()
         self.start()
 
-    # Start
+    # Start queue
     def start(self):
         self.queue.run_queue()
 
-    # Stop
+    # Stop queue
     @Service.action
     def stop(self):
         self.queue.stop_queue()
 
-    # Reset
+    # Reset actuators
     @Service.action
     def reset(self):
         self.disabled = False
         self.match_end.clear()
 
+        # Set AX 5 speed
         self.cs.ax["%s-%d" % (ROBOT, 5)].moving_speed(256)
 
+        # Open all actuators
         self.left_arm_open()
         self.right_arm_open()
         self.left_cup_holder_open()
@@ -185,6 +200,7 @@ class Actuators(Service):
 
         sleep(1)
 
+        # Close all actuators
         self.left_arm_close()
         self.right_arm_close()
         self.left_cup_holder_close()
@@ -192,9 +208,11 @@ class Actuators(Service):
         self.flags_low()
 
         sleep(1)
+
+        # Start queue
         self.start()
 
-    # Free
+    # Free actuators
     @Service.action
     def free(self):
         self.pumps_drop([i for i in range (1, len(self.pumps) + 1)])
@@ -283,6 +301,9 @@ class Actuators(Service):
     #########
 
     # Get Buoy
+    # pump: pump number
+    # buoy: buoy type
+    # mirror: if we need to mirror the pump number
     @Service.action
     @if_enabled
     def pump_get(self, pump, buoy='unknown', mirror=False):
@@ -305,7 +326,9 @@ class Actuators(Service):
             print('[ACTUATORS] Not a valid pump or color: %d' % pump)
             return False
 
-    # Set Buoy
+    # Set buoy type
+    # pump: pumpt number
+    # buoy: buoy type
     @Service.action
     def pump_set(self, pump, buoy='unknown'):
         if pump > 0 and pump <= 8:
@@ -314,6 +337,8 @@ class Actuators(Service):
             print('[ACTUATORS] Not a valid pump: %d' % pump)
 
     # Drop Buoy
+    # pump: pump number
+    # mirror: if we need to mirror the pump number
     @Service.action
     @if_enabled
     def pump_drop(self, pump, mirror=False):
@@ -328,6 +353,8 @@ class Actuators(Service):
         else:
             print('[ACTUATORS] Not a valid pump: %d' % pump)
 
+    # Drop a list of pumps
+    # pumps: list of pump number
     @Service.action
     @if_enabled
     def pumps_drop(self, pumps):
@@ -342,7 +369,8 @@ class Actuators(Service):
     # RGB Sensors #
     ###############
 
-    # Read
+    # Read a sensor
+    # n: sensor number
     @Service.action
     def rgb_sensor_read(self, n):
         n = int(n)
@@ -445,16 +473,20 @@ class Actuators(Service):
     # HIGH LEVEL ACTIONS #
     ######################
 
+    # Start the lightouse by pressing interruptor with a cup holder
     @Service.action
     @if_enabled
     @use_queue
     def start_lighthouse(self):
+        # Open cup holder
         if self.robot.color == self.color1:
             self.right_cup_holder_open()
         else:
             self.left_cup_holder_open()
 
         sleep(0.5)
+
+        # Move back and move forward
         self.robot.tm.set_trsl_max_speed(100)
         status = self.robot.goto_avoid(x=130, y=330)
         self.robot.tm.set_trsl_max_speed(None)
@@ -462,6 +494,7 @@ class Actuators(Service):
             return Status.unreached.value
         status = self.robot.goto_avoid(x=300, y=330)
 
+        # Close cup holder
         if self.robot.color == self.color1:
             self.right_cup_holder_close()
         else:
@@ -469,21 +502,28 @@ class Actuators(Service):
 
         return status.value
 
+    # Drop buoys in starting center without sorting
     @Service.action
     @if_enabled
     @use_queue
     def drop_starting_without_sort(self):
         if (self.queue.stop.is_set()):
             return Status.unreached.value
+
+        # Move forward and drop buoys
         #status = self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         status = self.robot.goto_avoid(x=600, y=300)
         self.pumps_drop([1, 2, 3, 4])
         if self.should_stop(status):
             return Status.unreached.value
+        
+        # Move back, turn
         #if self.should_stop(self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
         if self.should_stop(self.robot.goto_avoid(x=400, y=300)):
             return Status.unreached.value
         self.robot.move_rot_block(pi, 5, 5, 5, 1)
+
+        # Open cup holders, move back and drop buoys
         self.left_cup_holder_drop()
         self.right_cup_holder_drop()
         if self.queue.stop.is_set():
@@ -495,12 +535,14 @@ class Actuators(Service):
         if self.should_stop(status):
             return Status.unreached.value
 
+        # Move forward and close cup holders
         #status = self.robot.move_trsl_avoid(100, 500, 500, 500, 1)
         status = self.robot.goto_avoid(x=300, y=300)
         self.left_cup_holder_close()
         self.right_cup_holder_close()
         return Status.reached.value
 
+    # Check if the robot should stop
     def should_stop(self, status):
         if status != Status.reached or self.queue.stop.is_set():
             print("non reached status detected!: ")
@@ -508,23 +550,26 @@ class Actuators(Service):
             return True
         return False
 
+    # Drop buoys in starting center with sorting
     @Service.action
     @if_enabled
     @use_queue
     def drop_starting_with_sort(self):
-        #true == sud
-
+        # Rotate according to anchorage
+        # true == south
         self.anchorage = self.cs.match.get_anchorage() == "south"
         self.robot.goth(pi if self.anchorage else 0)
 
         flip = self.anchorage ^ (self.robot.color == self.color2)
 
+        # Move forward, drop 2 buoys and move back
         status = self.robot.move_trsl_avoid(150, 500, 500, 500, 1)
         self.pumps_drop([3, 4] if flip else [1, 2])
         if self.should_stop(status):
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(200, 800, 800, 800, 0)
 
+        # Rotate, move back, and rotate again
         status = self.robot.goth(pi/2)
         if not self.should_stop(status):
             if self.should_stop(self.robot.move_trsl_avoid(100, 500, 500, 500, 0)):
@@ -533,6 +578,7 @@ class Actuators(Service):
             return Status.unreached.value
         status = self.robot.goth(0 if self.anchorage else pi)
 
+        # Open cup holders, move forward and drop 2 buoys
         if (self.should_stop(status)):
             return Status.unreached.value
         self.left_cup_holder_drop()
@@ -544,6 +590,7 @@ class Actuators(Service):
             return Status.unreached.value
         self.pumps_drop([5, 7] if flip else [6, 8])
 
+        # Move back, drop 2 buoys and close cup holder
         status = self.robot.move_trsl_avoid(525, 300, 300, 300, 1)
         if self.should_stop(status):
             return Status.unreached.value
@@ -555,6 +602,7 @@ class Actuators(Service):
         self.left_cup_holder_close()
         self.right_cup_holder_close()
 
+        # rotate, move forward, rotate, drop 2 buoys and move back
         if (self.should_stop(status)):
             return Status.unreached.value
         status = self.robot.goth(pi/2)
@@ -571,8 +619,8 @@ class Actuators(Service):
         self.pumps_drop([1, 2] if flip else [3, 4])
         self.robot.move_trsl_avoid(125, 800, 800, 800, 0)
 
+        # Rotate, move back and recalibrate on the wall (robot is in the good habour)
         self.robot.goth(pi/2)
-
         if self.queue.stop.is_set():
             return Status.unreached.value
         status = self.robot.move_trsl_avoid(200, 500, 500, 500, 0)
@@ -580,6 +628,7 @@ class Actuators(Service):
         return status.value
 
 
+    # Drop in center zone with sorting
     @Service.action
     @if_enabled
     @use_queue
@@ -704,6 +753,8 @@ class Actuators(Service):
             self.right_cup_holder_close()
         return Status.reached.value
 
+    # End for match end
+    # match_time : match time to wait
     @Service.action
     @if_enabled
     def wait_for_match_end(self, match_time=90):
@@ -714,6 +765,7 @@ class Actuators(Service):
             status = self.cs.match.get_status()
         return Status.reached.value
 
+    # Get reef buoys next to starting zone
     @Service.action
     @if_enabled
     @use_queue
@@ -740,6 +792,7 @@ class Actuators(Service):
         status = self.robot.goto_avoid(x=350, y=780)
         return status.value
 
+    # Push windsocks
     @Service.action
     @if_enabled
     @use_queue
@@ -749,6 +802,7 @@ class Actuators(Service):
         else: self.right_arm_open()
         sleep(0.5)
 
+        # Reduce collision dectection parameters
         # TODO config
         self.robot.tm.set_delta_max_rot(1)
         self.robot.tm.set_delta_max_trsl(500)
@@ -774,6 +828,7 @@ class Actuators(Service):
             return Status.unreached.value
         return Status.reached.value
 
+    # Get the pattern of the reef buoys
     @Service.action
     def get_pattern(self):
         if self.robot.color == self.color1:
@@ -798,6 +853,7 @@ class Actuators(Service):
         else:
             return -1
 
+    # Get a reef
     @Service.action
     @if_enabled
     @use_queue
@@ -829,6 +885,7 @@ class Actuators(Service):
         status = self.robot.move_trsl_avoid(200, 300, 300, 300, 1)
         return Status.reached.value
 
+    # Go to correct anchorage
     @Service.action
     @if_enabled
     @use_queue
@@ -845,6 +902,7 @@ class Actuators(Service):
         self.robot.recalibration_block(0)
         return status.value
 
+    # Callback call at the end of the match
     @Service.action
     def handle_match_end(self):
         self.enable()
@@ -853,7 +911,6 @@ class Actuators(Service):
         self.free()
         self.match_end.set()
         self.disable()
-
 
 def main():
     actuators = Actuators()
