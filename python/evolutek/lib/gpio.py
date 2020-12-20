@@ -121,7 +121,7 @@ class Gpio(Io):
 
     # Auto refresh the gpio
     # If the gpio value change according to the edge, it will call the callback
-    # callback need to take 4 args: event, name, id & value
+    # Callback need to take 4 args: event, name, id & value
     def _auto_refresh(self, refresh, callback):
         while True:
             tmp = self.value

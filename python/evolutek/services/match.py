@@ -2,19 +2,21 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.watchdog import Watchdog
 from evolutek.lib import gpio
+from evolutek.lib.settings import ROBOT
 
 from enum import Enum
-from threading import Timer, Thread
+from threading import Event, Timer, Thread
 from time import sleep
 
 WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
-WEATHERCOCK_GPIO = 16 # Number of the GPIO used by the weathercock reader
+WEATHERCOCK_GPIO = 24 # Number of the GPIO used by the weathercock reader
 
 class MatchStatus(Enum):
     unstarted = "Unstarted"
     started = "Started"
     ended = "Ended"
 
+# Service class for the match
 @Service.require("config")
 class Match(Service):
 
@@ -23,22 +25,34 @@ class Match(Service):
         super().__init__()
         self.cs = CellaservProxy()
 
+        # Get the config of the match
         match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
         self.match_duration = int(match_config['duration'])
         self.refresh = float(match_config['refresh'])
         self.timeout_robot = float(match_config['timeout_robot'])
+        self.strategy = {}
 
         # Match Status
-        self.color = self.color1
+        self.color = None
+        self.set_color(self.color1)
         self.match_status = MatchStatus.unstarted
         self.score = 0
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
+        self.anchorage = None
 
+        self.change_strategy = Event()
+        self.add_subscribe_cb(ROBOT + "_strategy", self.set_strategy)
         print('[MATCH] Match ready')
 
+    def set_strategy(self, ai, strategy):
+        self.strategy[ai] = strategy
+
+    @Service.action
+    def get_strategy(self, name_ai):
+        return self.strategy[name_ai]
 
     """ EVENT """
 
@@ -68,9 +82,11 @@ class Match(Service):
         weathercock_timer.start()
 
     def read_weathercock(self):
-        white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
         print('[MATCH] reading weathercock position')
-        self.publish('anchorage', 'north' if white else 'south')
+        white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
+        side = 'north' if not white else 'south'
+        self.publish('anchorage', side=(side))
+        self.anchorage = side
 
     """ ACTION """
 
@@ -88,7 +104,7 @@ class Match(Service):
         self.match_time_thread = Thread(target=self.match_time_loop)
 
         if not self.set_color(color):
-            self.color = None
+            self.color = self.color1
 
         return True
 
@@ -124,22 +140,29 @@ class Match(Service):
 
         return match
 
+    """ GET anchorage """
+    @Service.action
+    def get_anchorage(self):
+        return self.anchorage
+
     """ End match """
     @Service.action
     def match_end(self):
+        self.score += 10
         self.publish('match_end')
         self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
 
 
     """ THREAD """
-
-    """ Match status thread """
-    @Service.thread
+    #
+    # """ Match status thread """
+    # @Service.thread
     def match_status(self):
-      while True:
-        self.publish('match_status', status=self.get_status())
-        sleep(self.refresh)
+        # while True:
+            #self.publish('match_status', status=self.get_status())
+            #sleep(self.refresh)
+        return
 
     def match_time_loop(self):
         while self.match_status == MatchStatus.started:

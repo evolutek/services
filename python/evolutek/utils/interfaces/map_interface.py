@@ -63,7 +63,7 @@ class MapInterface(Interface):
 
     def tim_detected_robots_handler(self, robots):
         self.tim_watchdog.reset()
-        self.tim_robots = robots
+        self.tim_detected_robots = robots
 
     def reset_tim(self):
         self.tim_scans = {}
@@ -150,15 +150,11 @@ class MapInterface(Interface):
 
         self.tmp.clear()
         for robot in self.robots:
-            if robot in ['pal', 'pmi']:
-                self.print_robot_image(robot, self.robots[robot]['telemetry'])
-            else:
-                if not self.tim_enabled:
-                    self.print_robot(*self.robots[robot].values())
+            self.print_robot_image(robot, self.robots[robot]['telemetry'])
 
         if self.tim_enabled:
             if DebugMode(self.tim_debug) == DebugMode.normal:
-                for robot in self.tim_detected_robots:
+                for robot in self.cs.map.get_opponents():
                     self.print_robot(robot, self.robot_size, 'red')
             if DebugMode(self.tim_debug) == DebugMode.debug_tims:
                 self.print_tims(self.tim_scans)

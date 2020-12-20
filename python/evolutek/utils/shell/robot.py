@@ -52,11 +52,17 @@ def enable():
 @robot_shell.command()
 @click.argument('x', type=float)
 @click.argument('y', type=float)
-@click.option('-b', '--block/--no-block', default=False, help='if call will be blocking')
-@click.option('-m', '--mirror/--no-mirror', default=False, help='if pos will be mirror')
-def goto(x, y, block, mirror):
+@click.option('-b', '--block/--no-block', default=False, help='Makes the operation blocking (not async)')
+@click.option('-m', '--mirror/--no-mirror', default=False, help='Mirrors the position of the robot')
+@click.option('-a', '--avoid/--no-avoid', default=False, help='Makes the robot use avoid')
+@click.option('-p', '--pathfinding/--no-pathfinding', default=False, help='Makes the robot use the pathfinding')
+def goto(x, y, block, mirror, avoid, pathfinding):
     click.echo('Going to %f %f with robot[%s]' % (x, y, ROBOT))
-    if block:
+    if pathfinding:
+        robot.goto_with_path(x=x, y=y, mirror=mirror)
+    elif avoid:
+        robot.goto_avoid(x=x, y=y, mirror=mirror)
+    elif block:
         robot.goto(x=x, y=y, mirror=mirror)
     else:
         if mirror:

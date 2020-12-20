@@ -6,18 +6,19 @@ from threading import Event, Thread
 from time import sleep
 import asyncore
 from math import pi
+from time import sleep 
 
-from cellaserv.client import RequestTimeout
+#from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
-from evolutek.lib.map.utils import convert_path_to_point
+from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
-DELTA_POS = 5
+DELTA_POS = 15
 DELTA_THETA = 0.1
 TIMEOUT_PATH = 5
 MOVE_BACK = 250
@@ -51,6 +52,7 @@ class Robot:
 
             watchdog = Watchdog(1, self.timeout_handler)
             watchdog.reset()
+            self.has_avoid.clear()
 
             f(*args, **kwargs)
 
@@ -74,13 +76,15 @@ class Robot:
         return _f
 
 
-    def __init__(self, robot=None):
+    def __init__(self, robot=None, match_end_cb=None):
 
         self.cs = CellaservProxy()
 
         # Current robot
         self.robot = robot if not robot is None else ROBOT
         self.tm = self.cs.trajman[self.robot]
+
+        self.match_end_cb = match_end_cb
 
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=self.robot, option='robot_size_x'))
@@ -89,9 +93,10 @@ class Robot:
 
         # Side config
         self.color1 = self.cs.config.get(section='match', option='color1')
+        self.color = self.color1
         self.side = False
         try:
-            self.side = self.cs.match.get_color() != self.color1
+            self.color_change(self.cs.match.get_color())
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % (str(e)))
 
@@ -100,6 +105,10 @@ class Robot:
         self.is_started = Event()
         self.has_avoid = Event()
         self.end_avoid = Event()
+        self.reset = Event()
+        self._recalibration = Event()
+        self.match_start = Event()
+        self.match_end = Event()
         self.timeout = Event()
         self.telemetry = None
 
@@ -109,7 +118,11 @@ class Robot:
         self.client.add_subscribe_cb(self.robot + '_started', self.robot_started)
         self.client.add_subscribe_cb('match_color', self.color_change)
         self.client.add_subscribe_cb(self.robot + '_end_avoid', self.end_avoid_handler)
-        self.client.add_subscribe_cb(self.robot + '_telemetry', self.telemetry_handler)
+        #self.client.add_subscribe_cb(self.robot + '_telemetry', self.telemetry_handler)
+        self.client.add_subscribe_cb("match_start", self.match_start_handler)
+        self.client.add_subscribe_cb("match_end", self.match_end_handler)
+        self.client.add_subscribe_cb("%s_reset" % self.robot, self.reset_handler)
+        self.client.add_subscribe_cb("%s_recalibration" % self.robot, self._recalibration_handler)
 
         # Blocking wrapper
         self.recalibration_block = self.wrap_block(self.tm.recalibration)
@@ -123,6 +136,14 @@ class Robot:
         self.client_thread = Thread(target=asyncore.loop)
         self.client_thread.daemon = True
         self.client_thread.start()
+
+    def mirror_pos(self, x = None, y = None, theta = None):
+        if y is not None:
+            y = (y if not self.side else 3000 - y)
+        if theta is not None:
+            theta  = (theta if not self.side else -1 * theta)
+
+        return (x, y, theta)
 
 
     ##########
@@ -139,6 +160,7 @@ class Robot:
 
     def color_change(self, color):
         self.side = color != self.color1
+        self.color = color
         self.tm.set_mdb_config(yellow=self.side)
 
     def end_avoid_handler(self):
@@ -153,6 +175,21 @@ class Robot:
         else:
             self.telemetry = None
 
+    def reset_handler(self):
+        self.reset.set()
+
+    def _recalibration_handler(self):
+        self._recalibration.set()
+        self.reset.set()
+
+    def match_start_handler(self):
+        self.match_start.set()
+
+    def match_end_handler(self):
+        self.match_end.set()
+        if self.match_end_cb is not None:
+            self.match_end_cb()
+
 
     ########
     # Sets #
@@ -163,15 +200,17 @@ class Robot:
 
     def set_y(self, y, mirror=True):
         if mirror:
-            self.tm.set_y(1500 + (1500 - y) * (-1 if not self.side else 1))
-        else:
-            self.tm.set_y(y)
+            y = self.mirror_pos(y=y)[1]
+
+        self.tm.set_y(y)
 
     def set_theta(self, theta, mirror=True):
         if mirror:
-            self.tm.set_theta(theta * (1 if not self.side else -1))
-        else:
-            self.tm.set_theta(theta)
+            theta = self.mirror_pos(theta=theta)[2]
+
+        self.tm.set_theta(theta)
+
+
 
     def set_pos(self, x, y, theta=None, mirror=True):
         self.set_x(x)
@@ -187,64 +226,70 @@ class Robot:
     def goto(self, x, y, mirror=True):
 
         if mirror:
-            y = 1500 + (1500 - y) * (-1 if not self.side else 1)
+            y = self.mirror_pos(y=y)[1]
 
         if self.goto_xy_block(x, y):
             return Status.has_avoid
 
-        if self.telemetry is None:
-            pos = self.tm.get_position()
-        else:
-            pos = self.telemetry
+        #if self.telemetry is None:
+        pos = self.tm.get_position()
+        #else:
+        #    pos = self.telemetry
 
         if Point(x=x, y=y).dist(Point(dict=pos)) < DELTA_POS:
-            return Status.unreached
-        return Status.reached
+            return Status.reached
+        return Status.unreached
 
-    def goth(self, th, mirror=True):
+    def goth(self, theta, mirror=True):
 
         if mirror:
-            th = th * (1 if not self.side else -1)
+            theta = self.mirror_pos(theta=theta)[2]
 
-        if self.goto_theta_block(th):
+        if self.goto_theta_block(theta):
             return Status.has_avoid
 
-        if self.telemetry is None:
-            pos = self.tm.get_position()
-        else:
-            pos = self.telemetry
+        #if self.telemetry is None:
+        pos = self.tm.get_position()
+        #else:
+        #    pos = self.telemetry
 
-        if abs(th - float(pos['theta'])) < DELTA_THETA:
-            return Status.unreached
-        return Status.reached
+        error = abs(theta - float(pos['theta']))
+        if error > pi:
+            error = error - (2 * pi)
+
+        if abs(error) < DELTA_THETA:
+            return Status.reached
+        return Status.unreached
 
     def goto_avoid(self, x, y, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
         status = self.goto(x, y, mirror)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
             status = self.goto(x, y, mirror)
 
         return status
 
-    def goth_avoid(self, th, timeout=0.0, nb_try=None, mirror=True):
+    def goth_avoid(self, theta, timeout=0.0, nb_try=None, mirror=True):
         tried = 1
-        status = self.goth(th, mirror)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        status = self.goth(theta, mirror)
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
-            status = self.goth(th, mirror)
+            status = self.goth(theta, mirror)
 
         return status
 
+    # TODO : Check if we have done the trsl
     def move_trsl_avoid(self, dest, acc, dec, maxspeed, sens, timeout=0.0, nb_try=None):
         tried = 1
-        status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
-        while (not nb_try is None and tried < nb_try) and status == Status.has_avoid:
+        status = Status.has_avoid if self.move_trsl_block(dest, acc, dec, maxspeed, sens) else Status.reached
+
+        while (nb_try is None or tried <= nb_try) and status == Status.has_avoid:
             tried += 1
             self.wait_until(timeout=timeout)
-            status = self.move_trsl_block(dest, acc, dec, maxspeed, sens)
+            status = Status.has_avoid if self.move_trsl_block(dest, acc, dec, maxspeed, sens) else Status.reached
 
         return status
 
@@ -254,13 +299,16 @@ class Robot:
     ###############
 
     def update_path(self, path):
+
+        print("[ROBOT] Updating path")
+
         new = []
 
         try:
-            if self.telemetry is None:
-                pos = self.tm.get_position()
-            else:
-                pos = self.telemetry
+            #if self.telemetry is None:
+            pos = self.tm.get_position()
+            #else:
+            #    pos = self.telemetry
 
             new = self.cs.map.get_path(pos, path[-1].to_dict(), self.robot)
             new = convert_path_to_point(new)
@@ -277,14 +325,19 @@ class Robot:
     def goto_with_path(self, x, y, mirror=True):
 
         if mirror:
-            1500 + (1500 - y) * (-1 if not self.side else 1)
+            y = self.mirror_pos(y=y)[1]
 
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
-        path = [self.tm.get_position(), Point(x, y)]
+        path = [Point(dict=self.tm.get_position()), Point(x, y)]
+
+        if path[1].dist(path[0]) < DELTA_POS:
+            print("[ROBOT] Already at destination")
+            return Status.reached
 
         while len(path) >= 2:
 
-            path = self.update_path(path)
+            if(not self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+                path = self.update_path(path)
 
             if len(path) < 2:
                 print('[ROBOT] Destination unreachable')
@@ -298,6 +351,10 @@ class Robot:
 
             # While the robot is not stopped
             while not self.is_stopped.is_set():
+
+                if(self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+                    sleep(0.1)
+                    continue
 
                 tmp_path = self.update_path(path)
 
@@ -313,20 +370,20 @@ class Robot:
                     self.is_stopped.wait()
                 else:
                     # TODO : manage refresh
-                    sleep(0.2)
+                    sleep(0.1)
 
                 path = tmp_path
 
             print("[ROBOT] Robot stopped")
 
             if self.has_avoid.is_set():
-                self.move_back(path[0], MOVE_BACK)
+                self.move_back(MOVE_BACK)
             self.has_avoid.clear()
 
             # We are supposed to be stopped
-            pos = self.tm.get_position()
+            pos = Point(dict=self.tm.get_position())
 
-            if Point(dict=pos).dist(path[1]) < DELTA_POS:
+            if pos.dist(path[1]) < DELTA_POS:
                 # We reached next point (path[1])
                 path.pop(0)
                 path[0] = pos
@@ -341,8 +398,8 @@ class Robot:
 
     # TODO remove sleep after recalibration
     # x/y => recalibration x or y
-    # side_x/y: 
-    #     first value:  touches with front or back (True is front) 
+    # side_x/y:
+    #     first value:  touches with front or back (True is front)
     #     second value: touches high or low coordinates wall (True is high)
     # decal: adds an offset if there is an obstacle
     # init: TODO
@@ -374,36 +431,32 @@ class Robot:
             print('[ROBOT] Recalibration X')
             theta = pi if side_x[0] ^ side_x[1] else 0
             self.goth(theta)
-            self.tm.disable_avoid()
             self.recalibration_block(sens=int(side_x[0]), decal=float(decal_x))
             sleep(0.5)
 
-            if self.telemetry is None:
-                pos = self.tm.get_position()
-            else:
-                pos = self.telemetry
+            #if self.telemetry is None:
+            pos = self.tm.get_position()
+            #else:
+            #    pos = self.telemetry
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
-            self.tm.enable_avoid()
             self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_x[0])
 
         if y:
             print('[ROBOT] Recalibration Y')
             theta = -pi/2 if side_x[0] ^ side_y[0] else pi/2
-            self.goth(theta * (-1 if self.side and mirror else 1))
-            self.tm.disable_avoid()
+            self.goth(theta)
             self.recalibration_block(sens=int(side_y[0]), decal=float(decal_y))
             sleep(0.5)
 
-            if self.telemetry is None:
-                pos = self.tm.get_position()
-            else:
-                pos = self.telemetry
+            #if self.telemetry is None:
+            pos = self.tm.get_position()
+            #else:
+            #    pos = self.telemetry
 
             print('[ROBOT] Robot position is x:%f y:%f theta:%f' %
                 (pos['x'], pos['y'], pos['theta']))
-            self.tm.enable_avoid()
             self.move_trsl_block(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_y[0])
 
         self.tm.set_trsl_max_speed(speeds['trmax'])
@@ -411,11 +464,17 @@ class Robot:
         self.tm.set_trsl_dec(speeds['trdec'])
 
 
+    """ GO HOME """
+    def go_home(self, point, point_theta):
+        self.goto(point.x, point.y)
+        self.goth(point_theta)
+
     #########
     # Avoid #
     #########
 
     def wait_until(self, timeout=0.0):
+
         watchdog = None
 
         if timeout > 0.0:
@@ -425,27 +484,31 @@ class Robot:
         while not self.end_avoid.is_set() and not self.timeout.is_set():
             sleep(0.1)
 
+        if self.timeout.is_set():
+            return False
+
         if not watchdog is None:
             watchdog.stop()
             self.timeout.clear()
-        self.end_avoid.clear()
 
-    def move_back(self, last_point, max_dist):
+        self.end_avoid.clear()
+        return True
+
+    def move_back(self, dist):
         print('[ROBOT] Moving back')
 
         self.wait_until(timeout=3)
 
         pos = self.tm.get_position()
-        dist = min(last_point.dist(Point(dict=pos)), max_dist)
         side = self.tm.avoid_status()['side']
 
+        print('[ROBOT] Move back direction: ' + str(side))
         if side is None:
             return
 
-
-        if self.move_trsl_block(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(side == 'front')):
+        if self.move_trsl_block(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(side != 'front')):
             print('[ROBOT] Robot avoided, moving front')
-            if self.move_trsl_block(acc=200, dec=200, dest=dist/2, maxspeed=400, sens=int(side != 'front')):
+            if self.move_trsl_block(acc=200, dec=200, dest=dist/2, maxspeed=400, sens=int(side == 'front')):
                 return Status.has_avoid
 
         return Status.reached

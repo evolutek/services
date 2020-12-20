@@ -146,7 +146,7 @@ def convert_path_to_dict(path):
         new.append(p.to_dict())
     return new
 
-# Convert a path to a list of dict
+# Convert a list of dict to a path
 def convert_path_to_point(path):
     new = []
     for p in path:

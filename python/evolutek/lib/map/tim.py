@@ -21,30 +21,36 @@ def parse_num(s):
   else:
     return int(s, 16)
 
+# Cloud class
+#
+# points: Point[]
+# center: Point
+# ip: str
+# tag: str
 class RobotCloud:
-  def __init__(self, points=[], ip="", tag="", dict=None):
+  def __init__(self, points=[], center=None, ip="", tag="", dict=None):
     self.points = {}
     self.pos = {}
     if dict is not None:
       from_dict(dict)
     else:
       self.points[ip] = points[:]
-      self.merged_points = points[:]
-      self.pos[ip] = Point.mean(points)
+      self.pos[ip] = center
       self.merged_pos = self.pos[ip]
       self.tag = tag
 
   def __str__(self):
-    return tag + self.merged_pos
+    return self.tag + self.merged_pos
   
+  # Import from dict
   def from_dict(self, dict):
       for ip in dict["points"]:
         self.points[ip] = utils.convert_path_to_points(dict["points"])
         self.pos[ip]= Point(dict=dict["pos"])
-      self.merged_points = utils.convert_path_to_points(dict["merged_points"])
       self.merged_pos = Point(dict=dict["merged_pos"])
       self.tag = dict["tag"]
 
+  # Export to dict
   def to_dict(self):
     temp_points = {}
     temp_pos = {}
@@ -53,27 +59,38 @@ class RobotCloud:
       temp_pos[ip] = self.pos[ip].to_dict()
     return { 
         "points": temp_points,
-        "merged_points": utils.convert_path_to_dict(self.merged_points),
         "pos": temp_pos,
         "merged_pos": self.merged_pos.to_dict(),
         "tag": self.tag,
         }
 
+  # Merge with another cloud
   def merge(self, other, delta_dist):
     ip = list(other.pos.keys())[0]
     if ip in self.points:
       return False
     if self.merged_pos.dist(other.merged_pos) < delta_dist:
       self.points[ip] = other.points[ip][:]
-      self.pos[ip] = Point.mean(points)
-      self.merged_points += points
-      self.merged_pos = Point.mean(merged_points)
+      self.pos[ip] = other.pos[ip]
+      # get position from closest lidar
+      max_size = 0
+      max_pos = []
+      for ip in self.points:
+        if len(self.points[ip]) > max_size:
+          max_pos = [self.pos[ip]]
+          max_size = len(self.points[ip])
+        elif len(self.points[ip]) == max_size:
+          max_pos.append(self.pos[ip])
+      self.merged_pos = Point.mean(max_pos)
       return True
     else:
       return False
 
+  # Add a telemtry
   def add_telemetry(self, pos):
-    self.pos["telemetry"] = pos
+    self.pos["telemetry"] = Point(dict=pos)
+    self.points["telemetry"] = []
+    self.merged_pos = Point(dict = pos)
 
 
 # TIM Class
@@ -108,7 +125,6 @@ class Tim:
         self.default_angle = int(config['angle'])
 
         # Computation config
-        print(self)
         self.refresh = float(computation_config['refresh'])
         self.min_size = int(computation_config['min_size'])
         self.max_distance = int(computation_config['max_distance'])
@@ -127,6 +143,7 @@ class Tim:
         self.angle = None
         self.change_pos(mirror)
         self.try_connection()
+        print(self)
 
         print('[TIM] TIM created')
 
@@ -138,6 +155,7 @@ class Tim:
         s += "connected: %s" % str(self.connected)
         return s
 
+    # Launch a thread to communicate with tim
     def try_connection(self):
         Thread(target = self._try_connection).start()
 
@@ -201,7 +219,7 @@ class Tim:
             angle = radians((length - i) * size_a - self.angle)
             y = cyl_data[i] * cos(angle) + self.pos.y
             x = cyl_data[i] * sin(angle) + self.pos.x
-            clean_data.append(Point(round(x, 3), round(y, 3)))
+            clean_data.append(Point(round(x), round(y)))
         return clean_data
 
     # Remove out  of table points
@@ -229,31 +247,28 @@ class Tim:
         return shapes
 
     # Compute center of shape using the ray between the mean of the shape and the pos of TIM
-    def compute_center(self, shapes):
-        centers = []
-        for shape in shapes:
-            moy = Point.mean(shape)
-            a = 0
-            b = 0
-            dy = False
-            if self.pos.x != moy.x:
-                a = (moy.y - self.pos.y) / (moy.x - self.pos.x)
-                b = moy.y - a * moy.x
-            else:
-                dy = True
-                a = (moy.x - self.pos.x) / (moy.y - self.pos.y)
-                b = moy.x - a * moy.y
-            radius = self.radius_beacon * (-1 if self.pos.x > moy.x else 1)
-            x = 0
-            y = 0
-            if dy:
-                y = moy.y + (radius / sqrt(1 + a ** 2))
-                x = a * y + b
-            else:
-                x  = moy.x + (radius / sqrt(1 + a ** 2))
-                y = a * x + b
-            centers.append(Point(x, y))
-        return centers
+    def compute_center(self, shape):
+        moy = Point.mean(shape)
+        a = 0
+        b = 0
+        dy = False
+        if self.pos.x != moy.x:
+            a = (moy.y - self.pos.y) / (moy.x - self.pos.x)
+            b = moy.y - a * moy.x
+        else:
+            dy = True
+            a = (moy.x - self.pos.x) / (moy.y - self.pos.y)
+            b = moy.x - a * moy.y
+        radius = self.radius_beacon * (-1 if self.pos.x > moy.x else 1)
+        x = 0
+        y = 0
+        if dy:
+            y = moy.y + (radius / sqrt(1 + a ** 2))
+            x = a * y + b
+        else:
+            x  = moy.x + (radius / sqrt(1 + a ** 2))
+            y = a * x + b
+        return Point(x, y)
 
     # Make a scan
     def scan(self):
@@ -282,14 +297,12 @@ class Tim:
         # Split points in different cloud
         shapes = self.split_raw_data(clean_points)
         # Compute robots center
-        robots = self.compute_center(shapes)
-
         clouds = []
         # Generate unified output
         for shape in shapes:
-          clouds.append(RobotCloud(shape, self.ip))
+          clouds.append(RobotCloud(shape, ip=self.ip, center=self.compute_center(shape)))
         #print("[TIM] End scanning")
-        return clean_points, shapes, robots, clouds
+        return clean_points, clouds
 
     # Loop to make scans
     def loop_scan(self):
@@ -302,22 +315,20 @@ class Tim:
               if new_data is None:
                   print('[TIM] Failed to get scan on %s' % self.ip)
                   self.raw_data.clear()
-                  self.shapes.clear()
-                  self.robots.clear()
                   self.clouds.clear()
                   continue
-              self.raw_data, self.shapes, self.robots, self.clouds = new_data
+              self.raw_data, self.clouds = new_data
 
-    def get_scan(self):
-        if self.scan_list is []:
-            return None
+    # Return raw data
+    def get_raw_data(self):
+        with self.lock:
+            return self.raw_data
 
     # Return viewed robots
     def get_robots(self):
         robots = []
         with self.lock:
-            scan = self.scan_list
-            raw_data, shapes, robots = scan[0], scan[1], scan[2]
+          robots = [c.merged_pos for cloud in self.clouds]
 
         return robots
     

@@ -25,9 +25,12 @@ LEDS_ZONES = b'\x01'
 LEDS_LOADING = b'\x02'
 LEDS_DISABLED = b'\x03'
 
+# Class to communicate with MDB using I2C
 class Mdb:
 
-    def __init__(self, debug=False):
+    def __init__(self):
+
+        # Init communication on I2C bus
         try:
             self.i2c = busio.I2C(board.SCL, board.SDA)
             self.send(REQ_ERROR + b'\x00')
@@ -35,11 +38,13 @@ class Mdb:
             print("[MDB] ERROR couldn't initialise i2c bus between Teensy and RaspberryPI")
             raise(e)
 
+    # Send a msg to MDB usong I2C
     def send(self, msg):
         try: self.i2c.writeto(TEENSY, msg)
         except: print("[MDB] ERROR while sending message: " + str(msg))
 
 
+    # Get a scan of the MDB using I2C
     def get_scan(self):
         self.send(REQ_CHANGETYPE + RCV_SCAN)
         buf = bytearray(b'\xff' * 32)
@@ -52,6 +57,7 @@ class Mdb:
         return res
 
 
+    # Set the debug mode of the MDB
     # Possible values: 0: Distances, 1: Zones, 2: Loading, 3: Disabled
     def set_debug_mode(self, mode):
         if not 0 <= mode <= 3:
@@ -59,11 +65,12 @@ class Mdb:
         self.send(REQ_LEDSMODE + bytes([mode]))
 
 
+    # Set the color of the MDB
     # True: changes color to yellow; False: changes color to blue
     def set_color(self, to_yellow):
         self.send(REQ_COLOR + (LEDS_YELLOW if to_yellow else LEDS_BLUE))
 
-
+    # Get the areas flags of the MDB
     def get_zones(self):
 
         self.send(REQ_CHANGETYPE + RCV_ZONES)
@@ -84,35 +91,39 @@ class Mdb:
                 'is_robot': buf[2] == 1
                }
 
-
+    # Get the front area flag
     def get_front(self):
         return self.get_zones()['front']
+    
+    # Get the back area flag
     def get_back(self):
         return self.get_zones()['back']
+    
+    # Get if whether a robot is near our robot
     def get_is_robot(self):
         return self.get_zones()['is_robot']
 
-
+    # Set enable flag of MDB
     def set_enabled(self, enabled):
         self.send(REQ_ENABLESCAN + (b'\x01' if enabled else b'\x00'))
 
-
+    # Enable MDB
     def enable(self, debug_mode=1):
         self.set_enabled(True)
         self.set_debug_mode(debug_mode)
 
-
+    # Disable MDB
     def disable(self):
         self.set_enabled(False)
         self.set_debug_mode(3)
 
-
+    # Set brihtness of MDB
     def set_brightness(self, brightness):
         if not 0 <= brightness <= 255:
             print('[MDB] Invalid brightness value ' + str(mode))
         self.send(REQ_BRIGHTNESS + bytes([brightness]))
 
-
+    # Set error mode
     def error_mode(self, enabled=True):
         self.send(REQ_ERROR + (b'\x01' if enabled else b'\x00'))
 

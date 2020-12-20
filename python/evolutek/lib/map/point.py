@@ -12,7 +12,7 @@ class Point(PointShape):
         if tuple is not None:
             super().__init__(tuple)
         elif dict is not None:
-            super().__init__(int(dict['x']), int(dict['y']))
+            super().__init__(round(dict['x']), round(dict['y']))
         else:
             super().__init__(round(x, 3), round(y, 3))
 
@@ -33,7 +33,7 @@ class Point(PointShape):
         return 0
 
     def to_dict(self):
-        return {'x': self.x, 'y': self.y,}
+        return {'x': round(self.x), 'y': round(self.y)}
 
     def to_tuple(self):
         return (self.x, self.y)
@@ -51,6 +51,9 @@ class Point(PointShape):
     def average(self, p):
         """ return the average between two points """
         return Point((self.x + p.x) / 2, (self.y + p.y) / 2)
+
+    def round(self):
+        return Point(round(self.x), round(self.y))
 
     # Compute the eculidian dist between two point in dict
     @staticmethod

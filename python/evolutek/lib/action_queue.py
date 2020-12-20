@@ -2,15 +2,26 @@ import queue
 from threading import Thread, Event
 import concurrent.futures
 
+# Action queue class
 class Act_queue():
     def __init__(self):
+
+        # Queue holding waiting task
         self.task = queue.Queue()
+
+        # Queue holding the tasks returns
         self.response_queue = queue.LifoQueue()
+
+        # Event to tell queue to stop
         self.stop = Event()
 
-    #############################
-    # EXECUTE A LIST OF ACTIONS #
-    #############################
+    # Get return from the queue
+    def get_response(self):
+        return self.response_queue.get()
+
+    # Launch mutiple actions and add all actions returns
+    # actions: actions to launch
+    # args: list of args of the actions
     def launch_multiple_actions(self, actions, args):
         if len(args) != len(actions):
             return None
@@ -23,46 +34,41 @@ class Act_queue():
             results.append(action.result())
         return results
 
-    ##############
-    # ADD A TASK #
-    ##############
+    # Add an action to the queue and wait for return
+    # action: action to run
+    # args: args of the action
     def run_action(self, action, args):
         tmp = (action, args)
         self.task.put(tmp)
+        return (self.get_response())
 
-    ######################
-    # ADD A LIST OF TASK #
-    ######################
+    # Add a list of actions to the queue and wait for returns
+    # actions: actions to run
+    # arg_list: arg_list of the actions
     def run_actions(self, actions, args_list):
         tmp = (list(actions), list(args_list))
         self.task.put(tmp)
+        return (self.get_response())
 
-    #################
-    # DEPILATE QUEUE #
-    #################
+    # Loop running actions stored in the queue
     def _run_queue(self):
         tmp = ()
         while not self.stop.is_set():
             tmp = self.task.get()
             if type(tmp[0]) == list:
-                self.response.put(self.launch_multiple_actions(tmp[0], tmp[1]))
+                self.response_queue.put(self.launch_multiple_actions(tmp[0], tmp[1]))
             else :
-                self.response.put(tmp[0](*tmp[1]))
+                self.response_queue.put(tmp[0](tmp[1][0], *tmp[1][1], **tmp[1][2]))
 
-    ###############
-    # START QUEUE #
-    ###############
+    # Launch a thread to run the queue
     def run_queue(self):
         self.stop.clear()
         t = Thread(target=self._run_queue)
         t.start()
 
 
-    ##############
-    # STOP QUEUE #
-    ##############
+    # Empty the queue and stop run
     def stop_queue(self):
         while self.task.empty() == False:
             self.task.get()
         self.stop.set()
-

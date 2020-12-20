@@ -31,7 +31,7 @@ def compute_gains():
 
     # TODO path 75, in move_trsl_block
     robot.recalibration_block(sens=0)
-    robot.move_trsl_block(dest=75, acc=100, dec=100, maxspeed=200, sens=1)
+    robot.move_trsl_block(dest=100, acc=500, dec=500, maxspeed=500, sens=1)
 
     print("#########################################################")
     print("Do you want the robot to go to the mark by itself (y/n) ?")
@@ -43,15 +43,22 @@ def compute_gains():
     robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=200, sens=1)
     robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3, sens=1)
     robot.move_trsl_block(dest=length, acc=speeds['tracc'], dec=speeds['trdec'], maxspeed=200, sens=1)
-    robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3, sens=1)
-    robot.recalibration_block(sens=0, decal=0, set=0)
+    robot.move_rot_block(dest=pi, acc=3, dec=3, maxspeed=3, sens=0)
+
+    print(robot.tm.get_position())
+    #robot.recalibration_block(sens=0, decal=0, set=0)
+    robot.tm.move_trsl(dest=150, acc=500, dec=500, maxspeed=500, sens=0)
+
+    sleep(1)
 
     newpos = robot.tm.get_position()
+
+    print(newpos)
     robot.tm.free()
 
-    coef = -1 * newpos['theta'] / length
+    coef = - newpos['theta'] / (2 * length + 200)
 
-    print('The delta of theta is :', -1 * newpos['theta'])
+    print('The delta of theta is :', newpos['theta'])
     print('The computed coef is :', coef)
 
     global old
@@ -76,7 +83,9 @@ def compute_diams():
 
     input()
 
+    print(robot.tm.get_position())
     robot.recalibration_block(sens=0)
+    print(robot.tm.get_position())
 
     print("#########################################################")
     print("Do you want the robot to go to the mark by itself (y/n) ?")
@@ -105,6 +114,7 @@ def compute_diams():
     print(newpos)
 
     mesured = newpos['x'] - oldpos['x']
+    print(mesured)
     coef = float(length) / float(mesured)
 
     global old
@@ -225,6 +235,8 @@ def compute_all(gains, diams, spacing, all, config, _robot):
 
     print("Press enter when ready")
     input()
+
+    robot.set_pos(x=1000, y=1000, theta=0)
 
     if all or gains:
         compute_gains()

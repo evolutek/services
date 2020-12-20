@@ -16,10 +16,10 @@ def actuators_shell(ctx):
         global ROBOT
         ROBOT = get_robot()
         subshell = make_click_shell(
-            ctx, prompt=get_prompt, intro='Shell to control actuator')
+            ctx, prompt=get_prompt, intro='Shell to control actuators')
         subshell.cmdloop()
     else:
-        click.echo('[SHELL] Failed to launch actuator shell')
+        click.echo('[SHELL] Failed to launch actuators shell')
 
 @actuators_shell.command()
 def reset():
@@ -75,15 +75,15 @@ def flags_low():
 @actuators_shell.command()
 @click.argument('pump', required=True, type=int)
 @click.argument('buoy', required=False)
-def pump_get(pump, buoy='unknow'):
-    cs.actuators[ROBOT].pump_get(pump, buoy)
+def pump_get(pump, buoy='unknown'):
+    cs.actuators[ROBOT].pump_get(pump, buoy if buoy is not None else 'unknown')
     return
 
 @actuators_shell.command()
 @click.argument('pump', required=True, type=int)
 @click.argument('buoy', required=False)
-def pump_set(pump, buoy='unknow'):
-    cs.actuators[ROBOT].pump_set(pump, buoy)
+def pump_set(pump, buoy='unknown'):
+    cs.actuators[ROBOT].pump_set(pump, buoy if buoy is not None else 'unknown')
     return
 
 @actuators_shell.command()
@@ -140,12 +140,49 @@ def right_cup_holder_open():
     cs.actuators[ROBOT].right_cup_holder_open()
     return
 
+# High level actions
+
 @actuators_shell.command()
-def _windsocks_push():
-    cs.actuators[ROBOT]._windsocks_push()
+def start_lighthouse():
+    cs.actuators[ROBOT].start_lighthouse()
+    return
+
+@actuators_shell.command()
+def drop_starting_without_sort():
+    cs.actuators[ROBOT].drop_starting_without_sort()
+    return
+
+@actuators_shell.command()
+def drop_starting_with_sort():
+    cs.actuators[ROBOT].drop_starting_with_sort()
+    return
+
+@actuators_shell.command()
+def drop_center_zone():
+    cs.actuators[ROBOT].drop_center_zone()
+    return
+
+@actuators_shell.command()
+def get_reef_buoys():
+    cs.actuators[ROBOT].get_reef_buoys()
     return
 
 @actuators_shell.command()
 def windsocks_push():
     cs.actuators[ROBOT].windsocks_push()
+    return
+
+@actuators_shell.command()
+def get_pattern():
+    cs.actuators[ROBOT].get_pattern()
+    return
+
+@actuators_shell.command()
+def get_reef():
+    cs.actuators[ROBOT].get_reef()
+    return
+
+@actuators_shell.command()
+def go_to_anchorage():
+    cs.actuators[ROBOT].go_to_anchorage()
     return

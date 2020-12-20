@@ -28,8 +28,10 @@ setup(
             'config = evolutek.services.config:main',
             'actuators = evolutek.services.actuators:main',
             'ax = evolutek.services.ax:main',
+            'ai = evolutek.services.ai:main',
             'trajman = evolutek.services.trajman:main',
             'match = evolutek.services.match:main',
+            'map = evolutek.services.map:main',
             # Simulation
             'fake_ax = evolutek.simulation.fake_ax:main',
             'fake_trajman = evolutek.simulation.fake_trajman:main',

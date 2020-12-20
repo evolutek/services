@@ -22,7 +22,7 @@ class MatchInterface(Interface):
 
         self.match_status = None
         self.client.add_subscribe_cb('match_status', self.match_status_handler)
-        self.match_status_watchdog = Watchdog(1, self.reset_match_status)#float(match_config['refresh']) * 2, self.reset_match_status)
+        self.match_status_watchdog = Watchdog(2, self.reset_match_status)#float(match_config['refresh']) * 2, self.reset_match_status)
 
         if SIMULATION:
             self.init_simulation()
@@ -103,11 +103,11 @@ class MatchInterface(Interface):
         self.pal_ai_status_label.config(text="PAL status: %s" % self.get_robot_status('pal'))
         self.pmi_ai_status_label.config(text="PMI status: %s" % self.get_robot_status('pmi'))
 
-        if self.match_status is not None:
-            self.color_label.config(text="Color: %s" % self.match_status['color'], fg=self.match_status['color'])
-            self.score_label.config(text="Score: %d" % self.match_status['score'])
-            self.match_status_label.config(text="Match status: %s" % self.match_status['status'])
-            self.match_time_label.config(text="Match time: %d" % self.match_status['time'])
+        if self.cs.match.get_status() is not None:
+            self.color_label.config(text="Color: %s" % self.cs.match.get_status()['color'], fg=self.cs.match.get_status()['color'])
+            self.score_label.config(text="Score: %d" % self.cs.match.get_status()["score"])
+            self.match_status_label.config(text="Match status: %s" % self.cs.match.get_status()['status'])
+            self.match_time_label.config(text="Match time: %d" % self.cs.match.get_status()['time'])
         else:
             self.color_label.config(text="Color: %s" % 'Match not connected')
             self.score_label.config(text="Score: %s" % 'Match not connected')

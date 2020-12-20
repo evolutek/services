@@ -104,21 +104,25 @@ class Fsm:
         self.running = self.states[state]
         next = self.running.run_state()
 
+        # Run while stopping flag is not set
         while not self.stopping.is_set():
             if next is None :
                 self.run_error()
                 break
 
+            # Check if the state exist
             if not next in self.states:
                 print('[FSM] Next not registered: %s' % next)
                 self.run_error()
                 break
 
+            # Check if the state is accessible from current state
             if not self.running.state in self.transistions[next]:
                 print("[FSM] Can't go to this state: %s" % next)
                 self.run_error()
                 break
 
+            # Jump on the new state
             self.running = self.states[next]
             next = self.running.run_state()
 
