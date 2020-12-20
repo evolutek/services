@@ -16,6 +16,7 @@ class MatchStatus(Enum):
     started = "Started"
     ended = "Ended"
 
+# Service class for the match
 @Service.require("config")
 class Match(Service):
 
@@ -24,6 +25,7 @@ class Match(Service):
         super().__init__()
         self.cs = CellaservProxy()
 
+        # Get the config of the match
         match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']

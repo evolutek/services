@@ -170,9 +170,10 @@ class TrajMan(Service):
         self.is_robot = False
         self.side = ''
 
-        # init sensors
+        # MDB
         self.mdb = Mdb()
 
+        # Set config of the robot
         self.trsl_max_speed = self.trslmax()
         self.rot_max_speed = self.rotmax()
         self.stop_trsl_dec = self.stoptrsldec()
@@ -205,6 +206,7 @@ class TrajMan(Service):
         self.set_telemetry(self.telemetry_refresh())
         self.set_telemetry(500)
 
+        # Get and set MDB config
         self.avoid_refresh = float(self.cs.config.get('avoid', 'refresh'))
         near = self.cs.config.get('avoid', 'near')
         far = self.cs.config.get('avoid', 'far')
@@ -221,6 +223,7 @@ class TrajMan(Service):
         bau_gpio.auto_refresh(callback=self.handle_bau)
 
 
+    # Threading sending the telemetry
     #@Service.thread
     def send_telemetry(self):
         while True:
@@ -230,6 +233,7 @@ class TrajMan(Service):
             sleep(0.5)
 
     """ BAU """
+    # BAU handler
     @Service.action
     def handle_bau(self, value, event='', name='', id=0):
         self.bau_status = value
@@ -245,6 +249,8 @@ class TrajMan(Service):
         return self.bau_status
 
     """ AVOID """
+
+    # Thread for avoidance
     @Service.thread
     def loop_avoid(self):
         while True:
@@ -255,9 +261,11 @@ class TrajMan(Service):
             self.check_avoid()
             sleep(self.avoid_refresh)
 
+    # Check and stop the robot if it need to avoid
     @Service.action
     def check_avoid(self):
 
+        # Read MDB
         zones = self.mdb.get_zones()
         front = zones['front']
         back = zones['back']
@@ -279,6 +287,7 @@ class TrajMan(Service):
         if self.has_avoid.isSet() or self.has_stopped.isSet():
             return
 
+        # Check if the robot need to stop
         if self.telemetry['speed'] > 0.0 and self.front:
             self.stop_robot('front')
             print("[AVOID] Front detection")
@@ -287,6 +296,7 @@ class TrajMan(Service):
             print("[AVOID] Back detection")
 
 
+    # Get the avoidance status
     @Service.action
     def avoid_status(self):
         status = {
@@ -300,6 +310,7 @@ class TrajMan(Service):
 
         return status
 
+    # Set moving speeds of the robot
     @Service.action
     def set_speeds(self, state):
         trsl_speed = self.trsl_max_speed
@@ -307,6 +318,7 @@ class TrajMan(Service):
         self.set_trsl_max_speed(trsl_speed)
         self.set_rot_max_speed(rot_speed)
 
+    # Stop the robot
     @Service.action
     def stop_robot(self, side=None):
         stopped = False
@@ -320,12 +332,14 @@ class TrajMan(Service):
         print('[AVOID] Stopping robot, %s detection triggered' % side)
         sleep(0.5)
 
+    # Enable avoidance
     @Service.action
     def enable_avoid(self):
         print('[AVOID] Enable')
         self.avoid_disabled.clear()
         self.enable_mdb()
 
+    # Disable avoidance
     @Service.action
     def disable_avoid(self):
         print('[AVOID] Disable')
@@ -338,16 +352,19 @@ class TrajMan(Service):
         self.has_avoid.clear()
         self.disable_mdb()
 
+    # Enable MDB
     @Service.action
     def enable_mdb(self):
         print('[AVOID] Enabling mdb')
         self.mdb.enable()
 
+    # Disable MDB
     @Service.action
     def disable_mdb(self):
         print('[AVOID] Disabling mdb')
         self.mdb.disable()
 
+    # Put MDB in error mode
     @Service.action
     def error_mdb(self, enable=True):
         enable = enable in ['True', 'true', 't', 'T', True, '1', 1]
