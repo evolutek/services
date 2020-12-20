@@ -12,7 +12,13 @@ class AvoidStrategy(Enum):
     Skip = 2
 
 
-""" Action Class """
+# Action Class
+# fct: action function
+# args: action arguments
+# avoid: whether avoidance need to be enable/disable
+# avoid_strategy : strategy to use when avoiding
+# score: scored points after action
+# timeout: timeout to abort action after avoiding
 class Action:
 
     def __init__(self, fct, args=None, avoid=True, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
@@ -27,6 +33,7 @@ class Action:
         self.score = score
         self.timeout = timeout
 
+    # Make action
     def make(self):
         r = self.score
         if not self.args is None:
@@ -44,10 +51,14 @@ class Action:
         s += '\n    -> timeout: ' + str(self.timeout)
         return s
 
+    # Static method
+    # Parse action from JSON
     @classmethod
     def parse(cls, action, ai):
 
         fct = None
+
+        # Try get action from handler
         try:
             fct = None
             if not 'handler' in action:
@@ -70,7 +81,14 @@ class Action:
         return new
 
 
-""" Goal Class """
+# Goal class
+# name: goal name
+# position: position of the goal
+# theta: needed theta to make goal
+# score: scored points after making goal
+# obstacles: obstcales to remove from map after making goal
+# secondary_goal: goal to make after aborting this goal
+# timeout: aboirt timeout if we can't make goal
 class Goal:
 
     def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, secondary_goal=None, timeout=None):
@@ -92,6 +110,8 @@ class Goal:
         return "--- %s ---\nposition: %s\ntheta: %s\nscore: %d\nactions:\n%s\nsecondary_goal: %s\nobstacles: %s\ntimeout: %s\n"\
             % (self.name, self.position, str(self.theta), self.score, actions, self.secondary_goal, str(self.obstacles), str(self.timeout))
 
+    # Static method
+    # Parse goal from JSON
     @classmethod
     def parse(cls, goal, ai):
 
@@ -127,7 +147,11 @@ class Goal:
         return new
 
 
-""" Strategy Class """
+# Strategy Class
+# name: strategy name
+# goals: strategy goals
+# available: robot list fro which the strategy is available
+# use_pathfinding: tell if the startegy use the pathfinding
 class Strategy:
     def __init__(self, name, goals=None, available=None, use_pathfinding=True):
         self.name = name
@@ -145,6 +169,8 @@ class Strategy:
         s += "\nuse pathfinding: " + str(self.use_pathfinding)
         return s
 
+    # Static method
+    # Parse strategy from JSON
     @classmethod
     def parse(cls, strategy, goals):
 
@@ -164,7 +190,7 @@ class Strategy:
         return new
 
 
-""" Goals Manager """
+# Goals manager class
 class Goals:
 
     def __init__(self, file, ai, robot):
@@ -180,16 +206,17 @@ class Goals:
         self.current_strategy = None
         self.current = 0
 
-        # Critical goal
+        # Critical goal (ex: match end goal)
         self.critical_goal = None
         self.timeout_critical_goal = None
 
-
+        # Parsed JSON
         self.parsed = self.parse(file, ai, robot)
 
         if self.parsed:
             self.reset(0)
 
+    # Parse JSON
     def parse(self, file, ai, robot):
 
         # Read file
@@ -240,7 +267,7 @@ class Goals:
 
             self.goals[new.name] = new
 
-        # Parse
+        # Parse strategies
         for strategy in goals['strategies']:
 
             try:
@@ -256,6 +283,7 @@ class Goals:
                 print('[GOALS] Adding %s strategy' % new.name)
                 self.strategies.append(new)
 
+        # Parse critical goal
         if 'critical_goal' in goals:
             try:
                 self.critical_goal = goals['critical_goal']['goal']
@@ -288,6 +316,8 @@ class Goals:
             s += str(strategy) + '\n'
         return s
 
+    # Reset goals manager
+    # index: index of the strategy to load
     def reset(self, index=None):
 
         if index is not None:
@@ -302,17 +332,21 @@ class Goals:
 
         return True
 
+    # Get next goal
     def get_goal(self):
         if self.current >= len(self.current_strategy.goals):
             return None
         return self.goals[self.current_strategy.goals[self.current]]
 
+    # Get secondary goal of a goal
     def get_secondary_goal(self, goal):
         return self.goals[goal]
 
+    # Get critical goal
     def get_critical_goal(self):
         self.current = len(self.current_strategy.goals)
         return self.goals[self.critical_goal]
 
+    # Mark current goal as finished
     def finish_goal(self):
         self.current += 1

@@ -21,6 +21,12 @@ def parse_num(s):
   else:
     return int(s, 16)
 
+# Cloud class
+#
+# points: Point[]
+# center: Point
+# ip: str
+# tag: str
 class RobotCloud:
   def __init__(self, points=[], center=None, ip="", tag="", dict=None):
     self.points = {}
@@ -36,6 +42,7 @@ class RobotCloud:
   def __str__(self):
     return self.tag + self.merged_pos
   
+  # Import from dict
   def from_dict(self, dict):
       for ip in dict["points"]:
         self.points[ip] = utils.convert_path_to_points(dict["points"])
@@ -43,7 +50,7 @@ class RobotCloud:
       self.merged_pos = Point(dict=dict["merged_pos"])
       self.tag = dict["tag"]
 
-
+  # Export to dict
   def to_dict(self):
     temp_points = {}
     temp_pos = {}
@@ -57,6 +64,7 @@ class RobotCloud:
         "tag": self.tag,
         }
 
+  # Merge with another cloud
   def merge(self, other, delta_dist):
     ip = list(other.pos.keys())[0]
     if ip in self.points:
@@ -78,6 +86,7 @@ class RobotCloud:
     else:
       return False
 
+  # Add a telemtry
   def add_telemetry(self, pos):
     self.pos["telemetry"] = Point(dict=pos)
     self.points["telemetry"] = []
@@ -146,6 +155,7 @@ class Tim:
         s += "connected: %s" % str(self.connected)
         return s
 
+    # Launch a thread to communicate with tim
     def try_connection(self):
         Thread(target = self._try_connection).start()
 
@@ -309,6 +319,7 @@ class Tim:
                   continue
               self.raw_data, self.clouds = new_data
 
+    # Return raw data
     def get_raw_data(self):
         with self.lock:
             return self.raw_data

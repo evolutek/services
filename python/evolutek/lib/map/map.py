@@ -7,8 +7,7 @@ from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
 from time import time
-# TODO: exclusion zone for start point when computing pathfinding
-# TODO: tmp obstacles as buoy
+# TODO: tmp obstacles
 
 # Class to store the state of the table during matches
 class Map:
