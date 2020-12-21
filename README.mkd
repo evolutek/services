@@ -8,7 +8,7 @@ All python services are located in the ``python/`` folder.
 
 Usage:
 
-    $ virtualenv venv # Install a virtualenv
+    $ python3 -m venv venv # Install a virtualenv
     $ source venv/bin/activate
     (venv)$ python setup.py develop # Install the requirements and setup PATH
     (venv)$ ia_pal # run the ia_pal service
