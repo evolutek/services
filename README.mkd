@@ -13,3 +13,13 @@ Usage:
     (venv)$ python setup.py develop # Install the requirements and setup PATH
     (venv)$ ia_pal # run the ia_pal service
     (venv)$ tracking # run the tracking service
+
+
+Pre-commit
+----------
+
+Setup `pre-commit`, in the virtualenv:
+
+    $ source venv/bin/activate
+    (venv)$ pip install pre-commit
+    (venv)$ pre-commit install
