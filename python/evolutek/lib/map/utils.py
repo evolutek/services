@@ -1,10 +1,14 @@
+import json
 from collections import deque
 from enum import Enum
-import json
 from math import inf
-from shapely.geometry import Polygon, MultiPolygon, LineString, Point as ShapelyPoint
+
+from shapely.geometry import LineString, MultiPolygon
+from shapely.geometry import Point as ShapelyPoint
+from shapely.geometry import Polygon
 
 from evolutek.lib.map.point import Point
+
 
 # Possible types of obstacle
 class ObstacleType(Enum):
@@ -12,17 +16,20 @@ class ObstacleType(Enum):
     color = 1
     robot = 2
 
+
 # Read the JSON config file for obstacles
 def parse_obstacle_file(file):
-    with open(file, 'r') as obstacle_file:
+    with open(file, "r") as obstacle_file:
         data = obstacle_file.read()
         data = json.loads(data)
-        return data['fixed_obstacles'], data['color_obstacles']
+        return data["fixed_obstacles"], data["color_obstacles"]
+
 
 # Check if a line is colling with a polygon
 def is_colliding_with_polygon(p1, p2, poly):
     line = LineString([p1, p2])
     return line.crosses(poly)
+
 
 # Runs is_colliding_with_polygon on multiple polygons
 def is_colliding_with_polygons(p1, p2, polys):
@@ -31,6 +38,7 @@ def is_colliding_with_polygons(p1, p2, polys):
         if line.crosses(poly):
             return True
     return False
+
 
 # Returns the nearest collision if there is one else None
 # The returned tuple is the collision point, the line containing
@@ -58,6 +66,7 @@ def collision(p1, p2, obstacles):
 
     return collpoint, collside, collpolygon
 
+
 # Returns all the sides of poly that collide with line
 def collision_with_polygon(line, poly):
     res = []
@@ -67,11 +76,13 @@ def collision_with_polygon(line, poly):
             res.append(side)
     return res
 
+
 def path_length(path):
     res = 0
-    for i in range(len(path)-2):
-        res += path[i].dist(path[i+1])
+    for i in range(len(path) - 2):
+        res += path[i].dist(path[i + 1])
     return res
+
 
 # Returns True if the path p1 is shorter than the path p2, False otherwise
 def is_shorter(p1, p2):
@@ -80,13 +91,16 @@ def is_shorter(p1, p2):
     i1, i2 = 1, 1
     while True:
         if l1 < l2:
-            if i1 >= n1: return True
-            l1 += p1[i1-1].dist(p1[i1])
+            if i1 >= n1:
+                return True
+            l1 += p1[i1 - 1].dist(p1[i1])
             i1 += 1
         else:
-            if i2 >= n2: return False
-            l2 += p2[i2-1].dist(p2[i2])
+            if i2 >= n2:
+                return False
+            l2 += p2[i2 - 1].dist(p2[i2])
             i2 += 1
+
 
 # Finds point next to the hit on the polygon
 # line is the line that has been hit
@@ -100,21 +114,25 @@ def get_first_point(poly, hit, line, borders, reverseorder):
         res = line.coords[1]
     # Checks that the point is inside the bounds before returning
     respoint = Point(tuple=res)
-    if not borders.contains(respoint): return None
+    if not borders.contains(respoint):
+        return None
     return respoint
+
 
 # Finds the point next to the given point on the given polygon
 def get_next_point(poly, point, borders, reverseorder):
     # The last point is ignored because it is the same as the first one
-    nbpoints = len(poly.exterior.coords)-1
+    nbpoints = len(poly.exterior.coords) - 1
     # Gets the index of the current point in the list
     index = list(poly.exterior.coords).index(point.to_tuple())
     # Calculates the next index and loops back if necessary
     nextindex = (index + (-1 if reverseorder else 1)) % nbpoints
     # Returns the next point if possible
     point = Point(tuple=poly.exterior.coords[nextindex])
-    if not borders.contains(point): return None
+    if not borders.contains(point):
+        return None
     return point
+
 
 # Merge two polygons
 def merge_polygons(poly1, poly2):
@@ -145,6 +163,7 @@ def convert_path_to_dict(path):
     for p in path:
         new.append(p.to_dict())
     return new
+
 
 # Convert a list of dict to a path
 def convert_path_to_point(path):

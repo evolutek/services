@@ -1,11 +1,12 @@
-from evolutek.lib.mdb import Mdb
-from evolutek.lib.gpio import Gpio
-import board
-
 from time import sleep
 
-class Test_Mdb():
+import board
 
+from evolutek.lib.gpio import Gpio
+from evolutek.lib.mdb import Mdb
+
+
+class Test_Mdb:
     def __init__(self):
 
         mdb = Mdb()
@@ -15,9 +16,11 @@ class Test_Mdb():
             scan = mdb.get_scan()
             print("---- New scan -----")
             for i in range(len(scan)):
-                print("%d: " % (i+1), end='')
-                if scan[i] == 65535: print("ERROR")
-                else: print("%2.f cm" % (scan[i] / 10))
+                print("%d: " % (i + 1), end="")
+                if scan[i] == 65535:
+                    print("ERROR")
+                else:
+                    print("%2.f cm" % (scan[i] / 10))
             print("---- Obstacles ----")
             print("Front: " + str(mdb.get_front()))
             print("Back: " + str(mdb.get_back()))
@@ -27,6 +30,7 @@ class Test_Mdb():
 
 def main():
     Test_Mdb()
+
 
 if __name__ == "__main__":
     main()

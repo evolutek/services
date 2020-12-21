@@ -1,22 +1,22 @@
-from cellaserv.service import AsynClient
-from cellaserv.settings import get_socket
-
-from evolutek.lib.map.point import Point
-from evolutek.lib.map.tim import DebugMode, Tim as _Tim
-from evolutek.simulation.simulator import read_config
-from evolutek.lib.watchdog import Watchdog
-
 import asyncore
-from math import cos, sin, radians
-from shapely.geometry import LineString
+from math import cos, radians, sin
 from threading import Thread
 
-class Tim(_Tim):
+from shapely.geometry import LineString
 
+from cellaserv.service import AsynClient
+from cellaserv.settings import get_socket
+from evolutek.lib.map.point import Point
+from evolutek.lib.map.tim import DebugMode
+from evolutek.lib.map.tim import Tim as _Tim
+from evolutek.lib.watchdog import Watchdog
+from evolutek.simulation.simulator import read_config
+
+
+class Tim(_Tim):
     def __init__(self, config, computation_config, mirror=False):
 
-
-        print('[INIT] Initializing Fake Tim')
+        print("[INIT] Initializing Fake Tim")
         super().__init__(config, computation_config, mirror)
 
         # In config ?
@@ -29,20 +29,27 @@ class Tim(_Tim):
 
         self.client = AsynClient(get_socket())
 
-        self._robots['pal'] = None
-        self.client.add_subscribe_cb('pal_telemetry', self.telemetry_handler)
-        setattr(self, 'pal_watchdog', Watchdog(self.timeout_robot, self.reset_robot, ['pal']))
-        self._robots['pmi'] = None
-        self.client.add_subscribe_cb('pmi_telemetry', self.telemetry_handler)
-        setattr(self, 'pmi_watchdog', Watchdog(self.timeout_robot, self.reset_robot, ['pmi']))
+        self._robots["pal"] = None
+        self.client.add_subscribe_cb("pal_telemetry", self.telemetry_handler)
+        setattr(
+            self,
+            "pal_watchdog",
+            Watchdog(self.timeout_robot, self.reset_robot, ["pal"]),
+        )
+        self._robots["pmi"] = None
+        self.client.add_subscribe_cb("pmi_telemetry", self.telemetry_handler)
+        setattr(
+            self,
+            "pmi_watchdog",
+            Watchdog(self.timeout_robot, self.reset_robot, ["pmi"]),
+        )
 
-
-        enemies = read_config('enemies')
-        for enemy in enemies['robots']:
+        enemies = read_config("enemies")
+        for enemy in enemies["robots"]:
             self._robots[enemy] = None
-            self.client.add_subscribe_cb(enemy + '_telemetry', self.telemetry_handler)
+            self.client.add_subscribe_cb(enemy + "_telemetry", self.telemetry_handler)
 
-         # Start the event listening thread
+        # Start the event listening thread
         self.client_thread = Thread(target=asyncore.loop)
         self.client_thread.start()
 
@@ -50,13 +57,13 @@ class Tim(_Tim):
         self._robots[robot] = None
 
     def telemetry_handler(self, status, robot, telemetry):
-        if status != 'failed':
+        if status != "failed":
             self._robots[robot] = telemetry
         else:
             self._robots[robot] = None
 
-        if robot in ['pal', 'pmi']:
-            getattr(self, '%s_watchdog' % robot).reset()
+        if robot in ["pal", "pmi"]:
+            getattr(self, "%s_watchdog" % robot).reset()
 
     # Replace Tim function
     def _try_connection(self):
@@ -76,14 +83,16 @@ class Tim(_Tim):
         for robot in self._robots.values():
             if robot is None:
                 continue
-            shapes.append(Point(robot['x'], robot['y']).buffer(self.radius_beacon))
+            shapes.append(Point(robot["x"], robot["y"]).buffer(self.radius_beacon))
 
         # Generate the scan
         for i in range(int(self.view_angle / self.angular_step)):
             p1 = Point(self.pos.x, self.pos.y)
             p2 = Point(
-                self.len_ray * cos(radians(i * self.angular_step + self.angle)) + self.pos.x,
-                self.len_ray * sin(radians(i * self.angular_step + self.angle)) + self.pos.y
+                self.len_ray * cos(radians(i * self.angular_step + self.angle))
+                + self.pos.x,
+                self.len_ray * sin(radians(i * self.angular_step + self.angle))
+                + self.pos.y,
             )
 
             line = LineString([p1, p2])

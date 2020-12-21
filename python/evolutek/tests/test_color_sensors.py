@@ -1,14 +1,16 @@
 import time
-import board
-import busio
+
 import adafruit_tca9548a
 import adafruit_tcs34725
+import board
+import busio
+
 
 def print_sensor(sensor):
     temp = sensor.color_temperature
     lux = sensor.lux
 
-    print('Color: ({0}, {1}, {2})'.format(*sensor.color_rgb_bytes))
+    print("Color: ({0}, {1}, {2})".format(*sensor.color_rgb_bytes))
 
     print("t: %s, l: %s" % (str(temp), str(lux)))
 
@@ -23,10 +25,9 @@ sensor1 = adafruit_tcs34725.TCS34725(tca[1])
 sensor2 = adafruit_tcs34725.TCS34725(tca[2])
 
 
-
 while True:
-    print('Sensor1 :')
+    print("Sensor1 :")
     print_sensor(sensor1)
-    print('Sensor2 :')
+    print("Sensor2 :")
     print_sensor(sensor2)
     time.sleep(1)

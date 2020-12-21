@@ -1,11 +1,9 @@
-from cellaserv.proxy import CellaservProxy
-from evolutek.lib.robot import Robot
-from evolutek.lib.gpio import Gpio, Edge
-
-
-
-from sys import argv
 from math import pi
+from sys import argv
+
+from cellaserv.proxy import CellaservProxy
+from evolutek.lib.gpio import Edge, Gpio
+from evolutek.lib.robot import Robot
 
 """
 set la position du robot
@@ -18,21 +16,21 @@ cs = CellaservProxy()
 ROBOT = None
 robot = None
 
+
 def homologation():
-    if ROBOT == 'pal':
+    if ROBOT == "pal":
         cs.tm.set_pos(640, 120, pi / 2, True)
-    else :
+    else:
         cs.tm.set_pos(950, 120, pi / 2, True)
     tirette = Gpio(17, "tirette", False, edge=Edge.FALLING)
     while tirette.read() == 0:
         continue
     cs.actuators[ROBOT]._windsocks_push()
-    
 
 
 def main():
     selected_robot = argv[1]
-    if not selected_robot in ['pal', 'pmi']:
+    if not selected_robot in ["pal", "pmi"]:
         print("select a valid robot")
         return
 
@@ -41,6 +39,7 @@ def main():
     global robot
     robot = Robot(selected_robot)
     homologation()
+
 
 if __name__ == "__main__":
     main()

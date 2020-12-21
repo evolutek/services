@@ -1,20 +1,22 @@
-from cellaserv.proxy import CellaservProxy
-from evolutek.lib.robot import Robot, Point
-from evolutek.lib.gpio import Gpio, Edge
-
-from sys import argv
 from math import pi
+from sys import argv
 from time import sleep
 
+from cellaserv.proxy import CellaservProxy
+from evolutek.lib.gpio import Edge, Gpio
+from evolutek.lib.robot import Point, Robot
+
 cs = CellaservProxy()
-ROBOT = 'pmi'
-robot = Robot.get_instance('pmi')
+ROBOT = "pmi"
+robot = Robot.get_instance("pmi")
 
-def push_windsocks(robot, ax) :
-    #self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
 
-    cs.actuators[ROBOT].left_arm_open() if ax == 3 else cs.actuators[ROBOT].right_arm_open()
+def push_windsocks(robot, ax):
+    # self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=512)
 
+    cs.actuators[ROBOT].left_arm_open() if ax == 3 else cs.actuators[
+        ROBOT
+    ].right_arm_open()
 
     # TODO config
     robot.tm.set_delta_max_rot(1)
@@ -24,8 +26,10 @@ def push_windsocks(robot, ax) :
 
     sleep(2)
 
-    #self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
-    cs.actuators[ROBOT].left_arm_close() if ax == 3 else cs.actuators[ROBOT].right_arm_close()
+    # self.cs.ax["%s-%d" % (ROBOT, ax)].move(goal=820 if ax != 3 else 210)
+    cs.actuators[ROBOT].left_arm_close() if ax == 3 else cs.actuators[
+        ROBOT
+    ].right_arm_close()
 
     robot.tm.set_delta_max_rot(0.2)
     robot.tm.set_delta_max_trsl(100)
@@ -43,7 +47,7 @@ def test():
 
 def main():
     selected_robot = argv[1]
-    if not selected_robot in ['pal', 'pmi']:
+    if not selected_robot in ["pal", "pmi"]:
         print("select a valid robot")
         return
     global ROBOT
@@ -51,6 +55,7 @@ def main():
     global robot
     robot = Robot(selected_robot)
     test()
+
 
 if __name__ == "__main__":
     main()

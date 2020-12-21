@@ -1,9 +1,10 @@
-import queue
-from threading import Thread, Event
 import concurrent.futures
+import queue
+from threading import Event, Thread
+
 
 # Action queue class
-class Act_queue():
+class Act_queue:
     def __init__(self):
 
         # Queue holding waiting task
@@ -40,7 +41,7 @@ class Act_queue():
     def run_action(self, action, args):
         tmp = (action, args)
         self.task.put(tmp)
-        return (self.get_response())
+        return self.get_response()
 
     # Add a list of actions to the queue and wait for returns
     # actions: actions to run
@@ -48,7 +49,7 @@ class Act_queue():
     def run_actions(self, actions, args_list):
         tmp = (list(actions), list(args_list))
         self.task.put(tmp)
-        return (self.get_response())
+        return self.get_response()
 
     # Loop running actions stored in the queue
     def _run_queue(self):
@@ -57,7 +58,7 @@ class Act_queue():
             tmp = self.task.get()
             if type(tmp[0]) == list:
                 self.response_queue.put(self.launch_multiple_actions(tmp[0], tmp[1]))
-            else :
+            else:
                 self.response_queue.put(tmp[0](tmp[1][0], *tmp[1][1], **tmp[1][2]))
 
     # Launch a thread to run the queue
@@ -65,7 +66,6 @@ class Act_queue():
         self.stop.clear()
         t = Thread(target=self._run_queue)
         t.start()
-
 
     # Empty the queue and stop run
     def stop_queue(self):

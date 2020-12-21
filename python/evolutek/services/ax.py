@@ -16,17 +16,17 @@ if LIBDXL_PATH_ENV:
 DEVICE_ID = 0
 BAUD_RATE = 1  # Main robot USB2AX
 
-AX_TORQUE_ENABLE_B     = 24
-AX_GOAL_POSITION_L     = 30
-AX_MOVING_SPEED_L      = 32
-AX_PRESENT_POSTION_L   = 36
-AX_PRESENT_SPEED_L     = 38
-AX_PRESENT_LOAD_L      = 40
-AX_PRESENT_VOLTAGE     = 42
+AX_TORQUE_ENABLE_B = 24
+AX_GOAL_POSITION_L = 30
+AX_MOVING_SPEED_L = 32
+AX_PRESENT_POSTION_L = 36
+AX_PRESENT_SPEED_L = 38
+AX_PRESENT_LOAD_L = 40
+AX_PRESENT_VOLTAGE = 42
 AX_PRESENT_TEMPERATURE = 43
 
-AX_CW_ANGLE_LIMIT_L    = 6
-AX_CCW_ANGLE_LIMIT_L   = 8
+AX_CW_ANGLE_LIMIT_L = 6
+AX_CCW_ANGLE_LIMIT_L = 8
 
 # Service class of an AX12
 class Ax(Service):
@@ -125,23 +125,25 @@ class Ax(Service):
     # speed: moving speed
     @Service.action
     def turn(self, side: "1 or -1", speed):
-        self.dxl.dxl_write_word(self.ax, AX_MOVING_SPEED_L,
-                                (2**10 if int(side) == 1 else 0) | int(speed))
+        self.dxl.dxl_write_word(
+            self.ax, AX_MOVING_SPEED_L, (2 ** 10 if int(side) == 1 else 0) | int(speed)
+        )
 
     # Free ax AX12
     @Service.action
     def free(self):
         self.dxl.dxl_write_byte(self.ax, AX_TORQUE_ENABLE_B, 0)
 
+
 async def main():
     # Read AX12 JSON config file
     data = None
-    with open('/etc/conf.d/ax.json', 'r') as ax_file:
+    with open("/etc/conf.d/ax.json", "r") as ax_file:
         data = ax_file.read()
         data = json.loads(data)
 
     if not ROBOT in data:
-        print('[AX] Failed to init axs, ROBOT not existing')
+        print("[AX] Failed to init axs, ROBOT not existing")
         return
 
     # Init all AX12

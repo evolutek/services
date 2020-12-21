@@ -1,1 +1,1 @@
-__import__('pkg_resources').declare_namespace('evolutek')
+__import__("pkg_resources").declare_namespace("evolutek")

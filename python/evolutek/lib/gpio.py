@@ -11,17 +11,17 @@ else:
 
 # Types of edge for gpio
 class Edge(Enum):
-        RISING = 0
-        FALLING = 1
-        BOTH = 2
+    RISING = 0
+    FALLING = 1
+    BOTH = 2
+
 
 # Parent class IO
 # id: id of the io
 # name: name of io
 # dir: True if output else False
 # event: name of the event
-class Io():
-
+class Io:
     def __init__(self, id, name, dir=True, event=None):
         self.id = id
         self.name = name
@@ -32,30 +32,36 @@ class Io():
         try:
             GPIO.setmode(GPIO.BCM)
         except Exception as e:
-            print('Failed to gpio mode: %s' % str(e))
-            raise Exception('[GPIO] Failed to set gpio mode')
+            print("Failed to gpio mode: %s" % str(e))
+            raise Exception("[GPIO] Failed to set gpio mode")
 
     def __eq__(self, ident):
-        return (ident[0] is not None and self.id == int(ident[0])) or self.name == ident[1]
+        return (
+            ident[0] is not None and self.id == int(ident[0])
+        ) or self.name == ident[1]
 
     def __str__(self):
-        return "id: %d\nname: %s\ndir: %s\nevent: %s\n"\
-            % (self.id, self.name, str(self.dir), self.event)
+        return "id: %d\nname: %s\ndir: %s\nevent: %s\n" % (
+            self.id,
+            self.name,
+            str(self.dir),
+            self.event,
+        )
 
     def __dict__(self):
         return {
-            'id': self.id,
-            'name': self.name,
-            'dir': self.dir,
-            'event': self.event,
+            "id": self.id,
+            "name": self.name,
+            "dir": self.dir,
+            "event": self.event,
         }
+
 
 # PWM class
 # Inherit of IO class
 # dc: initial Duty Cycle
 # freq: Freq of the PWM
 class Pwm(Io):
-
     def __init__(self, id, name, dc=0, freq=0):
 
         super().__init__(id, name, dir=True)
@@ -77,22 +83,24 @@ class Pwm(Io):
     def stop(self):
         self.pwm.stop()
 
+
 # GPIO Class
 # Inherit of IO class
 # edge: Edge for automatic detection
 # default_value: Default value to write on output gpio
 class Gpio(Io):
-
-    def __init__(self, id, name, dir=True, event=None, edge=Edge.BOTH, default_value=False):
+    def __init__(
+        self, id, name, dir=True, event=None, edge=Edge.BOTH, default_value=False
+    ):
 
         super().__init__(id, name, dir, event)
         self.edge = edge
 
         if dir:
-            GPIO.setup(id,  GPIO.OUT, initial=GPIO.LOW)
+            GPIO.setup(id, GPIO.OUT, initial=GPIO.LOW)
             self.write(default_value)
         else:
-            GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            GPIO.setup(id, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
     # Read the gpio
     def read(self):
@@ -129,13 +137,25 @@ class Gpio(Io):
 
             if not callback is None and not tmp is None and self.value != tmp:
                 if not self.edge or self.edge == Edge.BOTH:
-                    callback(event=self.name if self.event is None else self.event,
-                        name=self.name, id=self.id, value=self.value)
+                    callback(
+                        event=self.name if self.event is None else self.event,
+                        name=self.name,
+                        id=self.id,
+                        value=self.value,
+                    )
                 elif self.edge == Edge.RISING and self.value == 1:
-                    callback(event=self.name if self.event is None else self.event,
-                        name=self.name, id=self.id, value=self.value)
+                    callback(
+                        event=self.name if self.event is None else self.event,
+                        name=self.name,
+                        id=self.id,
+                        value=self.value,
+                    )
                 elif self.edge == Edge.FALLING and self.value == 0:
-                    callback(event=self.name if self.event is None else self.event,
-                        name=self.name, id=self.id, value=self.value)
+                    callback(
+                        event=self.name if self.event is None else self.event,
+                        name=self.name,
+                        id=self.id,
+                        value=self.value,
+                    )
 
             sleep(refresh)

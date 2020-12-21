@@ -1,9 +1,8 @@
-from enum import Enum
 import json
+from enum import Enum
 from math import pi
 
 from evolutek.lib.map.point import Point
-
 
 """ Avoid Strategy Enum """
 class AvoidStrategy(Enum):

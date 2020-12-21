@@ -1,5 +1,7 @@
 from math import sqrt
+
 from shapely.geometry import Point as PointShape
+
 
 # Point class
 # Inherit form PointShape class from shapely
@@ -12,12 +14,12 @@ class Point(PointShape):
         if tuple is not None:
             super().__init__(tuple)
         elif dict is not None:
-            super().__init__(round(dict['x']), round(dict['y']))
+            super().__init__(round(dict["x"]), round(dict["y"]))
         else:
             super().__init__(round(x, 3), round(y, 3))
 
     def __str__(self):
-        return "(" + str(self.x) + ', ' + str(self.y) + ")"
+        return "(" + str(self.x) + ", " + str(self.y) + ")"
 
     def __eq__(self, p):
         return self.x == p.x and self.y == p.y
@@ -33,7 +35,7 @@ class Point(PointShape):
         return 0
 
     def to_dict(self):
-        return {'x': round(self.x), 'y': round(self.y)}
+        return {"x": round(self.x), "y": round(self.y)}
 
     def to_tuple(self):
         return (self.x, self.y)
@@ -44,7 +46,7 @@ class Point(PointShape):
 
     def sqrdist(self, p):
         if isinstance(p, dict):
-            return (p['x'] - self.x) ** 2 + (p['y'] - self.y) ** 2
+            return (p["x"] - self.x) ** 2 + (p["y"] - self.y) ** 2
         return (p.x - self.x) ** 2 + (p.y - self.y) ** 2
 
     # Compute the median point between two point
@@ -58,7 +60,7 @@ class Point(PointShape):
     # Compute the eculidian dist between two point in dict
     @staticmethod
     def dist_dict(p1, p2):
-        return sqrt((p1['x'] - p2['x'])**2 + (p1['y'] - p2['y'])**2)
+        return sqrt((p1["x"] - p2["x"]) ** 2 + (p1["y"] - p2["y"]) ** 2)
 
     # Compute the minimum point between two point
     @staticmethod

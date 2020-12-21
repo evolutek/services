@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 
-from threading import Thread, Event, Lock
+from threading import Event, Lock, Thread
 from time import sleep, time
 
 from cellaserv.proxy import CellaservProxy
-
 from evolutek.utils.map_interface import MapInterface
 
-class Test_Map:
 
+class Test_Map:
     def __init__(self):
 
         self.cs = CellaservProxy()
@@ -17,10 +16,9 @@ class Test_Map:
         Thread(target=MapInterface).start()
         Thread(target=self.loop_path).start()
 
-
     def loop_path(self):
 
-        sleep(1) # Ensures that the interface has started
+        sleep(1)  # Ensures that the interface has started
 
         right = True
         y = 500
@@ -39,15 +37,15 @@ class Test_Map:
                 y = bounds[0]
                 right = True
 
-            print('[TEST_MAP] Update path')
+            print("[TEST_MAP] Update path")
             start = time()
             self.cs.map.get_path(
-                    origin={'x':250,'y':y},
-                    dest={'x':1700,'y':1800},
-                    robot='pal')
+                origin={"x": 250, "y": y}, dest={"x": 1700, "y": 1800}, robot="pal"
+            )
             end = time()
-            print('Path computed in: ' + str(end-start))
+            print("Path computed in: " + str(end - start))
+
 
 if __name__ == "__main__":
-    print('[TEST_MAP] Starting test')
+    print("[TEST_MAP] Starting test")
     test_map = Test_Map()

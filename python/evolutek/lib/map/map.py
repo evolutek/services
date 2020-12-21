@@ -1,12 +1,13 @@
+from collections import deque
+from copy import deepcopy
+from time import time
+
+from planar import Polygon as PolygonPlanar
+from shapely.geometry import MultiPolygon, Polygon
+
 from evolutek.lib.map.point import Point
 from evolutek.lib.map.utils import *
 
-from collections import deque
-from copy import deepcopy
-from planar import Polygon as PolygonPlanar
-from shapely.geometry import Polygon, MultiPolygon
-
-from time import time
 # TODO: tmp obstacles
 
 # Class to store the state of the table during matches
@@ -27,12 +28,14 @@ class Map:
         self.height = height
         self.robot_radius = robot_radius
 
-        self.borders = Polygon([
-            (robot_radius, robot_radius),
-            (height - robot_radius, robot_radius),
-            (height - robot_radius, width - robot_radius),
-            (robot_radius, width - robot_radius)
-        ])
+        self.borders = Polygon(
+            [
+                (robot_radius, robot_radius),
+                (height - robot_radius, robot_radius),
+                (height - robot_radius, width - robot_radius),
+                (robot_radius, width - robot_radius),
+            ]
+        )
 
         self.obstacles = []
         self.color_obstacles = {}
@@ -100,10 +103,10 @@ class Map:
         removed = False
         if tag in self.color_obstacles:
             removed = True
-            del(self.color_obstacles[tag])
+            del self.color_obstacles[tag]
         elif tag in self.robots:
             removed = True
-            del(self.robots[tag])
+            del self.robots[tag]
         if removed:
             self.merge_obstacles()
             self.merge_map()
@@ -120,13 +123,15 @@ class Map:
             (p1.x - self.robot_radius, p1.y - self.robot_radius),
             (p1.x - self.robot_radius, p2.y + self.robot_radius),
             (p2.x + self.robot_radius, p2.y + self.robot_radius),
-            (p2.x + self.robot_radius, p1.y - self.robot_radius)
+            (p2.x + self.robot_radius, p1.y - self.robot_radius),
         ]
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
     def build_octogon(self, center, radius):
-        poly = PolygonPlanar.regular(8, radius=radius, angle=22.5, center=center.to_tuple())
+        poly = PolygonPlanar.regular(
+            8, radius=radius, angle=22.5, center=center.to_tuple()
+        )
         l = []
         for point in poly:
             l.append((point.x, point.y))
@@ -138,7 +143,7 @@ class Map:
     def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(center):
             return False
-        octogon = self.build_octogon(center, radius+self.robot_radius)
+        octogon = self.build_octogon(center, radius + self.robot_radius)
         return self.add_obstacle(octogon, tag=tag, type=type)
 
     # Add the obstacles from the JSON config file
@@ -146,39 +151,39 @@ class Map:
         obstacles = deepcopy(obstacles)
         for obstacle in obstacles:
 
-            if 'type' in obstacle:
+            if "type" in obstacle:
                 try:
-                    obstacle['type'] = eval(obstacle['type'])
+                    obstacle["type"] = eval(obstacle["type"])
                 except Exception as e:
-                    print('[MAP] Bad obstacle type: %s' % (str(e)))
+                    print("[MAP] Bad obstacle type: %s" % (str(e)))
                     continue
 
-            if not 'form' in obstacle:
-                print('[MAP] No form in obstacle')
+            if not "form" in obstacle:
+                print("[MAP] No form in obstacle")
                 continue
-            form = obstacle['form']
-            del obstacle['form']
+            form = obstacle["form"]
+            del obstacle["form"]
 
-            if form == 'rectangle':
-                if not 'p1' in obstacle or not 'p2' in obstacle:
-                    print('[MAP] Bad rectangle obstacle in parsing')
+            if form == "rectangle":
+                if not "p1" in obstacle or not "p2" in obstacle:
+                    print("[MAP] Bad rectangle obstacle in parsing")
                     continue
-                obstacle['p1'] = Point(dict=obstacle['p1'])
-                obstacle['p2'] = Point(dict=obstacle['p2'])
+                obstacle["p1"] = Point(dict=obstacle["p1"])
+                obstacle["p2"] = Point(dict=obstacle["p2"])
                 if mirror:
-                    obstacle['p1'].y = 3000 - obstacle['p1'].y
-                    obstacle['p2'].y = 3000 - obstacle['p2'].y
+                    obstacle["p1"].y = 3000 - obstacle["p1"].y
+                    obstacle["p2"].y = 3000 - obstacle["p2"].y
                 self.add_rectangle_obstacle(**obstacle, type=type)
-            elif form == 'octogon':
-                if not 'center' in obstacle:
-                    print('[MAP] Bad circle obstacle in parsing')
+            elif form == "octogon":
+                if not "center" in obstacle:
+                    print("[MAP] Bad circle obstacle in parsing")
                     continue
-                obstacle['center'] = Point(dict=obstacle['center'])
+                obstacle["center"] = Point(dict=obstacle["center"])
                 if mirror:
-                    obstacle['center'].y = 3000 - obstacle['center'].y
+                    obstacle["center"].y = 3000 - obstacle["center"].y
                 self.add_octogon_obstacle(**obstacle, type=type)
             else:
-                print('[MAP] Obstacle form not found')
+                print("[MAP] Obstacle form not found")
 
     # Smoothes a path (tries to make it shorter by skipping points)
     # CurrentObs is the obstacle around which the algorithm is calculating a
@@ -187,23 +192,29 @@ class Map:
     # going around an obstacle at the moment)
     def smooth_path(self, path, obstacles, currentobs=None):
         length = len(path)
-        jumpSize = length-1
+        jumpSize = length - 1
         # We start with the biggest possible jump and then tries smaller jumps
         while jumpSize > 1:
             current = 0
             # While the jump is possible (There is a point at the end)
             while current + jumpSize < length:
                 start = path[current]
-                end = path[current+jumpSize]
-                inside = False if currentobs is None else \
-                    currentobs.contains(start.average(end))
-                collides = True if inside else \
-                        is_colliding_with_polygons(start, end, obstacles)
+                end = path[current + jumpSize]
+                inside = (
+                    False
+                    if currentobs is None
+                    else currentobs.contains(start.average(end))
+                )
+                collides = (
+                    True
+                    if inside
+                    else is_colliding_with_polygons(start, end, obstacles)
+                )
                 # If the jump is possible (no obstacle)
                 if not collides:
                     # Removes the points
-                    del path[current+1:current+jumpSize]
-                    length -= jumpSize-1
+                    del path[current + 1 : current + jumpSize]
+                    length -= jumpSize - 1
                 # Tries from the next point
                 current += 1
             jumpSize -= 1
@@ -217,13 +228,16 @@ class Map:
 
         # Finds the escaping point (first p where [p, end] doesn't intersect the polygon)
         firstpoint = get_first_point(polygon, hit, line, self.borders, order)
-        if firstpoint is None: return None # Blocked by border
+        if firstpoint is None:
+            return None  # Blocked by border
         escapingpoint = firstpoint
         path += [escapingpoint]
         while is_colliding_with_polygon(escapingpoint, end, polygon):
             escapingpoint = get_next_point(polygon, escapingpoint, self.borders, order)
-            if escapingpoint is None: return None # Blocked by border
-            if escapingpoint == firstpoint: return None # Went around the poly
+            if escapingpoint is None:
+                return None  # Blocked by border
+            if escapingpoint == firstpoint:
+                return None  # Went around the poly
             path += [escapingpoint]
 
         # At this point path contains the points from the hit to the escaping
@@ -231,8 +245,10 @@ class Map:
 
         # Finds the first accessible point (from start)
         # TODO: Opti: mettre polygon en premier dans la liste vu que ça va souvent collide avec lui
-        firstaccessible = len(path)-1
-        while firstaccessible > 0 and is_colliding_with_polygons(start, path[firstaccessible], obstacles):
+        firstaccessible = len(path) - 1
+        while firstaccessible > 0 and is_colliding_with_polygons(
+            start, path[firstaccessible], obstacles
+        ):
             firstaccessible -= 1
 
         # Removes all the points before the first accessible
@@ -249,7 +265,8 @@ class Map:
         hit, line, polygon = collision(start, end, obstacles)
 
         # If no collision point was found, returns no intermediary points
-        if hit is None: return []
+        if hit is None:
+            return []
 
         # Tries to go around the polygon in both directions
         path1 = self.go_around(start, end, obstacles, polygon, hit, line, False)
@@ -273,21 +290,30 @@ class Map:
         # TODO: opti: pas besoin de tester si polygon est sur le chemin pour collision
         if path1:
             res = self.get_path_rec(path1[-1], end, obstacles, previousNodes + path1)
-            if res is not None: path1 += res
-            else: path1 = None
+            if res is not None:
+                path1 += res
+            else:
+                path1 = None
         if path2:
             res = self.get_path_rec(path2[-1], end, obstacles, previousNodes + path2)
-            if res is not None: path2 += res
-            else: path2 = None
+            if res is not None:
+                path2 += res
+            else:
+                path2 = None
 
-        if path1 is None and path2 is None: return None
-        if path1 is None: return path2
-        if path2 is None: return path1
+        if path1 is None and path2 is None:
+            return None
+        if path1 is None:
+            return path2
+        if path2 is None:
+            return path1
 
         # Calculates the length of each path and returns the smaller one
         p1shorter = is_shorter(path1, path2)
-        if p1shorter: return path1
-        else: return path2
+        if p1shorter:
+            return path1
+        else:
+            return path2
 
     def get_path(self, start, end):
 
@@ -304,16 +330,16 @@ class Map:
                     break
 
         if zone is None:
-            print('[MAP] Start point outside current map')
+            print("[MAP] Start point outside current map")
             return []
 
         if not zone.contains(end):
-            print('[MAP] End point outside current map')
+            print("[MAP] End point outside current map")
             return []
 
         # Exclusion zone around the start point
-        #ex = self.build_octogon(start, self.robot_radius)
-        #obstacles = obstacles.difference(ex)
+        # ex = self.build_octogon(start, self.robot_radius)
+        # obstacles = obstacles.difference(ex)
 
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
@@ -327,7 +353,7 @@ class Map:
         path = [start] + nodes + [end]
 
         # Applies an additionnal smooth to handle some edge cases
-        #self.smooth_path(path, obstacles)
+        # self.smooth_path(path, obstacles)
 
         return path
 
@@ -342,8 +368,8 @@ class Map:
         end = path[1]
 
         # Exclusion zone around the start point
-        #ex = self.build_octogon(start, self.robot_radius)
-        #obstacles = obstacles.difference(ex)
+        # ex = self.build_octogon(start, self.robot_radius)
+        # obstacles = obstacles.difference(ex)
 
         prev = start
         for p in path[1:]:
@@ -351,12 +377,16 @@ class Map:
             for poly in obstacles:
                 for i in range(len(poly.exterior.coords) - 1):
                     p1 = poly.exterior.coords[i]
-                    side = LineString([
-                        Point(tuple=poly.exterior.coords[i]).round(),
-                        Point(tuple=poly.exterior.coords[i + 1]).round()
-                    ])
+                    side = LineString(
+                        [
+                            Point(tuple=poly.exterior.coords[i]).round(),
+                            Point(tuple=poly.exterior.coords[i + 1]).round(),
+                        ]
+                    )
                     if line.crosses(side):
-                        print("[MAP] Validity check: %s collides with %s" % (line, side))
+                        print(
+                            "[MAP] Validity check: %s collides with %s" % (line, side)
+                        )
                         return False
             prev = p
 

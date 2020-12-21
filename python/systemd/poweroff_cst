@@ -1,8 +1,11 @@
 #!/usr/bin/python3
-#import serial
-import RPi.GPIO as GPIO
-import time
+# import serial
 import os
+import time
+
+import RPi.GPIO as GPIO
+
+
 def init():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -12,7 +15,8 @@ def init():
         time.sleep(0.03)
         if GPIO.input(16) == 1:
             print("System will now shutdown")
-            os.system('poweroff')
+            os.system("poweroff")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     init()
