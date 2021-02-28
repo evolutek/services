@@ -89,3 +89,11 @@ class Point(PointShape):
             sum_y += p.y
 
         return Point(sum_x / len(l), sum_y / len(l))
+
+    @staticmethod
+    def convert_ot_dict(points):
+        return [point.to_dict() for point in points]
+
+    @staticmethod
+    def convert_to_point(points):
+        return [Point.from_dict(point) for point in points]
