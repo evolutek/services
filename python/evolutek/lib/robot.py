@@ -6,14 +6,14 @@ from threading import Event, Thread
 from time import sleep
 import asyncore
 from math import pi
-from time import sleep 
+from time import sleep
 
 #from cellaserv.client import RequestTimeout
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
@@ -236,7 +236,7 @@ class Robot:
         #else:
         #    pos = self.telemetry
 
-        if Point(x=x, y=y).dist(Point(dict=pos)) < DELTA_POS:
+        if Point(x, y).dist(Point.from_dict(pos)) < DELTA_POS:
             return Status.reached
         return Status.unreached
 
@@ -328,7 +328,7 @@ class Robot:
             y = self.mirror_pos(y=y)[1]
 
         print('[ROBOT] Destination x: %d y: %d' % (x, y))
-        path = [Point(dict=self.tm.get_position()), Point(x, y)]
+        path = [Point.from_dict(self.tm.get_position()), Point(x, y)]
 
         if path[1].dist(path[0]) < DELTA_POS:
             print("[ROBOT] Already at destination")
@@ -381,7 +381,7 @@ class Robot:
             self.has_avoid.clear()
 
             # We are supposed to be stopped
-            pos = Point(dict=self.tm.get_position())
+            pos = Point.from_dict(self.tm.get_position())
 
             if pos.dist(path[1]) < DELTA_POS:
                 # We reached next point (path[1])

@@ -1,4 +1,4 @@
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.map.utils import *
 
 from collections import deque
@@ -163,8 +163,8 @@ class Map:
                 if not 'p1' in obstacle or not 'p2' in obstacle:
                     print('[MAP] Bad rectangle obstacle in parsing')
                     continue
-                obstacle['p1'] = Point(dict=obstacle['p1'])
-                obstacle['p2'] = Point(dict=obstacle['p2'])
+                obstacle['p1'] = Point.from_dict(obstacle['p1'])
+                obstacle['p2'] = Point.from_dict(obstacle['p2'])
                 if mirror:
                     obstacle['p1'].y = 3000 - obstacle['p1'].y
                     obstacle['p2'].y = 3000 - obstacle['p2'].y
@@ -173,7 +173,7 @@ class Map:
                 if not 'center' in obstacle:
                     print('[MAP] Bad circle obstacle in parsing')
                     continue
-                obstacle['center'] = Point(dict=obstacle['center'])
+                obstacle['center'] = Point.from_dict(obstacle['center'])
                 if mirror:
                     obstacle['center'].y = 3000 - obstacle['center'].y
                 self.add_octogon_obstacle(**obstacle, type=type)
@@ -318,7 +318,7 @@ class Map:
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
-        nodes = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles, [])
+        nodes = self.get_path_rec(start, end, obstacles, [])
 
         if nodes is None:
             print("[MAP] No path found")
@@ -352,8 +352,8 @@ class Map:
                 for i in range(len(poly.exterior.coords) - 1):
                     p1 = poly.exterior.coords[i]
                     side = LineString([
-                        Point(tuple=poly.exterior.coords[i]).round(),
-                        Point(tuple=poly.exterior.coords[i + 1]).round()
+                        Point.from_tuple(poly.exterior.coords[i]).round(),
+                        Point.from_tuple(poly.exterior.coords[i + 1]).round()
                     ])
                     if line.crosses(side):
                         print("[MAP] Validity check: %s collides with %s" % (line, side))

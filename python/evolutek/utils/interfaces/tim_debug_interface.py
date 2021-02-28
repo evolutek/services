@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.interface import Interface
-from evolutek.lib.map.point import Point
 from evolutek.lib.map.tim import Tim, DebugMode
-from threading import Thread, Lock 
+from threading import Thread, Lock
 from evolutek.lib.map.utils import convert_path_to_point
 from cellaserv.proxy import CellaservProxy
 from tkinter import Button, Canvas, Label
@@ -68,14 +68,14 @@ class TimDebugInterface(Interface):
     def print_polygon(self, points, color):
 
         for i in range(1, len(points)):
-            p1 = Point(dict=points[i - 1])
-            p2 = Point(dict=points[i])
+            p1 = Point.from_dict(points[i - 1])
+            p2 = Point.from_dict(points[i])
 
             self.canvas.create_line(p1.y * self.interface_ratio, p1.x * self.interface_ratio,
                 p2.y * self.interface_ratio, p2.x * self.interface_ratio, width=5, fill=color)
 
         for p in points:
-            point = Point(dict=p)
+            point = Point.from_dict(p)
             x1 = (point.y - 10) * self.interface_ratio
             x2 = (point.y + 10) * self.interface_ratio
             y1 = (point.x - 10) * self.interface_ratio
@@ -120,7 +120,7 @@ class TimDebugInterface(Interface):
           self.scans.clear()
           self.clouds = new_clouds[:]
           self.scans = new_scans
-                
+
 
     def init_interface(self):
 

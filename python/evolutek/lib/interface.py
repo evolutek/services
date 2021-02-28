@@ -2,7 +2,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.watchdog import Watchdog
 
 import asyncore
@@ -109,7 +109,7 @@ class Interface:
         for enemy, config in self.robots.items():
             if config['telemetry'] is None:
                 continue
-            dist = Point.dist_dict(config['telemetry'], {'x': x, 'y': y})
+            dist = Point(x, y).dist(Point.from_dict(config['telemetry']))
             if dist <= config['size'] and (robot is None or dist < previous_dist):
                 robot = enemy
                 previous_dist = dist

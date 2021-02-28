@@ -8,13 +8,22 @@ class Point(PointShape):
     # Init of the class
     # tuple: init the point from the tuple
     # dict : init the point from a dict
-    def __init__(self, x=0, y=0, tuple=None, dict=None):
-        if tuple is not None:
-            super().__init__(tuple)
-        elif dict is not None:
-            super().__init__(round(dict['x']), round(dict['y']))
-        else:
-            super().__init__(round(x, 3), round(y, 3))
+    def __init__(self, x, y):
+        super().__init__(round(x, 3), round(y, 3))
+
+    @staticmethod
+    def from_dict(dict):
+        try:
+            return Point(dict['x'], dict['y'])
+        except Exception as e:
+            print('Failed to create point : %s' % str(e))
+
+    @staticmethod
+    def from_tuple(dict):
+        try:
+            return Point(tuple[0], tuple[1])
+        except Exception as e:
+            print('Failed to create point : %s' % str(e))
 
     def __str__(self):
         return "(" + str(self.x) + ', ' + str(self.y) + ")"
@@ -55,11 +64,6 @@ class Point(PointShape):
     def round(self):
         return Point(round(self.x), round(self.y))
 
-    # Compute the eculidian dist between two point in dict
-    @staticmethod
-    def dist_dict(p1, p2):
-        return sqrt((p1['x'] - p2['x'])**2 + (p1['y'] - p2['y'])**2)
-
     # Compute the minimum point between two point
     @staticmethod
     def min(p1, p2):
@@ -77,14 +81,11 @@ class Point(PointShape):
     # Compute the mean of a list of point
     @staticmethod
     def mean(l):
-        tot_x = 0
-        tot_y = 0
-        for p in l:
-            tot_x += p.x
-            tot_y += p.y
-        return Point(tot_x / len(l), tot_y / len(l))
+        sum_x = 0
+        sum_y = 0
 
-    # Substract two points
-    @staticmethod
-    def substract(p1, p2):
-        return Point(p1.x - p2.x, p1.y - p2.y)
+        for p in l:
+            sum_x += p.x
+            sum_y += p.y
+
+        return Point(sum_x / len(l), sum_y / len(l))

@@ -1,7 +1,7 @@
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.map.tim import DebugMode, Tim as _Tim
 from evolutek.simulation.simulator import read_config
 from evolutek.lib.watchdog import Watchdog
@@ -76,7 +76,7 @@ class Tim(_Tim):
         for robot in self._robots.values():
             if robot is None:
                 continue
-            shapes.append(Point(robot['x'], robot['y']).buffer(self.radius_beacon))
+            shapes.append(Point.from_dict(robot).buffer(self.radius_beacon))
 
         # Generate the scan
         for i in range(int(self.view_angle / self.angular_step)):

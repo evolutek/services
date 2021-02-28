@@ -2,7 +2,7 @@ from enum import Enum
 from math import cos, sin, radians, sqrt
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from threading import Thread, Lock
 import evolutek.lib.map.utils as utils
 # Debug Modes of a TIM :
@@ -41,13 +41,13 @@ class RobotCloud:
 
   def __str__(self):
     return self.tag + self.merged_pos
-  
+
   # Import from dict
   def from_dict(self, dict):
       for ip in dict["points"]:
         self.points[ip] = utils.convert_path_to_points(dict["points"])
-        self.pos[ip]= Point(dict=dict["pos"])
-      self.merged_pos = Point(dict=dict["merged_pos"])
+        self.pos[ip]= Point.from_dict(dict["pos"])
+      self.merged_pos = Point.from_dict(dict["merged_pos"])
       self.tag = dict["tag"]
 
   # Export to dict
@@ -57,7 +57,7 @@ class RobotCloud:
     for ip in self.pos:
       temp_points[ip] = utils.convert_path_to_dict(self.points[ip])
       temp_pos[ip] = self.pos[ip].to_dict()
-    return { 
+    return {
         "points": temp_points,
         "pos": temp_pos,
         "merged_pos": self.merged_pos.to_dict(),
@@ -88,9 +88,9 @@ class RobotCloud:
 
   # Add a telemtry
   def add_telemetry(self, pos):
-    self.pos["telemetry"] = Point(dict=pos)
+    self.pos["telemetry"] = Point.from_dict(pos)
     self.points["telemetry"] = []
-    self.merged_pos = Point(dict = pos)
+    self.merged_pos = Point.from_dict(pos)
 
 
 # TIM Class
@@ -121,7 +121,7 @@ class Tim:
         self.port = int(config['port'])
 
         # Pos config
-        self.default_pos = Point(int(config['pos_x']),int(config['pos_y']))
+        self.default_pos = Point(int(config['pos_x']), int(config['pos_y']))
         self.default_angle = int(config['angle'])
 
         # Computation config
@@ -331,7 +331,7 @@ class Tim:
           robots = [c.merged_pos for cloud in self.clouds]
 
         return robots
-    
+
     # Return all scan info
     def get_scan(self):
         scan = []

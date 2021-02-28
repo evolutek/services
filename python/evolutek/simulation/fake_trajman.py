@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 

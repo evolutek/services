@@ -2,7 +2,7 @@ from enum import Enum
 import json
 from math import pi
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 
 
 """ Avoid Strategy Enum """
@@ -121,7 +121,7 @@ class Goal:
 
         score = goal['score'] if 'score' in goal else 0
 
-        position = Point(x=goal['position']['x'], y=goal['position']['y'])
+        position = Point.from_dict(goal['position'])
 
         actions = []
         if 'actions' in goal:
@@ -233,8 +233,7 @@ class Goals:
         # Parse starting position
         try:
             pos = goals['starting_pos'][robot]
-            self.starting_position = Point(x=pos['x'],
-                                           y=pos['y'])
+            self.starting_position = Point.from_dict(pos)
             self.starting_theta = pos['theta']
             if isinstance(self.starting_theta, str):
                 self.starting_theta = eval(self.starting_theta)

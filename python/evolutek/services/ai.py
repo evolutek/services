@@ -5,7 +5,7 @@ from cellaserv.proxy import CellaservProxy
 from evolutek.lib.fsm import Fsm
 from evolutek.lib.goals import Goals, AvoidStrategy
 from evolutek.lib.gpio import Edge, Gpio
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.robot import Robot, Status, DELTA_POS
 from evolutek.lib.settings import ROBOT
 
@@ -168,7 +168,7 @@ class Ai():
 
         current_pos = self.robot.tm.get_position()
 
-        if Point.dist_dict(pos, current_pos) < DELTA_POS:
+        if Point.from_dict(pos).dist(Point.from_dict(current_pos)) < DELTA_POS:
             print('[AI] Already on goal pos')
 
         else:
