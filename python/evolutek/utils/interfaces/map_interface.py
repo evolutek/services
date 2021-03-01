@@ -4,7 +4,6 @@ from evolutek.lib.geometry.point import Point
 from evolutek.lib.interface import Interface
 from evolutek.lib.map.tim import DebugMode
 from evolutek.lib.watchdog import Watchdog
-from evolutek.lib.map.utils import convert_path_to_point
 from tkinter import Button, Canvas, Label
 
 ## TODO: Map obstacles
@@ -55,7 +54,7 @@ class MapInterface(Interface):
     def tim_scans_handler(self, scans):
         self.tim_watchdog.reset()
         for ip in scans:
-          self.tim_scans[ip] = convert_path_to_point(scans[ip])
+          self.tim_scans[ip] = Point.convert_to_point(scans[ip])
 
     def tim_merge_handler(self, merge):
         self.tim_watchdog.reset()

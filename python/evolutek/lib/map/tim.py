@@ -2,9 +2,10 @@ from enum import Enum
 from math import cos, sin, radians, sqrt
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
-from evolutek.lib.geometry.point import Point
 from threading import Thread, Lock
-import evolutek.lib.map.utils as utils
+
+from evolutek.lib.geometry.point import Point
+
 # Debug Modes of a TIM :
 # - normal : display only the viewed robots
 # - debug_merge : display all the viewed robots befor merging
@@ -45,7 +46,7 @@ class RobotCloud:
   # Import from dict
   def from_dict(self, dict):
       for ip in dict["points"]:
-        self.points[ip] = utils.convert_path_to_points(dict["points"])
+        self.points[ip] = Point.convert_to_point(dict["points"])
         self.pos[ip]= Point.from_dict(dict["pos"])
       self.merged_pos = Point.from_dict(dict["merged_pos"])
       self.tag = dict["tag"]
@@ -55,7 +56,7 @@ class RobotCloud:
     temp_points = {}
     temp_pos = {}
     for ip in self.pos:
-      temp_points[ip] = utils.convert_path_to_dict(self.points[ip])
+      temp_points[ip] = Point.convert_to_dict(self.points[ip])
       temp_pos[ip] = self.pos[ip].to_dict()
     return {
         "points": temp_points,

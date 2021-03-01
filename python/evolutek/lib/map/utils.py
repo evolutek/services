@@ -1,8 +1,5 @@
-from collections import deque
 from enum import Enum
 import json
-from math import inf
-from shapely.geometry import Polygon, MultiPolygon, LineString
 
 from evolutek.lib.geometry.point import Point
 

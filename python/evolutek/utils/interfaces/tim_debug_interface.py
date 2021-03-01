@@ -4,7 +4,6 @@ from evolutek.lib.geometry.point import Point
 from evolutek.lib.interface import Interface
 from evolutek.lib.map.tim import Tim, DebugMode
 from threading import Thread, Lock
-from evolutek.lib.map.utils import convert_path_to_point
 from cellaserv.proxy import CellaservProxy
 from tkinter import Button, Canvas, Label
 import json

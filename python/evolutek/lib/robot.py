@@ -14,7 +14,6 @@ from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 from evolutek.lib.geometry.point import Point
-from evolutek.lib.map.utils import convert_path_to_point, convert_path_to_dict
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.watchdog import Watchdog
 
@@ -311,7 +310,7 @@ class Robot:
             #    pos = self.telemetry
 
             new = self.cs.map.get_path(pos, path[-1].to_dict(), self.robot)
-            new = convert_path_to_point(new)
+            new = Point.convert_to_point(new)
 
             # Next point is near current pos
             if new[1].dist(new[0]) < DELTA_POS:
@@ -336,7 +335,7 @@ class Robot:
 
         while len(path) >= 2:
 
-            if(not self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+            if(not self.cs.map.is_path_valid(Point.convert_to_dict(path), self.robot)):
                 path = self.update_path(path)
 
             if len(path) < 2:
@@ -352,7 +351,7 @@ class Robot:
             # While the robot is not stopped
             while not self.is_stopped.is_set():
 
-                if(self.cs.map.is_path_valid(convert_path_to_dict(path), self.robot)):
+                if(self.cs.map.is_path_valid(Point.convert_to_dict(path), self.robot)):
                     sleep(0.1)
                     continue
 
