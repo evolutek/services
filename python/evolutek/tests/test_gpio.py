@@ -1,15 +1,15 @@
 from cellaserv.service import Service
-from evolutek.lib.gpio import Gpio
+from evolutek.lib.gpio.gpio_factory import create_gpio
 from time import sleep
 
 class Test_Gpio(Service):
 
     def __init__(self):
-        self.gpio = Gpio(42, "my_gpio", dir=False, event="Auto refresh")
+        self.gpio = create_gpio(17, "tirette", dir=False, event="Tirette")
 
         super().__init__()
 
-        self.gpio.auto_refresh(1, self.publish)
+        self.gpio.auto_refresh(callback=self.publish)
 
     @Service.thread
     def loop(self):
