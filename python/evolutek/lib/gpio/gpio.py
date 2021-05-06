@@ -2,18 +2,13 @@ from enum import Enum
 from threading import Thread
 from time import sleep
 
-from evolutek.lib.settings import SIMULATION
-
-if SIMULATION:
-    import evolutek.simulation.fake_lib.fake_gpio as GPIO
-else:
-    import RPi.GPIO as GPIO
 
 # Types of edge for gpio
 class Edge(Enum):
-        RISING = 0
-        FALLING = 1
-        BOTH = 2
+    BOTH = 0
+    FALLING = 1
+    RISING = 2
+
 
 # Parent class IO
 # id: id of the io
@@ -28,12 +23,6 @@ class Io():
         self.dir = dir
         self.event = event
         self.value = None
-
-        try:
-            GPIO.setmode(GPIO.BCM)
-        except Exception as e:
-            print('Failed to gpio mode: %s' % str(e))
-            raise Exception('[GPIO] Failed to set gpio mode')
 
     def __eq__(self, ident):
         return (ident[0] is not None and self.id == int(ident[0])) or self.name == ident[1]
@@ -50,6 +39,7 @@ class Io():
             'event': self.event,
         }
 
+
 # PWM class
 # Inherit of IO class
 # dc: initial Duty Cycle
@@ -60,22 +50,30 @@ class Pwm(Io):
 
         super().__init__(id, name, dir=True)
 
-        GPIO.setup(id, GPIO.OUT, initial=GPIO.LOW)
-
-        self.pwm = GPIO.PWM(id, freq)
-        self.start(dc)
-
     # Write Duty Cycle
     def write(self, dc=0):
-        self.pwm.ChangeDutyCycle(dc)
+        pass
 
     # Start PWM
     def start(self, dc=0):
-        self.pwm.start(dc)
+        pass
 
     # Stop PWM
     def stop(self):
-        self.pwm.stop()
+        pass
+
+
+# ADC class
+# Inherit of IO class
+class Adc(Io):
+
+    def __init__(self, id, name):
+
+        super().__init__(id, name, dir=False)
+
+    # Read ADC
+    def read(self):
+        pass
 
 # GPIO Class
 # Inherit of IO class
@@ -86,31 +84,17 @@ class Gpio(Io):
     def __init__(self, id, name, dir=True, event=None, edge=Edge.BOTH, default_value=False):
 
         super().__init__(id, name, dir, event)
-        self.edge = edge
 
-        if dir:
-            GPIO.setup(id,  GPIO.OUT, initial=GPIO.LOW)
-            self.write(default_value)
-        else:
-            GPIO.setup(id,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        self.edge = edge
+        self.last_value = None
 
     # Read the gpio
     def read(self):
-
-        self.value = GPIO.input(self.id)
-
-        return self.value
+        pass
 
     # Write on the gpio
     def write(self, value):
-        if not self.dir:
-            return False
-
-        if isinstance(value, str):
-            value = value == "true"
-
-        GPIO.output(self.id, GPIO.HIGH if value else GPIO.LOW)
-        return True
+        pass
 
     # Launch a thread on _auto_refresh
     def auto_refresh(self, refresh=0.5, callback=None):
@@ -124,18 +108,15 @@ class Gpio(Io):
     # Callback need to take 4 args: event, name, id & value
     def _auto_refresh(self, refresh, callback):
         while True:
-            tmp = self.value
-            self.read()
-
-            if not callback is None and not tmp is None and self.value != tmp:
-                if not self.edge or self.edge == Edge.BOTH:
-                    callback(event=self.name if self.event is None else self.event,
-                        name=self.name, id=self.id, value=self.value)
-                elif self.edge == Edge.RISING and self.value == 1:
-                    callback(event=self.name if self.event is None else self.event,
-                        name=self.name, id=self.id, value=self.value)
-                elif self.edge == Edge.FALLING and self.value == 0:
-                    callback(event=self.name if self.event is None else self.event,
-                        name=self.name, id=self.id, value=self.value)
-
             sleep(refresh)
+
+            last_value = self.last_value
+            new_value = self.read()
+
+            was_updated = new_value != last_value
+
+            if callback is None or last_value is None or not was_updated:
+                continue
+
+            if self.edge == Edge.BOTH or self.edge.value == new_value:
+                callback(event=self.name if self.event is None else self.event, name=self.name, id=self.id, value=new_value)
