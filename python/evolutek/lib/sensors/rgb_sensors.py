@@ -100,7 +100,7 @@ class RGBSensors(ComponentsHolder):
             i2c = busio.I2C(board.SCL, board.SDA)
         except:
             print('[%s] Failed to open I2C bus' % self.name)
-            raise False
+            return False
 
         try:
             global TCA
