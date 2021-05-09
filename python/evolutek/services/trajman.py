@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from enum import Enum
-from functools import wraps
 import os
 from queue import Queue
 import serial
@@ -19,6 +18,7 @@ make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.utils.wrappers import if_enabled
 
 #######################
 # All the commands ID #
@@ -85,21 +85,6 @@ class AckTimeout(Exception):
     def __init__(self):
         super().__init__("AckTimeout")
 
-
-def if_enabled(method):
-    """
-    A method can be disabled so that it cannot be used in any circumstances.
-    """
-    @wraps(method)
-    def wrapped(self, *args, **kwargs):
-        if self.disabled:
-            self.log(what='disabled',
-                     msg="Usage of {} is disabled".format(method))
-            return
-        return method(self, *args, **kwargs)
-
-    return wrapped
-
 # TODO: check if we collided
 
 @Service.require("config")
@@ -151,7 +136,7 @@ class TrajMan(Service):
 
         # Used to generate debug
         self.debug_file = None
-        self.disabled = False
+        self.disabled = Event()
         self.bau_state = None
 
         self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
@@ -240,7 +225,7 @@ class TrajMan(Service):
 
     @Service.action
     def status(self):
-        return {'disabled': self.disabled,
+        return {'disabled': self.disabled.is_set(),
                 'moving': self.is_moving()}
 
     ###########
@@ -312,11 +297,11 @@ class TrajMan(Service):
 
     @Service.action
     def disable(self):
-        self.disabled = True
+        self.disabled.set()
 
     @Service.action
     def enable(self):
-        self.disabled = False
+        self.disabled.clear()
 
     #######
     # Set #
