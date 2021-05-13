@@ -1,29 +1,22 @@
 #!/usr/bin/env python3
-import asyncio
-import logging
-import os.path
-from configparser import ConfigParser, NoOptionError, NoSectionError
+from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from cellaserv.service import Service
 from cellaserv.settings import make_setting
-
-make_setting("CONFIG_FILE", "/etc/conf.d/config.ini", "config", "file", "CONFIG_FILE")
+make_setting('CONFIG_FILE', '/etc/conf.d/config.ini', 'config', 'file', 'CONFIG_FILE')
 from cellaserv.settings import CONFIG_FILE
 
-
 class Config(Service):
-    def __init__(self, config_file=None):
-        super().__init__()
-        self.config_file_path = config_file or CONFIG_FILE
+    def __init__(self):
         self.config_file = ConfigParser()
-        self.config_file.read(self.config_file_path)
         self.temporary_config = {}
+        self.config_file.read([CONFIG_FILE, ])
 
-        if not os.path.isfile(CONFIG_FILE):
-            logging.warning("Config file does not exist: %s", CONFIG_FILE)
+        # Start the service
+        super().__init__()
 
     @Service.action
-    def get_section(self, section: str) -> dict:
+    def get_section(self, name : str) -> dict:
         """
         Return section from config file. If the section does not exists, a
         KeyError is raised
@@ -31,21 +24,22 @@ class Config(Service):
 
         tmp = {}
 
-        if section in self.temporary_config:
-            tmp = self.temporary_config[section]
+        if name in self.temporary_config:
+            tmp = self.temporary_config[name]
 
         try:
-            section = self.config_file.items(section)
+            section = self.config_file.items(name)
             ret = {}
             for val in section:
-                ret[val[0]] = val[1]
+              ret[val[0]] = val[1]
+
 
             for option in tmp:
                 ret[option] = tmp[option]
 
             return ret
 
-        except NoSectionError as exc:
+        except (NoSectionError) as exc:
             if tmp == {}:
                 raise KeyError("Unknown config section: {0}".format(section)) from exc
             return tmp
@@ -56,10 +50,7 @@ class Config(Service):
         Return value from config file. If the section does not exists, a
         KeyError is raised.
         """
-        if (
-            section in self.temporary_config
-            and option in self.temporary_config[section]
-        ):
+        if section in self.temporary_config and option in self.temporary_config[section]:
             return self.temporary_config[section][option]
 
         try:
@@ -72,10 +63,7 @@ class Config(Service):
         """Write config value."""
 
         # Flush temporary value
-        if (
-            section in self.temporary_config
-            and option in self.temporary_config[section]
-        ):
+        if section in self.temporary_config and option in self.temporary_config[section]:
             del self.temporary_config[section][option]
 
         try:
@@ -85,18 +73,18 @@ class Config(Service):
             self.config_file.set(section, option, value)
 
         # Publish update event
-        self.publish("config.{0}.{1}".format(section, option), value=value)
+        self.publish('config.{0}.{1}'.format(section, option), value=value)
 
         self.write_config()
 
-    def write_config(self) -> None:
-        with open(self.config_file_path, "w") as f:
+    def write_config(self):
+        with open(CONFIG_FILE, "w") as f:
             self.config_file.write(f)
 
     @Service.action
     def set_tmp(self, section: str, option: str, value: str) -> None:
         """Set a temporary value."""
-        if section not in self.temporary_config:
+        if not section in self.temporary_config:
             self.temporary_config[section] = {}
 
         self.temporary_config[section][option] = value
@@ -118,7 +106,7 @@ class Config(Service):
         self.temporary_config.clear()
 
     @Service.action
-    def list(self) -> dict:
+    def list(self) -> str:
         """Get the content of the config file."""
         ret = {}
         for section in self.config_file.sections():
@@ -127,11 +115,9 @@ class Config(Service):
                 ret[section][k] = v
         return ret
 
-
-async def main():
+def main():
     config = Config()
-    await config.done()
+    config.run()
 
-
-if __name__ == "__main__":
-    asyncio.run(main())
+if __name__ == '__main__':
+    main()
