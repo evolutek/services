@@ -6,7 +6,7 @@ from evolutek.lib.utils.action_queue2 import launch_multiple_actions
 class ActQueue():
     def __init__(self):
         self.task = queue.Queue()
-        self.response_queue = queue.LifoQueue()
+        self.response_queue = queue.Queue()
         self.stop = Event()
 
     ##############
@@ -30,7 +30,7 @@ class ActQueue():
         tmp = ()
         while not self.stop.is_set():
             tmp = self.task.get()
-            if type(tmp[0]) == list:
+            if  isinstance(tmp[0], list):
                 self.response_queue.put(launch_multiple_actions(tmp[0], tmp[1]))
             else:
                 self.response_queue.put(tmp[0](*tmp[1]))
@@ -46,7 +46,7 @@ class ActQueue():
     # STOP QUEUE #
     ##############
     def stop_queue(self):
+        self.stop.set()
         while self.task.empty() == False:
             self.task.get()
-        self.stop.set()
 
