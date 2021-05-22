@@ -1,6 +1,5 @@
 import concurrent.futures
 
-
 #############################
 # EXECUTE A LIST OF ACTIONS #
 #############################
