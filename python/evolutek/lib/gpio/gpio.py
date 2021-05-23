@@ -5,9 +5,9 @@ from time import sleep
 
 # Types of edge for gpio
 class Edge(Enum):
-    BOTH = 0
-    FALLING = 1
-    RISING = 2
+    BOTH = 2
+    FALLING = 0
+    RISING = 1
 
 
 # Parent class IO
