@@ -81,12 +81,22 @@ class Match(Service):
         weathercock_timer = Timer(WEATHERCOCK_TIME, self.read_weathercock)
         weathercock_timer.start()
 
+    """ WeatherCock """
     def read_weathercock(self):
         print('[MATCH] reading weathercock position')
         white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
         side = 'north' if not white else 'south'
         self.publish('anchorage', side=(side))
         self.anchorage = side
+
+    """ Telemetry """
+    @Service.event("pal_telemetry")
+    def subscribe_pal_telemetry(self):
+        pass
+
+    @Service.event("pmi_telemetry")
+    def subscribe_pmi_telemetry(self):
+        pass
 
     """ ACTION """
 
