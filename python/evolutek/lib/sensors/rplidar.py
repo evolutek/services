@@ -6,8 +6,7 @@ from threading import Event, Thread, Lock
 from evolutek.lib.map.point import Point
 import evolutek.lib.map.utils as utils
 
-#TODO : make it better
-LIDAR_PATH="/dev/ttyUSB0"
+LIDAR_PATH="/dev/RPLIDAR"
 
 class Rplidar:
 
