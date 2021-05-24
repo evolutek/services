@@ -1,0 +1,53 @@
+from evolutek.utils.interfaces.rplidar_interface import RplidarInterface
+from evolutek.lib.sensors.rplidar import Rplidar
+from evolutek.lib.map.point import Point
+from math import pi
+from time import sleep
+from threading import Thread
+from cellaserv.service import AsynClient
+from cellaserv.settings import get_socket
+
+lidar = None
+
+ROBOT = 'pal' # Set to None to ignore telemetry
+
+def start_interface():
+    global lidar
+    RplidarInterface(lidar)
+
+def update_position(telemetry, **kwargs):
+    global lidar
+    lidar.set_position(Point(dict=telemetry), float(telemetry['theta']))
+
+def test_lidar():
+    global lidar
+
+    config = {
+        'max_distance' : 60,
+        'min_size' : 3,
+        'radius' : 40
+    }
+
+    print('[TEST_RPLIDAR] Starting lidar test')
+    lidar = Rplidar(config)
+    lidar.start_scanning()
+    lidar.set_position(Point(1000, 1500), pi)
+
+    if ROBOT is not None:
+        print('[TEST_RPLIDAR] Stating AsynClient')
+        client = AsynClient(get_socket())
+        client.add_subscribe_cb("%s_telemetry" % ROBOT, update_position)
+
+    print('[TEST_RPLIDAR] Starting interface')
+    Thread(target=start_interface).start()
+
+    print('[TEST_RPLIDAR] Starting test')
+    while True:
+        robots = lidar.get_robots()
+        print('[TEST_RPLIDAR] New scan:')
+        for robot in robots:
+            print(robot.to_dict())
+        sleep(0.5)
+
+if __name__ == '__main__':
+    test_lidar()

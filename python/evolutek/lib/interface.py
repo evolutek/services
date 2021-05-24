@@ -28,7 +28,7 @@ class Interface:
         self.client = AsynClient(get_socket())
 
         match_config = self.cs.config.get_section('match')
-        self.interface_refresh = int(match_config['interface_refresh'])
+        self.interface_refresh = 200
         self.robot_size = float(match_config['robot_size'])
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']

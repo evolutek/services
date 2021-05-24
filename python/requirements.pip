@@ -3,3 +3,4 @@ shapely>=1.6
 planar>=0.4
 adafruit-circuitpython-ads1x15>=2.2.8
 adafruit-circuitpython-mcp230xx>=2.4.5
+rplidar-roboticia>=0.9.2
