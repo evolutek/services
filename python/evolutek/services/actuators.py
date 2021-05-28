@@ -168,6 +168,8 @@ class Actuators(Service):
         func = []
         args = []
         for i in ids:
+            if self.pumps[int(i)] == None:
+                continue
             func.append(self.pumps[int(i)].drop)
             args.append({})
         launch_multiple_actions(func, args)
@@ -180,6 +182,8 @@ class Actuators(Service):
         func = []
         args = []
         for i in ids:
+            if self.pumps[int(i)] == None:
+                continue
             func.append(self.pumps[int(i)].get)
             args.append({})
         launch_multiple_actions(func, args)
@@ -221,6 +225,8 @@ class Actuators(Service):
     #################
     @Service.action
     def color_sensor_read(self, id):
+        if self.rgb_sensors[int(id)] == None:
+            return None
         return self.rgb_sensors[int(id)].read()
 
     #################
@@ -228,6 +234,8 @@ class Actuators(Service):
     #################
     @Service.action
     def recal_sensor_read(self, id):
+        if self.recal_sensors[int(id)] == None:
+            return None
         return self.recal_sensors[int(id)].read()
 
     #####################
@@ -235,6 +243,8 @@ class Actuators(Service):
     #####################
     @Service.action
     def proximity_sensor_read(self, id):
+        if self.proximity_sensors[int(id)] == None:
+            return None
         return self.proximity_sensors[int(id)].read()
 
     #######
