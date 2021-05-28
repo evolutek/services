@@ -146,6 +146,13 @@ class Actuators(Service):
             "rgb_led_strip" : str(self.rgb_led_strip)
         }
 
+    @Service.action
+    def dict_status(self):
+        s = []
+        for i in all_actuators:
+            s.append(dict(i));
+        return s
+
     # Disable Actuators
     @Service.action
     def disable(self):
