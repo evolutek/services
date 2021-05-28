@@ -278,7 +278,7 @@ class Actuators(Service):
             print('[ACTUATORS] Failed to set lightning mode: %s' % str(e))
 
     @Service.event('match_color')
-    def match_color_callback(color):
+    def match_color_callback(self, color):
         try:
             self.rgb_led_strip.set_loading_color(Color(color))
         except Exception as e:
