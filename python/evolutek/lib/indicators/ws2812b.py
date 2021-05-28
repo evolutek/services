@@ -50,6 +50,13 @@ class WS2812BLedStrip(Component):
         s += "----------"
         return s
 
+    def __dict__(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "mode": self.mode.value
+        }
+
     def _initialize(self):
 
         try:

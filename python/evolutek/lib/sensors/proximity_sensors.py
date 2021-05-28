@@ -16,6 +16,12 @@ class ProximitySensor(Component):
         s += "----------"
         return s
 
+    def __dict__(self):
+        return {
+            "id": self.id,
+            "detection": self.read()
+        }
+
 class ProximitySensors(ComponentsHolder):
 
     def __init__(self, sensors):

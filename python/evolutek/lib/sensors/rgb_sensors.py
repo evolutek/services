@@ -83,6 +83,13 @@ class TCS34725(Component):
         s += "---------"
         return s
 
+    def __dict__(self):
+        return {
+            "id": self.id,
+            "channel": self.channel,
+            "color": str(self.read())
+        }
+
 class RGBSensors(ComponentsHolder):
 
     def __init__(self, sensors):
