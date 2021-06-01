@@ -23,11 +23,11 @@ class Robot(Service):
     start_event = CellaservEvent('%s_started' % ROBOT)
     stop_event = CellaservEvent('%s_stopped' % ROBOT)
 
-    goto_xy = Service.action(event_waiter(self.trajman.goto_xy))
-    goto_theta = Service.action(event_waiter(self.trajman.goto_theta))
-    move_trsl = Service.action(event_waiter(self.trajman.move_trsl))
-    move_rot = Service.action(event_waiter(self.trajman.move_rot)))
-    recal = Service.action(event_waiter(self.recalibration))
+    goto_xy = Service.action(event_waiter(self.trajman.goto_xy, start_event, stop_event))
+    goto_theta = Service.action(event_waiter(self.trajman.goto_theta, start_event, stop_event))
+    move_trsl = Service.action(event_waiter(self.trajman.move_trsl, start_event, stop_event))
+    move_rot = Service.action(event_waiter(self.trajman.move_rot, start_event, stop_event))
+    recal = Service.action(event_waiter(self.recalibration, start_event, stop_event))
 
     # Imported from robot_trajman
     set_x = Service.action(rt.set_x)
