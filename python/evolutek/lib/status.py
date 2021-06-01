@@ -11,3 +11,10 @@ class RobotStatus(Enum):
     NotReached = 'not-reached'
     HasAvoid = 'has-avoid'
     Unreachable = 'unreachable'
+
+    @staticmethod
+    def get_status(dict):
+        try:
+            return RobotStatus(dict['status'])
+        except:
+            return RobotStatus.Unknow
