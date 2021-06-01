@@ -35,7 +35,7 @@ def timeout_handler():
 def event_waiter(method, start_event, stop_event, callback=None, callback_refresh=0.1):
 
     @wraps(method)
-    def wrapped(self, *args, **kwargs):
+    def wrapped(*args, **kwargs):
 
         nonlocal start_event
         nonlocal stop_event
@@ -56,7 +56,7 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
         while not start_event.is_set() and not timeout_event.is_set():
             sleep(0.01)
 
-        if not self.start_event.is_set():
+        if not start_event.is_set():
             return {'status' : 'not_started'}
 
         watchdog.stop()

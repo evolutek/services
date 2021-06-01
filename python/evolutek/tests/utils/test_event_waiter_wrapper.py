@@ -20,7 +20,7 @@ class Test(Service):
 
     @Service.thread
     def test(self):
-        data = self.say(self)
+        data = self.say()
         print(data)
 
 test = Test()
