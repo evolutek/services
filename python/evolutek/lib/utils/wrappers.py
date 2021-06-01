@@ -55,7 +55,7 @@ def event_waiter(method, callback=None, callback_refresh=0.1):
             sleep(0.01)
 
         if not self.start_event.is_set():
-            return 'not_started'
+            return {'status' : 'not_started'}
 
         watchdog.stop()
 
@@ -65,6 +65,6 @@ def event_waiter(method, callback=None, callback_refresh=0.1):
             sleep(callback_refresh)
 
         self.stop_event.wait()
-        return self.stop_event.data['status']
+        return self.stop_event.data
 
     return wrapped

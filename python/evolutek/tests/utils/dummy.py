@@ -19,7 +19,7 @@ class Dummy(Service):
             self.need_to_say_something.clear()
             self.publish('dummy_start')
             print('Say something')
-            self.publish('dummy_stop', status='Done')
+            self.publish('dummy_stop', status='done', lol='XD')
 
 dummy = Dummy()
 dummy.run()
