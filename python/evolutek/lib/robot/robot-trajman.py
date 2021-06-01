@@ -1,4 +1,4 @@
-from evolutek.lib.utils.wrappers import event_waiter
+from evolutek.lib.utils.wrappers import event_waiter, if_enabled
 
 ##########
 # COMMON #
@@ -50,6 +50,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
 # GOTO #
 ########
 
+@if_enabled
 def goto(self, x, y, mirror=True):
 
     if mirror:
@@ -57,6 +58,7 @@ def goto(self, x, y, mirror=True):
 
     return self.goto_xy(x, y)
 
+@if_enabled
 def goth(self, theta, mirror=True):
 
     if mirror:
