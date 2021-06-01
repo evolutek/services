@@ -4,8 +4,8 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
 from evolutek.lib.map.point import Point
-import evolutek.lib.robot.robot_actuators as ra
-import evolutek.lib.robot.robot_trajman as rt
+import evolutek.lib.robot.robot_actuators as ract
+import evolutek.lib.robot.robot_trajman as rtraj
 from evolutek.lib.sensors.rplidar import Rplidar
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
@@ -30,28 +30,28 @@ class Robot(Service):
     recal = Service.action(event_waiter(self.recalibration, start_event, stop_event))
 
     # Imported from robot_trajman
-    set_x = Service.action(rt.set_x)
-    set_y = Service.action(rt.set_y)
-    set_theta = Service.action(rt.set_theta)
-    set_pos = Service.action(rt.set_pos)
-    mirror_pos = rt.mirror_pos
+    set_x = Service.action(rtraj.set_x)
+    set_y = Service.action(rtraj.set_y)
+    set_theta = Service.action(rtraj.set_theta)
+    set_pos = Service.action(rtraj.set_pos)
+    mirror_pos = rtraj.mirror_pos
 
     # Imported from robot_actuators
-    mirror_pump_id = ra.mirror_pump_id
-    flags_raise = Service.action(ra.flags_raise)
-    flags_low = Service.action(ra.flags_low)
-    left_arm_close = Service.action(ra.left_arm_close)
-    left_arm_open = Service.action(ra.left_arm_open)
-    left_arm_push = Service.action(ra.left_arm_push)
-    right_arm_close = Service.action(ra.right_arm_close)
-    right_arm_open = Service.action(ra.right_arm_open)
-    right_arm_push = Service.action(ra.right_arm_push)
-    left_cup_holder_close = Service.action(ra.left_cup_holder_close)
-    left_cup_holder_open = Service.action(ra.left_cup_holder_open)
-    left_cup_holder_drop = Service.action(ra.left_cup_holder_drop)
-    right_cup_holder_close = Service.action(ra.right_cup_holder_close)
-    right_cup_holder_open = Service.action(ra.right_cup_holder_open)
-    right_cup_holder_drop = Service.action(ra.right_cup_holder_drop)
+    mirror_pump_id = ract.mirror_pump_id
+    flags_raise = Service.action(ract.flags_raise)
+    flags_low = Service.action(ract.flags_low)
+    left_arm_close = Service.action(ract.left_arm_close)
+    left_arm_open = Service.action(ract.left_arm_open)
+    left_arm_push = Service.action(ract.left_arm_push)
+    right_arm_close = Service.action(ract.right_arm_close)
+    right_arm_open = Service.action(ract.right_arm_open)
+    right_arm_push = Service.action(ract.right_arm_push)
+    left_cup_holder_close = Service.action(ract.left_cup_holder_close)
+    left_cup_holder_open = Service.action(ract.left_cup_holder_open)
+    left_cup_holder_drop = Service.action(ract.left_cup_holder_drop)
+    right_cup_holder_close = Service.action(ract.right_cup_holder_close)
+    right_cup_holder_open = Service.action(ract.right_cup_holder_open)
+    right_cup_holder_drop = Service.action(ract.right_cup_holder_drop)
 
     def __init__(self):
         self.cs = CellaservProxy()
