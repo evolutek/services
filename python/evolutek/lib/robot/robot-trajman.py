@@ -10,10 +10,10 @@ def mirror_pos(self, x=None, y=None, theta=None):
         side = self.side
 
     if y is not None:
-        y = (y if not side else 3000 - y)
+        y = (y if side else 3000 - y)
 
     if theta is not None:
-        theta = (theta if not side else -1 * theta)
+        theta = (theta if side else -1 * theta)
 
     return {
         'x' : x,
