@@ -11,7 +11,7 @@ class Test(Service):
     def __init__(self):
         self.cs = CellaservProxy()
 
-        self.say = event_waiter(self.cs.dummy.say_something, callback=self.callback)
+        self.say = event_waiter(self.cs.dummy.say_something, self.start_event, self.stop_event, callback=self.callback)
         super().__init__()
 
     def callback(self):

@@ -32,13 +32,15 @@ def timeout_handler():
 # stop_event: stop event to wait
 # callback: callback to call at each iteration while waiting for stop event
 # callback_refresh : refresh to call callback
-def event_waiter(method, callback=None, callback_refresh=0.1):
+def event_waiter(method, start_event, stop_event, callback=None, callback_refresh=0.1):
 
     @wraps(method)
     def wrapped(self, *args, **kwargs):
 
-        self.start_event.clear()
-        self.stop_event.clear()
+        nonlocal start_event
+        nonlocal stop_event
+        start_event.clear()
+        stop_event.clear()
 
         nonlocal callback
         nonlocal callback_refresh
@@ -51,7 +53,7 @@ def event_waiter(method, callback=None, callback_refresh=0.1):
 
         watchdog.reset()
 
-        while not self.start_event.is_set() and not timeout_event.is_set():
+        while not start_event.is_set() and not timeout_event.is_set():
             sleep(0.01)
 
         if not self.start_event.is_set():
@@ -59,12 +61,12 @@ def event_waiter(method, callback=None, callback_refresh=0.1):
 
         watchdog.stop()
 
-        while not self.stop_event.is_set():
+        while not stop_event.is_set():
             if callback is not None and callback():
                 break
             sleep(callback_refresh)
 
-        self.stop_event.wait()
-        return self.stop_event.data
+        stop_event.wait()
+        return stop_event.data
 
     return wrapped
