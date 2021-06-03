@@ -4,8 +4,9 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
 from evolutek.lib.map.point import Point
-import evolutek.lib.robot.robot_actuators as ract
-import evolutek.lib.robot.robot_trajman as rtraj
+import evolutek.lib.robot.robot_actions as robot_actions
+import evolutek.lib.robot.robot_actuators as robot_actuators
+import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.sensors.rplidar import Rplidar
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
@@ -23,37 +24,38 @@ class Robot(Service):
     start_event = CellaservEvent('%s_started' % ROBOT)
     stop_event = CellaservEvent('%s_stopped' % ROBOT)
 
-    goto_xy = Service.action(event_waiter(self.trajman.goto_xy, start_event, stop_event))
-    goto_theta = Service.action(event_waiter(self.trajman.goto_theta, start_event, stop_event))
-    move_trsl = Service.action(event_waiter(self.trajman.move_trsl, start_event, stop_event))
-    move_rot = Service.action(event_waiter(self.trajman.move_rot, start_event, stop_event))
-    recal = Service.action(event_waiter(self.recalibration, start_event, stop_event))
 
     # Imported from robot_trajman
-    set_x = Service.action(rtraj.set_x)
-    set_y = Service.action(rtraj.set_y)
-    set_theta = Service.action(rtraj.set_theta)
-    set_pos = Service.action(rtraj.set_pos)
-    mirror_pos = rtraj.mirror_pos
+    set_x = Service.action(robot_trajman.set_x)
+    set_y = Service.action(robot_trajman.set_y)
+    set_theta = Service.action(robot_trajman.set_theta)
+    set_pos = Service.action(robot_trajman.set_pos)
+    mirror_pos = robot_trajman.mirror_pos
 
     # Imported from robot_actuators
-    mirror_pump_id = ract.mirror_pump_id
-    flags_raise = Service.action(ract.flags_raise)
-    flags_low = Service.action(ract.flags_low)
-    left_arm_close = Service.action(ract.left_arm_close)
-    left_arm_open = Service.action(ract.left_arm_open)
-    left_arm_push = Service.action(ract.left_arm_push)
-    right_arm_close = Service.action(ract.right_arm_close)
-    right_arm_open = Service.action(ract.right_arm_open)
-    right_arm_push = Service.action(ract.right_arm_push)
-    left_cup_holder_close = Service.action(ract.left_cup_holder_close)
-    left_cup_holder_open = Service.action(ract.left_cup_holder_open)
-    left_cup_holder_drop = Service.action(ract.left_cup_holder_drop)
-    right_cup_holder_close = Service.action(ract.right_cup_holder_close)
-    right_cup_holder_open = Service.action(ract.right_cup_holder_open)
-    right_cup_holder_drop = Service.action(ract.right_cup_holder_drop)
+    mirror_pump_id = robot_actuators.mirror_pump_id
+    flags_raise = Service.action(robot_actuators.flags_raise)
+    flags_low = Service.action(robot_actuators.flags_low)
+    left_arm_close = Service.action(robot_actuators.left_arm_close)
+    left_arm_open = Service.action(robot_actuators.left_arm_open)
+    left_arm_push = Service.action(robot_actuators.left_arm_push)
+    right_arm_close = Service.action(robot_actuators.right_arm_close)
+    right_arm_open = Service.action(robot_actuators.right_arm_open)
+    right_arm_push = Service.action(robot_actuators.right_arm_push)
+    left_cup_holder_close = Service.action(robot_actuators.left_cup_holder_close)
+    left_cup_holder_open = Service.action(robot_actuators.left_cup_holder_open)
+    left_cup_holder_drop = Service.action(robot_actuators.left_cup_holder_drop)
+    right_cup_holder_close = Service.action(robot_actuators.right_cup_holder_close)
+    right_cup_holder_open = Service.action(robot_actuators.right_cup_holder_open)
+    right_cup_holder_drop = Service.action(robot_actuators.right_cup_holder_drop)
+
+    # Imported from robot_actuators
+    get_reef = Service.action(robot_actions.get_reef)
 
     def __init__(self):
+
+        super().__init__(ROBOT)
+
         self.cs = CellaservProxy()
         self.lock = Lock()
 
@@ -67,6 +69,12 @@ class Robot(Service):
 
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
+
+        self.goto_xy = event_waiter(trajman.goto_xy, start_event, stop_event)
+        self.goto_theta = event_waiter(trajman.goto_theta, start_event, stop_event)
+        self.move_trsl = event_waiter(trajman.move_trsl, start_event, stop_event)
+        self.move_rot = event_waiter(trajman.move_rot, start_event, stop_event)
+        self.recal = event_waiter(recalibration, start_event, stop_event)
 
         lidar_config = self.cs.config.get_section('rplidar')
 
@@ -125,7 +133,7 @@ class Robot(Service):
             try:
                 status = RobotStatus(status)
             except:
-                status RobotStatus.Unknow
+                status =  RobotStatus.Unknow
             self.publish('%s_robot_stopped' % ROBOT, status=status.value)
 
 if __name__ == '__main__':
