@@ -149,7 +149,7 @@ class Actuators(Service):
     @Service.action
     def dict_status(self):
         s = []
-        for i in all_actuators:
+        for i in self.all_actuators:
             s.append(dict(i));
         return s
 
@@ -201,6 +201,8 @@ class Actuators(Service):
     @if_enabled
     @Service.action
     def ax_move(self, id, pos):
+        if self.ax[int(id)] == None:
+            return None
         return self.ax[int(id)].move(pos)
 
     @Service.action
@@ -210,12 +212,16 @@ class Actuators(Service):
         func = []
         args = []
         for i in ids:
+            if self.ax[int(i)] == None:
+                return ("[ACTUATORS] Invalid ax id: " + i)
             func.append(self.ax[int(i)].free)
             args.append({})
         launch_multiple_actions(func, args)
 
     @Service.action
     def ax_set_speed(self, id, speed):
+        if self.ax[int(id)] == None:
+            return None
         return self.ax[int(id)].moving_speed(speed)
 
     @Service.action
@@ -224,6 +230,8 @@ class Actuators(Service):
         if (type(ids) == str):
             ids = ids.split(",")
         for i in ids:
+            if self.ax[int(i)] == None:
+                return ("[ACTUATORS] Invalid ax id: " + i)
             s += str(self.ax[int(i)]) + "\n"
         return s
 
