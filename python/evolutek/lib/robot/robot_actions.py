@@ -1,14 +1,17 @@
 from evolutek.lib.status import RobotStatus
-from evolutek.lib.utils.wrappers import event_waiter, if_enabled
+from evolutek.lib.utils.wrappers import if_enabled
 from time import sleep
+
+# TODO : check for abort and match end
 
 #########
 # REEFS #
 #########
 
+@if_enabled
 def get_reef(self):
 
-    # Recal ?
+    # TODO : Recal ?
 
     self.left_cup_holder.open()
     self.right_cup_holder.open()
@@ -16,7 +19,8 @@ def get_reef(self):
 
     sleep(0.25)
 
-    self.move_trsl(300, 300, 300, 300, 0)
+    if self.move_trsl(300, 300, 300, 300, 0) != RobotStatus.Reached:
+        return RobotStatus.Failed
 
     sleep(1)
 
@@ -24,6 +28,7 @@ def get_reef(self):
     self.right_cup_holder_close()
 
     sleep(0.25)
-    self.move_trsl(300, 300, 300, 300, 1)
+    if self.move_trsl(300, 300, 300, 300, 1)  != RobotStatus.Reached:
+        return RobotStatus.Failed
 
     return RobotStatus.Done

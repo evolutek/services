@@ -12,9 +12,15 @@ from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import event_waiter
 
-from queue import Queue
 from time import time, sleep
 from threading import Event, Lock
+
+# TODO : Queue
+# TODO : Permit to use action without queue
+# TODO : Manage avoid
+# TODO : Pathfinding
+# TODO : Abort
+# TODO : Match End
 
 @Service.require('config')
 @Service.require('actuators', ROBOT)
@@ -24,13 +30,16 @@ class Robot(Service):
     start_event = CellaservEvent('%s_started' % ROBOT)
     stop_event = CellaservEvent('%s_stopped' % ROBOT)
 
-
     # Imported from robot_trajman
+    mirror_pos = robot_trajman.mirror_pos
     set_x = Service.action(robot_trajman.set_x)
     set_y = Service.action(robot_trajman.set_y)
     set_theta = Service.action(robot_trajman.set_theta)
     set_pos = Service.action(robot_trajman.set_pos)
-    mirror_pos = robot_trajman.mirror_pos
+    goto = Service.action(robot_trajman.goto)
+    goth = Service.action(robot_trajman.goth)
+    move_back = Service.action(robot_trajman.move_back)
+    recalibration = Service.action(robot_trajman.recalibration)
 
     # Imported from robot_actuators
     mirror_pump_id = robot_actuators.mirror_pump_id
@@ -67,14 +76,20 @@ class Robot(Service):
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % str(e))
 
+        # Size of the robot and min dist from wall
+        self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
+        self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
+        # TODO: rename
+        self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
+
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
-        self.goto_xy = event_waiter(trajman.goto_xy, start_event, stop_event)
-        self.goto_theta = event_waiter(trajman.goto_theta, start_event, stop_event)
-        self.move_trsl = event_waiter(trajman.move_trsl, start_event, stop_event)
-        self.move_rot = event_waiter(trajman.move_rot, start_event, stop_event)
-        self.recal = event_waiter(recalibration, start_event, stop_event)
+        self.goto_xy = event_waiter(self.trajman.goto_xy, start_event, stop_event)
+        self.goto_theta = event_waiter(self.trajman.goto_theta, start_event, stop_event)
+        self.move_trsl = event_waiter(self.trajman.move_trsl, start_event, stop_event)
+        self.move_rot = event_waiter(self.trajman.move_rot, start_event, stop_event)
+        self.recal = event_waiter(self.recalibration, start_event, stop_event)
 
         lidar_config = self.cs.config.get_section('rplidar')
 
@@ -84,7 +99,7 @@ class Robot(Service):
 
         self.last_telemetry_received = 0
 
-        self.queue = Queue()
+        # TODO : import queue
         self.disabled = Event()
 
         super().__init__()
@@ -101,7 +116,7 @@ class Robot(Service):
         self.last_telemetry_received = tmp
         self.lidar.set_position(Point(dict=telemetry), float(telemetry['theta']))
 
-    # Usefull
+    # TODO : Usefull ?
     def lidar_callback(self, cloud, shapes, robots):
         print('[ROBOT] Robots seen at: ')
         for robot in robots:
@@ -110,31 +125,17 @@ class Robot(Service):
     @Service.action
     def enable(self):
         self.disabled.clear()
-        Thread(target=self.run_queue).start()
+        # TODO : start queue
 
     @Service.action
     def disable(self):
-        # Empty queue
-        while not self.queue.empty():
-            self.queue.get()
-
-
         self.disabled.set()
+        self.abort_action()
 
-    def run_queue(self):
-        while not self.disabled.is_set():
-            task, args = self.queue.get()
-            self.publish('%s_robot_started' % ROBOT)
-            try:
-                status = task(*args)
-            except Exception as e:
-                print('[ROBOT Failed to execute task: %s' % str(e))
-
-            try:
-                status = RobotStatus(status)
-            except:
-                status =  RobotStatus.Unknow
-            self.publish('%s_robot_stopped' % ROBOT, status=status.value)
+    @Service.action
+    def abort_action(self):
+        # TODO
+        pass
 
 if __name__ == '__main__':
     robot = Robot()

@@ -3,8 +3,10 @@ from enum import Enum
 class RobotStatus(Enum):
     # Common
     Done = 'done'
-    Failed = 'Failed'
+    Failed = 'failed'
     Unknow = 'unknow'
+    Disabled = 'disabled'
+    NotStarted = 'not-started'
 
     # Move
     Reached = 'reached'

@@ -1,3 +1,4 @@
+from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.watchdog import Watchdog
 from functools import wraps
 from threading import Event
@@ -14,7 +15,7 @@ def if_enabled(method):
         if self.disabled.is_set():
             self.log(what='disabled',
                     msg="Usage of {} is disabled".format(method))
-            return
+            return RobotStatus.Disabled
         return method(self, *args, **kwargs)
 
     return wrapped
@@ -57,7 +58,7 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
             sleep(0.01)
 
         if not start_event.is_set():
-            return {'status' : 'not_started'}
+            return {'status' : RobotStatus.NotStarted}
 
         watchdog.stop()
 
@@ -67,6 +68,7 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
             sleep(callback_refresh)
 
         stop_event.wait()
+        stop_event.data['status'] = RobotStatus.get_status(stop_event.data)
         return stop_event.data
 
     return wrapped
