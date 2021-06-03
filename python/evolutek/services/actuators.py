@@ -201,7 +201,7 @@ class Actuators(Service):
     @if_enabled
     @Service.action
     def ax_move(self, id, pos):
-        return self.ax[int(id) - 1].move(pos)
+        return self.ax[int(id)].move(pos)
 
     @Service.action
     def axs_free(self, ids):
@@ -210,13 +210,13 @@ class Actuators(Service):
         func = []
         args = []
         for i in ids:
-            func.append(self.ax[int(i) - 1].free)
+            func.append(self.ax[int(i)].free)
             args.append({})
         launch_multiple_actions(func, args)
 
     @Service.action
     def ax_set_speed(self, id, speed):
-        return self.ax[int(id) - 1].moving_speed(speed)
+        return self.ax[int(id)].moving_speed(speed)
 
     @Service.action
     def axs_get_status(self, ids):
@@ -224,7 +224,7 @@ class Actuators(Service):
         if (type(ids) == str):
             ids = ids.split(",")
         for i in ids:
-            s += str(self.ax[int(i) - 1]) + "\n"
+            s += str(self.ax[int(i)]) + "\n"
         return s
 
     #################

@@ -22,7 +22,7 @@ class Colors(Enum):
 class TCS34725(Component):
 
     def __init__(self, id, channel):
-        self.callibration = [0, 0, 0]
+        self.calibration = [0, 0, 0]
         self.sensor = None
         self.channel = channel
         super().__init__('TCS34725', id)
@@ -42,20 +42,20 @@ class TCS34725(Component):
     def setup(self):
         for i in range(CALLIBRATE):
             rgb = self.sensor.color_rgb_bytes
-            self.callibration[0] += rgb[0]
-            self.callibration[1] += rgb[1]
-            self.callibration[2] += rgb[2]
+            self.calibration[0] += rgb[0]
+            self.calibration[1] += rgb[1]
+            self.calibration[2] += rgb[2]
             sleep(0.1)
-        self.callibration[0] /= CALLIBRATE
-        self.callibration[1] /= CALLIBRATE
-        self.callibration[2] /= CALLIBRATE
-        # print('Setup: R = %i - G = %i - B = %i' % (self.callibration[0],self.callibration[1],self.callibration[2]))
+        self.calibration[0] /= CALLIBRATE
+        self.calibration[1] /= CALLIBRATE
+        self.calibration[2] /= CALLIBRATE
+        # print('Setup: R = %i - G = %i - B = %i' % (self.calibration[0],self.calibration[1],self.calibration[2]))
 
     def isMajorChanges(self, rgb):
         # print('R = %i - G = %i - B = %i' % (rgb))
-        if (rgb[0] >= self.callibration[0] * SENSITIVITY) \
-            or (rgb[1] >= self.callibration[1] * SENSITIVITY) \
-            or (rgb[2] >= self.callibration[2] * SENSITIVITY):
+        if (rgb[0] >= self.calibration[0] * SENSITIVITY) \
+            or (rgb[1] >= self.calibration[1] * SENSITIVITY) \
+            or (rgb[2] >= self.calibration[2] * SENSITIVITY):
             return True
         return False
 

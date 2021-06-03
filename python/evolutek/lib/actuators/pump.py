@@ -29,7 +29,7 @@ class Pump(Component):
         s += "EV output: %d\n" % self.ev_gpio.read()
         s += "----------"
         return s
-    
+
     def __dict__(self):
         return {
             "id": self.id,
