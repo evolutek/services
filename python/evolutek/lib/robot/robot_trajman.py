@@ -1,6 +1,6 @@
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled
-from timer import sleep
+from time import sleep
 
 ##########
 # COMMON #
