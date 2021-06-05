@@ -271,7 +271,9 @@ class Actuators(Service):
 
     def bau_callback(self, event, name, id, value):
         self.bau_led.write(value)
-        self.publish(event=event, name=name, id=id, value=value)
+        self.publish(event=event, name=name, id=id, value=value) 
+        self.axs_free([1, 2, 3, 4, 5, 6])
+        self.pumps_drop([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     ###################
     # WHITE LED STRIP #
