@@ -15,9 +15,15 @@ def print_tata(a, b):
     test += 1
     return test
 
+
+def print_test():
+    print("debut")
+
+def print_test_fin():
+    print("fin\n====================")
 toto = ActQueue()
 
-toto.run_queue()
+toto.run_queue(print_test, print_test_fin)
 toto.run_action(print_toto, (1, 2))
 toto.run_actions([print_tata, print_toto], [(3, 4), (5, 6)])
 toto.run_action(print_toto, (7, 8))

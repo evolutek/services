@@ -26,21 +26,23 @@ class ActQueue():
     #################
     # DEPILATE QUEUE #
     #################
-    def _run_queue(self):
+    def _run_queue(self, callback_start, callback_end):
         tmp = ()
         while not self.stop.is_set():
+            callback_start()
             tmp = self.task.get()
             if  isinstance(tmp[0], list):
                 self.response_queue.put(launch_multiple_actions(tmp[0], tmp[1]))
             else:
                 self.response_queue.put(tmp[0](*tmp[1]))
+            callback_end()
 
     ###############
     # START QUEUE #
     ###############
-    def run_queue(self):
+    def run_queue(self, callback_start, callback_end):
         self.stop.clear()
-        Thread(target=self._run_queue).start()
+        Thread(target=self._run_queue, args=[callback_start, callback_end]).start()
 
     ##############
     # STOP QUEUE #
