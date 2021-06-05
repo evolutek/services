@@ -181,8 +181,9 @@ class TrajMan(Service):
     # BAU handler
     @Service.event('%s-BAU' % ROBOT)
     def handle_bau(self, value, **kwargs):
-        new_state = bool(value)
 
+        new_state = bool(int(value))
+        
         # If the state didn't change, return
         if new_state == self.bau_state:
             return
