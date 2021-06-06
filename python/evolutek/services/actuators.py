@@ -102,7 +102,7 @@ class Actuators(Service):
         self.bau = create_gpio(28, 'bau', dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.1, callback=self.bau_callback)
-        self.bau_led.write(self.bau.read())
+        self.bau_led.write(self.bau_read())
 
         self.red_led = create_gpio(23, 'red led', dir=True, type=GpioType.RPI)
         self.green_led = create_gpio(24, 'green led', dir=True, type=GpioType.RPI)
@@ -147,6 +147,12 @@ class Actuators(Service):
         for actuators in self.all_actuators:
             d.update(actuators.__dict__())
         return d
+
+    # Free all actuators
+    @Service.action
+    def free(self):
+        self.axs_free([1, 2, 3, 4, 5, 6])
+        self.pumps_drop([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     # Disable Actuators
     @Service.action
@@ -267,8 +273,7 @@ class Actuators(Service):
     def bau_callback(self, event, name, id, value):
         self.bau_led.write(value)
         self.publish(event=event, name=name, id=id, value=value)
-        self.axs_free([1, 2, 3, 4, 5, 6])
-        self.pumps_drop([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        self.free()
 
     ###################
     # WHITE LED STRIP #
