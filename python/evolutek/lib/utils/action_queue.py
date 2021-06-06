@@ -1,6 +1,6 @@
 import queue
 from threading import Thread, Event
-from .lma import launch_multiple_actions
+from evolutek.utils.lma import launch_multiple_actions
 
 
 class ActQueue:
