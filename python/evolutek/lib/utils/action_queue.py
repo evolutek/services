@@ -1,13 +1,15 @@
 import queue
 from threading import Thread, Event
-from evolutek.lib.utils.action_queue2 import launch_multiple_actions
+from evolutek.lib.utils.lma import launch_multiple_actions
 
 
-class ActQueue():
-    def __init__(self):
+class ActQueue:
+    def __init__(self, start_callback, end_callback):
         self.task = queue.Queue()
         self.response_queue = queue.Queue()
         self.stop = Event()
+        self.start_callback = start_callback
+        self.end_callback = end_callback
 
     ##############
     # ADD A TASK #
@@ -30,10 +32,12 @@ class ActQueue():
         tmp = ()
         while not self.stop.is_set():
             tmp = self.task.get()
-            if  isinstance(tmp[0], list):
-                self.response_queue.put(launch_multiple_actions(tmp[0], tmp[1]))
+            self.start_callback()
+            if isinstance(tmp[0], list):
+                result = launch_multiple_actions(tmp[0], tmp[1])
             else:
-                self.response_queue.put(tmp[0](*tmp[1]))
+                result = tmp[0](*tmp[1])
+            self.end_callback(result)
 
     ###############
     # START QUEUE #
@@ -47,6 +51,6 @@ class ActQueue():
     ##############
     def stop_queue(self):
         self.stop.set()
-        while self.task.empty() == False:
+        while not self.task.empty():
             self.task.get()
 

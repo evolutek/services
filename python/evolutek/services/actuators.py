@@ -4,7 +4,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
 
 from evolutek.lib.gpio import Gpio, Pwm, Edge
-from evolutek.lib.action_queue import Act_queue
+from evolutek.lib.utils.action_queue import ActQueue
 from evolutek.lib.robot import Robot, Status
 from evolutek.lib.rgb_sensors import RGBSensors
 from evolutek.lib.settings import ROBOT
@@ -118,7 +118,7 @@ class Actuators(Service):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.robot = Robot(robot=ROBOT, match_end_cb=self.handle_match_end)
-        self.queue = Act_queue()
+        self.queue = ActQueue()
         self.rgb_sensors = RGBSensors([1, 2], SAMPLE_SIZE)
         self.disabled = False
         self.match_end = Event()
