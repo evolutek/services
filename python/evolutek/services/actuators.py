@@ -10,14 +10,15 @@ from evolutek.lib.gpio.gpio import Edge
 
 from evolutek.lib.actuators.ax12 import AX12Controller
 from evolutek.lib.actuators.pump import PumpController
-from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode, Color
+from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.sensors.rgb_sensors import RGBSensors
 
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.wrappers import if_enabled
-from evolutek.lib.utils.action_queue2 import launch_multiple_actions
+from evolutek.lib.utils.lma import launch_multiple_actions
 
 from threading import Event
 
@@ -236,7 +237,7 @@ class Actuators(Service):
     def color_sensor_read(self, id):
         if self.rgb_sensors[int(id)] == None:
             return None
-        return self.rgb_sensors[int(id)].read()
+        return self.rgb_sensors[int(id)].read().name
 
     #################
     # RECAL SENSORS #

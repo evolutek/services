@@ -8,16 +8,11 @@ from enum import Enum
 from time import sleep
 
 from evolutek.lib.component import Component, ComponentsHolder
+from evolutek.lib.utils.color import Color
 
 TCA = None
-CALLIBRATE = 10
+CALIBRATE = 10
 SENSITIVITY = 1.2
-
-class Colors(Enum):
-    RED = 'red'
-    GREEN = 'green'
-    BLUE = 'blue'
-    NONE = None
 
 class TCS34725(Component):
 
@@ -46,9 +41,9 @@ class TCS34725(Component):
             self.calibration[1] += rgb[1]
             self.calibration[2] += rgb[2]
             sleep(0.1)
-        self.calibration[0] /= CALLIBRATE
-        self.calibration[1] /= CALLIBRATE
-        self.calibration[2] /= CALLIBRATE
+        self.calibration[0] /= CALIBRATE
+        self.calibration[1] /= CALIBRATE
+        self.calibration[2] /= CALIBRATE
         # print('Setup: R = %i - G = %i - B = %i' % (self.calibration[0],self.calibration[1],self.calibration[2]))
 
     def isMajorChanges(self, rgb):
@@ -67,27 +62,28 @@ class TCS34725(Component):
         r, g, b = rgb[0], rgb[1], rgb[2]
         colorByte = max(r, g, b)
         if not self.isMajorChanges(rgb):
-            return Colors.NONE
+            return Colors.Unknow
         elif colorByte == r:
-            return Colors.RED
+            return Colors.Red
         elif colorByte == g:
-            return Colors.GREEN
+            return Colors.Green
         else:
-            return Colors.BLUE
+            return Colors.Blue
 
     def __str__(self):
         s = "----------\n"
         s += "TCS34725: %d\n" % self.id
         s += "Channel: %d\n" % self.channel
-        s += "Color: %s\n" % str(self.read())
+        s += "Color: %s\n" % self.read().name
         s += "---------"
         return s
 
     def __dict__(self):
         return {
+            "name": self.name()
             "id": self.id,
             "channel": self.channel,
-            "color": str(self.read())
+            "color": self.read()
         }
 
 class RGBSensors(ComponentsHolder):

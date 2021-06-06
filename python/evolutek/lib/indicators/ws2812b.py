@@ -1,5 +1,6 @@
 from enum import Enum
 from evolutek.lib.component import Component
+from evolutek.lib.utils.color import Color
 from neopixel import NeoPixel, GRB
 from threading import Lock, Thread
 from time import sleep
@@ -18,15 +19,6 @@ refresh = {
 }
 
 NB_LOADING_LED = 3
-
-class Color(Enum):
-    Black = (0, 0, 0)
-    Blue = (0, 0, 255)
-    Green = (0, 255, 0)
-    Orange = (255, 10, 0)
-    Red = (255, 0, 0)
-    Yellow = (255, 255, 0)
-
 
 class WS2812BLedStrip(Component):
 
