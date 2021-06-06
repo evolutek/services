@@ -18,9 +18,10 @@ from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.sensors.rgb_sensors import RGBSensors
 
 # Other imports
-from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.color import Color
+from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.utils.wrappers import if_enabled
 from threading import Event
 
@@ -187,6 +188,7 @@ class Actuators(Service):
             func.append(self.pumps[int(i)].drop)
             args.append({})
         launch_multiple_actions(func, args)
+        return RobotStatus.Done.value
 
     @if_enabled
     @Service.action
@@ -201,6 +203,7 @@ class Actuators(Service):
             func.append(self.pumps[int(i)].get)
             args.append({})
         launch_multiple_actions(func, args)
+        return RobotStatus.Done.value
 
     #######
     # AXS #
@@ -209,8 +212,9 @@ class Actuators(Service):
     @Service.action
     def ax_move(self, id, pos):
         if self.ax[int(id)] == None:
-            return None
+            return RobotStatus.Failed.value
         return self.ax[int(id)].move(pos)
+        return RobotStatus.Done.value
 
     @Service.action
     def axs_free(self, ids):
@@ -224,23 +228,13 @@ class Actuators(Service):
             func.append(self.ax[int(i)].free)
             args.append({})
         launch_multiple_actions(func, args)
+        return RobotStatus.Done.value
 
     @Service.action
     def ax_set_speed(self, id, speed):
         if self.ax[int(id)] == None:
             return None
         return self.ax[int(id)].moving_speed(speed)
-
-    @Service.action
-    def axs_get_status(self, ids):
-        s = ""
-        if (type(ids) == str):
-            ids = ids.split(",")
-        for i in ids:
-            if self.ax[int(i)] == None:
-                return ("[ACTUATORS] Invalid ax id: " + i)
-            s += str(self.ax[int(i)]) + "\n"
-        return s
 
     #################
     # COLOR SENSORS #
