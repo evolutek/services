@@ -20,13 +20,17 @@ def mirror_pump_id(self, id):
 # Raise Flags
 @if_enabled
 def flags_raise(self):
-    self.actuators.ax_move(6, 820)
+    status = RobotStatus.get_status(self.actuators.ax_move(6, 820))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Close flags
 @if_enabled
 def flags_low(self):
-    self.actuators.ax_move(6, 512)
+    status = RobotStatus.get_status(self.actuators.ax_move(6, 512))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 #############
@@ -36,37 +40,49 @@ def flags_low(self):
 # Left Arm Close
 @if_enabled
 def left_arm_close(self):
-    self.actuators.ax_move(2, 820)
+    status = RobotStatus.get_status(self.actuators.ax_move(2, 820))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Left Arm Open
 @if_enabled
 def left_arm_open(self):
-    self.actuators.ax_move(2, 512)
+    status = RobotStatus.get_status(self.actuators.ax_move(2, 512))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Left Arm Push Windsock
 @if_enabled
 def left_arm_push(self):
-    self.actuators.ax_move(2, 444)
+    status = RobotStatus.get_status(self.actuators.ax_move(2, 444))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Right Arm Close
 @if_enabled
 def right_arm_close(self):
-    self.actuators.ax_move(3, 204)
+    status = RobotStatus.get_status(self.actuators.ax_move(3, 204))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Right Arm Open
 @if_enabled
 def right_arm_open(self):
-    self.actuators.ax_move(3, 512)
+    status = RobotStatus.get_status(self.actuators.ax_move(3, 512))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Right Arm Push Windsock
 @if_enabled
 def right_arm_push(self):
-    self.actuators.ax_move(3, 580)
+    status = RobotStatus.get_status(self.actuators.ax_move(3, 580))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 ###############
@@ -77,40 +93,52 @@ def right_arm_push(self):
 @if_enabled
 def left_cup_holder_close(self):
     self.actuators.ax_set_speed(4, 256)
-    self.actuators.ax_move(4, 820)
+    status = RobotStatus.get_status(self.actuators.ax_move(4, 820))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Left CH Open
 @if_enabled
 def left_cup_holder_open(self):
     self.actuators.ax_set_speed(4, 800)
-    self.actuators.ax_move(4, 512)
+    status = RobotStatus.get_status(self.actuators.ax_move(4, 512))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Left CH Drop
 @if_enabled
 def left_cup_holder_drop(self):
     self.actuators.ax_set_speed(4, 800)
-    self.actuators.ax_move(4, 490)
+    status = RobotStatus.get_status(self.actuators.ax_move(4, 490))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Right CH Close
 @if_enabled
 def right_cup_holder_close(self):
     self.actuators.ax_set_speed(5, 256)
-    self.actuators.ax_move(5, 820)
+    status = RobotStatus.get_status(self.actuators.ax_move(5, 820))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Right CH Open
 @if_enabled
 def right_cup_holder_open(self):
     self.actuators.ax_set_speed(5, 800)
-    self.actuators.ax_move(5, 512)
+    status = RobotStatus.get_status(self.actuators.ax_move(5, 512))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
 
 # Right CH Drop
 @if_enabled
 def right_cup_holder_drop(self):
     self.actuators.ax_set_speed(5, 800)
-    self.actuators.ax_move(5, 490)
+    status = RobotStatus.get_status(self.actuators.ax_move(5, 490))
+    if status != RobotStatus.Done
+        return RobotStatus.Failed
     return RobotStatus.Done
