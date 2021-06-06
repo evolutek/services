@@ -133,6 +133,7 @@ class TrajMan(Service):
         self.ack_recieved = Event()
 
         self.has_stopped = Event()
+        self.has_detected_collision = Event()
 
         # Used to generate debug
         self.debug_file = None
@@ -646,11 +647,12 @@ class TrajMan(Service):
                     self.log_serial("Robot started to move!")
                     self.publish(ROBOT + '_started')
                     self.has_stopped.clear()
+                    self.has_detected_collision.clear()
 
                 elif tab[1] == Commands.MOVE_END.value:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish(ROBOT + '_stopped')
+                    self.publish(ROBOT + '_stopped', status='reached' if not self.has_detected_collision.is_set() else 'not_reached')
 
                 elif tab[1] == Commands.GET_SPEEDS.value:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
@@ -742,6 +744,7 @@ class TrajMan(Service):
                         self.log("Error was: COULD_NOT_READ")
                     elif tab[2] == Errors.DESTINATION_UNREACHABLE.value:
                         self.log("Error was: DESTINATION_UNREACHABLE")
+                        self.has_detected_collision.set()
                     elif tab[2] == Erros.BAD_ORDER.value:
                         self.log("Error was: BAD_ORDER")
 
