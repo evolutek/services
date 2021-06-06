@@ -2,16 +2,17 @@ from enum import Enum
 
 class RobotStatus(Enum):
     # Common
+    Aborted = 'aborted'
+    Disabled = 'disabled'
     Done = 'done'
     Failed = 'failed'
-    Unknow = 'unknow'
-    Disabled = 'disabled'
     NotStarted = 'not-started'
+    Unknow = 'unknow'
 
     # Move
-    Reached = 'reached'
-    NotReached = 'not-reached'
     HasAvoid = 'has-avoid'
+    NotReached = 'not-reached'
+    Reached = 'reached'
     Unreachable = 'unreachable'
 
     @staticmethod
