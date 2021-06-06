@@ -91,6 +91,18 @@ class AX12(Component):
         s += "----------"
         return s
 
+    def __dict__(self):
+        return {
+            'name' : self.name,
+            'id' : self.id,
+            'position' : self.get_present_position(),
+            'speed' : self.get_present_speed(),
+            'load' : self.get_present_load(),
+            'voltage' : self.get_present_voltage(),
+            'cw_angle_limit' : self.get_cw_angle_limit(),
+            'ccw_angle_limit' : self.get_ccw_angle_limit()
+        }
+
 class AX12Controller(ComponentsHolder):
 
     def __init__(self, ids):

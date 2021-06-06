@@ -32,6 +32,7 @@ class Pump(Component):
 
     def __dict__(self):
         return {
+            "name" : self.name,
             "id": self.id,
             "pump_output": self.pump_gpio.read(),
             "ev_output": self.ev_gpio.read()
@@ -41,4 +42,3 @@ class PumpController(ComponentsHolder):
 
     def __init__(self, pumps, valve_delay=None):
         super().__init__('Pump Controller', pumps, Pump, common_args=[valve_delay])
-

@@ -18,7 +18,8 @@ class ProximitySensor(Component):
 
     def __dict__(self):
         return {
-            "id": self.id,
+            "name" : self.name,
+            "id" : self.id,
             "detection": self.read()
         }
 

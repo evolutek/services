@@ -136,22 +136,16 @@ class Actuators(Service):
             print("[ACTUATORS] Fully initialized")
 
     @Service.action
-    def status(self):
-        return {
-            'ax12' : str(self.ax12),
-            'pumps' : str(self.pumps),
-            'proximity_sensors' : str(self.proximity_sensors),
-            'recal_sensors' : str(self.recal_sensors),
-            'rgb_sensors' : str(self.rgb_sensors),
-            "rgb_led_strip" : str(self.rgb_led_strip)
-        }
+    def print_status(self):
+        for actuators in self.all_actuators:
+            print(actuators)
 
     @Service.action
-    def dict_status(self):
-        s = []
-        for i in self.all_actuators:
-            s.append(dict(i));
-        return s
+    def get_status(self):
+        d = {}
+        for actuators in self.all_actuators:
+            d.update(actuators.__dict__())
+        return d
 
     # Disable Actuators
     @Service.action
@@ -271,7 +265,7 @@ class Actuators(Service):
 
     def bau_callback(self, event, name, id, value):
         self.bau_led.write(value)
-        self.publish(event=event, name=name, id=id, value=value) 
+        self.publish(event=event, name=name, id=id, value=value)
         self.axs_free([1, 2, 3, 4, 5, 6])
         self.pumps_drop([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 

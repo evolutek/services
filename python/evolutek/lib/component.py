@@ -26,9 +26,16 @@ class Component:
         return self.init
 
     def __str__(self):
-        # TODO
-        return ""
+        s = "----------\n"
+        s += "%s; %d\n" % (self.name, self.id)
+        s += "----------\n"
+        return s
 
+    def __dict__(self):
+        return {
+            'name' : self.name,
+            'id' : self.id
+        }
 
 class ComponentsHolder:
 
@@ -82,6 +89,11 @@ class ComponentsHolder:
         for i in self.components:
             s += '\n' + str(self.components[i])
         return s
+
+    def __dict__(self):
+        return {
+            self.name : [ component.__dict__() for component in self.components ]
+        }
 
     def __iter__(self):
         return iter(self.components)

@@ -26,6 +26,7 @@ class RecalSensor(Component):
 
     def __dict__(self):
         return {
+            "name" : self.name,
             "id": self.id,
             "distance": self.read()
         }
