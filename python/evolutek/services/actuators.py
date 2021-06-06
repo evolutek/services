@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
-import board
-
+# Cellaserv
 from cellaserv.service import Service
 from cellaserv.proxy import CellaservProxy
 
+# Gpio
+import board
 from evolutek.lib.gpio.gpio_factory import AdcType, create_adc, GpioType, create_gpio
 from evolutek.lib.gpio.gpio import Edge
 
+# Components
 from evolutek.lib.actuators.ax12 import AX12Controller
 from evolutek.lib.actuators.pump import PumpController
 from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
@@ -15,12 +17,16 @@ from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.sensors.rgb_sensors import RGBSensors
 
+# Other imports
+from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.wrappers import if_enabled
-from evolutek.lib.utils.lma import launch_multiple_actions
-
 from threading import Event
+
+# TODO :
+# - Return status from RobotStatus (newRobot branch)
+# - Put components config in a lib / read a JSON
 
 # Actuators service class
 class Actuators(Service):

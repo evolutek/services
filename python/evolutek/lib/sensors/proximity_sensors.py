@@ -29,5 +29,7 @@ class ProximitySensors(ComponentsHolder):
         super().__init__('Proximity sensors', sensors, ProximitySensor)
 
     def read_all_sensors(self):
-        # TODO
-        return []
+        results = {}
+        for sensor in self.components:
+            results[sensor] = self.components[sensor].read()
+        return results

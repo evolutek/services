@@ -39,4 +39,7 @@ class RecalSensors(ComponentsHolder):
         super().__init__("Recal sensors", adcs, RecalSensor)
 
     def read_all_sensors(self):
-        return map(lambda sensor: self.components[sensor].read(), self)
+        results = {}
+        for sensor in self.components:
+            results[sensor] = self.components[sensor].read()
+        return results
