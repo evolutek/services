@@ -18,6 +18,7 @@ class Dummy(Service):
             self.need_to_say_something.wait()
             self.need_to_say_something.clear()
             self.publish('dummy_start')
+            sleep(1)
             print('Say something')
             self.publish('dummy_stop', status='done', lol='XD')
 

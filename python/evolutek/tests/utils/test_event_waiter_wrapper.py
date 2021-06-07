@@ -1,5 +1,6 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event, Service
+from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import event_waiter
 from time import sleep
 
@@ -16,7 +17,7 @@ class Test(Service):
 
     def callback(self):
         print('Callback called')
-        return False
+        return RobotStatus.Ok
 
     @Service.thread
     def test(self):
