@@ -10,12 +10,12 @@ import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.sensors.rplidar import Rplidar
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.action_queue import ActQueue
 from evolutek.lib.utils.wrappers import event_waiter
 
 from time import time, sleep
 from threading import Event, Lock
 
-# TODO : Queue
 # TODO : Permit to use action without queue
 # TODO : Manage avoid
 # TODO : Pathfinding
@@ -87,11 +87,11 @@ class Robot(Service):
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
-        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=lambda:self.check_abort() or self.check_avoid(), has_abort=self.has_abort, has_avoid=self.has_avoid)
-        self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
-        self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
-        self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
-        self.recal = event_waiter(self.recalibration, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
+        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=lambda: self.check_avoid() if self.check_abort() != RobotStatus.Ok else RobotStatus.Ok)
+        self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)
+        self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort)
+        self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
+        self.recal = event_waiter(self.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
         lidar_config = self.cs.config.get_section('rplidar')
 
@@ -101,13 +101,18 @@ class Robot(Service):
 
         self.last_telemetry_received = 0
 
-        # TODO : import queue
         self.disabled = Event()
         self.need_to_abort = Event()
         self.has_abort = Event()
         self.has_avoid = Event()
 
-        super().__init__()
+        self.queue = ActQueue(
+            lambda:self.publish('%s_robot_started' % ROBOT),
+            lambda status: self.publish('%s_robot_stopped' % ROBOT, status=status.value)
+        )
+        self.queue.run_queue()
+
+        super().__init__(ROBOT)
 
     @Service.event("match_color")
     def color_callback(self, color):
@@ -130,18 +135,19 @@ class Robot(Service):
     @Service.action
     def enable(self):
         self.disabled.clear()
-        # TODO : start queue
+        self.queue.run_queue()
 
     @Service.event('match_end')
     @Service.action
     def disable(self):
         self.disabled.set()
-        self.abort_action()
+        self.queue.stop_queue()
+        self.need_to_abort.set()
 
     @Service.action
     def abort_action(self):
         self.need_to_abort.set()
-        # TODO
+        self.queue.clear_queue()
 
     @Service.action
     def stop_robot(self):
@@ -152,16 +158,12 @@ class Robot(Service):
             self.has_abort.set()
             self.stop_robot()
             self.need_to_abort.clear()
-            return True
-        return False
+            return RobotStatus.Aborted
+        return RobotStatus.OK
 
     def check_avoid(self):
-        # TODO :
-        # Check if we need to avoid
-        # Set event
-        # Stop robot
-        # Return True
-        return False
+        # TODO avoid
+        return RobotStatus.Ok
 
 if __name__ == '__main__':
     robot = Robot()
