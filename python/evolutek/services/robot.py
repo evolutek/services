@@ -19,8 +19,7 @@ from threading import Event, Lock
 # TODO : Permit to use action without queue
 # TODO : Manage avoid
 # TODO : Pathfinding
-# TODO : Abort
-# TODO : Match End
+# TODO : Reset robot (after aborting ? after BAU ?)
 
 @Service.require('config')
 @Service.require('actuators', ROBOT)
@@ -79,17 +78,20 @@ class Robot(Service):
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
+        self.stop_trsl_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_dec'))
+        self.stop_rot_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_rot'))
+
         # TODO: rename
         self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
 
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
-        self.goto_xy = event_waiter(self.trajman.goto_xy, start_event, stop_event)
-        self.goto_theta = event_waiter(self.trajman.goto_theta, start_event, stop_event)
-        self.move_trsl = event_waiter(self.trajman.move_trsl, start_event, stop_event)
-        self.move_rot = event_waiter(self.trajman.move_rot, start_event, stop_event)
-        self.recal = event_waiter(self.recalibration, start_event, stop_event)
+        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=lambda:self.check_abort() or self.check_avoid(), has_abort=self.has_abort, has_avoid=self.has_avoid)
+        self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
+        self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
+        self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
+        self.recal = event_waiter(self.recalibration, self.start_event, self.stop_event, callback=self.check_abort, has_abort=self.has_abort)
 
         lidar_config = self.cs.config.get_section('rplidar')
 
@@ -101,11 +103,14 @@ class Robot(Service):
 
         # TODO : import queue
         self.disabled = Event()
+        self.need_to_abort = Event()
+        self.has_abort = Event()
+        self.has_avoid = Event()
 
         super().__init__()
 
     @Service.event("match_color")
-    def color_callback(color):
+    def color_callback(self, color):
         with self.lock:
             self.side = color == self.color1
 
@@ -127,6 +132,7 @@ class Robot(Service):
         self.disabled.clear()
         # TODO : start queue
 
+    @Service.event('match_end')
     @Service.action
     def disable(self):
         self.disabled.set()
@@ -134,8 +140,28 @@ class Robot(Service):
 
     @Service.action
     def abort_action(self):
+        self.need_to_abort.set()
         # TODO
-        pass
+
+    @Service.action
+    def stop_robot(self):
+        self.trajman.stop_asap(self.stop_trsl_dec, self.stop_rot_dec)
+
+    def check_abort(self):
+        if self.need_to_abort.is_set():
+            self.has_abort.set()
+            self.stop_robot()
+            self.need_to_abort.clear()
+            return True
+        return False
+
+    def check_avoid(self):
+        # TODO :
+        # Check if we need to avoid
+        # Set event
+        # Stop robot
+        # Return True
+        return False
 
 if __name__ == '__main__':
     robot = Robot()

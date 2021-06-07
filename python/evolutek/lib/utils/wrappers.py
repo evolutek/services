@@ -33,7 +33,7 @@ def timeout_handler():
 # stop_event: stop event to wait
 # callback: callback to call at each iteration while waiting for stop event
 # callback_refresh : refresh to call callback
-def event_waiter(method, start_event, stop_event, callback=None, callback_refresh=0.1):
+def event_waiter(method, start_event, stop_event, callback=None, callback_refresh=0.1, has_abort=None, has_avoid=None):
 
     @wraps(method)
     def wrapped(*args, **kwargs):
@@ -68,7 +68,16 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
             sleep(callback_refresh)
 
         stop_event.wait()
-        stop_event.data['status'] = RobotStatus.get_status(stop_event.data)
+
+        nonlocal has_abort
+        nonlocal has_avoid
+        if has_abort is not None and has_abort.is_set():
+            stop_event.data['status'] = RobotStatus.Aborted
+            has_abort.clear()
+        elif has_avoid is not None and has_avoid.is_set():
+            stop_event.data['status'] = RobotStatus.HasAvoid
+        else:
+            stop_event.data['status'] = RobotStatus.get_status(stop_event.data)
         return stop_event.data
 
     return wrapped
