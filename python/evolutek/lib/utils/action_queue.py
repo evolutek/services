@@ -1,11 +1,13 @@
 import queue
 from threading import Thread, Event
-from evolutek.lib.utils.lma import launch_multiple_actions
+from time import sleep
 
+from evolutek.lib.utils.lma import launch_multiple_actions
+from evolutek.lib.utils.task import Task
 
 class ActQueue:
     def __init__(self, start_callback=None, end_callback=None):
-        self.task = queue.Queue()
+        self.tasks = queue.Queue()
         self.response_queue = queue.Queue()
         self.stop = Event()
         self.start_callback = start_callback
@@ -15,16 +17,14 @@ class ActQueue:
     ##############
     # ADD A TASK #
     ##############
-    def run_action(self, action, args):
-        tmp = (action, args)
-        self.task.put(tmp)
+    def run_action(self, task):
+        self.tasks.put(task)
 
     ######################
     # ADD A LIST OF TASK #
     ######################
-    def run_actions(self, actions, args_list):
-        tmp = (list(actions), list(args_list))
-        self.task.put(tmp)
+    def run_actions(self, tasks):
+        self.tasks.put(tasks)
 
     #################
     # DEPILATE QUEUE #
@@ -33,15 +33,15 @@ class ActQueue:
         tmp = ()
         self.is_running.set()
         while not self.stop.is_set():
-            tmp = self.task.get()
+            task = self.tasks.get()
 
             if self.start_callback is not None:
                 self.start_callback()
 
-            if isinstance(tmp[0], list):
-                result = launch_multiple_actions(tmp[0], tmp[1])
+            if isinstance(task, Task):
+                result = task.run()
             else:
-                result = tmp[0](*tmp[1])
+                result = launch_multiple_actions(task)
 
             if self.end_callback is not None:
                 self.end_callback(result)
@@ -62,8 +62,8 @@ class ActQueue:
     # CLEAR QUEUE #
     ###############
     def clear_queue(self):
-        while not self.task.empty():
-            self.task.get()
+        while not self.tasks.empty():
+            self.tasks.get()
         print('[ACT_QUEUE] Cleared')
 
     ##############
@@ -72,4 +72,8 @@ class ActQueue:
     def stop_queue(self):
         self.stop.set()
         self.clear_queue()
+
+        while self.stop.is_set():
+            sleep(0.1)
+
         print('[ACT_QUEUE] Stopped')
