@@ -12,13 +12,13 @@ class LightningMode(Enum):
     Running = 'running'
 
 refresh = {
-    LightningMode.Disabled : 0.5,
+    LightningMode.Disabled : 0.25,
     LightningMode.Error : 0.5,
-    LightningMode.Loading : 0.1,
+    LightningMode.Loading : 0.05,
     LightningMode.Running  : 1
 }
 
-NB_LOADING_LED = 3
+NB_LOADING_LED = 10
 
 class WS2812BLedStrip(Component):
 
@@ -52,7 +52,7 @@ class WS2812BLedStrip(Component):
     def _initialize(self):
 
         try:
-            self.leds = NeoPixel(self.pin, self.nb_leds, brightness=10)
+            self.leds = NeoPixel(self.pin, self.nb_leds, brightness=self.brightness)
         except Exception as e:
             print('[%s] Failed to initiliaze Led Strip: %s' % (self.name, str(e)))
             return False
@@ -90,7 +90,8 @@ class WS2812BLedStrip(Component):
             with self.lock:
 
                 if self.mode == LightningMode.Disabled:
-                    self.leds.fill(Color.Orange.value if self.state else Color.Black.value)
+                    for i in range(self.nb_leds):
+                        self.leds[i] = Color.Orange.value if self.state ^ i % 2 == 0 else Color.Black.value
                     self.state = not self.state
 
                 elif self.mode == LightningMode.Error:
