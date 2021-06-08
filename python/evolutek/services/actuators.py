@@ -117,7 +117,7 @@ class Actuators(Service):
         self.tirette.auto_refresh(refresh=0.1, callback=self.publish)
         self.white_led_strip = create_gpio(16, 'leds strips', dir=True, type=GpioType.MCP)
 
-        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 16, 0.2)
+        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
         try:
             self.match_color_callback(self.cs.match.get_color())
