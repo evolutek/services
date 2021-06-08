@@ -22,6 +22,7 @@ from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.lma import launch_multiple_actions
+from evolutek.lib.utils.task import Task
 from evolutek.lib.utils.wrappers import if_enabled
 from threading import Event
 
@@ -178,31 +179,37 @@ class Actuators(Service):
     @if_enabled
     @Service.action
     def pumps_drop(self, ids):
-        if (type(ids) == str):
+        if isinstance(ids, str):
             ids = ids.split(",")
-        func = []
-        args = []
+
+        tasks = []
         for i in ids:
             if self.pumps[int(i)] == None:
                 continue
-            func.append(self.pumps[int(i)].drop)
-            args.append({})
-        launch_multiple_actions(func, args)
+            tasks.append(Task(self.self.pumps[int(i)].drop))
+
+        if len(tasks) < 1:
+            return RobotStatus.Failed
+
+        launch_multiple_actions(tasks)
         return RobotStatus.Done.value
 
     @if_enabled
     @Service.action
     def pumps_get(self, ids):
-        if (type(ids) == str):
+        if isinstance(ids, str):
             ids = ids.split(",")
-        func = []
-        args = []
+
+        tasks = []
         for i in ids:
             if self.pumps[int(i)] == None:
                 continue
-            func.append(self.pumps[int(i)].get)
-            args.append({})
-        launch_multiple_actions(func, args)
+            tasks.append(Task(self.self.pumps[int(i)].get))
+
+        if len(tasks) < 1:
+            return RobotStatus.Failed
+
+        launch_multiple_actions(tasks)
         return RobotStatus.Done.value
 
     #######
@@ -218,16 +225,19 @@ class Actuators(Service):
 
     @Service.action
     def axs_free(self, ids):
-        if (type(ids) == str):
+        if isinstance(ids, str):
             ids = ids.split(",")
-        func = []
-        args = []
+
+        tasks = []
         for i in ids:
             if self.ax[int(i)] == None:
-                return ("[ACTUATORS] Invalid ax id: " + i)
-            func.append(self.ax[int(i)].free)
-            args.append({})
-        launch_multiple_actions(func, args)
+                continue
+            tasks.append(Task(self.self.ax[int(i)].free))
+
+        if len(tasks) < 1:
+            return RobotStatus.Failed
+
+        launch_multiple_actions(tasks)
         return RobotStatus.Done.value
 
     @Service.action
