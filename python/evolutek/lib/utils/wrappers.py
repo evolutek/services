@@ -1,4 +1,5 @@
 from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.task import Task
 from evolutek.lib.utils.watchdog import Watchdog
 from functools import wraps
 from threading import Event
@@ -77,5 +78,28 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
         else:
             stop_event.data['status'] = RobotStatus.get_status(stop_event.data)
         return stop_event.data
+
+    return wrapped
+
+def use_queue(method):
+
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+
+        use_queue = True
+        if 'use_queue' in kwargs:
+            use_queue = kwargs['use_queue']
+            if isinstance(use_queue, str):
+                use_queue = use_queue == 'true'
+
+            del kwargs['use_queue']
+
+        args = [self] + list(args)
+        task = Task(method, args, kwargs)
+
+        if use_queue:
+            self.queue.run_action(task)
+        else:
+            return task.run()
 
     return wrapped

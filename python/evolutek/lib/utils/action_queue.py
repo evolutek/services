@@ -33,7 +33,12 @@ class ActQueue:
         tmp = ()
         self.is_running.set()
         while not self.stop.is_set():
-            task = self.tasks.get()
+            try:
+                task = self.tasks.get(timeout=0.01)
+            except:
+                continue
+
+            print('[ACT_QUEUE] Running task')
 
             if self.start_callback is not None:
                 self.start_callback()
@@ -45,6 +50,7 @@ class ActQueue:
 
             if self.end_callback is not None:
                 self.end_callback(result)
+
         self.is_running.clear()
 
     ###############
@@ -73,7 +79,7 @@ class ActQueue:
         self.stop.set()
         self.clear_queue()
 
-        while self.stop.is_set():
+        while self.is_running.is_set():
             sleep(0.1)
 
         print('[ACT_QUEUE] Stopped')
