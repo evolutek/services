@@ -16,7 +16,7 @@ from evolutek.lib.utils.wrappers import event_waiter
 from time import time, sleep
 from threading import Event, Lock
 
-# TODO : Permit to use action without queue
+# TODO : Actions need too check abort and/or avoid
 # TODO : Manage avoid
 # TODO : Pathfinding
 # TODO : Reset robot (after aborting ? after BAU ?)

@@ -2,8 +2,6 @@ from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
 from time import sleep
 
-# TODO : check for abort and match end
-
 #########
 # REEFS #
 #########

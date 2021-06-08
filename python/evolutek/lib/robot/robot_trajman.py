@@ -1,5 +1,6 @@
 from evolutek.lib.status import RobotStatus
-from evolutek.lib.utils.wrappers import if_enabled
+from evolutek.lib.utils.wrappers import if_enabled, use_queue
+from math import pi
 from time import sleep
 
 ##########
@@ -53,6 +54,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
 #########
 
 @if_enabled
+@use_queue
 def goto(self, x, y, mirror=True):
     if mirror:
         y = self.mirror_pos(y=y)['y']
@@ -60,6 +62,7 @@ def goto(self, x, y, mirror=True):
     return self.goto_xy(x, y)
 
 @if_enabled
+@use_queue
 def goth(self, theta, mirror=True):
     if mirror:
         theta = self.mirror_pos(theta=theta)['theta']
@@ -67,15 +70,17 @@ def goth(self, theta, mirror=True):
     return self.goto_theta(theta)
 
 @if_enabled
+@use_queue
 def move_back(self):
     #print('[ROBOT] Move back direction: ' + 'back' if self.avoid_side else 'front')
-    return self.move_trsl(acc=200, dec=200, dest=dist, maxspeed=400, sens=int(not self.avoid_side))
+    return self.move_trsl(acc=200, dec=200, dest=self.dist, maxspeed=400, sens=int(not self.avoid_side))
 
 #################
 # RECALIBRATION #
 #################
 
 @if_enabled
+@use_queue
 def recalibration(self,
                     x=True,
                     y=True,
