@@ -1,11 +1,9 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-from evolutek.lib.watchdog import Watchdog
-from evolutek.lib import gpio
-from evolutek.lib.settings import ROBOT
+from evolutek.lib.gpio.gpio_factory import create_gpio, GpioType
 
 from enum import Enum
-from threading import Event, Timer, Thread
+from threading import Timer, Thread
 from time import sleep
 
 WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
@@ -32,16 +30,14 @@ class Match(Service):
         self.match_duration = int(match_config['duration'])
 
         # Match Status
+        self.match_status = MatchStatus.unstarted
         self.color = None
         self.set_color(self.color1)
-        self.match_status = MatchStatus.unstarted
         self.score = 0
         self.match_time = 0
         self.match_time_thread = Thread(target=self.match_time_loop)
         self.anchorage = None
 
-        self.change_strategy = Event()
-        self.add_subscribe_cb(ROBOT + "_strategy", self.set_strategy)
         print('[MATCH] Match ready')
 
     """ EVENT """
@@ -74,7 +70,7 @@ class Match(Service):
     """ WeatherCock """
     def read_weathercock(self):
         print('[MATCH] reading weathercock position')
-        white = gpio.Gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False).read()
+        white = create_gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False, type=GpioType.RPI).read()
         side = 'north' if not white else 'south'
         self.publish('anchorage', side=(side))
         self.anchorage = side
