@@ -1,3 +1,5 @@
+from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.task import Task
 from evolutek.lib.utils.watchdog import Watchdog
 from functools import wraps
 from threading import Event
@@ -14,7 +16,7 @@ def if_enabled(method):
         if self.disabled.is_set():
             self.log(what='disabled',
                     msg="Usage of {} is disabled".format(method))
-            return
+            return RobotStatus.Disabled
         return method(self, *args, **kwargs)
 
     return wrapped
@@ -32,13 +34,15 @@ def timeout_handler():
 # stop_event: stop event to wait
 # callback: callback to call at each iteration while waiting for stop event
 # callback_refresh : refresh to call callback
-def event_waiter(method, callback=None, callback_refresh=0.1):
+def event_waiter(method, start_event, stop_event, callback=None, callback_refresh=0.1):
 
     @wraps(method)
-    def wrapped(self, *args, **kwargs):
+    def wrapped(*args, **kwargs):
 
-        self.start_event.clear()
-        self.stop_event.clear()
+        nonlocal start_event
+        nonlocal stop_event
+        start_event.clear()
+        stop_event.clear()
 
         nonlocal callback
         nonlocal callback_refresh
@@ -51,20 +55,51 @@ def event_waiter(method, callback=None, callback_refresh=0.1):
 
         watchdog.reset()
 
-        while not self.start_event.is_set() and not timeout_event.is_set():
+        while not start_event.is_set() and not timeout_event.is_set():
             sleep(0.01)
 
-        if not self.start_event.is_set():
-            return 'not_started'
+        if not start_event.is_set():
+            return {'status' : RobotStatus.NotStarted}
 
         watchdog.stop()
 
-        while not self.stop_event.is_set():
-            if callback is not None and callback():
-                break
+        status = None
+        while not stop_event.is_set():
+            if callback is not None:
+                status =  callback()
+                if status != RobotStatus.Ok:
+                    break
             sleep(callback_refresh)
 
-        self.stop_event.wait()
-        return self.stop_event.data['status']
+        stop_event.wait()
+
+        if status is not None and status != RobotStatus.Ok:
+            stop_event.data['status'] = status
+        else:
+            stop_event.data['status'] = RobotStatus.get_status(stop_event.data)
+        return stop_event.data
+
+    return wrapped
+
+def use_queue(method):
+
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+
+        use_queue = True
+        if 'use_queue' in kwargs:
+            use_queue = kwargs['use_queue']
+            if isinstance(use_queue, str):
+                use_queue = use_queue == 'true'
+
+            del kwargs['use_queue']
+
+        args = [self] + list(args)
+        task = Task(method, args, kwargs)
+
+        if use_queue:
+            self.queue.run_action(task)
+        else:
+            return task.run()
 
     return wrapped
