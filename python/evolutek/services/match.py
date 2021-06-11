@@ -23,16 +23,13 @@ class Match(Service):
     def __init__(self):
 
         super().__init__()
-        self.cs = CellaservProxy()
+        cs = CellaservProxy()
 
         # Get the config of the match
-        match_config = self.cs.config.get_section('match')
+        match_config = cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
         self.match_duration = int(match_config['duration'])
-        self.refresh = float(match_config['refresh'])
-        self.timeout_robot = float(match_config['timeout_robot'])
-        self.strategy = {}
 
         # Match Status
         self.color = None
@@ -46,13 +43,6 @@ class Match(Service):
         self.change_strategy = Event()
         self.add_subscribe_cb(ROBOT + "_strategy", self.set_strategy)
         print('[MATCH] Match ready')
-
-    def set_strategy(self, ai, strategy):
-        self.strategy[ai] = strategy
-
-    @Service.action
-    def get_strategy(self, name_ai):
-        return self.strategy[name_ai]
 
     """ EVENT """
 
@@ -158,21 +148,13 @@ class Match(Service):
     """ End match """
     @Service.action
     def match_end(self):
-        self.score += 10
+        self.score += 10 # Usefull ?
         self.publish('match_end')
         self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
 
 
     """ THREAD """
-    #
-    # """ Match status thread """
-    # @Service.thread
-    def match_status(self):
-        # while True:
-            #self.publish('match_status', status=self.get_status())
-            #sleep(self.refresh)
-        return
 
     def match_time_loop(self):
         while self.match_status == MatchStatus.started:
