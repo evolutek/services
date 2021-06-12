@@ -2,7 +2,6 @@ import queue
 from threading import Thread, Event
 from time import sleep
 
-from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.utils.task import Task
 
 class ActQueue:
@@ -19,12 +18,6 @@ class ActQueue:
     ##############
     def run_action(self, task):
         self.tasks.put(task)
-
-    ######################
-    # ADD A LIST OF TASK #
-    ######################
-    def run_actions(self, tasks):
-        self.tasks.put(tasks)
 
     #################
     # DEPILATE QUEUE #
@@ -44,12 +37,13 @@ class ActQueue:
                 self.start_callback()
 
             if isinstance(task, Task):
-                result = task.run()
-            else:
-                result = launch_multiple_actions(task)
+                r = task.run()
+
+            if isinstance(r, str):
+                r = { 'status' : r }
 
             if self.end_callback is not None:
-                self.end_callback(result)
+                self.end_callback(r)
 
         self.is_running.clear()
 

@@ -44,6 +44,8 @@ class Robot(Service):
     mirror_pump_id = robot_actuators.mirror_pump_id
     flags_raise = Service.action(robot_actuators.flags_raise)
     flags_low = Service.action(robot_actuators.flags_low)
+    front_arm_close = Service.action(robot_actuators.front_arm_close)
+    front_arm_open = Service.action(robot_actuators.front_arm_open)
     left_arm_close = Service.action(robot_actuators.left_arm_close)
     left_arm_open = Service.action(robot_actuators.left_arm_open)
     left_arm_push = Service.action(robot_actuators.left_arm_push)
@@ -59,6 +61,12 @@ class Robot(Service):
 
     # Imported from robot_actuators
     get_reef = Service.action(robot_actions.get_reef)
+
+    def check(self):
+        status = self.check_abort()
+        if status != RobotStatus.Ok:
+            return status
+        return self.check_avoid()
 
     def __init__(self):
 
@@ -87,7 +95,7 @@ class Robot(Service):
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
-        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=lambda: self.check_avoid() if self.check_abort() != RobotStatus.Ok else RobotStatus.Ok)
+        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=self.check)
         self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
@@ -95,9 +103,9 @@ class Robot(Service):
 
         lidar_config = self.cs.config.get_section('rplidar')
 
-        self.lidar = Rplidar(lidar_config)
-        self.lidar.start_scanning()
-        self.lidar.register_callback(self.lidar_callback)
+        #self.lidar = Rplidar(lidar_config)
+        #self.lidar.start_scanning()
+        #self.lidar.register_callback(self.lidar_callback)
 
         self.last_telemetry_received = 0
 
@@ -106,20 +114,23 @@ class Robot(Service):
         self.has_abort = Event()
         self.has_avoid = Event()
 
+        def callback(r):
+            if isinstance(r['status'], RobotStatus):
+                r['status'] = r['status'].value
+            self.publish('%s_robot_stopped' % ROBOT, **r)
+
         self.queue = ActQueue(
-            lambda:self.publish('%s_robot_started' % ROBOT),
-            lambda status: self.publish('%s_robot_stopped' % ROBOT, status=status.value)
+            lambda: self.publish('%s_robot_started' % ROBOT),
+            callback
         )
         self.queue.run_queue()
-
-        super().__init__(ROBOT)
 
     @Service.event("match_color")
     def color_callback(self, color):
         with self.lock:
             self.side = color == self.color1
 
-    @Service.event("%s_telemetry" % ROBOT)
+    #@Service.event("%s_telemetry" % ROBOT)
     def callback_telemetry(self, telemetry, **kwargs):
         tmp = time()
         print("[ROBOT] Time since last telemetry: " + str((tmp - self.last_telemetry_received) * 1000) + "s")
@@ -159,7 +170,7 @@ class Robot(Service):
             self.stop_robot()
             self.need_to_abort.clear()
             return RobotStatus.Aborted
-        return RobotStatus.OK
+        return RobotStatus.Ok
 
     def check_avoid(self):
         # TODO avoid

@@ -33,13 +33,13 @@ def set_x(self, x):
 
 def set_y(self, y, mirror=True):
     if mirror:
-        y = self.mirror_pos(y=y)['y']
+        y = self.mirror_pos(y=float(y))['y']
 
     self.trajman.set_y(y)
 
 def set_theta(self, theta, mirror=True):
-    if self.mirror:
-        theta = self.mirror_pos(theta=theta)['theta']
+    if mirror:
+        theta = self.mirror_pos(theta=float(theta))['theta']
 
     self.trajman.set_theta(theta)
 

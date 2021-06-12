@@ -18,6 +18,8 @@ class RobotStatus(Enum):
 
     @staticmethod
     def get_status(dict):
+        if isinstance(dict, str):
+            dict = { 'status' : dict }
         try:
             return RobotStatus(dict['status'])
         except:
