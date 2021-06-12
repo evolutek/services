@@ -149,11 +149,13 @@ class Actuators(Service):
         for actuators in self.all_actuators:
             print(actuators)
 
-    @Service.action
+    #@Service.action
     def get_status(self):
         d = {}
         for actuators in self.all_actuators:
+            print(actuators)
             d.update(actuators.__dict__())
+        print(d)
         return d
 
     # Free all actuators
@@ -279,7 +281,8 @@ class Actuators(Service):
     def bau_callback(self, event, name, id, value):
         self.bau_led.write(value)
         self.publish(event=event, name=name, id=id, value=value)
-        self.free()
+        if not value:
+            self.free()
 
     ###################
     # WHITE LED STRIP #
@@ -303,7 +306,7 @@ class Actuators(Service):
     @Service.event('match_color')
     def match_color_callback(self, color):
         try:
-            self.rgb_led_strip.set_loading_color(Color(color))
+            self.rgb_led_strip.set_loading_color(Color.get_by_name(color))
         except Exception as e:
             print('[ACTUATORS] Faile to set loading mode: %s' % str(e))
 

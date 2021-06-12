@@ -38,7 +38,7 @@ class WS2812BLedStrip(Component):
     def __str__(self):
         s = "----------\n"
         s += "%s" % self.name
-        s += "Current mode: %s" % self.mode.value
+        s += "Current mode: %s\n" % self.mode.value
         s += "----------"
         return s
 

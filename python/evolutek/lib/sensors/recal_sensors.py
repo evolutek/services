@@ -24,6 +24,13 @@ class RecalSensor(Component):
         alpha = (voltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)
         return interp(MIN_DISTANCE, MAX_DISTANCE, alpha)
 
+    def __str__(self):
+        s = "----------\n"
+        s += "Recal sensor: %d\n" % self.id
+        s += "Distance: %d\n" % self.read()
+        s += "----------"
+        return s
+
     def __dict__(self):
         return {
             "name" : self.name,

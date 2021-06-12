@@ -28,7 +28,7 @@ class Component:
     def __str__(self):
         s = "----------\n"
         s += "%s; %d\n" % (self.name, self.id)
-        s += "----------\n"
+        s += "----------"
         return s
 
     def __dict__(self):
@@ -92,7 +92,7 @@ class ComponentsHolder:
 
     def __dict__(self):
         return {
-            self.name : [ component.__dict__() for component in self.components ]
+            self.name : [ self.components[component].__dict__() for component in self.components ]
         }
 
     def __iter__(self):
