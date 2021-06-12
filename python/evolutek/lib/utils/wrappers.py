@@ -16,7 +16,7 @@ def if_enabled(method):
         if self.disabled.is_set():
             self.log(what='disabled',
                     msg="Usage of {} is disabled".format(method))
-            return RobotStatus.Disabled
+            return RobotStatus.Disabled.value
         return method(self, *args, **kwargs)
 
     return wrapped

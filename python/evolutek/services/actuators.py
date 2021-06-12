@@ -178,7 +178,6 @@ class Actuators(Service):
     #########
     # PUMPS #
     #########
-    @if_enabled
     @Service.action
     def pumps_drop(self, ids):
         if isinstance(ids, str):
@@ -191,7 +190,7 @@ class Actuators(Service):
             tasks.append(Task(self.pumps[int(i)].drop))
 
         if len(tasks) < 1:
-            return RobotStatus.Failed
+            return RobotStatus.Failed.value
 
         launch_multiple_actions(tasks)
         return RobotStatus.Done.value
@@ -209,7 +208,7 @@ class Actuators(Service):
             tasks.append(Task(self.pumps[int(i)].get))
 
         if len(tasks) < 1:
-            return RobotStatus.Failed
+            return RobotStatus.Failed.value
 
         launch_multiple_actions(tasks)
         return RobotStatus.Done.value
@@ -222,7 +221,7 @@ class Actuators(Service):
     def ax_move(self, id, pos):
         if self.axs[int(id)] == None:
             return RobotStatus.Failed.value
-        self.axs[int(id)].move(pos)
+        self.axs[int(id)].move(int(pos))
         return RobotStatus.Done.value
 
     @Service.action
@@ -242,7 +241,7 @@ class Actuators(Service):
     def ax_set_speed(self, id, speed):
         if self.axs[int(id)] == None:
             return None
-        return self.axs[int(id)].moving_speed(speed)
+        return self.axs[int(id)].moving_speed(int(speed))
 
     #################
     # COLOR SENSORS #
@@ -299,7 +298,7 @@ class Actuators(Service):
     @Service.action
     def rgb_led_strip_set_mode(self, mode):
         try:
-            self.rgb_led_strip_set_mode(LightningMode(mode))
+            self.rgb_led_strip.set_mode(LightningMode(mode))
         except Exception as e:
             print('[ACTUATORS] Failed to set lightning mode: %s' % str(e))
 
