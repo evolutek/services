@@ -3,7 +3,7 @@ from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
-from evolutek.lib.watchdog import Watchdog
+from evolutek.lib.utils.watchdog import Watchdog
 
 import asyncore
 from math import cos, sin, pi, degrees
@@ -32,7 +32,7 @@ class Interface:
         self.robot_size = float(match_config['robot_size'])
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
-        self.timeout_robot = float(match_config['timeout_robot'])
+        #self.timeout_robot = float(match_config['timeout_robot'])
 
         self.window = Tk()
         self.window.attributes('-fullscreen', True)
@@ -87,7 +87,7 @@ class Interface:
         self.paths[robot] = []
         self.client.add_subscribe_cb('%s_path' % robot, self.path_handler)
 
-        setattr(self, '%s_watchdog' % robot, Watchdog(self.timeout_robot * 2, self.reset_robot, [robot]))
+        #setattr(self, '%s_watchdog' % robot, Watchdog(self.timeout_robot * 2, self.reset_robot, [robot]))
 
         img = Image.open('/etc/conf.d/%s.png' % robot)
         new_size = int((self.robots[robot]['size'] + 35) * 2 * self.interface_ratio)

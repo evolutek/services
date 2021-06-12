@@ -58,15 +58,20 @@ class Rplidar:
     def convert_scan_to_cloud(self, scan):
         cloud = []
         lidar_angle = None
-        with self.lock:
-            lidar_angle = self.angle
+
+        #with self.lock:
+        #    lidar_angle = self.angle
+
         for quality, angle, distance in scan:
+
+            # TODO : put 1500 in a config variable
             if distance > 1500: continue
-            current_angle = radians(angle) - lidar_angle
-            x = distance * sin(current_angle) + self.position.x
-            if x < 0 or x > 2000: continue
-            y = distance * cos(current_angle) + self.position.y
-            if y < 0 or y > 3000: continue
+
+            current_angle = radians(angle) + pi/2# - lidar_angle
+            x = distance * sin(current_angle)# + self.position.y
+            #if x < 0 or x > 2000: continue
+            y = distance * cos(current_angle)# + self.position.y
+            #if y < 0 or y > 3000: continue
             cloud.append(Point(x, y))
         return cloud
 
@@ -162,7 +167,7 @@ class Rplidar:
                 print('[RPLIDAR] Stop scanning')
                 self.need_to_stop.clear()
                 return
-   
+
     def get_cloud(self):
         with self.lock:
             return self.cloud
