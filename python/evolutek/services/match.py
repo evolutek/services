@@ -77,12 +77,10 @@ class Match(Service):
 
     """ Telemetry """
     @Service.event("pal_telemetry")
-    def subscribe_pal_telemetry(self):
+    @Service.event("pmi_telemetry")
+    def subscribe_robot_telemetry(self, status, telemetry, robot):
         pass
 
-    @Service.event("pmi_telemetry")
-    def subscribe_pmi_telemetry(self):
-        pass
 
     """ ACTION """
 
