@@ -8,7 +8,8 @@ from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 lidar = None
-
+robot_position = Point(0, 0)
+robot_theta = 0
 ROBOT = 'pal' # Set to None to ignore telemetry
 
 def start_interface():
@@ -16,8 +17,12 @@ def start_interface():
     RplidarInterface(lidar)
 
 def update_position(telemetry, **kwargs):
-    global lidar
-    lidar.set_position(Point(dict=telemetry), float(telemetry['theta']))
+    global robot_position
+    robot_position = Point(dict=telemetry)
+    global robot_theta
+    robot_theta = float(telemetry['theta'])
+    #global lidar
+    #lidar.set_position(Point(dict=telemetry), float(telemetry['theta']))
 
 def test_lidar():
     global lidar
@@ -31,7 +36,7 @@ def test_lidar():
     print('[TEST_RPLIDAR] Starting lidar test')
     lidar = Rplidar(config)
     lidar.start_scanning()
-    lidar.set_position(Point(1000, 1500), pi)
+    #lidar.set_position(Point(1000, 1500), pi)
 
     if ROBOT is not None:
         print('[TEST_RPLIDAR] Stating AsynClient')
@@ -46,7 +51,10 @@ def test_lidar():
         robots = lidar.get_robots()
         print('[TEST_RPLIDAR] New scan:')
         for robot in robots:
-            print(robot.to_dict())
+            print('----------')
+            print(robot)
+            print(robot.change_referencial(robot_position, robot_theta))
+            print('----------')
         sleep(0.5)
 
 if __name__ == '__main__':
