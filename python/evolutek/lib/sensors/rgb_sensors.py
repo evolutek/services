@@ -62,28 +62,28 @@ class TCS34725(Component):
         r, g, b = rgb[0], rgb[1], rgb[2]
         colorByte = max(r, g, b)
         if not self.isMajorChanges(rgb):
-            return Colors.Unknow
+            return Color.Unknow
         elif colorByte == r:
-            return Colors.Red
+            return Color.Red
         elif colorByte == g:
-            return Colors.Green
+            return Color.Green
         else:
-            return Colors.Blue
+            return Color.Blue
 
     def __str__(self):
         s = "----------\n"
         s += "TCS34725: %d\n" % self.id
         s += "Channel: %d\n" % self.channel
         s += "Color: %s\n" % self.read().name
-        s += "---------"
+        s += "----------"
         return s
 
     def __dict__(self):
         return {
-            "name": self.name()
+            "name": self.name,
             "id": self.id,
             "channel": self.channel,
-            "color": self.read()
+            "color": self.read().name
         }
 
 class RGBSensors(ComponentsHolder):

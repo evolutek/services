@@ -126,8 +126,6 @@ class TrajMan(Service):
     def __init__(self):
         super().__init__(ROBOT)
 
-        self.cs = CellaservProxy()
-
         # Messages comming from the motor card
         self.queue = Queue()
         self.ack_recieved = Event()
@@ -177,14 +175,19 @@ class TrajMan(Service):
 
         self.set_telemetry(self.telemetry_refresh())
 
+        try:
+            cs = CellaservProxy()
+            self.handle_bau(cs.actuators[ROBOT].bau_read())
+        except Exception as e:
+            print('[TRAJMAN] Failed to get BAU status: %s' % str(e))
+
 
     """ BAU """
     # BAU handler
-    @Service.event('%s-BAU' % ROBOT)
+    @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
 
         new_state = bool(int(value))
-        
         # If the state didn't change, return
         if new_state == self.bau_state:
             return
@@ -286,7 +289,7 @@ class TrajMan(Service):
 
     @Service.action
     def free(self):
-        print('[TRAJMAN] Freed robot')
+        print('[TRAJMAN] Free robot')
         tab = pack('B', 2)
         tab += pack('B', Commands.FREE.value)
         self.command(bytes(tab))
@@ -735,7 +738,7 @@ class TrajMan(Service):
 
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
-                    telemetry = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
+                    telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
                     self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)
 
                 elif tab[1] == Commands.ERROR.value:

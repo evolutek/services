@@ -38,7 +38,7 @@ class Actuators(Service):
         self.cs = CellaservProxy()
         self.disabled = Event()
 
-        self.ax = AX12Controller(
+        self.axs = AX12Controller(
             [1, 2, 3, 4, 5, 6]
         )
 
@@ -107,16 +107,16 @@ class Actuators(Service):
             [1, 2, 3, 4]
         )
 
-        self.bau = create_gpio(28, 'bau', dir=False, type=GpioType.MCP)
+        self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
-        self.bau.auto_refresh(refresh=0.1, callback=self.bau_callback)
-        self.bau_led.write(self.bau_read())
+        self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
+        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
         self.red_led = create_gpio(23, 'red led', dir=True, type=GpioType.RPI)
         self.green_led = create_gpio(24, 'green led', dir=True, type=GpioType.RPI)
 
         self.tirette = create_gpio(17, 'tirette', dir=False, edge=Edge.FALLING, type=GpioType.RPI)
-        self.tirette.auto_refresh(refresh=0.1, callback=self.publish)
+        self.tirette.auto_refresh(refresh=0.05, callback=self.publish)
         self.white_led_strip = create_gpio(16, 'leds strips', dir=True, type=GpioType.MCP)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
@@ -127,7 +127,7 @@ class Actuators(Service):
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
         self.all_actuators = [
-            self.ax,
+            self.axs,
             self.pumps,
             self.proximity_sensors,
             self.recal_sensors,
@@ -149,11 +149,13 @@ class Actuators(Service):
         for actuators in self.all_actuators:
             print(actuators)
 
-    @Service.action
+    #@Service.action
     def get_status(self):
         d = {}
         for actuators in self.all_actuators:
+            print(actuators)
             d.update(actuators.__dict__())
+        print(d)
         return d
 
     # Free all actuators
@@ -186,7 +188,7 @@ class Actuators(Service):
         for i in ids:
             if self.pumps[int(i)] == None:
                 continue
-            tasks.append(Task(self.self.pumps[int(i)].drop))
+            tasks.append(Task(self.pumps[int(i)].drop))
 
         if len(tasks) < 1:
             return RobotStatus.Failed
@@ -204,7 +206,7 @@ class Actuators(Service):
         for i in ids:
             if self.pumps[int(i)] == None:
                 continue
-            tasks.append(Task(self.self.pumps[int(i)].get))
+            tasks.append(Task(self.pumps[int(i)].get))
 
         if len(tasks) < 1:
             return RobotStatus.Failed
@@ -218,9 +220,9 @@ class Actuators(Service):
     @if_enabled
     @Service.action
     def ax_move(self, id, pos):
-        if self.ax[int(id)] == None:
+        if self.axs[int(id)] == None:
             return RobotStatus.Failed.value
-        return self.ax[int(id)].move(pos)
+        self.axs[int(id)].move(pos)
         return RobotStatus.Done.value
 
     @Service.action
@@ -230,21 +232,17 @@ class Actuators(Service):
 
         tasks = []
         for i in ids:
-            if self.ax[int(i)] == None:
+            if self.axs[int(i)] == None:
                 continue
-            tasks.append(Task(self.self.ax[int(i)].free))
+            self.axs[int(i)].free()
 
-        if len(tasks) < 1:
-            return RobotStatus.Failed
-
-        launch_multiple_actions(tasks)
         return RobotStatus.Done.value
 
     @Service.action
     def ax_set_speed(self, id, speed):
-        if self.ax[int(id)] == None:
+        if self.axs[int(id)] == None:
             return None
-        return self.ax[int(id)].moving_speed(speed)
+        return self.axs[int(id)].moving_speed(speed)
 
     #################
     # COLOR SENSORS #
@@ -280,10 +278,11 @@ class Actuators(Service):
     def bau_read(self):
         return self.bau.read()
 
-    def bau_callback(self, event, name, id, value):
+    def bau_callback(self, event, value, **kwargs):
         self.bau_led.write(value)
-        self.publish(event=event, name=name, id=id, value=value)
-        self.free()
+        self.publish(event=event, value=value, **kwargs)
+        if not value:
+            self.free()
 
     ###################
     # WHITE LED STRIP #
@@ -307,7 +306,7 @@ class Actuators(Service):
     @Service.event('match_color')
     def match_color_callback(self, color):
         try:
-            self.rgb_led_strip.set_loading_color(Color(color))
+            self.rgb_led_strip.set_loading_color(Color.get_by_name(color))
         except Exception as e:
             print('[ACTUATORS] Faile to set loading mode: %s' % str(e))
 
