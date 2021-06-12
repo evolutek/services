@@ -55,7 +55,7 @@ class Point(PointShape):
     def round(self):
         return Point(round(self.x), round(self.y))
 
-    def change_referencial(p, theta):
+    def change_referencial(self, p, theta):
         return Point(
             x = p.x + self.x * cos(theta) - self.y * sin(theta),
             y = p.y + self.x * sin(theta) + self.y * cos(theta)

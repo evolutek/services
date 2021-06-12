@@ -60,7 +60,7 @@ class Rplidar:
         lidar_angle = None
 
         #with self.lock:
-            lidar_angle = self.angle
+        #    lidar_angle = self.angle
 
         for quality, angle, distance in scan:
 

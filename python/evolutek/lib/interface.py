@@ -3,7 +3,7 @@ from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
 from evolutek.lib.map.point import Point
-from evolutek.lib.watchdog import Watchdog
+from evolutek.lib.utils.watchdog import Watchdog
 
 import asyncore
 from math import cos, sin, pi, degrees
