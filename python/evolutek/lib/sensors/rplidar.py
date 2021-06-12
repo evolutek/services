@@ -67,7 +67,7 @@ class Rplidar:
             # TODO : put 1500 in a config variable
             if distance > 1500: continue
 
-            current_angle = radians(angle)# - lidar_angle
+            current_angle = radians(angle) + pi/2# - lidar_angle
             x = distance * sin(current_angle)# + self.position.y
             #if x < 0 or x > 2000: continue
             y = distance * cos(current_angle)# + self.position.y

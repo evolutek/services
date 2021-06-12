@@ -50,6 +50,8 @@ def test_lidar():
     while True:
         robots = lidar.get_robots()
         print('[TEST_RPLIDAR] New scan:')
+        print('Current robot position : %s' % str(robot_position))
+        print('Current robot angle : %f' % robot_theta)
         for robot in robots:
             print('----------')
             print(robot)
