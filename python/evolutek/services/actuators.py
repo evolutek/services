@@ -107,16 +107,16 @@ class Actuators(Service):
             [1, 2, 3, 4]
         )
 
-        self.bau = create_gpio(28, 'bau', dir=False, type=GpioType.MCP)
+        self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
-        self.bau.auto_refresh(refresh=0.1, callback=self.bau_callback)
-        self.bau_led.write(self.bau_read())
+        self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
+        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
         self.red_led = create_gpio(23, 'red led', dir=True, type=GpioType.RPI)
         self.green_led = create_gpio(24, 'green led', dir=True, type=GpioType.RPI)
 
         self.tirette = create_gpio(17, 'tirette', dir=False, edge=Edge.FALLING, type=GpioType.RPI)
-        self.tirette.auto_refresh(refresh=0.1, callback=self.publish)
+        self.tirette.auto_refresh(refresh=0.05, callback=self.publish)
         self.white_led_strip = create_gpio(16, 'leds strips', dir=True, type=GpioType.MCP)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
@@ -278,9 +278,9 @@ class Actuators(Service):
     def bau_read(self):
         return self.bau.read()
 
-    def bau_callback(self, event, name, id, value):
+    def bau_callback(self, event, value, **kwargs):
         self.bau_led.write(value)
-        self.publish(event=event, name=name, id=id, value=value)
+        self.publish(event=event, value=value, **kwargs)
         if not value:
             self.free()
 
