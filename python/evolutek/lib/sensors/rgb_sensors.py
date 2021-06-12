@@ -80,7 +80,7 @@ class TCS34725(Component):
 
     def __dict__(self):
         return {
-            "name": self.name()
+            "name": self.name(),
             "id": self.id,
             "channel": self.channel,
             "color": self.read()

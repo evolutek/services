@@ -735,7 +735,7 @@ class TrajMan(Service):
 
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
-                    telemetry = { 'x': xpos, 'y' : ypos, 'theta' : theta, 'speed' : speed}
+                    telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
                     self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)
 
                 elif tab[1] == Commands.ERROR.value:

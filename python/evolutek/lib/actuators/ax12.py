@@ -74,7 +74,7 @@ class AX12(Component):
                                 (2**10 if side else 0) | int(speed))
 
     def free(self):
-        self.dxl.dxl_write_byte(self.ax, AX_TORQUE_ENABLE_B, 0)
+        self.dxl.dxl_write_byte(self.id, AX_TORQUE_ENABLE_B, 0)
 
     def reset(self):
         self.move(512)

@@ -38,7 +38,7 @@ class Actuators(Service):
         self.cs = CellaservProxy()
         self.disabled = Event()
 
-        self.ax = AX12Controller(
+        self.axs = AX12Controller(
             [1, 2, 3, 4, 5, 6]
         )
 
@@ -127,7 +127,7 @@ class Actuators(Service):
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
         self.all_actuators = [
-            self.ax,
+            self.axs,
             self.pumps,
             self.proximity_sensors,
             self.recal_sensors,
@@ -186,7 +186,7 @@ class Actuators(Service):
         for i in ids:
             if self.pumps[int(i)] == None:
                 continue
-            tasks.append(Task(self.self.pumps[int(i)].drop))
+            tasks.append(Task(self.pumps[int(i)].drop))
 
         if len(tasks) < 1:
             return RobotStatus.Failed
@@ -204,7 +204,7 @@ class Actuators(Service):
         for i in ids:
             if self.pumps[int(i)] == None:
                 continue
-            tasks.append(Task(self.self.pumps[int(i)].get))
+            tasks.append(Task(self.pumps[int(i)].get))
 
         if len(tasks) < 1:
             return RobotStatus.Failed
@@ -218,9 +218,9 @@ class Actuators(Service):
     @if_enabled
     @Service.action
     def ax_move(self, id, pos):
-        if self.ax[int(id)] == None:
+        if self.axs[int(id)] == None:
             return RobotStatus.Failed.value
-        return self.ax[int(id)].move(pos)
+        self.axs[int(id)].move(pos)
         return RobotStatus.Done.value
 
     @Service.action
@@ -230,21 +230,17 @@ class Actuators(Service):
 
         tasks = []
         for i in ids:
-            if self.ax[int(i)] == None:
+            if self.axs[int(i)] == None:
                 continue
-            tasks.append(Task(self.self.ax[int(i)].free))
+            self.axs[int(i)].free()
 
-        if len(tasks) < 1:
-            return RobotStatus.Failed
-
-        launch_multiple_actions(tasks)
         return RobotStatus.Done.value
 
     @Service.action
     def ax_set_speed(self, id, speed):
-        if self.ax[int(id)] == None:
+        if self.axs[int(id)] == None:
             return None
-        return self.ax[int(id)].moving_speed(speed)
+        return self.axs[int(id)].moving_speed(speed)
 
     #################
     # COLOR SENSORS #
