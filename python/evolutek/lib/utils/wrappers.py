@@ -74,9 +74,9 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
         stop_event.wait()
 
         if status is not None and status != RobotStatus.Ok:
-            stop_event.data['status'] = status
+            stop_event.data['status'] = status.value
         else:
-            stop_event.data['status'] = RobotStatus.get_status(stop_event.data)
+            stop_event.data['status'] = RobotStatus.get_status(stop_event.data).value
         return stop_event.data
 
     return wrapped

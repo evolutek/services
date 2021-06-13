@@ -126,4 +126,4 @@ def recalibration(self,
     self.trajman.set_trsl_acc(speeds['tracc'])
     self.trajman.set_trsl_dec(speeds['trdec'])
 
-    return RobotStatus.Done
+    return RobotStatus.Done.value

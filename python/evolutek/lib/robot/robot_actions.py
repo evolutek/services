@@ -19,7 +19,7 @@ def get_reef(self):
     sleep(0.25)
 
     if self.move_trsl(300, 300, 300, 300, 0) != RobotStatus.Reached:
-        return RobotStatus.Failed
+        return RobotStatus.Failed.value
 
     sleep(1)
 
@@ -28,6 +28,6 @@ def get_reef(self):
 
     sleep(0.25)
     if self.move_trsl(300, 300, 300, 300, 1)  != RobotStatus.Reached:
-        return RobotStatus.Failed
+        return RobotStatus.Failed.value
 
-    return RobotStatus.Done
+    return RobotStatus.Done.value
