@@ -62,12 +62,6 @@ class Robot(Service):
     # Imported from robot_actuators
     get_reef = Service.action(robot_actions.get_reef)
 
-    def check(self):
-        status = self.check_abort()
-        if status != RobotStatus.Ok:
-            return status
-        return self.check_avoid()
-
     def __init__(self):
 
         super().__init__(ROBOT)
@@ -95,7 +89,7 @@ class Robot(Service):
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
-        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=self.check)
+        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=self.check_abort_and_avoid)
         self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
@@ -114,14 +108,18 @@ class Robot(Service):
         self.has_abort = Event()
         self.has_avoid = Event()
 
-        def callback(r):
+        def start_callback():
+            self.need_to_abort.clear()
+            self.publish('%s_robot_started' % ROBOT)
+
+        def end_callback(r):
             if isinstance(r['status'], RobotStatus):
                 r['status'] = r['status'].value
             self.publish('%s_robot_stopped' % ROBOT, **r)
 
         self.queue = ActQueue(
-            lambda: self.publish('%s_robot_started' % ROBOT),
-            callback
+            start_callback,
+            end_callback
         )
         self.queue.run_queue()
 
@@ -175,6 +173,12 @@ class Robot(Service):
     def check_avoid(self):
         # TODO avoid
         return RobotStatus.Ok
+
+    def check_abort_and_avoid(self):
+        status = self.check_abort()
+        if status != RobotStatus.Ok:
+            return status
+        return self.check_avoid()
 
 if __name__ == '__main__':
     robot = Robot()
