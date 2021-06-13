@@ -95,13 +95,17 @@ class Robot(Service):
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
         self.recal = event_waiter(self.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
+        self.robot_position = Point(x=0, y=0)
+        self.robot_orientation = 0.0
+        self.current_speed = 0.0
+        self.detected_robots = []
+        self.avoid_side = False
+        self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
+
         lidar_config = self.cs.config.get_section('rplidar')
-
-        #self.lidar = Rplidar(lidar_config)
-        #self.lidar.start_scanning()
-        #self.lidar.register_callback(self.lidar_callback)
-
-        self.last_telemetry_received = 0
+        self.lidar = Rplidar(lidar_config)
+        self.lidar.start_scanning()
+        self.lidar.register_callback(self.lidar_callback)
 
         self.disabled = Event()
         self.need_to_abort = Event()
@@ -130,16 +134,15 @@ class Robot(Service):
 
     #@Service.event("%s_telemetry" % ROBOT)
     def callback_telemetry(self, telemetry, **kwargs):
-        tmp = time()
-        print("[ROBOT] Time since last telemetry: " + str((tmp - self.last_telemetry_received) * 1000) + "s")
-        self.last_telemetry_received = tmp
-        self.lidar.set_position(Point(dict=telemetry), float(telemetry['theta']))
+        with self.lock:
+            self.robot_orientation = float(telemetry['theta'])
+            self.robot_position = Point(dict=telemetry)
+            self.current_speed = float(telemetry['speed'])
 
     # TODO : Usefull ?
     def lidar_callback(self, cloud, shapes, robots):
-        print('[ROBOT] Robots seen at: ')
-        for robot in robots:
-            print('-> ' + str(robot))
+        with self.lock :
+            self.detected_robots = robots
 
     @Service.action
     def enable(self):
@@ -170,8 +173,44 @@ class Robot(Service):
             return RobotStatus.Aborted
         return RobotStatus.Ok
 
+    def compute_detection_zone(self, speed):
+        p1 = None
+        p2 = None
+
+        stop_distance = speed**2 / (2 * self.stop_trsl_dec)
+
+        with self.lock:
+            p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + self.robot_size)
+            p2 = Point(p1.x + stop_distance, -p2.y)
+
+        return (p1, p2)
+
     def check_avoid(self):
-        # TODO avoid
+
+        speed = 0.0
+        robot = []
+        pos = None
+        with self.lock:
+            speed = self.current_speed
+            robot = self.detected_robots
+            pos = self.robot_position
+
+        p1, p2 = self.compute_detection_zone(speed)
+
+        need_to_avoid = False
+
+        for robot in robots:
+            if min(p1.x, p2.x) < pos.x and pos.x < max(p1.x, p2.x) and\
+                min(p1.y, p2.y) < pos.y and pos.y < max(p1.y, p2.y):
+                need_to_avoid = True
+                break
+
+        if need_to_avoid:
+            self.has_avoid.set()
+            self.stop_robot()
+            self.avoid_side = speed > 0
+            return RobotStatus.HasAvoid
+
         return RobotStatus.Ok
 
     def check_abort_and_avoid(self):
