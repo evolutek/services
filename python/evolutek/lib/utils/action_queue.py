@@ -4,7 +4,7 @@ from time import sleep
 
 from evolutek.lib.utils.task import Task
 
-MAX_TASK_ID = 2
+MAX_TASK_ID = 42
 
 class ActQueue:
     def __init__(self, start_callback=None, end_callback=None):

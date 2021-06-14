@@ -112,9 +112,9 @@ class Robot(Service):
         self.has_abort = Event()
         self.has_avoid = Event()
 
-        def start_callback():
+        def start_callback(id):
             self.need_to_abort.clear()
-            self.publish('%s_robot_started' % ROBOT)
+            self.publish('%s_robot_started' % ROBOT, id=id)
 
         def end_callback(r):
             if isinstance(r['status'], RobotStatus):
@@ -177,16 +177,16 @@ class Robot(Service):
         with self.lock:
             stop_distance = speed**2 / (2 * self.stop_trsl_dec)
             p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + self.robot_size)
-            p2 = Point(p1.x + stop_distance, -p2.y)
+            p2 = Point(p1.x + stop_distance, -p1.y)
             return (p1, p2)
 
     def check_avoid(self):
 
         speed = 0.0
-        robot = []
+        robots = []
         with self.lock:
             speed = self.current_speed
-            robot = self.detected_robots
+            robots = self.detected_robots
 
         p1, p2 = self.compute_detection_zone(speed)
 

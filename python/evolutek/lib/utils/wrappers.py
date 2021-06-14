@@ -62,9 +62,19 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
             return {'status' : RobotStatus.NotStarted}
 
         watchdog.stop()
+        id = None
+        if 'id' in start_event.data:
+            id = int(start_event.data['id'])
+
 
         status = None
-        while not stop_event.is_set():
+        while True:
+            if stop_event.is_set():
+                if id is not None and ('id' not in stop_event.data or id != int(stop_event.data['id'])):
+                    stop_event.clear()
+                else:
+                    break
+
             if callback is not None:
                 status =  callback()
                 if status != RobotStatus.Ok:
