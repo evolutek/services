@@ -174,34 +174,27 @@ class Robot(Service):
         return RobotStatus.Ok
 
     def compute_detection_zone(self, speed):
-        p1 = None
-        p2 = None
-
-        stop_distance = speed**2 / (2 * self.stop_trsl_dec)
-
         with self.lock:
+            stop_distance = speed**2 / (2 * self.stop_trsl_dec)
             p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + self.robot_size)
             p2 = Point(p1.x + stop_distance, -p2.y)
-
-        return (p1, p2)
+            return (p1, p2)
 
     def check_avoid(self):
 
         speed = 0.0
         robot = []
-        pos = None
         with self.lock:
             speed = self.current_speed
             robot = self.detected_robots
-            pos = self.robot_position
 
         p1, p2 = self.compute_detection_zone(speed)
 
         need_to_avoid = False
 
         for robot in robots:
-            if min(p1.x, p2.x) < pos.x and pos.x < max(p1.x, p2.x) and\
-                min(p1.y, p2.y) < pos.y and pos.y < max(p1.y, p2.y):
+            if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
+                min(p1.y, p2.y) < robot.y and robot.y < max(p1.y, p2.y):
                 need_to_avoid = True
                 break
 
