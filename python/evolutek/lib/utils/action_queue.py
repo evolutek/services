@@ -4,6 +4,8 @@ from time import sleep
 
 from evolutek.lib.utils.task import Task
 
+MAX_TASK_ID = 2
+
 class ActQueue:
     def __init__(self, start_callback=None, end_callback=None):
         self.tasks = queue.Queue()
@@ -12,11 +14,14 @@ class ActQueue:
         self.start_callback = start_callback
         self.end_callback = end_callback
         self.is_running = Event()
+        self.current_task_id = 0
 
     ##############
     # ADD A TASK #
     ##############
     def run_action(self, task):
+        task.id = self.current_task_id
+        self.current_task_id = (self.current_task_id + 1) % (MAX_TASK_ID + 1)
         self.tasks.put(task)
 
     #################
@@ -31,13 +36,13 @@ class ActQueue:
             except:
                 continue
 
-            print('[ACT_QUEUE] Running task')
+            print('[ACT_QUEUE] Running task:')
+            print(task)
 
             if self.start_callback is not None:
-                self.start_callback()
+                self.start_callback(task.id)
 
-            if isinstance(task, Task):
-                r = task.run()
+            r = task.run()
 
             if isinstance(r, str):
                 r = { 'status' : r }
