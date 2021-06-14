@@ -82,6 +82,7 @@ class Robot(Service):
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
         self.stop_trsl_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_dec'))
         self.stop_rot_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_rot'))
+        self.trsl_max = float(self.cs.config.get(section=ROBOT, option='trsl_max'))
 
         # TODO: rename
         self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
@@ -173,35 +174,28 @@ class Robot(Service):
             return RobotStatus.Aborted
         return RobotStatus.Ok
 
-    def compute_detection_zone(self, speed):
+    def need_to_avoid(self, speed):
         with self.lock:
             stop_distance = speed**2 / (2 * self.stop_trsl_dec)
             p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + self.robot_size)
             p2 = Point(p1.x + stop_distance, -p1.y)
-            return (p1, p2)
+
+            for robot in self.detected_robots:
+                if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
+                    min(p1.y, p2.y) < robot.y and robot.y < max(p1.y, p2.y):
+                    return True
+        return False
 
     def check_avoid(self):
-
         speed = 0.0
-        robots = []
         with self.lock:
             speed = self.current_speed
-            robots = self.detected_robots
 
-        p1, p2 = self.compute_detection_zone(speed)
-
-        need_to_avoid = False
-
-        for robot in robots:
-            if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
-                min(p1.y, p2.y) < robot.y and robot.y < max(p1.y, p2.y):
-                need_to_avoid = True
-                break
-
-        if need_to_avoid:
+        if self.need_to_avoid(speed):
             self.has_avoid.set()
             self.stop_robot()
-            self.avoid_side = speed > 0
+            with self.lock:
+                self.avoid_side = speed > 0
             return RobotStatus.HasAvoid
 
         return RobotStatus.Ok

@@ -72,8 +72,53 @@ def goth(self, theta, mirror=True):
 @if_enabled
 @use_queue
 def move_back(self):
-    #print('[ROBOT] Move back direction: ' + 'back' if self.avoid_side else 'front')
-    return self.move_trsl(acc=200, dec=200, dest=self.dist, maxspeed=400, sens=int(not self.avoid_side))
+    side = 0
+    dist = 0
+    with self.lock:
+        side = int(not self.avoid_side)
+        dist = self.dist
+
+    #print('[ROBOT] Move back direction: ' + 'front' if side else 'back')
+
+    return self.move_trsl(acc=200, dec=200, dest=dist, maxspeed=400, sens=side)
+
+@if_enabled
+@use_queue
+def goto_avoid(self, x, y, mirror=True):
+    status = RobotStatus.NotReached
+
+    trsl_max = 0.0
+    with self.lock:
+        trsl_max = self.trsl_max
+
+    while status != RobotStatus.Reached:
+
+        print('[ROBOT] Moving')
+        status = self.goto(x, y, mirror, use_queue=False)
+
+        if status == RobotStatus.HasAvoid:
+            _status = self.move_back()
+
+            if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                return _status
+
+            side = True
+            with self.lock:
+                side = self.avoid_side
+
+            while self.need_to_avoid(trsl_max * (1 if side else -1)):
+                if self.check_abort() != RobotStatus.Ok:
+                    return RobotStatus.Aborted
+
+                print('[ROBOT] Waiting')
+                sleep(0.1)
+
+        elif status != RobotStatus.Reached:
+            break
+
+    return status
+
+
 
 #################
 # RECALIBRATION #
