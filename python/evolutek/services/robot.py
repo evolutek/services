@@ -37,6 +37,7 @@ class Robot(Service):
     set_pos = Service.action(robot_trajman.set_pos)
     goto = Service.action(robot_trajman.goto)
     goth = Service.action(robot_trajman.goth)
+    goto_avoid = Service.action(robot_trajman.goto_avoid)
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
 
@@ -117,10 +118,10 @@ class Robot(Service):
             self.need_to_abort.clear()
             self.publish('%s_robot_started' % ROBOT, id=id)
 
-        def end_callback(r):
+        def end_callback(id, r):
             if isinstance(r['status'], RobotStatus):
                 r['status'] = r['status'].value
-            self.publish('%s_robot_stopped' % ROBOT, **r)
+            self.publish('%s_robot_stopped' % ROBOT, id=id, **r)
 
         self.queue = ActQueue(
             start_callback,
@@ -133,12 +134,12 @@ class Robot(Service):
         with self.lock:
             self.side = color == self.color1
 
-    #@Service.event("%s_telemetry" % ROBOT)
+    @Service.event("%s_telemetry" % ROBOT)
     def callback_telemetry(self, telemetry, **kwargs):
         with self.lock:
             self.robot_orientation = float(telemetry['theta'])
             self.robot_position = Point(dict=telemetry)
-            self.current_speed = float(telemetry['speed'])
+            self.current_speed = float(telemetry['speed']) * 1000
 
     # TODO : Usefull ?
     def lidar_callback(self, cloud, shapes, robots):
@@ -164,7 +165,7 @@ class Robot(Service):
 
     @Service.action
     def stop_robot(self):
-        self.trajman.stop_asap(self.stop_trsl_dec, self.stop_rot_dec)
+        self.trajman.stop_asap(0, 0)
 
     def check_abort(self):
         if self.need_to_abort.is_set():
@@ -177,8 +178,13 @@ class Robot(Service):
     def need_to_avoid(self, speed):
         with self.lock:
             stop_distance = speed**2 / (2 * self.stop_trsl_dec)
-            p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + self.robot_size)
-            p2 = Point(p1.x + stop_distance, -p1.y)
+            
+            p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + 50 + self.robot_size)
+            # Make a minimum when speed is low
+            p2 = Point(p1.x + 50 + stop_distance * (-1 if speed < 0 else 1), -p1.y)
+
+            print(p1)
+            print(p2)
 
             for robot in self.detected_robots:
                 if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
@@ -190,6 +196,8 @@ class Robot(Service):
         speed = 0.0
         with self.lock:
             speed = self.current_speed
+
+        print('Current speed : %f' % speed)
 
         if self.need_to_avoid(speed):
             self.has_avoid.set()

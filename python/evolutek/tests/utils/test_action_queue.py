@@ -21,8 +21,8 @@ def print_tata(a, b):
 def print_test(id):
     print("debut: %d" % id)
 
-def print_test_fin(lol):
-    print("fin\n====================")
+def print_test_fin(id, lol):
+    print("fin: %d\n====================" % id)
 
 toto = ActQueue(print_test, print_test_fin)
 toto.run_queue()

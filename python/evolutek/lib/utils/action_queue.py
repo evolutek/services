@@ -49,7 +49,7 @@ class ActQueue:
                 r = { 'status' : r }
 
             if self.end_callback is not None:
-                self.end_callback(r)
+                self.end_callback(task.id, r)
 
         self.is_running.clear()
 

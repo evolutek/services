@@ -78,9 +78,9 @@ def move_back(self):
         side = int(not self.avoid_side)
         dist = self.dist
 
-    #print('[ROBOT] Move back direction: ' + 'front' if side else 'back')
+    print('[ROBOT] Move back direction: ' + 'front' if side else 'back')
 
-    return self.move_trsl(acc=200, dec=200, dest=dist, maxspeed=400, sens=side)
+    return self.move_trsl(acc=200, dec=200, dest=50, maxspeed=400, sens=side)
 
 @if_enabled
 @use_queue
@@ -94,10 +94,13 @@ def goto_avoid(self, x, y, mirror=True):
     while status != RobotStatus.Reached:
 
         print('[ROBOT] Moving')
-        status = self.goto(x, y, mirror, use_queue=False)
+        status = RobotStatus.get_status(self.goto(x, y, mirror, use_queue=False))
+        print(status)
 
         if status == RobotStatus.HasAvoid:
-            _status = self.move_back()
+            
+            sleep(0.25)
+            _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
             if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
                 return _status
@@ -116,7 +119,7 @@ def goto_avoid(self, x, y, mirror=True):
         elif status != RobotStatus.Reached:
             break
 
-    return status
+    return status.value
 
 
 
