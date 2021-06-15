@@ -34,7 +34,7 @@ def timeout_handler():
 # stop_event: stop event to wait
 # callback: callback to call at each iteration while waiting for stop event
 # callback_refresh : refresh to call callback
-def event_waiter(method, start_event, stop_event, callback=None, callback_refresh=0.1):
+def event_waiter(method, start_event, stop_event, timeout_not_started=1, callback=None, callback_refresh=0.1):
 
     @wraps(method)
     def wrapped(*args, **kwargs):
@@ -47,25 +47,32 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
         nonlocal callback
         nonlocal callback_refresh
 
-        watchdog = Watchdog(1, timeout_handler)
+        nonlocal timeout_not_started
+        watchdog = Watchdog(timeout_not_started, timeout_handler)
 
         global timeout_event
         timeout_event.clear()
-        method(*args, **kwargs)
+        r = method(*args, **kwargs)
+
+        id = None
+        if r != None:
+            id = int(r)
 
         watchdog.reset()
 
-        while not start_event.is_set() and not timeout_event.is_set():
+        while True:
+            if start_event.is_set():
+                print(start_event.data)
+                if id is not None and ('id' not in start_event.data or id != int(start_event.data['id'])):
+                    start_event.clear()
+                else:
+                    watchdog.stop()
+                    break
+
+            if timeout_event.is_set():
+                return {'status' : RobotStatus.NotStarted}
+
             sleep(0.01)
-
-        if not start_event.is_set():
-            return {'status' : RobotStatus.NotStarted}
-
-        watchdog.stop()
-        id = None
-        if 'id' in start_event.data:
-            id = int(start_event.data['id'])
-
 
         status = None
         while True:
@@ -79,6 +86,7 @@ def event_waiter(method, start_event, stop_event, callback=None, callback_refres
                 status =  callback()
                 if status != RobotStatus.Ok:
                     break
+
             sleep(callback_refresh)
 
         stop_event.wait()
@@ -108,7 +116,7 @@ def use_queue(method):
         task = Task(method, args, kwargs)
 
         if use_queue:
-            self.queue.run_action(task)
+            return self.queue.run_action(task)
         else:
             return task.run()
 

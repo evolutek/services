@@ -12,6 +12,7 @@ class Dummy(Service):
     @Service.action
     def say_something(self):
         self.need_to_say_something.set()
+        return self.current_id
 
     @Service.thread
     def loop(self):

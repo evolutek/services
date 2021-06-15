@@ -23,6 +23,7 @@ class ActQueue:
         task.id = self.current_task_id
         self.current_task_id = (self.current_task_id + 1) % (MAX_TASK_ID + 1)
         self.tasks.put(task)
+        return task.id
 
     #################
     # DEPILATE QUEUE #
