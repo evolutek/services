@@ -19,7 +19,7 @@ from threading import Event, Lock
 # TODO : Pathfinding
 # TODO : Reset robot (after aborting ? after BAU ?)
 
-MIN_DETECTION_DIST = 100
+MIN_DETECTION_DIST = 250
 MAX_DETECTION_DIST = 500
 
 @Service.require('config')
@@ -201,6 +201,9 @@ class Robot(Service):
                     if 0 < global_pos.x and global_pos.x < 2000 and 0 < global_pos.y and global_pos.y < 3000:
                         self.avoid_robot = robot
                         return True
+
+                    else:
+                        print('[ROBOT] Ignoring obstacle: %s' % str(global_pos))
 
         return False
 

@@ -1,4 +1,3 @@
-from evolutek.services.robot import MIN_DETECTION_DIST
 from evolutek.lib.map.point import Point
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
@@ -6,6 +5,7 @@ from math import pi
 from time import sleep
 
 AVOID_MIN_DIST = 200
+MIN_DETECTION_DIST = 100
 
 ##########
 # COMMON #
@@ -84,7 +84,7 @@ def move_back(self):
 
     print('[ROBOT] Move back direction: ' + 'front' if side else 'back')
 
-    return self.move_trsl(acc=200, dec=200, dest=50, maxspeed=400, sens=side)
+    return self.move_trsl(acc=200, dec=200, dest=self.dist, maxspeed=400, sens=side)
 
 @if_enabled
 @use_queue
@@ -106,13 +106,17 @@ def goto_avoid(self, x, y, mirror=True):
             with self.lock:
                 robot = self.avoid_robot
 
-            sleep(1)
+            sleep(3)
 
-            if robot.dist(Point(0, 0)) < AVOID_MIN_DIST:
-                _status = RobotStatus.get_status(self.move_back(use_queue=False))
+            # TODO : check if a robot is in front of our robot before move back
 
-                if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
-                    return _status
+            #dist = robot.dist(Point(0, 0))
+            #print(dist)
+            #if dist < AVOID_MIN_DIST:
+            _status = RobotStatus.get_status(self.move_back(use_queue=False))
+
+            if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                return _status
 
             side = True
             with self.lock:
@@ -124,6 +128,8 @@ def goto_avoid(self, x, y, mirror=True):
 
                 print('[ROBOT] Waiting')
                 sleep(0.1)
+
+                # Check if we need to abort
 
         elif status != RobotStatus.Reached:
             break
