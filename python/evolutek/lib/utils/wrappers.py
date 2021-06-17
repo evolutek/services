@@ -54,6 +54,9 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
         timeout_event.clear()
         r = method(*args, **kwargs)
 
+        if RobotStatus.get_status(r) == RobotStatus.Disabled:
+            return {'status' : RobotStatus.Disabled.value}
+
         id = None
         if r != None:
             id = int(r)
@@ -62,7 +65,6 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
 
         while True:
             if start_event.is_set():
-                print(start_event.data)
                 if id is not None and ('id' not in start_event.data or id != int(start_event.data['id'])):
                     start_event.clear()
                 else:

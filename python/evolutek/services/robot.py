@@ -16,10 +16,11 @@ from evolutek.lib.utils.wrappers import event_waiter
 from time import time, sleep
 from threading import Event, Lock
 
-# TODO : Actions need too check abort and/or avoid
-# TODO : Manage avoid
 # TODO : Pathfinding
 # TODO : Reset robot (after aborting ? after BAU ?)
+
+MIN_DETECTION_DIST = 100
+MAX_DETECTION_DIST = 500
 
 @Service.require('config')
 @Service.require('actuators', ROBOT)
@@ -102,6 +103,7 @@ class Robot(Service):
         self.current_speed = 0.0
         self.detected_robots = []
         self.avoid_side = False
+        self.avoid_robot = None
         self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
 
         lidar_config = self.cs.config.get_section('rplidar')
@@ -165,7 +167,7 @@ class Robot(Service):
 
     @Service.action
     def stop_robot(self):
-        self.trajman.stop_asap(0, 0)
+        self.trajman.stop_asap(self.stop_trsl_dec, self.stop_rot_dec)
 
     def check_abort(self):
         if self.need_to_abort.is_set():
@@ -177,27 +179,35 @@ class Robot(Service):
 
     def need_to_avoid(self, speed):
         with self.lock:
-            stop_distance = speed**2 / (2 * self.stop_trsl_dec)
-            
-            p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + 50 + self.robot_size)
-            # Make a minimum when speed is low
-            p2 = Point(p1.x + 50 + stop_distance * (-1 if speed < 0 else 1), -p1.y)
 
-            print(p1)
-            print(p2)
+            # Compute needed stop_distance depending on deceleration and current speed
+            stop_distance = speed**2 / (2 * self.stop_trsl_dec)
+
+            # Bound detecion distance
+            detection_dist = min(max(stop_distance, MIN_DETECTION_DIST), MAX_DETECTION_DIST)
+
+            # Compute the vertexes of the detection zone
+            p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + 50 + self.robot_size)
+            p2 = Point(p1.x + detection_dist * (-1 if speed < 0 else 1), -p1.y)
+
 
             for robot in self.detected_robots:
                 if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
                     min(p1.y, p2.y) < robot.y and robot.y < max(p1.y, p2.y):
-                    return True
+
+                    global_pos = robot.change_referencial(self.robot_position, self.robot_orientation)
+
+                    # Check if it is located on the map
+                    if 0 < global_pos.x and global_pos.x < 2000 and 0 < global_pos.y and global_pos.y < 3000:
+                        self.avoid_robot = robot
+                        return True
+
         return False
 
     def check_avoid(self):
         speed = 0.0
         with self.lock:
             speed = self.current_speed
-
-        print('Current speed : %f' % speed)
 
         if self.need_to_avoid(speed):
             self.has_avoid.set()

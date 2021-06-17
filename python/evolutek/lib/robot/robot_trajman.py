@@ -1,7 +1,11 @@
+from evolutek.services.robot import MIN_DETECTION_DIST
+from evolutek.lib.map.point import Point
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
 from math import pi
 from time import sleep
+
+AVOID_MIN_DIST = 200
 
 ##########
 # COMMON #
@@ -95,15 +99,20 @@ def goto_avoid(self, x, y, mirror=True):
 
         print('[ROBOT] Moving')
         status = RobotStatus.get_status(self.goto(x, y, mirror, use_queue=False))
-        print(status)
 
         if status == RobotStatus.HasAvoid:
-            
-            sleep(0.25)
-            _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
-            if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
-                return _status
+            robot = None, None
+            with self.lock:
+                robot = self.avoid_robot
+
+            sleep(1)
+
+            if robot.dist(Point(0, 0)) < AVOID_MIN_DIST:
+                _status = RobotStatus.get_status(self.move_back(use_queue=False))
+
+                if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                    return _status
 
             side = True
             with self.lock:
