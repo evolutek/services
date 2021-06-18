@@ -140,6 +140,9 @@ def goto_avoid(self, x, y, mirror=True):
 @use_queue
 def goto_with_path(self, x, y, mirror=True):
 
+    x = float(x)
+    y = float(y)
+
     if mirror:
         _destination = self.mirror_pos(x, y)
         x = _destination['x']
@@ -147,9 +150,11 @@ def goto_with_path(self, x, y, mirror=True):
 
     destination = Point(x, y)
 
+    print('[ROBOT] Goto with path : %s' % destination)
+
     status = RobotStatus.NotReached
 
-    while status != RobotStatus.NotReached:
+    while status != RobotStatus.Reached:
 
         origin = None
         with self.lock:
@@ -157,14 +162,14 @@ def goto_with_path(self, x, y, mirror=True):
 
         path = self.get_path(origin, destination)
 
-        if (len(path < 2)):
-            return RobotStatus.Unreachable
+        if (len(path) < 2):
+            return RobotStatus.Unreachable.value
 
         for i in range(1, len(path)):
 
             print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
 
-            status = self.goto(path[i].x. path[i].y, mirror=mirror, use_queue=False)
+            status = RobotStatus.get_status( self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False))
 
             if status == RobotStatus.HasAvoid:
 

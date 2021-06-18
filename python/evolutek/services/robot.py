@@ -40,6 +40,7 @@ class Robot(Service):
     goto = Service.action(robot_trajman.goto)
     goth = Service.action(robot_trajman.goth)
     goto_avoid = Service.action(robot_trajman.goto_avoid)
+    goto_with_path = Service.action(robot_trajman.goto_with_path)
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
 
@@ -169,10 +170,10 @@ class Robot(Service):
             for i in range(len(self.detected_robots)):
                 robots_tags.append('robot-%d' % i)
                 global_pos = self.detected_robots[i].change_referencial(self.robot_position, self.robot_orientation)
-                self.map.add_octogon_obstacle(global_pos, self.robot_size, tag=robots_tags[-1], type=ObstacleType.robot)
+                self.map.add_octogon_obstacle(global_pos, self.robot_size + 50, tag=robots_tags[-1], type=ObstacleType.robot)
 
             # Coompute path
-            path = map.get_path(origin, destination)
+            path = self.map.get_path(origin, destination)
 
             # Remove robots
             for tag in robots_tags:

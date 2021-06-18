@@ -72,7 +72,7 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
                     break
 
             if timeout_event.is_set():
-                return {'status' : RobotStatus.NotStarted}
+                return {'status' : RobotStatus.NotStarted.value}
 
             sleep(0.01)
 
