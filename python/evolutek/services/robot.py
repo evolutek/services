@@ -3,6 +3,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
+from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
@@ -82,6 +83,7 @@ class Robot(Service):
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
+        self.size = float(self.cs.config.get(section=ROBOT, option='robot_size'))
         self.stop_trsl_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_dec'))
         self.stop_rot_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_rot'))
         self.trsl_max = float(self.cs.config.get(section=ROBOT, option='trsl_max'))
@@ -116,6 +118,12 @@ class Robot(Service):
         self.has_abort = Event()
         self.has_avoid = Event()
 
+        width = int(self.cs.config.get(section='map', option='width'))
+        height = int(self.cs.config.get(section='map', option='height'))
+        fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
+        self.map = Map(width, height, self.size)
+        self.map.add_obstacles(fixed_obstacles)
+
         def start_callback(id):
             self.need_to_abort.clear()
             self.publish('%s_robot_started' % ROBOT, id=id)
@@ -136,6 +144,11 @@ class Robot(Service):
         with self.lock:
             self.side = color == self.color1
 
+            for obstacle in self.color_obstacles:
+                if 'tag' in obstacle:
+                    self.map.remove_obstacle(obstacle['tag'])
+            self.map.add_obstacles(self.color_obstacles, not self.side, type=ObstacleType.color)
+
     @Service.event("%s_telemetry" % ROBOT)
     def callback_telemetry(self, telemetry, **kwargs):
         with self.lock:
@@ -143,10 +156,30 @@ class Robot(Service):
             self.robot_position = Point(dict=telemetry)
             self.current_speed = float(telemetry['speed']) * 1000
 
-    # TODO : Usefull ?
     def lidar_callback(self, cloud, shapes, robots):
         with self.lock :
             self.detected_robots = robots
+
+    def get_path(self, origin, destination):
+
+        robots_tags = []
+
+        with self.lock:
+            # Add robots on the map
+            for i in range(len(self.detected_robots)):
+                robots_tags.append('robot-%d' % i)
+                global_pos = self.detected_robots[i].change_referencial(self.robot_position, self.robot_orientation)
+                self.map.add_octogon_obstacle(global_pos, self.robot_size, tag=robots_tags[-1], type=ObstacleType.robot)
+
+            # Coompute path
+            path = map.get_path(origin, destination)
+
+            # Remove robots
+            for tag in robots_tags:
+                self.map.remove_obstacle(tag)
+
+            return path
+
 
     @Service.action
     def enable(self):

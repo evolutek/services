@@ -7,6 +7,9 @@ from time import sleep
 AVOID_MIN_DIST = 200
 MIN_DETECTION_DIST = 100
 
+# TODO : Check abort
+# TODO : Timeout
+
 ##########
 # COMMON #
 ##########
@@ -116,7 +119,7 @@ def goto_avoid(self, x, y, mirror=True):
             _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
             if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
-                return _status
+                return _status.value
 
             side = True
             with self.lock:
@@ -136,6 +139,51 @@ def goto_avoid(self, x, y, mirror=True):
 
     return status.value
 
+@if_enabled
+@use_queue
+def goto_with_path(self, x, y, mirror=True):
+
+    if mirror:
+        _destination = self.mirror_pos(x, y)
+        x = _destination['x']
+        y = _destination['y']
+
+    destination = Point(x, y)
+
+    status = RobotStatus.NotReached
+
+    while status != RobotStatus.NotReached:
+
+        origin = None
+        with self.lock:
+            origin = self.robot_position
+
+        path = self.get_path(origin, destination)
+
+        if (len(path < 2)):
+            return RobotStatus.Unreachable
+
+        for i in range(1, len(path)):
+
+            print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
+
+            status = self.goto(path[i].x. path[i].y, mirror=mirror, use_queue=False)
+
+            if status == RobotStatus.HasAvoid:
+
+                sleep(3)
+
+                _status = RobotStatus.get_status(self.move_back(use_queue=False))
+
+                if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                    return _status.value
+
+                break
+
+            elif status != RobotStatus.Reached:
+                return status.value
+
+    return status.value
 
 
 #################
