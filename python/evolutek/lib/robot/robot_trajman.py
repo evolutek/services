@@ -4,9 +4,6 @@ from evolutek.lib.utils.wrappers import if_enabled, use_queue
 from math import pi
 from time import sleep
 
-AVOID_MIN_DIST = 200
-MIN_DETECTION_DIST = 100
-
 # TODO : Check abort
 # TODO : Timeout
 
@@ -115,7 +112,7 @@ def goto_avoid(self, x, y, mirror=True):
 
             #dist = robot.dist(Point(0, 0))
             #print(dist)
-            #if dist < AVOID_MIN_DIST:
+            #if dist < self.dist:
             _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
             if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
