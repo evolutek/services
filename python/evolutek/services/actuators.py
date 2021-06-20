@@ -129,13 +129,7 @@ class Actuators(Service):
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
         self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
-        self.red_led = create_gpio(23, 'red led', dir=True, type=GpioType.RPI)
-        self.green_led = create_gpio(24, 'green led', dir=True, type=GpioType.RPI)
-
-        self.tirette = create_gpio(17, 'tirette', dir=False, edge=Edge.FALLING, type=GpioType.RPI)
-        self.tirette.auto_refresh(refresh=0.05, callback=self.publish)
         self.white_led_strip = create_gpio(16, 'leds strips', dir=True, type=GpioType.MCP)
-
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
         try:
