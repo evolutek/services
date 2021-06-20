@@ -173,7 +173,8 @@ class TrajMan(Service):
         self.set_robot_size_x(self.robot_size_x())
         self.set_robot_size_y(self.robot_size_y())
 
-        self.set_telemetry(self.telemetry_refresh())
+        #self.set_telemetry(self.telemetry_refresh())
+        self.set_telemetry(50)
 
         try:
             cs = CellaservProxy()

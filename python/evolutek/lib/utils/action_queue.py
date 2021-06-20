@@ -2,8 +2,9 @@ import queue
 from threading import Thread, Event
 from time import sleep
 
-from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.utils.task import Task
+
+MAX_TASK_ID = 42
 
 class ActQueue:
     def __init__(self, start_callback=None, end_callback=None):
@@ -13,18 +14,16 @@ class ActQueue:
         self.start_callback = start_callback
         self.end_callback = end_callback
         self.is_running = Event()
+        self.current_task_id = 0
 
     ##############
     # ADD A TASK #
     ##############
     def run_action(self, task):
+        task.id = self.current_task_id
+        self.current_task_id = (self.current_task_id + 1) % (MAX_TASK_ID + 1)
         self.tasks.put(task)
-
-    ######################
-    # ADD A LIST OF TASK #
-    ######################
-    def run_actions(self, tasks):
-        self.tasks.put(tasks)
+        return task.id
 
     #################
     # DEPILATE QUEUE #
@@ -38,18 +37,19 @@ class ActQueue:
             except:
                 continue
 
-            print('[ACT_QUEUE] Running task')
+            print('[ACT_QUEUE] Running task:')
+            print(task)
 
             if self.start_callback is not None:
-                self.start_callback()
+                self.start_callback(task.id)
 
-            if isinstance(task, Task):
-                result = task.run()
-            else:
-                result = launch_multiple_actions(task)
+            r = task.run()
+
+            if isinstance(r, str):
+                r = { 'status' : r }
 
             if self.end_callback is not None:
-                self.end_callback(result)
+                self.end_callback(task.id, r)
 
         self.is_running.clear()
 

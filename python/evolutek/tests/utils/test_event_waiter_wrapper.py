@@ -21,6 +21,10 @@ class Test(Service):
 
     @Service.thread
     def test(self):
+        print('Calling a first time')
+        data = self.say()
+        print(data)
+        print('Calling a second time')
         data = self.say()
         print(data)
 

@@ -18,19 +18,21 @@ def print_tata(a, b):
     return test
 
 
-def print_test():
-    print("debut")
+def print_test(id):
+    print("debut: %d" % id)
 
-def print_test_fin(lol):
-    print("fin\n====================")
+def print_test_fin(id, lol):
+    print("fin: %d\n====================" % id)
 
 toto = ActQueue(print_test, print_test_fin)
 toto.run_queue()
 toto.run_action(Task(print_toto, [1, 2]))
-toto.run_actions([
+"""toto.run_actions([
     Task(print_tata, [3, 4]),
     Task(print_toto, [5, 6])
-])
+])"""
+toto.run_action(Task(print_toto, {'a' : 1, 'b' : 2}))
+toto.run_action(Task(print_toto, [1, 2]))
 toto.run_action(Task(print_toto, {'a' : 1, 'b' : 2}))
 sleep(1)
 toto.stop_queue()

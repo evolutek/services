@@ -3,6 +3,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
+from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
@@ -16,10 +17,10 @@ from evolutek.lib.utils.wrappers import event_waiter
 from time import time, sleep
 from threading import Event, Lock
 
-# TODO : Actions need too check abort and/or avoid
-# TODO : Manage avoid
-# TODO : Pathfinding
 # TODO : Reset robot (after aborting ? after BAU ?)
+
+MIN_DETECTION_DIST = 250
+MAX_DETECTION_DIST = 500
 
 @Service.require('config')
 @Service.require('actuators', ROBOT)
@@ -37,6 +38,8 @@ class Robot(Service):
     set_pos = Service.action(robot_trajman.set_pos)
     goto = Service.action(robot_trajman.goto)
     goth = Service.action(robot_trajman.goth)
+    goto_avoid = Service.action(robot_trajman.goto_avoid)
+    goto_with_path = Service.action(robot_trajman.goto_with_path)
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
 
@@ -44,6 +47,8 @@ class Robot(Service):
     mirror_pump_id = robot_actuators.mirror_pump_id
     flags_raise = Service.action(robot_actuators.flags_raise)
     flags_low = Service.action(robot_actuators.flags_low)
+    front_arm_close = Service.action(robot_actuators.front_arm_close)
+    front_arm_open = Service.action(robot_actuators.front_arm_open)
     left_arm_close = Service.action(robot_actuators.left_arm_close)
     left_arm_open = Service.action(robot_actuators.left_arm_open)
     left_arm_push = Service.action(robot_actuators.left_arm_push)
@@ -78,8 +83,10 @@ class Robot(Service):
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
+        self.size = float(self.cs.config.get(section=ROBOT, option='robot_size'))
         self.stop_trsl_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_dec'))
         self.stop_rot_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_rot'))
+        self.trsl_max = float(self.cs.config.get(section=ROBOT, option='trsl_max'))
 
         # TODO: rename
         self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
@@ -87,50 +94,92 @@ class Robot(Service):
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
-        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=lambda: self.check_avoid() if self.check_abort() != RobotStatus.Ok else RobotStatus.Ok)
+        self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=self.check_abort_and_avoid)
         self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
         self.recal = event_waiter(self.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
-        lidar_config = self.cs.config.get_section('rplidar')
+        self.robot_position = Point(x=0, y=0)
+        self.robot_orientation = 0.0
+        self.current_speed = 0.0
+        self.detected_robots = []
+        self.avoid_side = False
+        self.avoid_robot = None
+        self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
 
+        lidar_config = self.cs.config.get_section('rplidar')
         self.lidar = Rplidar(lidar_config)
         self.lidar.start_scanning()
         self.lidar.register_callback(self.lidar_callback)
-
-        self.last_telemetry_received = 0
 
         self.disabled = Event()
         self.need_to_abort = Event()
         self.has_abort = Event()
         self.has_avoid = Event()
 
+        width = int(self.cs.config.get(section='map', option='width'))
+        height = int(self.cs.config.get(section='map', option='height'))
+        fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
+        self.map = Map(width, height, self.size)
+        self.map.add_obstacles(fixed_obstacles)
+
+        def start_callback(id):
+            self.need_to_abort.clear()
+            self.publish('%s_robot_started' % ROBOT, id=id)
+
+        def end_callback(id, r):
+            if isinstance(r['status'], RobotStatus):
+                r['status'] = r['status'].value
+            self.publish('%s_robot_stopped' % ROBOT, id=id, **r)
+
         self.queue = ActQueue(
-            lambda:self.publish('%s_robot_started' % ROBOT),
-            lambda status: self.publish('%s_robot_stopped' % ROBOT, status=status.value)
+            start_callback,
+            end_callback
         )
         self.queue.run_queue()
-
-        super().__init__(ROBOT)
 
     @Service.event("match_color")
     def color_callback(self, color):
         with self.lock:
             self.side = color == self.color1
 
+            for obstacle in self.color_obstacles:
+                if 'tag' in obstacle:
+                    self.map.remove_obstacle(obstacle['tag'])
+            self.map.add_obstacles(self.color_obstacles, not self.side, type=ObstacleType.color)
+
     @Service.event("%s_telemetry" % ROBOT)
     def callback_telemetry(self, telemetry, **kwargs):
-        tmp = time()
-        print("[ROBOT] Time since last telemetry: " + str((tmp - self.last_telemetry_received) * 1000) + "s")
-        self.last_telemetry_received = tmp
-        self.lidar.set_position(Point(dict=telemetry), float(telemetry['theta']))
+        with self.lock:
+            self.robot_orientation = float(telemetry['theta'])
+            self.robot_position = Point(dict=telemetry)
+            self.current_speed = float(telemetry['speed']) * 1000
 
-    # TODO : Usefull ?
     def lidar_callback(self, cloud, shapes, robots):
-        print('[ROBOT] Robots seen at: ')
-        for robot in robots:
-            print('-> ' + str(robot))
+        with self.lock :
+            self.detected_robots = robots
+
+    def get_path(self, origin, destination):
+
+        robots_tags = []
+
+        with self.lock:
+            # Add robots on the map
+            for i in range(len(self.detected_robots)):
+                robots_tags.append('robot-%d' % i)
+                global_pos = self.detected_robots[i].change_referencial(self.robot_position, self.robot_orientation)
+                self.map.add_octogon_obstacle(global_pos, self.robot_size + 50, tag=robots_tags[-1], type=ObstacleType.robot)
+
+            # Coompute path
+            path = self.map.get_path(origin, destination)
+
+            # Remove robots
+            for tag in robots_tags:
+                self.map.remove_obstacle(tag)
+
+            return path
+
 
     @Service.action
     def enable(self):
@@ -159,11 +208,57 @@ class Robot(Service):
             self.stop_robot()
             self.need_to_abort.clear()
             return RobotStatus.Aborted
-        return RobotStatus.OK
+        return RobotStatus.Ok
+
+    def need_to_avoid(self, speed):
+        with self.lock:
+
+            # Compute needed stop_distance depending on deceleration and current speed
+            stop_distance = speed**2 / (2 * self.stop_trsl_dec)
+
+            # Bound detecion distance
+            detection_dist = min(max(stop_distance, MIN_DETECTION_DIST), MAX_DETECTION_DIST)
+
+            # Compute the vertexes of the detection zone
+            p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + 50 + self.robot_size)
+            p2 = Point(p1.x + detection_dist * (-1 if speed < 0 else 1), -p1.y)
+
+
+            for robot in self.detected_robots:
+                if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
+                    min(p1.y, p2.y) < robot.y and robot.y < max(p1.y, p2.y):
+
+                    global_pos = robot.change_referencial(self.robot_position, self.robot_orientation)
+
+                    # Check if it is located on the map
+                    if 0 < global_pos.x and global_pos.x < 2000 and 0 < global_pos.y and global_pos.y < 3000:
+                        self.avoid_robot = robot
+                        return True
+
+                    else:
+                        print('[ROBOT] Ignoring obstacle: %s' % str(global_pos))
+
+        return False
 
     def check_avoid(self):
-        # TODO avoid
+        speed = 0.0
+        with self.lock:
+            speed = self.current_speed
+
+        if self.need_to_avoid(speed):
+            self.has_avoid.set()
+            self.stop_robot()
+            with self.lock:
+                self.avoid_side = speed > 0
+            return RobotStatus.HasAvoid
+
         return RobotStatus.Ok
+
+    def check_abort_and_avoid(self):
+        status = self.check_abort()
+        if status != RobotStatus.Ok:
+            return status
+        return self.check_avoid()
 
 if __name__ == '__main__':
     robot = Robot()

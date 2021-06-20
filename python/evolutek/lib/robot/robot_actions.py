@@ -18,16 +18,23 @@ def get_reef(self):
 
     sleep(0.25)
 
-    if self.move_trsl(300, 300, 300, 300, 0) != RobotStatus.Reached:
-        return RobotStatus.Failed
+    status = self.move_trsl(300, 300, 300, 300, 0)
+    if status != RobotStatus.Reached:
+        return status.value
 
     sleep(1)
+
+    status = self.check_abort()
+    if status != RobotStatus.Ok:
+        return status.value
 
     self.left_cup_holder_close(use_queue=False)
     self.right_cup_holder_close(use_queue=False)
 
     sleep(0.25)
-    if self.move_trsl(300, 300, 300, 300, 1)  != RobotStatus.Reached:
-        return RobotStatus.Failed
 
-    return RobotStatus.Done
+    status = self.move_trsl(300, 300, 300, 300, 1)
+    if status != RobotStatus.Reached:
+        return status.value
+
+    return RobotStatus.Done.value

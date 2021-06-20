@@ -134,10 +134,10 @@ class Rplidar:
 
     def loop_scan(self):
         print('[RPLIDAR] Start scanning')
-        last = time()
+        #last = time()
         for scan in self.lidar.iter_scans():
-            print(f"[RPLIDAR] New scan: {(time()-last)*1000}ms from last")
-            last = time()
+            #print(f"[RPLIDAR] New scan: {(time()-last)*1000}ms from last")
+            #last = time()
             #t = last
             #process = last
             clean_cloud = self.convert_scan_to_cloud(scan)
