@@ -17,7 +17,6 @@ from evolutek.lib.utils.wrappers import event_waiter
 from time import time, sleep
 from threading import Event, Lock
 
-# TODO : Pathfinding
 # TODO : Reset robot (after aborting ? after BAU ?)
 
 MIN_DETECTION_DIST = 250

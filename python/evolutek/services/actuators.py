@@ -27,7 +27,6 @@ from evolutek.lib.utils.wrappers import if_enabled
 from threading import Event
 
 # TODO :
-# - Return status from RobotStatus (newRobot branch)
 # - Put components config in a lib / read a JSON
 
 # Actuators service class

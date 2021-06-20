@@ -129,8 +129,6 @@ def goto_avoid(self, x, y, mirror=True):
                 print('[ROBOT] Waiting')
                 sleep(0.1)
 
-                # Check if we need to abort
-
         elif status != RobotStatus.Reached:
             break
 
