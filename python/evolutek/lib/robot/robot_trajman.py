@@ -33,7 +33,7 @@ def mirror_pos(self, x=None, y=None, theta=None):
 ########
 
 def set_x(self, x):
-    self.trajman.set_x(x)
+    self.trajman.set_x(float(x))
 
 def set_y(self, y, mirror=True):
     if mirror:
@@ -61,7 +61,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
 @use_queue
 def goto(self, x, y, mirror=True):
     if mirror:
-        y = self.mirror_pos(y=y)['y']
+        y = self.mirror_pos(y=float(y))['y']
 
     return self.goto_xy(x, y)
 
@@ -69,7 +69,7 @@ def goto(self, x, y, mirror=True):
 @use_queue
 def goth(self, theta, mirror=True):
     if mirror:
-        theta = self.mirror_pos(theta=theta)['theta']
+        theta = self.mirror_pos(theta=float(theta))['theta']
 
     return self.goto_theta(theta)
 
