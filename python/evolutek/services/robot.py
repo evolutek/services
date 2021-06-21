@@ -19,9 +19,6 @@ from threading import Event, Lock
 
 # TODO : Reset robot (after aborting ? after BAU ?)
 
-MIN_DETECTION_DIST = 250
-MAX_DETECTION_DIST = 500
-
 @Service.require('config')
 @Service.require('actuators', ROBOT)
 @Service.require('trajman', ROBOT)
@@ -84,9 +81,7 @@ class Robot(Service):
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
         self.size = float(self.cs.config.get(section=ROBOT, option='robot_size'))
-        #self.stop_trsl_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_dec'))
-        self.stop_trsl_dec = 1500.0
-        #self.stop_rot_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_rot'))
+        self.trsl_dec = float(self.cs.config.get(section=ROBOT, option='trsl_dec'))
         self.trsl_max = float(self.cs.config.get(section=ROBOT, option='trsl_max'))
 
         # TODO: rename
@@ -201,15 +196,15 @@ class Robot(Service):
         self.queue.clear_queue()
 
     @Service.action
-    def stop_robot(self, dist):
+    def stop_robot(self, dist=100):
         with self.lock:
-            self.trajman.move_trsl(dest=dist, acc=0.0, dec=self.stop_trsl_dec, maxspeed=self.trsl_max, sens=int(self.moving_side))
-        #self.trajman.stop_asap(self.stop_trsl_dec, self.stop_rot_dec)
+            self.trajman.move_trsl(dest=dist, acc=0.0, dec=self.trsl_dec, sens=int(self.moving_side))
 
     def check_abort(self):
         if self.need_to_abort.is_set():
             self.has_abort.set()
-            self.stop_robot(MIN_DETECTION_DIST)
+            # TODO : compute dist
+            self.stop_robot()
             self.need_to_abort.clear()
             return RobotStatus.Aborted
         return RobotStatus.Ok
@@ -252,9 +247,8 @@ class Robot(Service):
             side = self.moving_side
 
             # Compute needed stop_distance depending on deceleration and current speed
-            stop_distance = (self.current_speed**2 / (2 * self.stop_trsl_dec))
+            stop_distance = (self.current_speed**2 / (2 * self.trsl_dec))
             detection_dist = stop_distance + 50
-            #detection_dist = min(max(stop_distance + 50, MIN_DETECTION_DIST), MAX_DETECTION_DIST)
 
         if self.need_to_avoid(detection_dist, side):
             self.has_avoid.set()

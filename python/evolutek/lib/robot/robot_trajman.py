@@ -117,9 +117,6 @@ def goto_avoid(self, x, y, mirror=True):
 
             # TODO : check if a robot is in front of our robot before move back
 
-            #dist = robot.dist(Point(0, 0))
-            #print(dist)
-            #if dist < self.dist:
             _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
             if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
@@ -128,7 +125,6 @@ def goto_avoid(self, x, y, mirror=True):
             dist = 0.0
             side = True
             with self.lock:
-                #dist = ((self.trsl_max)**2 / (2 * self.stop_trsl_dec)) + 50
                 dist = self.robot_position.dist(Point(x=x, y=y))
                 side = self.avoid_side
 
