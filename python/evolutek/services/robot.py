@@ -199,8 +199,10 @@ class Robot(Service):
         self.queue.clear_queue()
 
     @Service.action
-    def stop_robot(self):
-        self.trajman.stop_asap(self.stop_trsl_dec, self.stop_rot_dec)
+    def stop_robot(self, dist):
+        with self.lock:
+            self.trajman.move_trsl(dest=dist, acc=self.stop_trsl_dec, dec=self.stop_trsl_dec, maxspeed=self.current_speed, sens=int(self.current_speed > 0))
+        #self.trajman.stop_asap(self.stop_trsl_dec, self.stop_rot_dec)
 
     def check_abort(self):
         if self.need_to_abort.is_set():
@@ -210,11 +212,8 @@ class Robot(Service):
             return RobotStatus.Aborted
         return RobotStatus.Ok
 
-    def need_to_avoid(self, speed):
+    def need_to_avoid(self, stop_distance):
         with self.lock:
-
-            # Compute needed stop_distance depending on deceleration and current speed
-            stop_distance = speed**2 / (2 * self.stop_trsl_dec)
 
             # Bound detecion distance
             detection_dist = min(max(stop_distance, MIN_DETECTION_DIST), MAX_DETECTION_DIST)
@@ -241,13 +240,15 @@ class Robot(Service):
         return False
 
     def check_avoid(self):
-        speed = 0.0
-        with self.lock:
-            speed = self.current_speed
+        stop_distance = 0.0
 
-        if self.need_to_avoid(speed):
+        with self.lock:
+            # Compute needed stop_distance depending on deceleration and current speed
+            stop_distance = self.current_speed**2 / (2 * self.stop_trsl_dec)
+
+        if self.need_to_avoid(stop_distance):
             self.has_avoid.set()
-            self.stop_robot()
+            self.stop_robot(stop_distance)
             with self.lock:
                 self.avoid_side = speed > 0
             return RobotStatus.HasAvoid
