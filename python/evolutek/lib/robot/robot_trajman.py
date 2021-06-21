@@ -111,10 +111,6 @@ def goto_avoid(self, x, y, mirror=True):
 
         if status == RobotStatus.HasAvoid:
 
-            robot = None, None
-            with self.lock:
-                robot = self.avoid_robot
-
             # TODO : check if a robot is in front of our robot before move back
 
             _status = RobotStatus.get_status(self.move_back(use_queue=False))

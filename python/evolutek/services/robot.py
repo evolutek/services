@@ -101,7 +101,6 @@ class Robot(Service):
         self.current_speed = 0.0
         self.detected_robots = []
         self.avoid_side = False
-        self.avoid_robot = None
         self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
 
         lidar_config = self.cs.config.get_section('rplidar')
@@ -228,7 +227,6 @@ class Robot(Service):
                     # Check if it is located on the map
                     if 0 < global_pos.x and global_pos.x < 2000 and 0 < global_pos.y and global_pos.y < 3000:
                         print('[ROBOT] Need to avoid robot at dist: %f' % Point(x=0, y=0).dist(robot))
-                        self.avoid_robot = robot
                         return True
 
                     else:
