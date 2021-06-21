@@ -84,8 +84,9 @@ class Robot(Service):
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
         self.size = float(self.cs.config.get(section=ROBOT, option='robot_size'))
-        self.stop_trsl_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_dec'))
-        self.stop_rot_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_rot'))
+        #self.stop_trsl_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_dec'))
+        self.stop_trsl_dec = 1500.0
+        #self.stop_rot_dec = float(self.cs.config.get(section=ROBOT, option='stop_trsl_rot'))
         self.trsl_max = float(self.cs.config.get(section=ROBOT, option='trsl_max'))
 
         # TODO: rename
@@ -117,6 +118,7 @@ class Robot(Service):
         self.need_to_abort = Event()
         self.has_abort = Event()
         self.has_avoid = Event()
+        self.moving_side = None
 
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
@@ -201,26 +203,23 @@ class Robot(Service):
     @Service.action
     def stop_robot(self, dist):
         with self.lock:
-            self.trajman.move_trsl(dest=dist, acc=self.stop_trsl_dec, dec=self.stop_trsl_dec, maxspeed=self.current_speed, sens=int(self.current_speed > 0))
+            self.trajman.move_trsl(dest=dist, acc=0.0, dec=self.stop_trsl_dec, maxspeed=self.trsl_max, sens=int(self.moving_side))
         #self.trajman.stop_asap(self.stop_trsl_dec, self.stop_rot_dec)
 
     def check_abort(self):
         if self.need_to_abort.is_set():
             self.has_abort.set()
-            self.stop_robot()
+            self.stop_robot(MIN_DETECTION_DIST)
             self.need_to_abort.clear()
             return RobotStatus.Aborted
         return RobotStatus.Ok
 
-    def need_to_avoid(self, stop_distance):
+    def need_to_avoid(self, detection_dist):
         with self.lock:
 
-            # Bound detecion distance
-            detection_dist = min(max(stop_distance, MIN_DETECTION_DIST), MAX_DETECTION_DIST)
-
             # Compute the vertexes of the detection zone
-            p1 = Point(self.size_x * (-1 if speed < 0 else 1), self.size_y + 50 + self.robot_size)
-            p2 = Point(p1.x + detection_dist * (-1 if speed < 0 else 1), -p1.y)
+            p1 = Point(self.size_x * (1 if self.moving_side else -1), self.size_y + 50 + self.robot_size)
+            p2 = Point(p1.x + detection_dist * (1 if self.moving_side else -1), -p1.y)
 
 
             for robot in self.detected_robots:
@@ -240,17 +239,21 @@ class Robot(Service):
         return False
 
     def check_avoid(self):
-        stop_distance = 0.0
 
+        detection_dist = 0.0
         with self.lock:
+            if self.moving_side is None:
+                self.moving_side = float(self.trajman.get_vector_trsl) > 0
+
             # Compute needed stop_distance depending on deceleration and current speed
             stop_distance = self.current_speed**2 / (2 * self.stop_trsl_dec)
+            detection_dist = min(max(stop_distance, MIN_DETECTION_DIST), MAX_DETECTION_DIST)
 
-        if self.need_to_avoid(stop_distance):
+        if self.need_to_avoid(detection_dist):
             self.has_avoid.set()
-            self.stop_robot(stop_distance)
+            self.stop_robot(detection_dist)
             with self.lock:
-                self.avoid_side = speed > 0
+                self.avoid_side = self.moving_side
             return RobotStatus.HasAvoid
 
         return RobotStatus.Ok

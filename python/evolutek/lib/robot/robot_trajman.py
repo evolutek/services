@@ -63,7 +63,10 @@ def goto(self, x, y, mirror=True):
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
-    return self.goto_xy(x, y)
+    status = self.goto_xy(x, y)
+    with self.lock:
+        self.moving_side = None
+    return status
 
 @if_enabled
 @use_queue
