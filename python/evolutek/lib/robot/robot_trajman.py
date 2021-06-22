@@ -63,7 +63,10 @@ def goto(self, x, y, mirror=True):
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
-    return self.goto_xy(x, y)
+    status = self.goto_xy(x, y)
+    with self.lock:
+        self.moving_side = None
+    return status
 
 @if_enabled
 @use_queue
@@ -89,40 +92,39 @@ def move_back(self):
 @if_enabled
 @use_queue
 def goto_avoid(self, x, y, mirror=True):
+
+    x = float(x)
+    y = float(y)
+
+    if mirror:
+        _destination = self.mirror_pos(x, y)
+        x = _destination['x']
+        y = _destination['y']
+
+    destination = Point(x, y)
+
     status = RobotStatus.NotReached
-
-    trsl_max = 0.0
-    with self.lock:
-        trsl_max = self.trsl_max
-
     while status != RobotStatus.Reached:
 
         print('[ROBOT] Moving')
-        status = RobotStatus.get_status(self.goto(x, y, mirror, use_queue=False))
+        status = RobotStatus.get_status(self.goto(x, y, mirror=False, use_queue=False))
 
         if status == RobotStatus.HasAvoid:
 
-            robot = None, None
-            with self.lock:
-                robot = self.avoid_robot
-
-            sleep(3)
-
             # TODO : check if a robot is in front of our robot before move back
 
-            #dist = robot.dist(Point(0, 0))
-            #print(dist)
-            #if dist < self.dist:
             _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
             if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
                 return _status.value
 
+            dist = 0.0
             side = True
             with self.lock:
+                dist = self.robot_position.dist(Point(x=x, y=y))
                 side = self.avoid_side
 
-            while self.need_to_avoid(trsl_max * (1 if side else -1)):
+            while self.need_to_avoid(dist, side):
                 if self.check_abort() != RobotStatus.Ok:
                     return RobotStatus.Aborted
 

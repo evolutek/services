@@ -34,7 +34,7 @@ def timeout_handler():
 # stop_event: stop event to wait
 # callback: callback to call at each iteration while waiting for stop event
 # callback_refresh : refresh to call callback
-def event_waiter(method, start_event, stop_event, timeout_not_started=1, callback=None, callback_refresh=0.1):
+def event_waiter(method, start_event, stop_event, timeout_not_started=1, callback=None, callback_refresh=0.01):
 
     @wraps(method)
     def wrapped(*args, **kwargs):
