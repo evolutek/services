@@ -5,42 +5,38 @@ MIN_VOLTAGE = 0.6
 MAX_VOLTAGE = 3.0
 MIN_DISTANCE = 60
 MAX_DISTANCE = 1530
-
-CALIB_SLOPE1 = -0.00935088191857932
-CALIB_INTERCEPT1 = -12.148812684023294
-CALIB_SLOPE2 = 0.010548651997436593
-CALIB_INTERCEPT2 = -18.715658876308545
-CALIB_MIDPOINT = 330
-
-
-def calibration(x):
-    slope = CALIB_SLOPE1 if x < CALIB_MIDPOINT else CALIB_SLOPE2
-    intercept = CALIB_INTERCEPT1 if x < CALIB_MIDPOINT else CALIB_INTERCEPT2
-    err = slope * x + intercept
-    return x - err
-
-
-def interp(a, b, alpha):
-    return (b - a) * alpha + a
-
-
-def clamp(x, low, high):
-    return max(low, min(x, high))
-
+CALIB_MIDPOINT = 230
 
 class RecalSensor(Component):
+
     def __init__(self, id, adc):
         self.adc = adc
+        self.slope1 = 0
+        self.slope2 = 0
+        self.intercept1 = 0
+        self.intercept2 = 0
         super().__init__("RecalSensor", id)
+
+    def calibrate(self, slope1, slope2, intercept1, intercept2):
+        self.slope1 = slope1
+        self.slope2 = slope2
+        self.intercept1 = intercept1
+        self.intercept2 = intercept2
+
+    def calibration(self, x):
+        slope = self.slope1 if x < CALIB_MIDPOINT else self.slope2
+        intercept = self.intercept1 if x < CALIB_MIDPOINT else self.intercept2
+        err = slope * x + intercept
+        return x - err
 
     def read(self, repetitions=1, use_calibration=True):
         res = 0
         for i in range(repetitions):
             raw = self.adc.read()
-            voltage = clamp(raw, MIN_VOLTAGE, MAX_VOLTAGE)
+            voltage = max(MIN_VOLTAGE, min(raw, MAX_VOLTAGE))
             alpha = (voltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)
-            res += interp(MIN_DISTANCE, MAX_DISTANCE, alpha)
-            if i < repetitions-1: time.sleep(0.1)
+            res += (MAX_DISTANCE - MIN_DISTANCE) * alpha + MIN_DISTANCE
+            if i < repetitions-1: time.sleep(0.05)
         res /= repetitions
         return calibration(res) if use_calibration else res
 
