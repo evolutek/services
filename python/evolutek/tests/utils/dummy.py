@@ -1,4 +1,5 @@
 from cellaserv.service import Event, Service
+from evolutek.lib.status import RobotStatus
 from threading import Event
 from time import sleep
 
@@ -22,7 +23,8 @@ class Dummy(Service):
             self.publish('dummy_start', id=self.current_id)
             sleep(1)
             print('Say something')
-            self.publish('dummy_stop', id=self.current_id, status='done', lol='XD')
+            d = RobotStatus.return_status(RobotStatus.Done, lol='XD', id=self.current_id)
+            self.publish('dummy_stop', **d)
             self.current_id += 1
 
 dummy = Dummy()
