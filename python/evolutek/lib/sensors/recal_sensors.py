@@ -17,10 +17,10 @@ class RecalSensor(Component):
         self.intercept2 = 0
         super().__init__("RecalSensor", id)
 
-    def calibrate(self, slope1, slope2, intercept1, intercept2):
+    def calibrate(self, slope1, intercept1, slope2, intercept2):
         self.slope1 = slope1
-        self.slope2 = slope2
         self.intercept1 = intercept1
+        self.slope2 = slope2
         self.intercept2 = intercept2
 
     def calibration(self, x):
@@ -38,7 +38,7 @@ class RecalSensor(Component):
             res += (MAX_DISTANCE - MIN_DISTANCE) * alpha + MIN_DISTANCE
             if i < repetitions-1: time.sleep(0.05)
         res /= repetitions
-        return calibration(res) if use_calibration else res
+        return self.calibration(res) if use_calibration else res
 
     def __str__(self):
         s = "----------\n"
@@ -55,14 +55,13 @@ class RecalSensor(Component):
         }
 
 
-
 class RecalSensors(ComponentsHolder):
 
     def __init__(self, adcs):
         super().__init__("Recal sensors", adcs, RecalSensor)
 
-    def read_all_sensors(self):
+    def read_all_sensors(self, **kwargs):
         results = {}
         for sensor in self.components:
-            results[sensor] = self.components[sensor].read()
+            results[sensor] = self.components[sensor].read(kwargs)
         return results

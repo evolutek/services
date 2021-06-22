@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Cellaserv
-from cellaserv.service import Service
+from cellaserv.service import Service, ConfigVariable
 from cellaserv.proxy import CellaservProxy
 
 # Gpio
@@ -95,12 +95,22 @@ class Actuators(Service):
             }
         )
 
+        left_slope1 = ConfigVariable(section=ROBOT, option="left_slope1", coerc=float)
+        left_intercept1 = ConfigVariable(section=ROBOT, option="left_intercept1", coerc=float)
+        left_slope2 = ConfigVariable(section=ROBOT, option="left_slope2", coerc=float)
+        left_intercept2 = ConfigVariable(section=ROBOT, option="left_intercept2", coerc=float)
+        right_slope1 = ConfigVariable(section=ROBOT, option="right_slope1", coerc=float)
+        right_intercept1 = ConfigVariable(section=ROBOT, option="right_intercept1", coerc=float)
+        right_slope2 = ConfigVariable(section=ROBOT, option="right_slope2", coerc=float)
+        right_intercept2 = ConfigVariable(section=ROBOT, option="right_intercept2", coerc=float)
         self.recal_sensors = RecalSensors(
             {
                 1: [create_adc(0, "recal1", type=AdcType.ADS)],
                 2: [create_adc(1, "recal2", type=AdcType.ADS)]
             }
         )
+        self.recal_sensors[1].calibrate(left_slope1, left_intercept1, left_slope2, left_intercept2)
+        self.recal_sensors[2].calibrate(right_slope1, right_intercept1, right_slope2, right_intercept2)
 
         self.rgb_sensors = RGBSensors(
             [1, 2, 3, 4]
