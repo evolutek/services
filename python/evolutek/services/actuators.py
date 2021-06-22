@@ -95,14 +95,14 @@ class Actuators(Service):
             }
         )
 
-        left_slope1 = ConfigVariable(section=ROBOT, option="left_slope1", coerc=float)
-        left_intercept1 = ConfigVariable(section=ROBOT, option="left_intercept1", coerc=float)
-        left_slope2 = ConfigVariable(section=ROBOT, option="left_slope2", coerc=float)
-        left_intercept2 = ConfigVariable(section=ROBOT, option="left_intercept2", coerc=float)
-        right_slope1 = ConfigVariable(section=ROBOT, option="right_slope1", coerc=float)
-        right_intercept1 = ConfigVariable(section=ROBOT, option="right_intercept1", coerc=float)
-        right_slope2 = ConfigVariable(section=ROBOT, option="right_slope2", coerc=float)
-        right_intercept2 = ConfigVariable(section=ROBOT, option="right_intercept2", coerc=float)
+        left_slope1 = float(self.cs.config.get(ROBOT, "left_slope1"))
+        left_intercept1 = float(self.cs.config.get(ROBOT, "left_intercept1"))
+        left_slope2 = float(self.cs.config.get(ROBOT, "left_slope2"))
+        left_intercept2 = float(self.cs.config.get(ROBOT, "left_intercept2"))
+        right_slope1 = float(self.cs.config.get(ROBOT, "right_slope1"))
+        right_intercept1 = float(self.cs.config.get(ROBOT, "right_intercept1"))
+        right_slope2 = float(self.cs.config.get(ROBOT, "right_slope2"))
+        right_intercept2 = float(self.cs.config.get(ROBOT, "right_intercept2"))
         self.recal_sensors = RecalSensors(
             {
                 1: [create_adc(0, "recal1", type=AdcType.ADS)],
