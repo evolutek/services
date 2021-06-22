@@ -15,6 +15,7 @@ right_slope1 = float(cs.config.get(ROBOT, "right_slope1"))
 right_intercept1 = float(cs.config.get(ROBOT, "right_intercept1"))
 right_slope2 = float(cs.config.get(ROBOT, "right_slope2"))
 right_intercept2 = float(cs.config.get(ROBOT, "right_intercept2"))
+
 sensors = RecalSensors(
     {
         1: [create_adc(0, "recal1", type=AdcType.ADS)],

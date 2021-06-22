@@ -103,6 +103,7 @@ class Actuators(Service):
         right_intercept1 = float(self.cs.config.get(ROBOT, "right_intercept1"))
         right_slope2 = float(self.cs.config.get(ROBOT, "right_slope2"))
         right_intercept2 = float(self.cs.config.get(ROBOT, "right_intercept2"))
+
         self.recal_sensors = RecalSensors(
             {
                 1: [create_adc(0, "recal1", type=AdcType.ADS)],
