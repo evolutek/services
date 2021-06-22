@@ -3,6 +3,7 @@ import json
 from math import pi
 
 from evolutek.lib.map.point import Point
+from evolutek.lib.utils.wrappers import event_waiter
 
 
 """ Avoid Strategy Enum """
@@ -65,6 +66,11 @@ class Action:
                 fct = getattr(ai, action['fct'])
             else:
                 fct = getattr(getattr(ai, action['handler']), action['fct'])
+
+                if action['handler'] == 'robot':
+                    fct = event_waiter(fct, ai.start_event, ai.stop_event, callback=ai.check_abort)
+
+
         except Exception as e:
             print('[GOALS] Failed to get fct in action %s: %s' % (action['fct'], str(e)))
             return None
