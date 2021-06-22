@@ -45,9 +45,6 @@ class ActQueue:
 
             r = task.run()
 
-            if isinstance(r, str):
-                r = { 'status' : r }
-
             if self.end_callback is not None:
                 self.end_callback(task.id, r)
 
