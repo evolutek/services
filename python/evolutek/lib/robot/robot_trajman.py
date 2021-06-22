@@ -124,9 +124,6 @@ def goto_avoid(self, x, y, mirror=True):
                 dist = self.robot_position.dist(Point(x=x, y=y))
                 side = self.avoid_side
 
-            print(dist)
-            print(side)
-
             while self.need_to_avoid(dist, side):
                 if self.check_abort() != RobotStatus.Ok:
                     return RobotStatus.Aborted

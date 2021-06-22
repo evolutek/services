@@ -237,6 +237,7 @@ class Robot(Service):
     def check_avoid(self):
 
         side = True
+        stop_distance = 0.0
         detection_dist = 0.0
         with self.lock:
             if self.moving_side is None:
