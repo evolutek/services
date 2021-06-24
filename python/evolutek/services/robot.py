@@ -185,8 +185,9 @@ class Robot(Service):
 
     @Service.action
     def enable(self):
-        self.disabled.clear()
-        self.queue.run_queue()
+        if self.bau_state:
+            self.disabled.clear()
+            self.queue.run_queue()
 
     @Service.action
     def reset(self):

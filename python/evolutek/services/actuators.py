@@ -172,7 +172,8 @@ class Actuators(Service):
     # Enable Actuators
     @Service.action
     def enable(self):
-        self.disabled.clear()
+        if self.bau.read():
+            self.disabled.clear()
 
     #########
     # PUMPS #
