@@ -16,7 +16,7 @@ def if_enabled(method):
         if self.disabled.is_set():
             self.log(what='disabled',
                     msg="Usage of {} is disabled".format(method))
-            return RobotStatus.Disabled.value
+            return RobotStatus.return_status(RobotStatus.Disabled)
         return method(self, *args, **kwargs)
 
     return wrapped
@@ -93,11 +93,11 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
 
         stop_event.wait()
 
-        if status is not None and status != RobotStatus.Ok:
-            stop_event.data['status'] = status.value
-        else:
-            stop_event.data['status'] = RobotStatus.get_status(stop_event.data).value
-        return stop_event.data
+        if status is None or status == RobotStatus.Ok:
+            status = RobotStatus.get_status(stop_event.data)
+            del stop_event.data['status']
+
+        return RobotStatus.return_status(status, **stop_event.data)
 
     return wrapped
 

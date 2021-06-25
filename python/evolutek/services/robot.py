@@ -120,10 +120,8 @@ class Robot(Service):
             self.need_to_abort.clear()
             self.publish('%s_robot_started' % ROBOT, id=id)
 
-        def end_callback(id, r):
-            if isinstance(r['status'], RobotStatus):
-                r['status'] = r['status'].value
-            self.publish('%s_robot_stopped' % ROBOT, id=id, **r)
+        def end_callback(id, status):
+            self.publish('%s_robot_stopped' % ROBOT, id=id, **status)
 
         self.queue = ActQueue(
             start_callback,

@@ -24,3 +24,8 @@ class RobotStatus(Enum):
             return RobotStatus(dict['status'])
         except:
             return RobotStatus.Unknow
+
+    @staticmethod
+    def return_status(status, **kwargs):
+        kwargs['status'] = status.value
+        return kwargs

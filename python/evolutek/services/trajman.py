@@ -18,6 +18,7 @@ make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled
 
 #######################
@@ -657,7 +658,7 @@ class TrajMan(Service):
                 elif tab[1] == Commands.MOVE_END.value:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish(ROBOT + '_stopped', status='reached' if not self.has_detected_collision.is_set() else 'not_reached')
+                    self.publish(ROBOT + '_stopped', **RobotStatus.return_status(RobotStatus.Reached if not self.has_detected_collision.is_set() else RobotStatus.NotReached))
 
                 elif tab[1] == Commands.GET_SPEEDS.value:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
@@ -750,7 +751,7 @@ class TrajMan(Service):
                     elif tab[2] == Errors.DESTINATION_UNREACHABLE.value:
                         self.log("Error was: DESTINATION_UNREACHABLE")
                         self.has_detected_collision.set()
-                    elif tab[2] == Erros.BAD_ORDER.value:
+                    elif tab[2] == Errors.BAD_ORDER.value:
                         self.log("Error was: BAD_ORDER")
 
                 elif tab[1] == Commands.DEBUG.value:

@@ -190,10 +190,10 @@ class Actuators(Service):
             tasks.append(Task(self.pumps[int(i)].drop))
 
         if len(tasks) < 1:
-            return RobotStatus.Failed.value
+            return RobotStatus.return_status(RobotStatus.Failed)
 
         launch_multiple_actions(tasks)
-        return RobotStatus.Done.value
+        return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled
     @Service.action
@@ -208,10 +208,10 @@ class Actuators(Service):
             tasks.append(Task(self.pumps[int(i)].get))
 
         if len(tasks) < 1:
-            return RobotStatus.Failed.value
+            return RobotStatus.return_status(RobotStatus.Failed)
 
         launch_multiple_actions(tasks)
-        return RobotStatus.Done.value
+        return RobotStatus.return_status(RobotStatus.Done)
 
     #######
     # AXS #
@@ -220,9 +220,9 @@ class Actuators(Service):
     @Service.action
     def ax_move(self, id, pos):
         if self.axs[int(id)] == None:
-            return RobotStatus.Failed.value
+            return RobotStatus.return_status(RobotStatus.Failed)
         self.axs[int(id)].move(int(pos))
-        return RobotStatus.Done.value
+        return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action
     def axs_free(self, ids):
@@ -235,7 +235,7 @@ class Actuators(Service):
                 continue
             self.axs[int(i)].free()
 
-        return RobotStatus.Done.value
+        return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action
     def ax_set_speed(self, id, speed):

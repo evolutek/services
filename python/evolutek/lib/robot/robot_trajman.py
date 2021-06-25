@@ -116,7 +116,7 @@ def goto_avoid(self, x, y, mirror=True):
             _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
             if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
-                return _status.value
+                return RobotStatus.return_status(_status)
 
             dist = 0.0
             side = True
@@ -126,7 +126,7 @@ def goto_avoid(self, x, y, mirror=True):
 
             while self.need_to_avoid(dist, side):
                 if self.check_abort() != RobotStatus.Ok:
-                    return RobotStatus.Aborted
+                    return RobotStatus.return_status(RobotStatus.Aborted)
 
                 print('[ROBOT] Waiting')
                 sleep(0.1)
@@ -134,7 +134,7 @@ def goto_avoid(self, x, y, mirror=True):
         elif status != RobotStatus.Reached:
             break
 
-    return status.value
+    return RobotStatus.return_status(status)
 
 @if_enabled
 @use_queue
@@ -163,7 +163,7 @@ def goto_with_path(self, x, y, mirror=True):
         path = self.get_path(origin, destination)
 
         if (len(path) < 2):
-            return RobotStatus.Unreachable.value
+            return RobotStatus.return_status(RobotStatus.Unreachable)
 
         for i in range(1, len(path)):
 
@@ -178,14 +178,14 @@ def goto_with_path(self, x, y, mirror=True):
                 _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
                 if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
-                    return _status.value
+                    return RobotStatus.return_status(_status)
 
                 break
 
             elif status != RobotStatus.Reached:
-                return status.value
+                return RobotStatus.return_status(status)
 
-    return status.value
+    return RobotStatus.return_status(status)
 
 
 #################
@@ -253,4 +253,4 @@ def recalibration(self,
     self.trajman.set_trsl_acc(speeds['tracc'])
     self.trajman.set_trsl_dec(speeds['trdec'])
 
-    return RobotStatus.Done.value
+    return RobotStatus.return_status(RobotStatus.Done)
