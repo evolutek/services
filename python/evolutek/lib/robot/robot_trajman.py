@@ -213,6 +213,12 @@ def recalibration(self,
     self.trajman.set_trsl_acc(300)
     self.trajman.set_trsl_dec(300)
 
+    if isinstance(init, str):
+        init = init == 'true'
+
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+
     # Init pos if necessary
     if init:
         self.trajman.set_theta(0)
@@ -221,18 +227,26 @@ def recalibration(self,
 
     # TODO : check trajman returns ?
 
+    if isinstance(x, str):
+        x = x == 'true'
+
+    if isinstance(y, str):
+        y = y == 'true'
+
     if x:
         print('[ROBOT] Recalibration X')
         theta = pi if side_x[0] ^ side_x[1] else 0
-        self.goth(theta)
+        self.goth(theta, mirror=mirror, use_queue=False)
         self.recal(sens=int(side_x[0]), decal=float(decal_x))
-        self.move_trsl(dest=2*(self.recal_dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_x[0])
+        sleep(0.75)
+        self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_x[0])
 
     if y:
         print('[ROBOT] Recalibration Y')
         theta = -pi/2 if side_y[0] ^ side_y[1] else pi/2
-        self.goth(theta)
+        self.goth(theta, mirror = mirror, use_queue=False)
         self.recal(sens=int(side_y[0]), decal=float(decal_y))
+        sleep(0.75)
         self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_y[0])
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
