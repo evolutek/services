@@ -199,7 +199,7 @@ class Robot(Service):
         self.left_cup_holder_open(use_queue=False)
         self.right_cup_holder_open(use_queue=False)
         self.flags_raise(use_queue=False)
-        sleep(0.5)
+        sleep(1)
 
         self.front_arm_close(use_queue=False)
         self.left_arm_close(use_queue=False)
