@@ -163,11 +163,13 @@ class Map:
                 if not 'p1' in obstacle or not 'p2' in obstacle:
                     print('[MAP] Bad rectangle obstacle in parsing')
                     continue
-                obstacle['p1'] = Point(dict=obstacle['p1'])
-                obstacle['p2'] = Point(dict=obstacle['p2'])
+                p1 = Point(dict=obstacle['p1'])
+                p2 = Point(dict=obstacle['p2'])
                 if mirror:
-                    obstacle['p1'].y = 3000 - obstacle['p1'].y
-                    obstacle['p2'].y = 3000 - obstacle['p2'].y
+                    p1 = Point(x=p1.x, y=3000 - p1.y)
+                    p2 = Point(x=p2.x, y=3000 - p2.y)
+                obstacle['p1'] = p1
+                obstacle['p2'] = p2
                 self.add_rectangle_obstacle(**obstacle, type=type)
             elif form == 'octogon':
                 if not 'center' in obstacle:

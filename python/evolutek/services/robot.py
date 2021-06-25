@@ -94,7 +94,7 @@ class Robot(Service):
         self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
-        self.recal = event_waiter(self.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
+        self.recal = event_waiter(self.trajman.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
         self.robot_position = Point(x=0, y=0)
         self.robot_orientation = 0.0
