@@ -266,10 +266,10 @@ class Actuators(Service):
     # RECAL SENSORS #
     #################
     @Service.action
-    def recal_sensor_read(self, id):
+    def recal_sensor_read(self, id, repetitions=10):
         if self.recal_sensors[int(id)] == None:
             return None
-        return self.recal_sensors[int(id)].read()
+        return self.recal_sensors[int(id)].read(repetitions=repetitions)
 
     #####################
     # PROXIMITY SENSORS #

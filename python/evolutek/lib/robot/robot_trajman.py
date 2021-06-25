@@ -254,3 +254,26 @@ def recalibration(self,
     self.trajman.set_trsl_dec(speeds['trdec'])
 
     return RobotStatus.return_status(RobotStatus.Done)
+
+
+# Recalibration with sensors
+# Set axis_x to True to recal on x axis
+# Set left to True to use the left sensor
+@if_enabled
+@use_queue
+def recalibration_sensors(self, axis_x, left):
+
+    print('[ROBOT] Recalibration with sensors')
+    print(f'[ROBOT] axis_x={axis_x} left={left}')
+
+    id = 1 if left else 2
+    dist = self.actuators.read_sensor_read(id)
+    print(f'[ROBOT] Measured distance: {dist}mm')
+
+    # Distance between the sensor and the center of the robot
+    dist_to_center = 200
+
+    setter = self.trajman.set_x if axis_x else self.trajman.set_y
+    setter(dist + dist_to_center)
+
+    return RobotStatus.return_status(RobotStatus.Done)
