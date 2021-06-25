@@ -192,19 +192,46 @@ def goto_with_path(self, x, y, mirror=True):
 # RECALIBRATION #
 #################
 
+# Recalibration with sensors
+# Set axis_x to True to recal on x axis
+# Set left to True to use the left sensor
+def recalibration_sensors(self, axis_x, left, mirror=True):
+
+    print('[ROBOT] Recalibration with sensors')
+    print(f'[ROBOT] axis_x={axis_x} left={left}')
+
+    # Distance between the sensor and the center of the robot
+    dist_to_center = 109
+
+    id = 1 if left ^ (not self.side and mirror) else 2
+    dist = self.actuators.recal_sensor_read(id) + dist_to_center
+    print(f'[ROBOT] Measured distance: {dist}mm')
+
+    theta = self.trajman.get_position()['theta']
+    if not axis_x and ((abs(theta) > pi/2) ^ left):
+        dist = 3000 - dist
+    if axis_x and ((theta > 0) ^ left):
+        dist = 2000 - dist
+
+    setter = self.trajman.set_x if axis_x else self.trajman.set_y
+    setter(dist)
+
+    return RobotStatus.Done.value
+
 @if_enabled
 @use_queue
 def recalibration(self,
                     x=True,
                     y=True,
+                    x_sensor=False,
+                    y_sensor=False,
+                    sensor_left=True,
                     decal_x=0,
                     decal_y=0,
+                    side_x=False,
+                    side_y=False,
                     init=False,
                     mirror=True):
-
-    # TODO: Update
-    side_x = (False, False)
-    side_y = (False, False)
 
     speeds = self.trajman.get_speeds()
     self.trajman.free()
@@ -218,6 +245,15 @@ def recalibration(self,
 
     if isinstance(mirror, str):
         mirror = mirror == 'true'
+
+    if isinstance(x_sensor, str):
+        x_sensor = x_sensor == 'true'
+
+    if isinstance(y_sensor, str):
+        y_sensor = y_sensor == 'true'
+
+    if isinstance(sensor_left, str):
+        sensor_left = sensor_left == 'true'
 
     # Init pos if necessary
     if init:
@@ -235,19 +271,23 @@ def recalibration(self,
 
     if x:
         print('[ROBOT] Recalibration X')
-        theta = pi if side_x[0] ^ side_x[1] else 0
+        theta = pi if side_x else 0
         self.goth(theta, mirror=mirror, use_queue=False)
-        self.recal(sens=int(side_x[0]), decal=float(decal_x))
+        self.recal(sens=0, decal=float(decal_x))
         sleep(0.75)
-        self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_x[0])
+        if y_sensor:
+            self.recalibration_sensors(axis_x=False, left=sensor_left, mirror=mirror)
+        self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
 
     if y:
         print('[ROBOT] Recalibration Y')
-        theta = -pi/2 if side_y[0] ^ side_y[1] else pi/2
+        theta = -pi/2 if side_y else pi/2
         self.goth(theta, mirror = mirror, use_queue=False)
-        self.recal(sens=int(side_y[0]), decal=float(decal_y))
+        self.recal(sens=0, decal=float(decal_y))
         sleep(0.75)
-        self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=not side_y[0])
+        if x_sensor:
+            self.recalibration_sensors(axis_x=True, left=sensor_left, mirror=mirror)
+        self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
     self.trajman.set_trsl_acc(speeds['tracc'])
