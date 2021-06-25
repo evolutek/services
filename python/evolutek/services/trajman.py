@@ -306,7 +306,8 @@ class TrajMan(Service):
 
     @Service.action
     def enable(self):
-        self.disabled.clear()
+        if self.bau_state:
+            self.disabled.clear()
 
     #######
     # Set #

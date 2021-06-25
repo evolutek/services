@@ -69,13 +69,9 @@ class Robot(Service):
         self.cs = CellaservProxy()
         self.lock = Lock()
 
+        self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')
         self.side = True
-
-        try:
-            self.color_callback(self.cs.match.get_color())
-        except Exception as e:
-            print('[ROBOT] Failed to set color: %s' % str(e))
 
         # Size of the robot and min dist from wall
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
@@ -135,6 +131,17 @@ class Robot(Service):
         )
         self.queue.run_queue()
 
+        try:
+            cs = CellaservProxy()
+            self.handle_bau(cs.actuators[ROBOT].bau_read())
+        except Exception as e:
+            print('[TRAJMAN] Failed to get BAU status: %s' % str(e))
+
+        try:
+            self.color_callback(self.cs.match.get_color())
+        except Exception as e:
+            print('[ROBOT] Failed to set color: %s' % str(e))
+
     @Service.event("match_color")
     def color_callback(self, color):
         with self.lock:
@@ -176,11 +183,11 @@ class Robot(Service):
 
             return path
 
-
     @Service.action
     def enable(self):
-        self.disabled.clear()
-        self.queue.run_queue()
+        if self.bau_state:
+            self.disabled.clear()
+            self.queue.run_queue()
 
     @Service.event('match_end')
     @Service.action
@@ -188,6 +195,44 @@ class Robot(Service):
         self.disabled.set()
         self.queue.stop_queue()
         self.need_to_abort.set()
+
+    @Service.action
+    def reset(self):
+        if not self.bau_state:
+            return
+
+        self.enable()
+
+        self.front_arm_close(use_queue=False)
+        self.left_arm_open(use_queue=False)
+        self.right_arm_open(use_queue=False)
+        self.left_cup_holder_open(use_queue=False)
+        self.right_cup_holder_open(use_queue=False)
+        self.flags_raise(use_queue=False)
+        sleep(1)
+
+        self.front_arm_close(use_queue=False)
+        self.left_arm_close(use_queue=False)
+        self.right_arm_close(use_queue=False)
+        self.left_cup_holder_close(use_queue=False)
+        self.right_cup_holder_close(use_queue=False)
+        self.flags_low(use_queue=False)
+        sleep(1)
+
+    @Service.event('%s-bau' % ROBOT)
+    def handle_bau(self, value, **kwargs):
+
+        new_state = bool(int(value))
+        # If the state didn't change, return
+        if new_state == self.bau_state:
+            return
+
+        self.bau_state = new_state
+
+        if new_state:
+            self.reset()
+        else:
+            self.disable()
 
     @Service.action
     def abort_action(self):
