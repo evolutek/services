@@ -263,15 +263,18 @@ def recalibration(self,
 @use_queue
 def recalibration_sensors(self, axis_x, left):
 
+    axis_x = axis_x == "True"
+    left = left == "True"
+
     print('[ROBOT] Recalibration with sensors')
     print(f'[ROBOT] axis_x={axis_x} left={left}')
 
     id = 1 if left else 2
-    dist = self.actuators.read_sensor_read(id)
+    dist = self.actuators.recal_sensor_read(id)
     print(f'[ROBOT] Measured distance: {dist}mm')
 
     # Distance between the sensor and the center of the robot
-    dist_to_center = 200
+    dist_to_center = 109
 
     setter = self.trajman.set_x if axis_x else self.trajman.set_y
     setter(dist + dist_to_center)
