@@ -304,6 +304,15 @@ def recalibration(self,
     if isinstance(y_sensor, str):
         y_sensor = RecalSensor(y_sensor)
 
+    if isinstance(x_sensor, str):
+        x_sensor = x_sensor == 'true'
+
+    if isinstance(y_sensor, str):
+        y_sensor = y_sensor == 'true'
+
+    if isinstance(sensor_left, str):
+        sensor_left = sensor_left == 'true'
+
     # Init pos if necessary
     if init:
         self.trajman.set_theta(0)
