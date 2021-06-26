@@ -121,8 +121,6 @@ class TrajMan(Service):
     robot_size_x = ConfigVariable(section=ROBOT, option="robot_size_x", coerc=float)
     robot_size_y = ConfigVariable(section=ROBOT, option="robot_size_y", coerc=float)
     telemetry_refresh = ConfigVariable(section=ROBOT, option="telemetry_refresh", coerc=float)
-    stoptrsldec = ConfigVariable(section=ROBOT, option="stop_trsl_dec", coerc=float)
-    stoptrslrot = ConfigVariable(section=ROBOT, option="stop_trsl_rot", coerc=float)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -145,11 +143,6 @@ class TrajMan(Service):
         self.thread.start()
 
         # Set config of the robot
-        self.trsl_max_speed = self.trslmax()
-        self.rot_max_speed = self.rotmax()
-        self.stop_trsl_dec = self.stoptrsldec()
-        self.stop_trsl_rot = self.stoptrslrot()
-
         self.init_sequence()
         self.set_telemetry(0)
 
@@ -479,24 +472,6 @@ class TrajMan(Service):
         tab += pack('ff', float(trsldec), float(rotdec))
         self.command(bytes(tab))
 
-    # mode: sets the MDB debug mode. 0: Distances, 1: Zones, 2: Loading, 3: Disabled
-    # yellow: sets the color of the loading animation. True: yellow, False: blue
-    # near: sets the distance the robot considers as too close (stops)
-    # far: sets the distance the robot considers as dangerous (slows down)
-    # brightness: sets the brightness of the leds in the mdb
-    @Service.action
-    def set_mdb_config(self, mode=None, yellow=None, near=None, far=None, brightness=None):
-        if mode is not None:
-            self.mdb.set_debug_mode(int(mode))
-        if yellow is not None:
-            self.mdb.set_color(yellow in [True, 'True', 'true', 1, '1'])
-        if near is not None:
-            self.mdb.set_near(int(near))
-        if far is not None:
-            self.mdb.set_far(int(far))
-        if brightness is not None:
-            self.mdb.set_brightness(int(brightness))
-
     #######
     # Get #
     #######
@@ -579,14 +554,6 @@ class TrajMan(Service):
     @Service.action
     def is_moving(self):
         return not self.has_stopped.is_set()
-
-    @Service.action
-    def get_zones(self):
-        return self.mdb.get_zones()
-
-    @Service.action
-    def get_scan(self):
-        return self.mdb.get_scan()
 
     # Calibrate
 
