@@ -98,6 +98,8 @@ class Robot(Service):
         self.current_speed = 0.0
         self.detected_robots = []
         self.avoid_side = False
+        self.moving_side = None
+        self.destination = None
         self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
 
         lidar_config = self.cs.config.get_section('rplidar')
@@ -109,7 +111,6 @@ class Robot(Service):
         self.need_to_abort = Event()
         self.has_abort = Event()
         self.has_avoid = Event()
-        self.moving_side = None
 
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
@@ -291,7 +292,7 @@ class Robot(Service):
 
             # Compute needed stop_distance depending on deceleration and current speed
             stop_distance = (self.current_speed**2 / (2 * self.trsl_dec))
-            detection_dist = stop_distance + 50
+            detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + 50
 
         if self.need_to_avoid(detection_dist, side):
             self.has_avoid.set()
