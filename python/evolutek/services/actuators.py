@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Cellaserv
+from python.evolutek.lib.utils.boolean import get_boolean
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.proxy import CellaservProxy
 
