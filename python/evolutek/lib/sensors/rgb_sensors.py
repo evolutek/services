@@ -35,7 +35,7 @@ class TCS34725(Component):
         return True
 
     def setup(self):
-        for i in range(CALLIBRATE):
+        for i in range(CALIBRATE):
             rgb = self.sensor.color_rgb_bytes
             self.calibration[0] += rgb[0]
             self.calibration[1] += rgb[1]
