@@ -202,10 +202,10 @@ def goto_with_path(self, x, y, mirror=True):
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
 # Set left to True to use the left sensor
-def recalibration_sensors(self, x_axis, side, sensor, mirror=True):
+def recalibration_sensors(self, axis_x, side, sensor, mirror=True):
 
-    if isinstance(x_axis, str):
-        x_axis = x_axis == 'true'
+    if isinstance(axis_x, str):
+        axis_x = axis_x == 'true'
 
     if isinstance(side, str):
         side = side == 'true'
@@ -219,13 +219,13 @@ def recalibration_sensors(self, x_axis, side, sensor, mirror=True):
     # Distance between the sensor and the center of the robot
     dist_to_center = 109
 
-    id = 1 if sensor == RecalSensor.Left ^ (not self.side and mirror) else 2
+    id = 1 if (sensor == RecalSensor.Left) ^ (not self.side and mirror) else 2
     dist = self.actuators.recal_sensor_read(id) + dist_to_center
     print(f'[ROBOT] Measured distance: {dist}mm')
 
-    if not axis_x and (side ^ sensor == RecalSensor.Left):
+    if not axis_x and (side ^ (sensor == RecalSensor.Left)):
         dist = 3000 - dist
-    if axis_x and (not side ^ sensor == RecalSensor.Left):
+    if axis_x and ((not side) ^ (sensor == RecalSensor.Left)):
         dist = 2000 - dist
 
     setter = self.trajman.set_x if axis_x else self.trajman.set_y
@@ -293,7 +293,7 @@ def recalibration(self,
         self.recal(sens=0, decal=float(decal_x))
         sleep(0.75)
         if y_sensor != RecalSensor.No:
-            self.recalibration_sensors(x_axis=False, side=side_x, sensor=y_sensor, mirror=mirror)
+            self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror)
         self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
 
     if y:
@@ -303,37 +303,13 @@ def recalibration(self,
         self.recal(sens=0, decal=float(decal_y))
         sleep(0.75)
         if x_sensor != RecalSensor.No:
-            self.recalibration_sensors(x_axis=True, side=side_y, sensor=x_sensor, mirror=mirror)
+            self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror)
         self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
     self.trajman.set_trsl_acc(speeds['tracc'])
     self.trajman.set_trsl_dec(speeds['trdec'])
 
-    return RobotStatus.return_status(RobotStatus.Done)
-
-
-# Recalibration with sensors
-# Set axis_x to True to recal on x axis
-# Set left to True to use the left sensor
-@if_enabled
-@use_queue
-def recalibration_sensors(self, axis_x, left):
-
-    axis_x = axis_x == "True"
-    left = left == "True"
-
-    print('[ROBOT] Recalibration with sensors')
-    print(f'[ROBOT] axis_x={axis_x} left={left}')
-
-    id = 1 if left else 2
-    dist = self.actuators.recal_sensor_read(id)
-    print(f'[ROBOT] Measured distance: {dist}mm')
-
-    # Distance between the sensor and the center of the robot
-    dist_to_center = 109
-
-    setter = self.trajman.set_x if axis_x else self.trajman.set_y
-    setter(dist + dist_to_center)
+    print('[ROBOT] New position: ' + str(self.trajman.get_position()))
 
     return RobotStatus.return_status(RobotStatus.Done)
