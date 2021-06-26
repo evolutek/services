@@ -63,9 +63,12 @@ def goto(self, x, y, mirror=True):
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
+    self.destination = Point(x, y)
+
     status = self.goto_xy(x, y)
     with self.lock:
         self.moving_side = None
+        self.destination = None
     return status
 
 @if_enabled
