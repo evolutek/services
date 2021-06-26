@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Cellaserv
-from cellaserv.service import Service
+from cellaserv.service import Service, ConfigVariable
 from cellaserv.proxy import CellaservProxy
 
 # Gpio
@@ -95,12 +95,23 @@ class Actuators(Service):
             }
         )
 
+        left_slope1 = float(self.cs.config.get(ROBOT, "left_slope1"))
+        left_intercept1 = float(self.cs.config.get(ROBOT, "left_intercept1"))
+        left_slope2 = float(self.cs.config.get(ROBOT, "left_slope2"))
+        left_intercept2 = float(self.cs.config.get(ROBOT, "left_intercept2"))
+        right_slope1 = float(self.cs.config.get(ROBOT, "right_slope1"))
+        right_intercept1 = float(self.cs.config.get(ROBOT, "right_intercept1"))
+        right_slope2 = float(self.cs.config.get(ROBOT, "right_slope2"))
+        right_intercept2 = float(self.cs.config.get(ROBOT, "right_intercept2"))
+
         self.recal_sensors = RecalSensors(
             {
                 1: [create_adc(0, "recal1", type=AdcType.ADS)],
                 2: [create_adc(1, "recal2", type=AdcType.ADS)]
             }
         )
+        self.recal_sensors[1].calibrate(left_slope1, left_intercept1, left_slope2, left_intercept2)
+        self.recal_sensors[2].calibrate(right_slope1, right_intercept1, right_slope2, right_intercept2)
 
         self.rgb_sensors = RGBSensors(
             [1, 2, 3, 4]
@@ -256,10 +267,10 @@ class Actuators(Service):
     # RECAL SENSORS #
     #################
     @Service.action
-    def recal_sensor_read(self, id):
+    def recal_sensor_read(self, id, repetitions=10):
         if self.recal_sensors[int(id)] == None:
             return None
-        return self.recal_sensors[int(id)].read()
+        return self.recal_sensors[int(id)].read(repetitions=repetitions)
 
     #####################
     # PROXIMITY SENSORS #

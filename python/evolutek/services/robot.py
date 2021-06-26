@@ -39,6 +39,7 @@ class Robot(Service):
     goto_with_path = Service.action(robot_trajman.goto_with_path)
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
+    recalibration_sensors = robot_trajman.recalibration_sensors
 
     # Imported from robot_actuators
     mirror_pump_id = robot_actuators.mirror_pump_id
@@ -207,15 +208,15 @@ class Robot(Service):
         self.left_cup_holder_open(use_queue=False)
         self.right_cup_holder_open(use_queue=False)
         self.flags_raise(use_queue=False)
-        sleep(1)
+        sleep(1.5)
 
-        self.front_arm_close(use_queue=False)
+        self.front_arm_open(use_queue=False)
         self.left_arm_close(use_queue=False)
         self.right_arm_close(use_queue=False)
         self.left_cup_holder_close(use_queue=False)
         self.right_cup_holder_close(use_queue=False)
         self.flags_low(use_queue=False)
-        sleep(1)
+        sleep(1.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
