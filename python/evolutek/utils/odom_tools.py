@@ -7,10 +7,12 @@ from argparse import ArgumentParser
 from math import pi
 from time import sleep
 
+
 cs = None
 robot = '' # pal or pmi
 speeds = {}
 old = {}
+
 
 """ Compute Diameters """
 def compute_diams():
@@ -159,6 +161,7 @@ def compute_spacing():
     sleep(nbturns*2.5 + 1)
     cs.trajman[robot].free()
 
+
 def compute_all(diams, spacing, all, config, _robot):
 
     robot_name = _robot
@@ -222,7 +225,6 @@ def main():
     parser.add_argument("-s", "--spacing", help="Compute wheels spacing of the robot", action="store_true")
     parser.add_argument("-a", "--all", help="Compute all odom of the robot", action="store_true")
     parser.add_argument("-c", "--config", help="Set new values to config", action="store_true")
-
 
     args = parser.parse_args()
 
