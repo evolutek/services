@@ -1,4 +1,5 @@
 from evolutek.lib.gpio.gpio import Edge, Gpio as BaseGpio, Pwm as BasePwm
+from evolutek.lib.utils.boolean import get_boolean
 import RPi.GPIO as GPIO
 
 
@@ -46,10 +47,7 @@ class Gpio(BaseGpio):
         if not self.dir:
             return
 
-        if isinstance(value, str):
-            value = value == "true"
-
-        GPIO.output(self.id, GPIO.HIGH if value else GPIO.LOW)
+        GPIO.output(self.id, GPIO.HIGH if get_boolean(value) else GPIO.LOW)
 
 
 WAS_INITIALIZED = False

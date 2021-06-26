@@ -1,4 +1,5 @@
 from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.task import Task
 from evolutek.lib.utils.watchdog import Watchdog
 from functools import wraps
@@ -108,9 +109,7 @@ def use_queue(method):
 
         use_queue = True
         if 'use_queue' in kwargs:
-            use_queue = kwargs['use_queue']
-            if isinstance(use_queue, str):
-                use_queue = use_queue == 'true'
+            use_queue = get_boolean(kwargs['use_queue'])
 
             del kwargs['use_queue']
 

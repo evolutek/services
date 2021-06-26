@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Cellaserv
+from python.evolutek.lib.utils.boolean import get_boolean
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.proxy import CellaservProxy
 
@@ -20,6 +21,7 @@ from evolutek.lib.sensors.rgb_sensors import RGBSensors
 # Other imports
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.utils.task import Task
@@ -332,9 +334,7 @@ class Actuators(Service):
     ###################
     @Service.action
     def white_led_strip_set(self, on):
-        if isinstance(on, str):
-            on == 'true'
-        self.white_led_strip.write(on)
+        self.white_led_strip.write(get_boolean(on))
 
     #################
     # RGB LED STRIP #

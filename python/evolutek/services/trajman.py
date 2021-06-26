@@ -19,6 +19,7 @@ from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import if_enabled
 
 #######################
@@ -181,7 +182,7 @@ class TrajMan(Service):
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
 
-        new_state = bool(int(value))
+        new_state = get_boolean(value)
         # If the state didn't change, return
         if new_state == self.bau_state:
             return

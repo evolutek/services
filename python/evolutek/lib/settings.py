@@ -9,6 +9,8 @@ __doc__ = """Add evolutek's specific configuration to cellaserv.settings."""
 from cellaserv.proxy import CellaservProxy
 from cellaserv.settings import make_setting
 
+from evolutek.lib.utils.boolean import get_boolean
+
 # Get the hostname of the machine
 hostname = socket.gethostname()
 
@@ -40,7 +42,7 @@ from cellaserv.settings import make_logger
 from cellaserv.settings import ROBOT
 from cellaserv.settings import SIMULATION
 
-SIMULATION = SIMULATION == 'True'
+SIMULATION = get_boolean(SIMULATION)
 
 # Log robot name and simulation flag
 logger = make_logger(__name__)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from python.evolutek.lib.utils.boolean import get_boolean
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
@@ -12,6 +13,7 @@ from evolutek.lib.sensors.rplidar import Rplidar
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.action_queue import ActQueue
+from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
 
 from time import time, sleep
@@ -222,7 +224,7 @@ class Robot(Service):
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
 
-        new_state = bool(int(value))
+        new_state = get_boolean(value)
         # If the state didn't change, return
         if new_state == self.bau_state:
             return

@@ -1,5 +1,6 @@
 from evolutek.lib.map.point import Point
 from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
 
 from enum import Enum
@@ -207,11 +208,8 @@ def goto_with_path(self, x, y, mirror=True):
 # Set left to True to use the left sensor
 def recalibration_sensors(self, axis_x, side, sensor, mirror=True):
 
-    if isinstance(axis_x, str):
-        axis_x = axis_x == 'true'
-
-    if isinstance(side, str):
-        side = side == 'true'
+    axis_x = get_boolean(axis_x)
+    side = get_boolean(side)
 
     if isinstance(sensor, str):
         sensor = RecalSensor(sensor)
@@ -257,29 +255,17 @@ def recalibration(self,
     self.trajman.set_trsl_acc(300)
     self.trajman.set_trsl_dec(300)
 
-    if isinstance(init, str):
-        init = init == 'true'
-
-    if isinstance(mirror, str):
-        mirror = mirror == 'true'
+    x = get_boolean(x)
+    y = get_boolean(y)
+    side_x = get_boolean(side_x)
+    side_y = get_boolean(side_y)
+    init = get_boolean(init)
+    mirror = get_boolean(mirror)
 
     if isinstance(x_sensor, str):
         x_sensor = RecalSensor(x_sensor)
-
     if isinstance(y_sensor, str):
         y_sensor = RecalSensor(y_sensor)
-
-    if isinstance(x, str):
-        x = x == 'true'
-
-    if isinstance(y, str):
-        y = y == 'true'
-
-    if isinstance(side_x, str):
-        side_x = side_x == 'true'
-
-    if isinstance(side_y, str):
-        side_y = side_y == 'true'
 
     # Init pos if necessary
     if init:

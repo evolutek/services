@@ -2,8 +2,9 @@ from adafruit_mcp230xx.mcp23017 import MCP23017
 import board
 import busio
 from digitalio import Direction
-from evolutek.lib.gpio.gpio import Edge, Gpio as BaseGpio
 
+from evolutek.lib.gpio.gpio import Edge, Gpio as BaseGpio
+from evolutek.lib.utils.boolean import get_boolean
 
 class Gpio(BaseGpio):
 
@@ -31,10 +32,7 @@ class Gpio(BaseGpio):
         if not self.dir:
             return
 
-        if isinstance(value, str):
-            value = value == "true"
-
-        self.pin.value = value
+        self.pin.value = get_boolean(value)
 
 
 WAS_INITIALIZED = False
