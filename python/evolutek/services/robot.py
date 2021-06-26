@@ -189,8 +189,18 @@ class Robot(Service):
             self.disabled.clear()
             self.queue.run_queue()
 
+    @Service.event('match_end')
+    @Service.action
+    def disable(self):
+        self.disabled.set()
+        self.queue.stop_queue()
+        self.need_to_abort.set()
+
     @Service.action
     def reset(self):
+        if not self.bau_state:
+            return
+
         self.enable()
 
         self.front_arm_close(use_queue=False)
@@ -223,13 +233,6 @@ class Robot(Service):
             self.reset()
         else:
             self.disable()
-
-    @Service.event('match_end')
-    @Service.action
-    def disable(self):
-        self.disabled.set()
-        self.queue.stop_queue()
-        self.need_to_abort.set()
 
     @Service.action
     def abort_action(self):

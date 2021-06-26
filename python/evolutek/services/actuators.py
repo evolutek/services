@@ -280,8 +280,11 @@ class Actuators(Service):
     def bau_callback(self, event, value, **kwargs):
         self.bau_led.write(value)
         self.publish(event=event, value=value, **kwargs)
-        if not value:
+        if value:
+            self.enable()
+        else:
             self.free()
+            self.disable()
 
     ###################
     # WHITE LED STRIP #
