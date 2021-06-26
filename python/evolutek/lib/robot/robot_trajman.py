@@ -1,14 +1,14 @@
 from evolutek.lib.map.point import Point
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
+from evolutek.lib.utils.watchdog import Watchdog
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
 
 from enum import Enum
 from math import pi
+from threading import Event
 from time import sleep
 
-# TODO : Check abort
-# TODO : Timeout
 
 class RecalSensor(Enum):
     No = "no"
@@ -102,9 +102,15 @@ def move_back(self):
 
     return self.move_trsl(acc=200, dec=200, dest=self.dist, maxspeed=400, sens=side)
 
+timeout_event = Event()
+
+def timeout_handler():
+    global timeout_event
+    timeout_event.set()
+
 @if_enabled
 @use_queue
-def goto_avoid(self, x, y, mirror=True):
+def goto_avoid(self, x, y, mirror=True, timeout=None):
 
     x = float(x)
     y = float(y)
@@ -127,19 +133,28 @@ def goto_avoid(self, x, y, mirror=True):
         if status == RobotStatus.HasAvoid:
 
             # TODO : check if a robot is in front of our robot before move back
+            # _status = RobotStatus.get_status(self.move_back(use_queue=False))
 
-            _status = RobotStatus.get_status(self.move_back(use_queue=False))
-
-            if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
-                return RobotStatus.return_status(_status)
+            #if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+            #    return RobotStatus.return_status(_status)
 
             pos = Point(dict=self.trajman.get_position())
             dist = pos.dist(destination)
-            side = status['avoid_side'] == 'true'
+            side = get_boolean(status['avoid_side'])
 
-            while self.trajman.need_to_avoid(dist, side) == 'true':
+            global timeout_event
+            timeout_event.clear()
+
+            if timeout is not None:
+                watchdog = Watchdog(float(timeout), timeout_handler)
+                watchdog.reset()
+
+            while get_boolean(self.trajman.need_to_avoid(dist, side)):
                 if self.check_abort() != RobotStatus.Ok:
                     return RobotStatus.return_status(RobotStatus.Aborted)
+
+                if timeout_event.is_set():
+                    return RobotStatus.return_status(RobotStatus.Timeout)
 
                 print('[ROBOT] Waiting')
                 sleep(0.1)

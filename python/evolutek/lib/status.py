@@ -8,6 +8,7 @@ class RobotStatus(Enum):
     Failed = 'failed'
     NotStarted = 'not-started'
     Ok = 'ok'
+    Timeout = 'timeout'
     Unknow = 'unknow'
 
     # Move
