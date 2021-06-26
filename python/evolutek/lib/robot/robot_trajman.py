@@ -1,11 +1,18 @@
 from evolutek.lib.map.point import Point
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
+
+from enum import Enum
 from math import pi
 from time import sleep
 
 # TODO : Check abort
 # TODO : Timeout
+
+class RecalSensor(Enum):
+    No = "no"
+    Left = "left"
+    Right = "right"
 
 ##########
 # COMMON #
@@ -195,22 +202,30 @@ def goto_with_path(self, x, y, mirror=True):
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
 # Set left to True to use the left sensor
-def recalibration_sensors(self, axis_x, left, mirror=True):
+def recalibration_sensors(self, x_axis, side, sensor, mirror=True):
+
+    if isinstance(x_axis, str):
+        x_axis = x_axis == 'true'
+
+    if isinstance(side, str):
+        side = side == 'true'
+
+    if isinstance(sensor, str):
+        sensor = RecalSensor(sensor)
 
     print('[ROBOT] Recalibration with sensors')
-    print(f'[ROBOT] axis_x={axis_x} left={left}')
+    print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')
 
     # Distance between the sensor and the center of the robot
     dist_to_center = 109
 
-    id = 1 if left ^ (not self.side and mirror) else 2
+    id = 1 if sensor == RecalSensor.Left ^ (not self.side and mirror) else 2
     dist = self.actuators.recal_sensor_read(id) + dist_to_center
     print(f'[ROBOT] Measured distance: {dist}mm')
 
-    theta = self.trajman.get_position()['theta']
-    if not axis_x and ((abs(theta) > pi/2) ^ left):
+    if not axis_x and (side ^ sensor == RecalSensor.Left):
         dist = 3000 - dist
-    if axis_x and ((theta > 0) ^ left):
+    if axis_x and (not side ^ sensor == RecalSensor.Left):
         dist = 2000 - dist
 
     setter = self.trajman.set_x if axis_x else self.trajman.set_y
@@ -223,9 +238,8 @@ def recalibration_sensors(self, axis_x, left, mirror=True):
 def recalibration(self,
                     x=True,
                     y=True,
-                    x_sensor=False,
-                    y_sensor=False,
-                    sensor_left=True,
+                    x_sensor=RecalSensor.No,
+                    y_sensor=RecalSensor.No,
                     decal_x=0,
                     decal_y=0,
                     side_x=False,
@@ -247,13 +261,22 @@ def recalibration(self,
         mirror = mirror == 'true'
 
     if isinstance(x_sensor, str):
-        x_sensor = x_sensor == 'true'
+        x_sensor = RecalSensor(x_sensor)
 
     if isinstance(y_sensor, str):
-        y_sensor = y_sensor == 'true'
+        y_sensor = RecalSensor(y_sensor)
 
-    if isinstance(sensor_left, str):
-        sensor_left = sensor_left == 'true'
+    if isinstance(x, str):
+        x = x == 'true'
+
+    if isinstance(y, str):
+        y = y == 'true'
+
+    if isinstance(side_x, str):
+        side_x = side_x == 'true'
+
+    if isinstance(side_y, str):
+        side_y = side_y == 'true'
 
     # Init pos if necessary
     if init:
@@ -263,20 +286,14 @@ def recalibration(self,
 
     # TODO : check trajman returns ?
 
-    if isinstance(x, str):
-        x = x == 'true'
-
-    if isinstance(y, str):
-        y = y == 'true'
-
     if x:
         print('[ROBOT] Recalibration X')
         theta = pi if side_x else 0
         self.goth(theta, mirror=mirror, use_queue=False)
         self.recal(sens=0, decal=float(decal_x))
         sleep(0.75)
-        if y_sensor:
-            self.recalibration_sensors(axis_x=False, left=sensor_left, mirror=mirror)
+        if y_sensor != RecalSensor.No:
+            self.recalibration_sensors(x_axis=False, side=side_x, sensor=y_sensor, mirror=mirror)
         self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
 
     if y:
@@ -285,8 +302,8 @@ def recalibration(self,
         self.goth(theta, mirror = mirror, use_queue=False)
         self.recal(sens=0, decal=float(decal_y))
         sleep(0.75)
-        if x_sensor:
-            self.recalibration_sensors(axis_x=True, left=sensor_left, mirror=mirror)
+        if x_sensor != RecalSensor.No:
+            self.recalibration_sensors(x_axis=True, side=side_y, sensor=x_sensor, mirror=mirror)
         self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
