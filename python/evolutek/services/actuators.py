@@ -152,7 +152,20 @@ class Actuators(Service):
                 self.is_initialized = False
 
         if self.is_initialized:
+            self.rgb_led_strip.start()
+
+            print("[ACTUATORS] Calibrating rgb sensors")
+            self.white_led_strip_set(True)
+            for sensor in self.rgb_sensors:
+                sensor.calibrate()
+            self.white_led_strip(False)
+
             print("[ACTUATORS] Fully initialized")
+
+    def __del__(self):
+        print("[ACTUATORS] Stopping")
+        self.free()
+        self.rgb_led_strip.stop()
 
     @Service.action
     def print_status(self):
@@ -194,16 +207,16 @@ class Actuators(Service):
         if isinstance(ids, str):
             ids = ids.split(",")
 
-        tasks = []
-        for i in ids:
-            if self.pumps[int(i)] == None:
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
                 continue
-            tasks.append(Task(self.pumps[int(i)].drop))
+            _ids.append(int(id))
 
-        if len(tasks) < 1:
+        if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        launch_multiple_actions(tasks)
+        self.pumps.drops(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled
@@ -240,7 +253,6 @@ class Actuators(Service):
         if isinstance(ids, str):
             ids = ids.split(",")
 
-        tasks = []
         for i in ids:
             if self.axs[int(i)] == None:
                 continue
@@ -261,7 +273,13 @@ class Actuators(Service):
     def color_sensor_read(self, id):
         if self.rgb_sensors[int(id)] == None:
             return None
-        return self.rgb_sensors[int(id)].read().name
+
+        self.white_led_strip_set(True)
+        values = self.rgb_sensors[int(id)].read().name
+        self.white_led_strip_set(True)
+
+        return values
+
 
     #################
     # RECAL SENSORS #
