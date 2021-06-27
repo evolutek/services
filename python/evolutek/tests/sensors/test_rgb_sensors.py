@@ -7,7 +7,7 @@ print(rgb_sensors.is_initialized())
 print(rgb_sensors)
 
 for sensor in rgb_sensors:
-    rgb_sensors[sensor].setup()
+    rgb_sensors[sensor].calibrate()
 
 while True:
     for sensor in rgb_sensors:
