@@ -34,7 +34,7 @@ class TCS34725(Component):
             return False
         return True
 
-    def setup(self):
+    def calibrate(self):
         for i in range(CALIBRATE):
             rgb = self.sensor.color_rgb_bytes
             self.calibration[0] += rgb[0]
@@ -46,29 +46,19 @@ class TCS34725(Component):
         self.calibration[2] /= CALIBRATE
         # print('Setup: R = %i - G = %i - B = %i' % (self.calibration[0],self.calibration[1],self.calibration[2]))
 
-    def isMajorChanges(self, rgb):
-        # print('R = %i - G = %i - B = %i' % (rgb))
-        if (rgb[0] >= self.calibration[0] * SENSITIVITY) \
-            or (rgb[1] >= self.calibration[1] * SENSITIVITY) \
-            or (rgb[2] >= self.calibration[2] * SENSITIVITY):
-            return True
-        return False
-
     def read(self):
         if not self.is_initialized:
             print('[%s] %s %d not initialized' % (self.name, self.name, self.id))
             return None
+
         rgb = self.sensor.color_rgb_bytes
-        r, g, b = rgb[0], rgb[1], rgb[2]
-        colorByte = max(r, g, b)
-        if not self.isMajorChanges(rgb):
+        values = [rgb[0] - self.calibration[0], rgb[1] - self.calibration[1], rgb[2] - self.calibration[2]]
+        index = values.index(max(values))
+
+        if rgb[index] < self.calibration[index] * SENSITIVITY:
             return Color.Unknow
-        elif colorByte == r:
-            return Color.Red
-        elif colorByte == g:
-            return Color.Green
-        else:
-            return Color.Blue
+
+        return [Color.Red, Color.Green, Color.Blue][index]
 
     def __str__(self):
         s = "----------\n"
