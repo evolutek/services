@@ -25,6 +25,8 @@ from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.utils.task import Task
 from evolutek.lib.utils.wrappers import if_enabled
 from threading import Event
+import atexit
+from time import sleep
 
 # TODO :
 # - Put components config in a lib / read a JSON
@@ -36,6 +38,7 @@ class Actuators(Service):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.disabled = Event()
+        atexit.register(self.stop)
 
         self.axs = AX12Controller(
             [1, 2, 3, 4, 5, 6]
@@ -152,7 +155,21 @@ class Actuators(Service):
                 self.is_initialized = False
 
         if self.is_initialized:
+            self.rgb_led_strip.start()
+
+            print("[ACTUATORS] Calibrating rgb sensors")
+            self.white_led_strip_set(True)
+            for sensor in self.rgb_sensors:
+                self.rgb_sensors[sensor].calibrate()
+            self.white_led_strip_set(False)
+
             print("[ACTUATORS] Fully initialized")
+
+    def stop(self):
+        print("[ACTUATORS] Stopping")
+        self.white_led_strip_set(False)
+        self.rgb_led_strip.stop()
+        self.free()
 
     @Service.action
     def print_status(self):
@@ -194,16 +211,16 @@ class Actuators(Service):
         if isinstance(ids, str):
             ids = ids.split(",")
 
-        tasks = []
-        for i in ids:
-            if self.pumps[int(i)] == None:
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
                 continue
-            tasks.append(Task(self.pumps[int(i)].drop))
+            _ids.append(int(id))
 
-        if len(tasks) < 1:
+        if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        launch_multiple_actions(tasks)
+        self.pumps.drops(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled
@@ -240,7 +257,6 @@ class Actuators(Service):
         if isinstance(ids, str):
             ids = ids.split(",")
 
-        tasks = []
         for i in ids:
             if self.axs[int(i)] == None:
                 continue
@@ -261,7 +277,21 @@ class Actuators(Service):
     def color_sensor_read(self, id):
         if self.rgb_sensors[int(id)] == None:
             return None
-        return self.rgb_sensors[int(id)].read().name
+
+        self.white_led_strip_set(True)
+        sleep(0.2)
+        value = self.rgb_sensors[int(id)].read().name
+        self.white_led_strip_set(False)
+
+        return value
+
+    @Service.action
+    def color_sensors_read(self):
+        self.white_led_strip_set(True)
+        sleep(0.2)
+        values = self.rgb_sensors.read_all_sensors()
+        self.white_led_strip_set(False)
+        return list(map(lambda id: values[id].name, values))
 
     #################
     # RECAL SENSORS #

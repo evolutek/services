@@ -2,7 +2,7 @@ from enum import Enum
 from evolutek.lib.component import Component
 from evolutek.lib.utils.color import Color
 from neopixel import NeoPixel, GRB
-from threading import Lock, Thread
+from threading import Event, Lock, Thread
 from time import sleep
 
 class LightningMode(Enum):
@@ -29,9 +29,9 @@ class WS2812BLedStrip(Component):
         self.lock = Lock()
         self.mode = LightningMode.Loading
         self.loading_color = Color.Blue
-
         self.current_led = 0
         self.state = False
+        self.need_to_stop = Event()
 
         super().__init__('WS2812BLedStrip', id)
 
@@ -57,9 +57,13 @@ class WS2812BLedStrip(Component):
             print('[%s] Failed to initiliaze Led Strip: %s' % (self.name, str(e)))
             return False
 
+        return True
+
+    def start(self):
         Thread(target=self.run).start()
 
-        return True
+    def stop(self):
+        self.need_to_stop.set()
 
     def set_mode(self, mode=LightningMode.Loading):
         with self.lock:
@@ -86,9 +90,8 @@ class WS2812BLedStrip(Component):
             self.loading_color = color
 
     def run(self):
-        while True:
+        while not self.need_to_stop.is_set():
             with self.lock:
-
                 if self.mode == LightningMode.Disabled:
                     for i in range(self.nb_leds):
                         self.leds[i] = Color.Orange.value if self.state ^ i % 2 == 0 else Color.Black.value
@@ -109,3 +112,7 @@ class WS2812BLedStrip(Component):
                 self.leds.show()
 
             sleep(refresh[self.mode])
+
+        self.leds.fill(Color.Black.value)
+        self.leds.show()
+        print(f"[{self.name}] Stopped")
