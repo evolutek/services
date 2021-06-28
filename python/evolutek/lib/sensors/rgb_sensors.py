@@ -12,7 +12,10 @@ from evolutek.lib.utils.color import Color
 
 TCA = None
 CALIBRATE = 10
-SENSITIVITY = 1.2
+
+# Up -> More perturbations (more false positives)
+# Down -> Better detection (more false negatives)
+SENSITIVITY = 1.3
 
 class TCS34725(Component):
 

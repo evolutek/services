@@ -13,4 +13,4 @@ while True:
     for sensor in rgb_sensors:
         print('Sensor %s Color: (%s)' % (sensor, rgb_sensors[sensor].read().value))
     print("\n---------------------------------------\n")
-    sleep(2)
+    sleep(1)
