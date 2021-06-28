@@ -61,6 +61,7 @@ class Robot(Service):
 
     # Imported from robot_actuators
     get_reef = Service.action(robot_actions.get_reef)
+    push_windsocks = Service.action(robot_actions.push_windsocks)
 
     def __init__(self):
 
