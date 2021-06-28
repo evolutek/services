@@ -140,6 +140,8 @@ class TrajMan(Service):
         self.disabled = Event()
         self.bau_state = None
 
+        self.lock = Lock()
+
         self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
 
         self.thread = Thread(target=self.async_read)
@@ -174,8 +176,6 @@ class TrajMan(Service):
         self.size_y = self.robot_size_y()
         self.set_robot_size_y(self.size_y)
 
-        self.set_telemetry(self.telemetry_refresh())
-
         cs = CellaservProxy()
 
         lidar_config = cs.config.get_section('rplidar')
@@ -184,30 +184,32 @@ class TrajMan(Service):
         self.lidar.register_callback(self.lidar_callback)
 
         self.detected_robots = []
-        self.has_abort = Event()
+        self.has_avoid = Event()
         self.avoid_side = None
         self.is_avoid_enabled = Event()
         self.destination = None
-        self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
+        self.robot_size = float(cs.config.get(section='match', option='robot_size'))
 
         self.robot_position = Point(0, 0)
         self.robot_orientation = 0.0
         self.robot_speed = 0.0
 
-        self.lock = Lock()
+        Thread(target=self.avoid_loop).start()
 
         try:
             self.handle_bau(cs.actuators[ROBOT].bau_read())
         except Exception as e:
             print('[TRAJMAN] Failed to get BAU status: %s' % str(e))
 
+        self.set_telemetry(self.telemetry_refresh())
+
     """ AVOID """
-    def lidar_callback(self, shapes, robots):
+    def lidar_callback(self, cloud, shapes, robots):
         with self.lock:
             self.detected_robots = robots
 
     @Service.action
-    def need_to_avoid(self, dist, side):
+    def need_to_avoid(self, detection_dist, side):
         with self.lock:
 
             d1 = self.size_y + self.robot_size + 10
@@ -234,10 +236,8 @@ class TrajMan(Service):
         return False
 
     @Service.action
-    def stop_robot(self, dist=100);
-        with self.lock:
-            self.trajman.move_trsl(dest=dist, acc=0.0, dec=self.trsl_dec,\
-                maxspeed=self.trsl_max_speed, sens=int(self.current_speed > 0.0))
+    def stop_robot(self, dist=100):
+        self.move_trsl(min(dist, 100), 0, 1000, self.robot_speed, int(self.robot_speed > 0))
 
     def avoid_loop(self):
         while True:
@@ -252,14 +252,15 @@ class TrajMan(Service):
             side = False
 
             with self.lock:
-                stop_distance = (self.robot_speed**2 / (2 * self.trsl_dec))
+                stop_distance = (self.robot_speed**2 / (2 * 1000))
                 detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + 50
                 side = self.robot_speed > 0
 
             if self.need_to_avoid(detection_dist, side):
 
                 with self.lock:
-                    self.avoid_side = self.current_speed < 0.0
+                    self.avoid_side = self.robot_speed > 0.0
+
                 self.has_avoid.set()
                 self.is_avoid_enabled.clear()
                 self.stop_robot(stop_distance)
@@ -719,13 +720,14 @@ class TrajMan(Service):
                     status = RobotStatus.Reached
                     if self.has_avoid.is_set():
                         status = RobotStatus.HasAvoid
-                    elif self.self.has_detected_collision.is_set():
+                    elif self.has_detected_collision.is_set():
                         status = RobotStatus.NotReached
 
-                    self.destination = None
                     self.is_avoid_enabled.clear()
+
                     avoid_side = None
                     with self.lock:
+                        self.destination = None
                         avoid_side = self.avoid_side
                         self.avoid_side = None
 
