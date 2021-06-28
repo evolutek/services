@@ -92,7 +92,6 @@ class WS2812BLedStrip(Component):
     def run(self):
         while not self.need_to_stop.is_set():
             with self.lock:
-
                 if self.mode == LightningMode.Disabled:
                     for i in range(self.nb_leds):
                         self.leds[i] = Color.Orange.value if self.state ^ i % 2 == 0 else Color.Black.value
@@ -116,3 +115,4 @@ class WS2812BLedStrip(Component):
 
         self.leds.fill(Color.Black.value)
         self.leds.show()
+        print(f"[{self.name}] Stopped")

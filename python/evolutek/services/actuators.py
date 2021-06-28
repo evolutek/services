@@ -25,6 +25,8 @@ from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.utils.task import Task
 from evolutek.lib.utils.wrappers import if_enabled
 from threading import Event
+import atexit
+from time import sleep
 
 # TODO :
 # - Put components config in a lib / read a JSON
@@ -36,6 +38,7 @@ class Actuators(Service):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.disabled = Event()
+        atexit.register(self.stop)
 
         self.axs = AX12Controller(
             [1, 2, 3, 4, 5, 6]
@@ -157,15 +160,16 @@ class Actuators(Service):
             print("[ACTUATORS] Calibrating rgb sensors")
             self.white_led_strip_set(True)
             for sensor in self.rgb_sensors:
-                sensor.calibrate()
-            self.white_led_strip(False)
+                self.rgb_sensors[sensor].calibrate()
+            self.white_led_strip_set(False)
 
             print("[ACTUATORS] Fully initialized")
 
-    def __del__(self):
+    def stop(self):
         print("[ACTUATORS] Stopping")
-        self.free()
+        self.white_led_strip_set(False)
         self.rgb_led_strip.stop()
+        self.free()
 
     @Service.action
     def print_status(self):
@@ -275,11 +279,19 @@ class Actuators(Service):
             return None
 
         self.white_led_strip_set(True)
-        values = self.rgb_sensors[int(id)].read().name
+        sleep(0.2)
+        value = self.rgb_sensors[int(id)].read().name
+        self.white_led_strip_set(False)
+
+        return value
+
+    @Service.action
+    def color_sensors_read(self):
         self.white_led_strip_set(True)
-
-        return values
-
+        sleep(0.2)
+        values = self.rgb_sensors.read_all_sensors()
+        self.white_led_strip_set(False)
+        return list(map(lambda id: values[id].name, values))
 
     #################
     # RECAL SENSORS #
