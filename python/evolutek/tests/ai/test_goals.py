@@ -1,4 +1,4 @@
-from evolutek.lib.goals import AvoidStrategy, Goals
+from evolutek.lib.ai.goals import AvoidStrategy, Goals
 from evolutek.lib.map.point import Point
 
 from math import pi
@@ -73,7 +73,7 @@ class Test_Goals:
             passed = False
 
         if len(goal.actions) != 0:
-            print('[TEST] a has a bad actions number: %d' % len(goals.actions))
+            print('[TEST] a has a bad actions number: %d' % len(goal.actions))
             passed = False
 
         return passed
@@ -117,10 +117,6 @@ class Test_Goals:
             print('[TEST] sleep action failed')
             passed = False
 
-        if not action.avoid:
-            print('[TEST] sleep action has bad avoid')
-            passed = False
-
         if action.avoid_strategy != AvoidStrategy.Wait:
             print('[TEST] sleep action has bad avoid strategy: %s' % action.avoid_strategy.name)
             passed = False
@@ -138,10 +134,6 @@ class Test_Goals:
             print('[TEST] test action got bad args: %s' % str(action.args))
             passed = False
 
-        if action.avoid:
-            print('[TEST] test action has bad avoid')
-            passed = False
-
         if action.avoid_strategy != AvoidStrategy.Timeout:
             print('[TEST] test action has bad avoid strategy: %s' % action.avoid_strategy.name)
             passed = False
@@ -154,13 +146,13 @@ class Test_Goals:
             print('[TEST] test action has bad timeout: %d' % action.timeout)
 
         if goal.secondary_goal != "secondary":
-            print('[TEST] test goals has bad optional_goals: %s' % goals.optional)
+            print('[TEST] test goals has bad optional_goals: %s' % goal.optional)
 
         if goal.obstacles != ["lol1", "lol2"]:
-            print('[TEST] test goals has bad obstacles: %s' % str(goals.obstacles))
+            print('[TEST] test goals has bad obstacles: %s' % str(goal.obstacles))
 
         if goal.timeout != 42:
-            print('[TEST] test goals has bad timeout: %d' % goals.timeout)
+            print('[TEST] test goals has bad timeout: %d' % goal.timeout)
 
         return passed
 
@@ -169,7 +161,7 @@ class Test_Goals:
         passed = True
 
         if len(self.goals.strategies) != 2:
-            print('[TEST] Goals has a bad bumber of strategies: %d' % len(goal.strategies))
+            print('[TEST] Goals has a bad bumber of strategies: %d' % len(self.goals.strategies))
             return False
 
         # Test of first strategy

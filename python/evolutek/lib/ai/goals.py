@@ -22,14 +22,13 @@ class AvoidStrategy(Enum):
 # timeout: timeout to abort action after avoiding
 class Action:
 
-    def __init__(self, fct, args=None, avoid=True, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
+    def __init__(self, fct, args=None, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
         self.fct = fct
         self.args = args
         if not args is None and 'theta' in args and isinstance(args['theta'], str):
             args['theta'] = eval(args['theta'])
 
         # Optionals
-        self.avoid = avoid
         self.avoid_strategy = avoid_strategy
         self.score = score
         self.timeout = timeout
@@ -46,7 +45,6 @@ class Action:
     def __str__(self):
         s = str(self.fct)
         s += '\n    -> args: ' + str(self.args)
-        s += '\n    -> avoid: ' + str(self.avoid)
         s += '\n    -> avoid_strategy: ' + str(self.avoid_strategy)
         s += '\n    -> score: ' + str(self.score)
         s += '\n    -> timeout: ' + str(self.timeout)
@@ -76,13 +74,11 @@ class Action:
             return None
 
         args = action['args'] if 'args' in action else None
-        avoid = action['avoid'] if 'avoid' in action else True
         avoid_strategy = eval(action['avoid_strategy']) if 'avoid_strategy' in action else AvoidStrategy.Wait
         score = action['score'] if 'score' in action else 0
         timeout = action['timeout'] if 'timeout' in action else None
 
-        new = Action(fct, args=args, avoid=avoid,\
-                     avoid_strategy=avoid_strategy, score=score, timeout=timeout)
+        new = Action(fct, args=args, avoid_strategy=avoid_strategy, score=score, timeout=timeout)
 
         return new
 
