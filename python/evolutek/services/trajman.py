@@ -209,6 +209,13 @@ class TrajMan(Service):
             self.detected_robots = robots
 
     @Service.action
+    def get_robots(self):
+        robots = []
+        for robot in self.detected_robots:
+            robots.append(robot.change_referencial(self.robot_position, self.robot_orientation).to_dict())
+        return robots
+
+    @Service.action
     def need_to_avoid(self, detection_dist, side):
         with self.lock:
 

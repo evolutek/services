@@ -71,13 +71,7 @@ def goto(self, x, y, mirror=True):
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
-    self.destination = Point(x, y)
-
-    status = self.goto_xy(x, y)
-    with self.lock:
-        self.moving_side = None
-        self.destination = None
-    return status
+    return self.goto_xy(x, y)
 
 @if_enabled
 @use_queue
@@ -113,8 +107,8 @@ def goto_avoid(self, x, y, mirror=True):
         y = _destination['y']
 
     destination = Point(x, y)
-
     status = RobotStatus.NotReached
+
     while status != RobotStatus.Reached:
 
         print('[ROBOT] Moving')
@@ -129,13 +123,11 @@ def goto_avoid(self, x, y, mirror=True):
             if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
                 return RobotStatus.return_status(_status)
 
-            dist = 0.0
-            side = True
-            with self.lock:
-                dist = self.robot_position.dist(Point(x=x, y=y))
-                side = self.avoid_side
+            pos = Point(dict=self.trajman.get_position())
+            dist = pos.dist(destination)
+            side = status['avoid_side'] == 'true'
 
-            while self.need_to_avoid(dist, side):
+            while self.trajman.need_to_avoid(dist, side) == 'true':
                 if self.check_abort() != RobotStatus.Ok:
                     return RobotStatus.return_status(RobotStatus.Aborted)
 
@@ -167,11 +159,8 @@ def goto_with_path(self, x, y, mirror=True):
 
     while status != RobotStatus.Reached:
 
-        origin = None
-        with self.lock:
-            origin = self.robot_position
 
-        path = self.get_path(origin, destination)
+        path = self.get_path(destination)
 
         if (len(path) < 2):
             return RobotStatus.return_status(RobotStatus.Unreachable)
@@ -180,7 +169,7 @@ def goto_with_path(self, x, y, mirror=True):
 
             print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
 
-            status = RobotStatus.get_status( self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False))
+            status = RobotStatus.get_status(self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False))
 
             if status == RobotStatus.HasAvoid:
 
