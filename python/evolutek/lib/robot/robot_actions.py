@@ -95,35 +95,3 @@ def push_windsocks(self):
         self.left_arm_close(use_queue=False)
 
     return RobotStatus.return_status(RobotStatus.Done)
-
-@if_enabled
-@use_queue
-def push_windsocks(self):
-
-    self.right_arm_open(use_queue=False) if self.side else self.left_arm_open(use_queue=False)
-
-    sleep(0.25)
-
-    status = self.check_abort()
-    if status != RobotStatus.Ok:
-        self.right_arm_close(use_queue=False) if self.side else self.left_arm_close(use_queue=False)
-        return RobotStatus.return_status(status)
-
-    # TODO : Change deltas of CM ?
-
-    status = RobotStatus.get_status(self.goto_avoid(x=1825, y=720, use_queue=False))
-    if status != RobotStatus.Reached:
-        self.right_arm_close(use_queue=False) if self.side else self.left_arm_close(use_queue=False)
-        return RobotStatus.return_status(status)
-
-    if self.side:
-        self.right_arm_push(use_queue=False)
-        sleep(0.25)
-        self.right_arm_close(use_queue=False)
-    else:
-        self.left_arm_push(use_queue=False)
-        sleep(0.25)
-        self.left_arm_close(use_queue=False)
-
-
-    return RobotStatus.return_status(RobotStatus.Done)
