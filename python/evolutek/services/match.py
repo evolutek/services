@@ -3,8 +3,8 @@ from cellaserv.service import Service
 from evolutek.lib.gpio.gpio_factory import create_gpio, GpioType
 
 from enum import Enum
-from threading import Timer, Thread
-from time import sleep
+from threading import Timer
+from time import sleep, time
 
 WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
 WEATHERCOCK_GPIO = 24 # Number of the GPIO used by the weathercock reader
@@ -34,8 +34,7 @@ class Match(Service):
         self.color = None
         self.set_color(self.color1)
         self.score = 0
-        self.match_time = 0
-        self.match_time_thread = Thread(target=self.match_time_loop)
+        self.start_time = 0
         self.anchorage = None
 
         print('[MATCH] Match ready')
@@ -53,21 +52,23 @@ class Match(Service):
     """ Tirette """
     @Service.event('tirette')
     def match_start(self, name='', id=0, value=0):
+
         if self.match_status != MatchStatus.unstarted or self.color is None:
             return
+
+        self.start_time = time()
 
         self.publish('match_start')
         match_timer = Timer(self.match_duration, self.match_end)
         match_timer.start()
         self.match_status = MatchStatus.started
         print('[MATCH] Match start')
-        self.match_time_thread.start()
 
         # Reads the weathercock position 25 seconds after the start of the match
         weathercock_timer = Timer(WEATHERCOCK_TIME, self.read_weathercock)
         weathercock_timer.start()
 
-        flags_timer = Timer(self.match_duration - 2 - 90, self.raise_flags)
+        flags_timer = Timer(self.match_duration - 2, self.raise_flags)
         flags_timer.start()
 
     """ WeatherCock """
@@ -101,8 +102,6 @@ class Match(Service):
         print('[MATCH] Reset match')
         self.match_status = MatchStatus.unstarted
         self.score = 0
-        self.match_time = 0
-        self.match_time_thread = Thread(target=self.match_time_loop)
 
         if not self.set_color(color):
             self.color = self.color1
@@ -137,7 +136,7 @@ class Match(Service):
         match['status'] = self.match_status.value
         match['color'] = self.color
         match['score'] = self.score
-        match['time'] = self.match_time
+        match['time'] = time() - self.start_time
 
         return match
 
@@ -153,14 +152,6 @@ class Match(Service):
         self.publish('match_end')
         self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
-
-    """ THREAD """
-
-    def match_time_loop(self):
-        while self.match_status == MatchStatus.started:
-            self.match_time += 1
-            sleep(1)
-
 
 def main():
     match = Match()
