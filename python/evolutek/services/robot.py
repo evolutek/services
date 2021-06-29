@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from python.evolutek.lib.utils.boolean import get_boolean
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
