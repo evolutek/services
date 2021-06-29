@@ -10,9 +10,9 @@
             "actions": [
                 {
                     "fct": "pumps_get",
-                    "handler": "actuators",
+                    "handler": "robot",
                     "args": {
-                        "ids": "2,5"
+                        "ids": [2,5]
                     }
                 },
                 {
@@ -36,7 +36,8 @@
             "actions": [
                 {
                     "fct": "start_lighthouse",
-                    "handler": "robot"
+                    "handler": "robot",
+                    "score" : 15
                 }
             ]
         }

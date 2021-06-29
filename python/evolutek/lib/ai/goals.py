@@ -185,7 +185,7 @@ class Strategy:
 
             _goals.append(goal)
 
-        use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else True
+        use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else False
 
         new = Strategy(strategy['name'], _goals, strategy['available'], use_pathfinding)
 
