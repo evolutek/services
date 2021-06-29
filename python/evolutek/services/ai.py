@@ -16,8 +16,8 @@ from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
 
 from enum import Enum
-from threading import Event, Thread, Timer
-from time import sleep
+from threading import Event, Lock, Thread, Timer
+from time import sleep, time
 
 class States(Enum):
     Setup = "Setup"
