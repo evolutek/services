@@ -83,6 +83,9 @@ class AI(Service):
         self.match_start = Event()
         self.match_end = Event()
 
+        self.critical_timer = None
+        self.critital_timeout = Event()
+
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
 
         if not self.goals.parsed:
@@ -105,7 +108,7 @@ class AI(Service):
 
     def check_abort(self):
         # TODO : critical
-        if self.match_end.is_set():
+        if self.match_end.is_set() or self.critical_timeout.is_set():
             self.robot.abort_action()
             return RobotStatus.Aborted
         return RobotStatus.Ok
@@ -189,6 +192,10 @@ class AI(Service):
             self.match_starting_time = time()
             print('[AI] Starting match')
 
+            if self.goals.critical_goal is not None:
+                self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critital_timeout.set())
+                self.critital_timer.start()
+
         self.reset.clear()
         self.match_start.clear()
 
@@ -203,7 +210,14 @@ class AI(Service):
         if self.match_end.is_set():
             return States.Ending
 
-        self.current_goal = self.goals.get_goal()
+        if self.critital_timeout.is_set():
+            self.current_goal = self.goals.get_critical_goal()
+            self.critital_timeout.clear()
+        else:
+            self.current_goal = self.goals.get_goal()
+            if self.current_goal == self.goals.critical_goal:
+                self.critical_timer.cancel()
+                self.critical_timeout.clear()
 
         if self.current_goal is None:
             return States.Ending
