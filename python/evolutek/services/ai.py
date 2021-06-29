@@ -11,6 +11,7 @@ from evolutek.lib.ai.goals import Goals, AvoidStrategy
 from evolutek.lib.gpio.gpio import Edge
 from evolutek.lib.gpio.gpio_factory import GpioType, create_gpio
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
 
 from enum import Enum
@@ -31,8 +32,6 @@ class States(Enum):
 # - critical goal
 # - manage action avoid strategies
 # - set strategy
-# - reset
-# - match_time
 # - Set MDB lightning mode
 
 @Service.require('config')
@@ -73,7 +72,9 @@ class AI(Service):
         self.fsm.add_state(States.Ending, self.ending, prevs=[States.Setup, States.Waiting, States.Selecting, States.Making])
         self.fsm.add_error_state(self.error)
 
+        self.lock = Lock()
         self.score = 0
+        self.match_starting_time = 0
         self.current_goal = None
         self.use_pathfinding = True
         self.recalibrate_itself = Event()
@@ -123,6 +124,14 @@ class AI(Service):
         self.actuators.disable()
         self.trajman.disable()
 
+    @Service.action
+    def reset(self, recalibrate_itself=False):
+        recalibrate_itself = get_boolean(recalibrate_itself)
+
+        if recalibrate_itself:
+            self.recalibrate_itself.set()
+        self.reset.set()
+
     """ SETUP """
     def setup(self):
         # TODO :
@@ -162,7 +171,12 @@ class AI(Service):
         while not self.reset.is_set() and not self.match_start.is_set():
             sleep(0.01)
 
-        next = States.Selecting if self.match_start.is_set() else States.Setup
+        next = States.Setup
+        if self.match_start.is_set():
+            next = States.Selecting
+            self.match_starting_time = time()
+            print('[AI] Starting match')
+
         self.reset.clear()
         self.match_start.clear()
 
@@ -189,16 +203,24 @@ class AI(Service):
         # TODO :
         # - manage action avoid strategies
         # - abort to secondary goal
-        print(self.current_goal)
 
-        goal_score = self.current_goal.score
+
+        match_starting_time = 0
+        goal_starting_time = time()
+        current_goal = None
+        with self.lock:
+            match_starting_time = self.match_starting_time
+            current_goal = self.current_goal
+
+        print('[AI] Starting goal at %fs' % round(goal_starting_time - match_starting_time, 2))
+        print(current_goal)
 
         if self.use_pathfinding:
 
             print('[AI] Going with pathfinding')
             status = RobotStatus.NotReached
             while status != RobotStatus.Reached and self.check_abort() == RobotStatus.Ok:
-                status = RobotStatus.get_status(self.goto_with_path(x=self.current_goal.position.x, y=self.current_goal.position.y))
+                status = RobotStatus.get_status(self.goto_with_path(x=current_goal.position.x, y=current_goal.position.y))
 
                 if status == RobotStatus.Unreachable:
                     sleep(1)
@@ -213,7 +235,7 @@ class AI(Service):
         else:
 
             print('[AI] Going without pathfinding')
-            status = RobotStatus.get_status(self.goto(x=self.current_goal.position.x, y=self.current_goal.position.y))
+            status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y))
 
             if status == RobotStatus.Aborted:
                 return States.Making
@@ -221,10 +243,12 @@ class AI(Service):
             if status != RobotStatus.Reached:
                 return States.Error
 
+        with self.lock:
+            print('[AI] Reach goal position in %fs' % round(time() - goal_starting_time, 2))
 
         if not self.current_goal.theta is None:
 
-            status = RobotStatus.get_status(self.goth(theta=self.current_goal.theta))
+            status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
 
             if status == RobotStatus.Aborted:
                 return States.Making
@@ -232,7 +256,11 @@ class AI(Service):
             if status != RobotStatus.Reached:
                 return States.Error
 
-        for action in self.current_goal.actions:
+        for action in current_goal.actions:
+
+            action_starting_time = time()
+            print('[AI] Making action at %fs' % round(action_starting_time - match_starting_time, 2))
+            print(action)
 
             data = action.make()
             status = RobotStatus.get_status(data)
@@ -245,6 +273,8 @@ class AI(Service):
             if status != RobotStatus.Done and status != RobotStatus.Reached:
                 return States.Error
 
+            print('[AI] Finished action in %fs' % round(time() - action_starting_time, 2))
+
             if action.score > 0:
                 score = action.score
 
@@ -252,14 +282,22 @@ class AI(Service):
                     score = int(data['score'])
 
                 self.publish("score", value=score)
-                self.score += score
-                goal_score -= action.score
+
+                with self.lock:
+                    self.score += score
+
+                current_goal.score -= action.score
 
         self.goals.finish_goal()
 
-        if goal_score > 0:
-            self.publish("score", value=goal_score)
-            self.score += goal_score
+        with self.lock:
+            print('[AI] Finished goal in %fs' % round(time() - goal_starting_time, 2))
+
+        if current_goal.score > 0:
+            self.publish("score", value=elf.current_goal.score)
+
+            with self.lock:
+                self.score += goal_score
 
         return States.Selecting
 
@@ -267,11 +305,9 @@ class AI(Service):
     def ending(self):
         # TODO :
         # - stop timer
-        # - disable services
-        # - clear all
-        # - wait for reset
 
-        print("[AI] Match finished with score %d" % self.score)
+        with self.lock:
+            print("[AI] Match finished with score %d in %fs" % (self.score, round(time() - self.match_starting_time, 2)))
         self.match_end_handler()
 
         self.reset.wait()
@@ -280,7 +316,8 @@ class AI(Service):
 
     """ ERROR """
     def error(self):
-        print('[AI] AI in error')
+        with self.lock:
+            print('[AI] AI in error at %fs' % round(time() - self.match_starting_time, 2))
         self.match_end_handler()
 
         self.reset.wait()
