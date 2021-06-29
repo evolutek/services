@@ -60,8 +60,7 @@ def set_theta(self, theta, mirror=True):
     self.trajman.set_theta(theta)
 
 def set_pos(self, x, y, theta=None, mirror=True):
-    if isinstance(mirror, str):
-        mirror = mirror == 'true'
+    mirror = get_boolean(mirror)
 
     self.set_x(x)
     self.set_y(y, mirror)
@@ -239,8 +238,7 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True):
     if isinstance(sensor, str):
         sensor = RecalSensor(sensor)
 
-    if isinstance(mirror, str):
-        mirror = mirror == 'true'
+    mirror = get_boolean(mirror)
 
     print('[ROBOT] Recalibration with sensors')
     print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')

@@ -7,15 +7,17 @@ from evolutek.lib.utils.wrappers import if_enabled, use_queue
 
 def mirror_pump_id(self, id):
     if not self.side:
-        if id < 6:
-            id = (5 - id)
+        if id in [1,4]:
+            id = 5 - id
+        elif id <= 6:
+            id = 8 - id
         else:
-            id = 6 + (9 - id)
+            id = 17 - id
     return id
 
 def pumps_get(self, ids, mirror=True):
     if isinstance(ids, str):
-            ids = ids.split(",")
+        ids = ids.split(",")
 
     if isinstance(mirror, str):
         mirror = mirror == 'true'
@@ -28,7 +30,7 @@ def pumps_get(self, ids, mirror=True):
 
 def pumps_drop(self, ids, mirror=True):
     if isinstance(ids, str):
-            ids = ids.split(",")
+        ids = ids.split(",")
 
     if isinstance(mirror, str):
         mirror = mirror == 'true'
