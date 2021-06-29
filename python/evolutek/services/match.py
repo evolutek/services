@@ -84,12 +84,6 @@ class Match(Service):
         print('[MATCH] Raising flags')
         self.publish('raise_flags')
 
-    """ Telemetry """
-    @Service.event("pal_telemetry")
-    @Service.event("pmi_telemetry")
-    def subscribe_robot_telemetry(self, status, telemetry, robot):
-        pass
-
     """ ACTION """
 
     """ Reset match """
