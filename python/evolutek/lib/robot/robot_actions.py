@@ -68,7 +68,8 @@ def start_lighthouse(self):
 @if_enabled
 @use_queue
 def push_windsocks(self):
-
+    
+    self.recal(0)
     self.right_arm_open(use_queue=False) if self.side else self.left_arm_open(use_queue=False)
 
     sleep(0.25)
