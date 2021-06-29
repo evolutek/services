@@ -44,6 +44,7 @@ def set_x(self, x):
     self.trajman.set_x(float(x))
 
 def set_y(self, y, mirror=True):
+
     mirror = get_boolean(mirror)
 
     if mirror:
@@ -52,6 +53,7 @@ def set_y(self, y, mirror=True):
     self.trajman.set_y(y)
 
 def set_theta(self, theta, mirror=True):
+
     mirror = get_boolean(mirror)
 
     if mirror:
@@ -74,6 +76,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
 @if_enabled
 @use_queue
 def goto(self, x, y, mirror=True):
+
     mirror = get_boolean(mirror)
 
     if mirror:
@@ -84,6 +87,7 @@ def goto(self, x, y, mirror=True):
 @if_enabled
 @use_queue
 def goth(self, theta, mirror=True):
+
     mirror = get_boolean(mirror)
 
     if mirror:
@@ -237,8 +241,6 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True):
 
     if isinstance(sensor, str):
         sensor = RecalSensor(sensor)
-
-    mirror = get_boolean(mirror)
 
     print('[ROBOT] Recalibration with sensors')
     print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')
