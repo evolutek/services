@@ -1,24 +1,9 @@
-from enum import Enum
 from evolutek.lib.component import Component
+from evolutek.lib.indicators.lightning_mode import LightningMode, refresh, NB_LOADING_LED
 from evolutek.lib.utils.color import Color
 from neopixel import NeoPixel, GRB
 from threading import Event, Lock, Thread
 from time import sleep
-
-class LightningMode(Enum):
-    Disabled = 'disabled'
-    Error = 'error'
-    Loading = 'loading'
-    Running = 'running'
-
-refresh = {
-    LightningMode.Disabled : 0.25,
-    LightningMode.Error : 0.5,
-    LightningMode.Loading : 0.05,
-    LightningMode.Running  : 1
-}
-
-NB_LOADING_LED = 10
 
 class WS2812BLedStrip(Component):
 

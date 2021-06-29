@@ -10,6 +10,7 @@ from evolutek.lib.ai.fsm import Fsm
 from evolutek.lib.ai.goals import Goals, AvoidStrategy
 from evolutek.lib.gpio.gpio import Edge
 from evolutek.lib.gpio.gpio_factory import GpioType, create_gpio
+from evolutek.lib.indicators.lightning_mode import LightningMode
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
@@ -32,7 +33,6 @@ class States(Enum):
 # - critical goal
 # - manage action avoid strategies
 # - set strategy
-# - Set MDB lightning mode
 
 @Service.require('config')
 @Service.require('actuators')
@@ -118,6 +118,8 @@ class AI(Service):
         # TODO :
         # - stop critital timer
 
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
+
         self.match_end.set()
         self.robot.abort_action()
         self.robot.disable()
@@ -146,8 +148,10 @@ class AI(Service):
         self.actuators.enable()
         self.robot.reset()
 
+
         if self.recalibrate_itself.is_set():
             print('[AI] Recalibrating robot')
+            self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
             self.robot.recalibration(init=True, use_queue=False)
             # TODO : go home
@@ -160,6 +164,8 @@ class AI(Service):
                 theta=self.goals.starting_theta
             )
             self.trajman.unfree()
+
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
         return States.Waiting
 
@@ -204,6 +210,7 @@ class AI(Service):
         # - manage action avoid strategies
         # - abort to secondary goal
 
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
 
         match_starting_time = 0
         goal_starting_time = time()
@@ -266,7 +273,7 @@ class AI(Service):
             status = RobotStatus.get_status(data)
 
             if status == RobotStatus.Aborted:
-                return States.Making
+                return States.Selecting
 
             # TODO : timeout
 
@@ -299,6 +306,8 @@ class AI(Service):
             with self.lock:
                 self.score += goal_score
 
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
+
         return States.Selecting
 
     """ ENDING """
@@ -308,7 +317,9 @@ class AI(Service):
 
         with self.lock:
             print("[AI] Match finished with score %d in %fs" % (self.score, round(time() - self.match_starting_time, 2)))
-        self.match_end_handler()
+        #self.match_end_handler()
+
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
         self.reset.wait()
 
@@ -319,6 +330,8 @@ class AI(Service):
         with self.lock:
             print('[AI] AI in error at %fs' % round(time() - self.match_starting_time, 2))
         self.match_end_handler()
+
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Error.value)
 
         self.reset.wait()
 
