@@ -44,8 +44,13 @@ def set_x(self, x):
     self.trajman.set_x(float(x))
 
 def set_y(self, y, mirror=True):
+<<<<<<< HEAD
 
     mirror = get_boolean(mirror)
+=======
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+>>>>>>> Add actions for pumps and some parsing
 
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
@@ -53,8 +58,13 @@ def set_y(self, y, mirror=True):
     self.trajman.set_y(y)
 
 def set_theta(self, theta, mirror=True):
+<<<<<<< HEAD
 
     mirror = get_boolean(mirror)
+=======
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+>>>>>>> Add actions for pumps and some parsing
 
     if mirror:
         theta = self.mirror_pos(theta=float(theta))['theta']
@@ -76,8 +86,13 @@ def set_pos(self, x, y, theta=None, mirror=True):
 @if_enabled
 @use_queue
 def goto(self, x, y, mirror=True):
+<<<<<<< HEAD
 
     mirror = get_boolean(mirror)
+=======
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+>>>>>>> Add actions for pumps and some parsing
 
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
@@ -87,8 +102,13 @@ def goto(self, x, y, mirror=True):
 @if_enabled
 @use_queue
 def goth(self, theta, mirror=True):
+<<<<<<< HEAD
 
     mirror = get_boolean(mirror)
+=======
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+>>>>>>> Add actions for pumps and some parsing
 
     if mirror:
         theta = self.mirror_pos(theta=float(theta))['theta']
@@ -122,7 +142,12 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
     x = float(x)
     y = float(y)
 
+<<<<<<< HEAD
     mirror = get_boolean(mirror)
+=======
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+>>>>>>> Add actions for pumps and some parsing
 
     if mirror:
         _destination = self.mirror_pos(x, y)
