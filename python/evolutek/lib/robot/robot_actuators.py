@@ -13,6 +13,32 @@ def mirror_pump_id(self, id):
             id = 6 + (9 - id)
     return id
 
+def pumps_get(self, ids, mirror=True):
+    if isinstance(ids, str):
+            ids = ids.split(",")
+
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+
+    _ids = []
+    for id in ids:
+        _ids.append(self.mirror_pump_id(int(id)) if mirror else int(id))
+
+    return self.actuators.pumps_get(_ids)
+
+def pumps_drop(self, ids, mirror=True):
+    if isinstance(ids, str):
+            ids = ids.split(",")
+
+    if isinstance(mirror, str):
+        mirror = mirror == 'true'
+
+    _ids = []
+    for id in ids:
+        _ids.append(self.mirror_pump_id(int(id)) if mirror else int(id))
+
+    return self.actuators.pumps_drop(_ids)
+
 #########
 # FLAGS #
 #########

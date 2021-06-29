@@ -42,6 +42,8 @@ class Robot(Service):
 
     # Imported from robot_actuators
     mirror_pump_id = robot_actuators.mirror_pump_id
+    pumps_get = Service.action(robot_actuators.pumps_get)
+    pumps_drop = Service.action(robot_actuators.pumps_drop)
     flags_raise = Service.action(robot_actuators.flags_raise)
     flags_low = Service.action(robot_actuators.flags_low)
     front_arm_close = Service.action(robot_actuators.front_arm_close)

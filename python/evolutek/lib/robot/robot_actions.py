@@ -10,8 +10,6 @@ from time import sleep
 @use_queue
 def get_reef(self):
 
-    # TODO : Recal ?
-
     self.left_cup_holder_open(use_queue=False)
     self.right_cup_holder_open(use_queue=False)
     self.actuators.pumps_get([7, 8, 9, 10])
