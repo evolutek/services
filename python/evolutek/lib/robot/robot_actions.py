@@ -36,6 +36,35 @@ def get_reef(self):
 
     return RobotStatus.return_status(RobotStatus.Done)
 
+
+@if_enabled
+@use_queue
+def start_lighthouse(self):
+    self.left_cup_holder_open(use_queue=False) if self.side else self.right_cup_holder_open(use_queue=False)
+    sleep(0.25)
+    status = self.check_abort()
+
+    if status != RobotStatus.Ok:
+        self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
+        return RobotStatus.return_status(status)
+
+    status = RobotStatus.get_status(self.goto_avoid(x=180, y=2875, use_queue=False))
+
+    if status != RobotStatus.Reached:
+        self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
+        return RobotStatus.return_status(status)
+
+    status = self.get_status(self.goto_avoid(x=200, y=2600, use_queue=False))
+
+    if status != RobotStatus.Reached:
+        self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
+        return RobotStatus.return_status(status)
+
+    self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
 @if_enabled
 @use_queue
 def push_windsocks(self):
@@ -64,6 +93,5 @@ def push_windsocks(self):
         self.left_arm_push(use_queue=False)
         sleep(0.25)
         self.left_arm_close(use_queue=False)
-
 
     return RobotStatus.return_status(RobotStatus.Done)
