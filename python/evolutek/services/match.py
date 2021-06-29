@@ -67,6 +67,9 @@ class Match(Service):
         weathercock_timer = Timer(WEATHERCOCK_TIME, self.read_weathercock)
         weathercock_timer.start()
 
+        flags_timer = Timer(self.match_duration - 2 - 90, self.raise_flags)
+        flags_timer.start()
+
     """ WeatherCock """
     def read_weathercock(self):
         print('[MATCH] reading weathercock position')
@@ -75,12 +78,16 @@ class Match(Service):
         self.publish('anchorage', side=(side))
         self.anchorage = side
 
+    """ Raise flags """
+    def raise_flags(self):
+        print('[MATCH] Raising flags')
+        self.publish('raise_flags')
+
     """ Telemetry """
     @Service.event("pal_telemetry")
     @Service.event("pmi_telemetry")
     def subscribe_robot_telemetry(self, status, telemetry, robot):
         pass
-
 
     """ ACTION """
 
@@ -146,7 +153,6 @@ class Match(Service):
         self.publish('match_end')
         self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
-
 
     """ THREAD """
 
