@@ -158,12 +158,12 @@ class AI(Service):
             if ROBOT == 'pal':
                 self.robot.goto(x=400, y=600)
                 self.robot.goto(x=400, y=900)
-                self.robot.goth(pi/2)
+                self.robot.goth(theta=pi/2)
             else:
                 self.robot.goto(x=300, y=255)
-                self.robot.goth(pi)
-            self.robot.goto(self.goals.starting_position.x, self.goals.starting_position.y)
-            self.robot.goth(self.goals.starting_theta)
+                self.robot.goth(theta=pi)
+            self.robot.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y)
+            self.robot.goth(theta=self.goals.starting_theta)
         else:
             print('[AI] Setting robot position')
             self.trajman.free()
