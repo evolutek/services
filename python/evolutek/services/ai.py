@@ -18,6 +18,7 @@ from evolutek.lib.utils.wrappers import event_waiter
 from enum import Enum
 from threading import Event, Lock, Thread, Timer
 from time import sleep, time
+from math import pi
 
 class States(Enum):
     Setup = "Setup"
@@ -136,8 +137,6 @@ class AI(Service):
 
     """ SETUP """
     def setup(self):
-        # TODO :
-        # - go home
 
         self.score = 0
         self.current_goal = None
@@ -148,13 +147,20 @@ class AI(Service):
         self.actuators.enable()
         self.robot.reset()
 
-
         if self.recalibrate_itself.is_set():
             print('[AI] Recalibrating robot')
             self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
             self.robot.recalibration(init=True, use_queue=False)
-            # TODO : go home
+            if ROBOT == 'pal':
+                self.robot.goto(x=400, y=600)
+                self.robot.goto(x=400, y=900)
+                self.robot.goth(pi/2)
+            else:
+                self.robot.goto(x=300, y=255)
+                self.robot.goth(pi)
+            self.robot.goto(self.goals.starting_position.x, self.goals.starting_position.y)
+            self.robot.goth(self.goals.starting_theta)
         else:
             print('[AI] Setting robot position')
             self.trajman.free()
