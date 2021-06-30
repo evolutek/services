@@ -181,11 +181,13 @@ def drop_start_sorting(self):
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # First set of front buoys
-    status = front_buoys(x=600, pumps='5,6', buoys=[(3,Color.Green),(4,Color.Green)])
+    color = Color.Green if self.side else Color.Red
+    status = front_buoys(x=600, pumps='5,6', buoys=[(3,color),(4,color)])
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # Second set of front buoys
-    status = front_buoys(x=1010, pumps='2,3', buoys=[(1,Color.Red),(2,Color.Red)])
+    color = Color.Red if self.side else Color.Green
+    status = front_buoys(x=1010, pumps='2,3', buoys=[(1,color),(2,color)])
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
     # First buoy of the front arm
     self.front_arm_open(use_queue=False)
