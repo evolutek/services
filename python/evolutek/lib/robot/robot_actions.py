@@ -1,6 +1,8 @@
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
+from evolutek.lib.robot.robot_trajman import RecalSensor
 from time import sleep
+from math import pi
 
 #########
 # REEFS #
@@ -100,5 +102,112 @@ def push_windsocks(self):
 @if_enabled
 @use_queue
 def drop_start_sorting(self):
-    # TODO
-    pass
+
+    # TODO Handle end position
+    # TODO Handle both sides
+    # TODO Count points
+    # TODO Read color sensors
+    # TODO Check return status
+
+    # Start position: 200 400 pi/2
+
+    self.recalibration(x=False, y=True, x_sensor=RecalSensor.Left, use_queue=False)
+
+    # First set of front buoys
+    x=600
+    self.goto(x=x, y=250, use_queue=False)
+    self.goth(theta=-pi/2, use_queue=False)
+    self.goto(x=x, y=180, use_queue=False)
+    sleep(0.2)
+    self.pumps_drop(ids='5,6', use_queue=False)
+    self.goto(x=x, y=250, use_queue=False)
+
+    # Second set of front buoys
+    x=1010
+    self.goth(theta=0, use_queue=False)
+    self.goto(x=x, y=250, use_queue=False)
+    self.goth(theta=-pi/2, use_queue=False)
+    self.goto(x=x, y=180, use_queue=False)
+    sleep(0.2)
+    self.pumps_drop(ids='2,3', use_queue=False)
+    self.goto(x=x, y=350, use_queue=False)
+
+    # First buoy of the front arm
+    self.front_arm_open(use_queue=False)
+    sleep(0.5)
+    self.goto(x=x, y=250, use_queue=False)
+    sleep(0.2)
+    self.pumps_drop(ids='1,3', use_queue=False)
+    self.goto(x=x, y=350, use_queue=False)
+
+    # Possible arrangements
+    # 1: R R G G
+    # 2: R G R G
+    # 3: R G G R
+    reef_arrangement = 1
+
+    # First set of reef buoys
+    self.goth(theta=pi, use_queue=False)
+    self.goto(x=880, y=350, use_queue=False)
+    sleep(0.2)
+    self.left_cup_holder_drop(use_queue=False)
+    self.right_cup_holder_drop(use_queue=False)
+    sleep(0.5)
+    if reef_arrangement == 1:
+        self.pumps_drop(ids='7,8', use_queue=False)
+    else:
+        self.pumps_drop(ids='7', use_queue=False)
+        self.left_cup_holder_close(use_queue=False)
+        sleep(0.5)
+        rot = 2.75 if reef_arrangement == 2 else 2.45
+        pump = '9' if reef_arrangement == 2 else '10'
+        self.goth(theta=rot, use_queue=False)
+        sleep(0.2)
+        self.pumps_drop(ids=pump, use_queue=False)
+    self.move_trsl(100, 200, 200, 200, 1)
+    self.left_cup_holder_close(use_queue=False)
+    self.right_cup_holder_close(use_queue=False)
+
+    # Second buoy of the front arm
+    x=550
+    self.goto(x=x, y=350, use_queue=False)
+    self.goth(theta=-pi/2, use_queue=False)
+    self.goto(x=x, y=250, use_queue=False)
+    sleep(0.2)
+    self.pumps_drop(ids='4', use_queue=False)
+    self.goto(x=x, y=350, use_queue=False)
+
+    # Second set of reef buoys
+    self.goth(theta=pi, use_queue=False)
+    self.goto(x=325, y=350, use_queue=False)
+    self.left_cup_holder_drop(use_queue=False)
+    self.right_cup_holder_drop(use_queue=False)
+    rot = 0
+    if reef_arrangement == 1: rot = 3*pi/4
+    if reef_arrangement == 2: rot = 2.70
+    if reef_arrangement == 3: rot = 2.70
+    self.goth(theta=rot, use_queue=False)
+    sleep(0.2)
+    pump = ''
+    if reef_arrangement == 1: pump = '9,10'
+    if reef_arrangement == 2: pump = '8'
+    if reef_arrangement == 3: pump = '8,9'
+    self.pumps_drop(ids=pump, use_queue=False)
+    if reef_arrangement == 2:
+        self.left_cup_holder_close(use_queue=False)
+        sleep(0.5)
+        self.goth(theta=3*pi/4, use_queue=False)
+        sleep(0.2)
+        self.pumps_drop(ids='10', use_queue=False)
+    self.move_trsl(100, 200, 200, 200, 1)
+    self.left_cup_holder_close(use_queue=False)
+    self.right_cup_holder_close(use_queue=False)
+
+    self.goto(x=250, y=200, use_queue=False)
+    self.goth(theta=pi/2, use_queue=False)
+    self.goto(x=250, y=150, use_queue=False)
+    self.recal(0)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+

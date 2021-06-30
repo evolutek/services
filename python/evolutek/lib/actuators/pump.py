@@ -2,7 +2,7 @@ from evolutek.lib.component import Component, ComponentsHolder
 
 from time import sleep
 
-DEFAULT_VALVE_DELAY = 0.25
+DEFAULT_VALVE_DELAY = 1
 
 class Pump(Component):
     def __init__(self, id, pump_gpio, ev_gpio):
