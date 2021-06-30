@@ -263,23 +263,25 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     dist_to_center = 109
 
     id = 1 if (sensor == RecalSensor.Left) ^ (not self.side and mirror) else 2
-    dist = self.actuators.recal_sensor_read(id) + dist_to_center
-    print(f'[ROBOT] Measured distance: {dist}mm')
+    pos = self.actuators.recal_sensor_read(id) + dist_to_center
+    print(f'[ROBOT] Measured distance: {pos}mm')
 
     if not axis_x and (side ^ (sensor == RecalSensor.Left)):
-        value = 3000 - dist
+        pos = 3000 - pos
     if axis_x and ((not side) ^ (sensor == RecalSensor.Left)):
-        value = 2000 - dist
+        pos = 2000 - pos
 
     if not init:
         position = self.trajman.get_position()
+        print(f"[ROBOT] Old position: {position}")
         axis = 'x' if axis_x else 'y'
-        if abs(position[axis] - value) > 50:
+        if abs(position[axis] - pos) > 50:
             print(f'[ROBOT] WARNING: Recalibration failed, measured position is too far away from current position')
-            print(f'Axis: {axis}. Current position: {position[axis]}. Measured position: {value}')
+            print(f'Axis: {axis}. Current position: {position[axis]}. Measured position: {pos}')
+            return
 
     setter = self.trajman.set_x if axis_x else self.trajman.set_y
-    setter(value)
+    setter(pos)
 
 
 @if_enabled
