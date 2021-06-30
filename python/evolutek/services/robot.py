@@ -17,7 +17,6 @@ from evolutek.lib.utils.wrappers import event_waiter
 from time import time, sleep
 from threading import Event, Lock
 
-# TODO : Reset robot (after aborting ? after BAU ?)
 
 @Service.require('config')
 @Service.require('actuators', ROBOT)

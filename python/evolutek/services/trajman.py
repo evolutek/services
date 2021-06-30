@@ -244,7 +244,8 @@ class TrajMan(Service):
 
     @Service.action
     def stop_robot(self, dist=100):
-        self.move_trsl(min(dist, 100), 0, 1000, self.robot_speed, int(self.robot_speed > 0))
+        if self.is_moving():
+            self.move_trsl(min(float(dist), 100), 0, 1000, self.robot_speed, int(self.robot_speed > 0))
 
     def avoid_loop(self):
         while True:
@@ -329,12 +330,18 @@ class TrajMan(Service):
 
     @Service.action
     @if_enabled
-    def goto_xy(self, x, y):
+    def goto_xy(self, x, y, avoid=True):
         tab = pack('B', 2 + calcsize('ff'))
         tab += pack('B', Commands.GOTO_XY.value)
         tab += pack('ff', float(x), float(y))
+
+        avoid = get_boolean(avoid)
+
         self.destination = Point(x=float(x), y=float(y))
-        self.is_avoid_enabled.set()
+
+        if avoid:
+            self.is_avoid_enabled.set()
+
         self.command(bytes(tab))
 
     @Service.action

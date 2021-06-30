@@ -44,12 +44,16 @@ def set_x(self, x):
     self.trajman.set_x(float(x))
 
 def set_y(self, y, mirror=True):
+    mirror = get_boolean(mirror)
+
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
     self.trajman.set_y(y)
 
 def set_theta(self, theta, mirror=True):
+    mirror = get_boolean(mirror)
+
     if mirror:
         theta = self.mirror_pos(theta=float(theta))['theta']
 
@@ -68,6 +72,8 @@ def set_pos(self, x, y, theta=None, mirror=True):
 @if_enabled
 @use_queue
 def goto(self, x, y, mirror=True):
+    mirror = get_boolean(mirror)
+
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
@@ -76,6 +82,8 @@ def goto(self, x, y, mirror=True):
 @if_enabled
 @use_queue
 def goth(self, theta, mirror=True):
+    mirror = get_boolean(mirror)
+
     if mirror:
         theta = self.mirror_pos(theta=float(theta))['theta']
 
@@ -100,6 +108,8 @@ def goto_avoid(self, x, y, mirror=True):
 
     x = float(x)
     y = float(y)
+
+    mirror = get_boolean(mirror)
 
     if mirror:
         _destination = self.mirror_pos(x, y)
@@ -145,6 +155,8 @@ def goto_with_path(self, x, y, mirror=True):
 
     x = float(x)
     y = float(y)
+
+    mirror = get_boolean(mirror)
 
     if mirror:
         _destination = self.mirror_pos(x, y)
@@ -199,6 +211,7 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True):
 
     axis_x = get_boolean(axis_x)
     side = get_boolean(side)
+    mirror = get_boolean(mirror)
 
     if isinstance(sensor, str):
         sensor = RecalSensor(sensor)
