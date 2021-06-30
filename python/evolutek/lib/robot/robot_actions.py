@@ -212,6 +212,7 @@ def drop_start_sorting(self):
             # Closes the arm and moves back slowly
             self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=1)
             self.pumps_drop(ids=str(i+7), use_queue=False, mirror=False)
+            update_buoys_count(color)
             if i <= 1: self.left_cup_holder_close(use_queue=False)
             else: self.right_cup_holder_close(use_queue=False)
             sleep(0.5)
