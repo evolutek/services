@@ -1,0 +1,10 @@
+[Unit]
+Description=Robot service
+PartOf=evolutek.target
+
+[Service]
+ExecStart=robot
+CPUSchedulingPolicy=rr
+
+[Install]
+WantedBy=multi-user.target
