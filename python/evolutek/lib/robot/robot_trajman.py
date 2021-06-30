@@ -319,7 +319,7 @@ def recalibration(self,
             return RobotStatus.return_status(status)
 
         status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
-        if status != RobotStatus.Reached:
+        if status != RobotStatus.NotReached:
             return RobotStatus.return_status(status)
 
         sleep(0.75)
@@ -339,7 +339,7 @@ def recalibration(self,
             return RobotStatus.return_status(status)
 
         status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
-        if status != RobotStatus.Reached:
+        if status != RobotStatus.NotReached:
             return RobotStatus.return_status(status)
 
         sleep(0.75)
