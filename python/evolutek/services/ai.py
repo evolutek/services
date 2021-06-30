@@ -28,8 +28,6 @@ class States(Enum):
 
 # TODO :
 # - interface
-# - secondary goal
-# - manage action avoid strategies
 
 @Service.require('config')
 @Service.require('actuators')
@@ -368,7 +366,11 @@ class AI(Service):
             if status == RobotStatus.Aborted:
                 return States.Selecting
 
-            # TODO : timeout
+            if status == RobotStatus.Timeout and action.avoid_strategy == AvoidStrategy.Timeout:
+                return States.Selecting
+
+            if status == RobotStatus.NotReached and action.avoid_strategy == AvoidStrategy.Skip:
+                return States.Selecting
 
             if status != RobotStatus.Done and status != RobotStatus.Reached:
                 return States.Error
