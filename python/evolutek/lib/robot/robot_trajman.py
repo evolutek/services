@@ -128,7 +128,8 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
     while status != RobotStatus.Reached:
 
         print('[ROBOT] Moving')
-        status = RobotStatus.get_status(self.goto(x, y, mirror=False, use_queue=False))
+        data = self.goto(x, y, mirror=False, use_queue=False)
+        status = RobotStatus.get_status(data)
 
         if status == RobotStatus.HasAvoid:
 
@@ -140,7 +141,7 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
 
             pos = Point(dict=self.trajman.get_position())
             dist = pos.dist(destination)
-            side = get_boolean(status['avoid_side'])
+            side = get_boolean(data['avoid_side'])
 
             global timeout_event
             timeout_event.clear()
