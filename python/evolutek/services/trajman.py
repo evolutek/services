@@ -7,6 +7,7 @@ import serial
 from struct import pack, unpack, calcsize
 from threading import Thread, Event, Lock
 from time import sleep
+import atexit
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
@@ -128,6 +129,8 @@ class TrajMan(Service):
     def __init__(self):
         super().__init__(ROBOT)
 
+        atexit.register(self.lidar_stop)
+
         # Messages comming from the motor card
         self.queue = Queue()
         self.ack_recieved = Event()
@@ -207,6 +210,9 @@ class TrajMan(Service):
     def lidar_callback(self, cloud, shapes, robots):
         with self.lock:
             self.detected_robots = robots
+
+    def lidar_stop(self):
+        self.lidar.__del__()
 
     @Service.action
     def get_robots(self):
