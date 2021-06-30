@@ -96,7 +96,8 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
 
         if status is None or status == RobotStatus.Ok:
             status = RobotStatus.get_status(stop_event.data)
-            del stop_event.data['status']
+
+        del stop_event.data['status']
 
         return RobotStatus.return_status(status, **stop_event.data)
 
