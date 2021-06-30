@@ -30,6 +30,7 @@ setup(
             'ai = evolutek.services.ai:main',
             'trajman = evolutek.services.trajman:main',
             'match = evolutek.services.match:main',
+            'robot = evolutek.services.robot:main',
         ],
     },
 )

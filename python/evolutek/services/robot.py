@@ -225,6 +225,9 @@ class Robot(Service):
             return RobotStatus.Aborted
         return RobotStatus.Ok
 
-if __name__ == '__main__':
+def main():
     robot = Robot()
     robot.run()
+
+if __name__ == '__main__':
+    main()
