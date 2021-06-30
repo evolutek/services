@@ -153,6 +153,7 @@ def drop_start_sorting(self):
             if self.actuators.proximity_sensor_read(id=prox):
                 update_buoys_count(color)
         # Drops the buoys
+        self.trajman.move_trsl(dest=30, acc=500, dec=500, maxspeed=500, sens=0)
         self.pumps_drop(ids=pumps, use_queue=False)
         # Moves back
         status = self.goto_avoid(x=x, y=350, use_queue=False)
@@ -171,9 +172,10 @@ def drop_start_sorting(self):
         if self.actuators.proximity_sensor_read(id=prox):
             update_buoys_count(color)
         # Drops the buoy
+        self.trajman.move_trsl(dest=30, acc=500, dec=500, maxspeed=500, sens=0)
         self.pumps_drop(ids=pump, use_queue=False)
-        status = self.goto_avoid(x=x, y=350, use_queue=False)
         # Moves back
+        status = self.goto_avoid(x=x, y=350, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
         return RobotStatus.return_status(RobotStatus.Done)
 
