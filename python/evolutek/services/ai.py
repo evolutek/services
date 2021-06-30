@@ -55,6 +55,7 @@ class AI(Service):
         self.goth = event_waiter(self.robot.goth, self.start_event, self.stop_event, callback=self.check_abort)
         self.goto = event_waiter(self.robot.goto_avoid, self.start_event, self.stop_event, callback=self.check_abort)
         self.goto_with_path = event_waiter(self.robot.goto_with_path, self.start_event, self.stop_event, callback=self.check_abort)
+        self.recalibration = event_waiter(self.robot.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
         self.red_led = create_gpio(23, 'red led', dir=True, type=GpioType.RPI)
         self.green_led = create_gpio(24, 'green led', dir=True, type=GpioType.RPI)
@@ -211,7 +212,7 @@ class AI(Service):
             self.recalibration(init=True)
             if ROBOT == 'pal':
                 self.goto(x=400, y=600, avoid=False)
-                self.goto(x=400, y=900, avoid=False)
+                self.goto(x=900, y=600, avoid=False)
                 self.goth(theta=pi/2)
             else:
                 self.goto(x=300, y=255, avoid=False)

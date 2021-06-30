@@ -88,7 +88,8 @@ def goto(self, x, y, avoid=True, mirror=True):
     if distsqr < maxdist**2:
         return RobotStatus.return_status(RobotStatus.Reached)
 
-    return self.goto_xy(x, y, avoid=avoid)
+    return self.goto_xy(x=x, x=y, avoid=avoid)
+
 
 @if_enabled
 @use_queue
