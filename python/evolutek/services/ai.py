@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-from evolutek.services.robot import Robot
-from evolutek.lib.utils.wrappers import event_waiter
-from evolutek.lib.status import RobotStatus
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
@@ -12,13 +9,14 @@ from evolutek.lib.gpio.gpio import Edge
 from evolutek.lib.gpio.gpio_factory import GpioType, create_gpio
 from evolutek.lib.indicators.lightning_mode import LightningMode
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
 
 from enum import Enum
+from math import pi
 from threading import Event, Lock, Thread, Timer
 from time import sleep, time
-from math import pi
 
 class States(Enum):
     Setup = "Setup"
@@ -31,9 +29,7 @@ class States(Enum):
 # TODO :
 # - interface
 # - secondary goal
-# - critical goal
 # - manage action avoid strategies
-# - set strategy
 
 @Service.require('config')
 @Service.require('actuators')
@@ -84,7 +80,7 @@ class AI(Service):
         self.match_end = Event()
 
         self.critical_timer = None
-        self.critital_timeout = Event()
+        self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
 
@@ -93,7 +89,7 @@ class AI(Service):
             Thread(target=self.fsm.run_error).start()
 
         else:
-            print('[AI] Ready')
+            print('[AI] Ready with loaded goals :')
             print(self.goals)
 
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
@@ -107,8 +103,8 @@ class AI(Service):
         RobotStatus.return_status(RobotStatus.Done)
 
     def check_abort(self):
-        # TODO : critical
         if self.match_end.is_set() or self.critical_timeout.is_set():
+            print('[AI] Aborting')
             self.robot.abort_action()
             return RobotStatus.Aborted
         return RobotStatus.Ok
@@ -119,13 +115,17 @@ class AI(Service):
 
     @Service.event('match_end')
     def match_end_handler(self):
-        # TODO :
-        # - stop critital timer
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
 
         self.match_end.set()
+
+        if self.critical_timer is not None:
+            self.critical_timer.cancel()
+
+        self.critical_timeout.clear()
         self.robot.abort_action()
+
         self.robot.disable()
         self.actuators.disable()
         self.trajman.disable()
@@ -137,6 +137,27 @@ class AI(Service):
         if recalibrate_itself:
             self.recalibrate_itself.set()
         self.reset.set()
+
+    @Service.action
+    def get_startegies(self):
+        return self.goals.get_startegies()
+
+    @Service.action
+    def set_strategy(self, index=0, name=None):
+        if name is not None:
+            startegies = self.get_startegies()
+
+            if not name in startegies:
+                print('[AI] Bad startegy name')
+                return
+
+            self.goals.reset(startegies[name])
+
+        else:
+            self.goals.reset(int(index))
+
+        print('[AI] Current startegy:')
+        print(self.goals.current_strategy)
 
     """ SETUP """
     def setup(self):
@@ -154,16 +175,16 @@ class AI(Service):
             print('[AI] Recalibrating robot')
             self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
-            self.robot.recalibration(init=True, use_queue=False)
+            self.recalibration(init=True)
             if ROBOT == 'pal':
-                self.robot.goto(x=400, y=600)
-                self.robot.goto(x=400, y=900)
-                self.robot.goth(theta=pi/2)
+                self.goto(x=400, y=600)
+                self.goto(x=400, y=900)
+                self.goth(theta=pi/2)
             else:
-                self.robot.goto(x=300, y=255)
-                self.robot.goth(theta=pi)
-            self.robot.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y)
-            self.robot.goth(theta=self.goals.starting_theta)
+                self.goto(x=300, y=255)
+                self.goth(theta=pi)
+            self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y)
+            self.goth(theta=self.goals.starting_theta)
         else:
             print('[AI] Setting robot position')
             self.trajman.free()
@@ -180,8 +201,6 @@ class AI(Service):
 
     """ WAITING """
     def waiting(self):
-        # TODO :
-        # - launch timer for critical goal
 
         while not self.reset.is_set() and not self.match_start.is_set():
             sleep(0.01)
@@ -193,8 +212,8 @@ class AI(Service):
             print('[AI] Starting match')
 
             if self.goals.critical_goal is not None:
-                self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critital_timeout.set())
-                self.critital_timer.start()
+                self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critical_timeout.set())
+                self.critical_timer.start()
 
         self.reset.clear()
         self.match_start.clear()
@@ -204,23 +223,29 @@ class AI(Service):
     """ SELECTING """
     def selecting(self):
         # TODO :
-        # - select next goal (critical, secondary)
-        # - if critical, remove it
+        # - select secondary
 
         if self.match_end.is_set():
             return States.Ending
 
-        if self.critital_timeout.is_set():
+        if self.critical_timeout.is_set():
+            print('[AI] Switching on critical goal')
             self.current_goal = self.goals.get_critical_goal()
-            self.critital_timeout.clear()
+            self.critical_timeout.clear()
         else:
+            print('[AI] Selecting Goal')
             self.current_goal = self.goals.get_goal()
-            if self.current_goal == self.goals.critical_goal:
+
+            if self.current_goal is None:
+                return States.Ending
+
+            print(self.current_goal.name)
+            print(self.goals.critical_goal)
+
+            if self.current_goal.name == self.goals.critical_goal:
+                print('[AI] Critical selected, stopping timer')
                 self.critical_timer.cancel()
                 self.critical_timeout.clear()
-
-        if self.current_goal is None:
-            return States.Ending
 
         return States.Making
 
@@ -321,10 +346,10 @@ class AI(Service):
             print('[AI] Finished goal in %fs' % round(time() - goal_starting_time, 2))
 
         if current_goal.score > 0:
-            self.publish("score", value=elf.current_goal.score)
+            self.publish("score", value=current_goal.score)
 
             with self.lock:
-                self.score += goal_score
+                self.score += current_goal.score
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
@@ -332,8 +357,6 @@ class AI(Service):
 
     """ ENDING """
     def ending(self):
-        # TODO :
-        # - stop timer
 
         with self.lock:
             print("[AI] Match finished with score %d in %fs" % (self.score, round(time() - self.match_starting_time, 2)))

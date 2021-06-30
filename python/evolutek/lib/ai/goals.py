@@ -90,7 +90,7 @@ class Action:
 # score: scored points after making goal
 # obstacles: obstcales to remove from map after making goal
 # secondary_goal: goal to make after aborting this goal
-# timeout: aboirt timeout if we can't make goal
+# timeout: abort timeout if we can't make goal
 class Goal:
 
     def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, secondary_goal=None, timeout=None):
@@ -333,6 +333,12 @@ class Goals:
         self.current = 0
 
         return True
+
+    def get_startegies(self):
+        strats = {}
+        for i in range(len(self.strategies)):
+            strats[self.strategies[i].name] = i
+        return strats
 
     # Get next goal
     def get_goal(self):
