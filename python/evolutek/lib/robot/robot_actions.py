@@ -151,7 +151,7 @@ def drop_start_sorting(self):
             if self.actuators.proximity_sensor_read(id=prox):
                 update_buoys_count(color)
         # Drops the buoys
-        self.trajman.move_trsl(dest=30, acc=100, dec=100, maxspeed=100, sens=0)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=0)
         self.pumps_drop(ids=pumps, use_queue=False, mirror=False)
         sleep(0.5)
         # Moves back
@@ -171,7 +171,7 @@ def drop_start_sorting(self):
         if self.actuators.proximity_sensor_read(id=prox):
             update_buoys_count(color)
         # Drops the buoy
-        self.trajman.move_trsl(dest=30, acc=100, dec=100, maxspeed=100, sens=0)
+        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=0)
         self.pumps_drop(ids=pump, use_queue=False, mirror=False)
         sleep(0.5)
         # Moves back
@@ -190,13 +190,12 @@ def drop_start_sorting(self):
         if place == 3: return 1.1  * multiplier
 
     def reef_buoys(theta, colors, color, invert):
-        self.left_cup_holder_drop(use_queue=False)
-        self.right_cup_holder_drop(use_queue=False)
-        sleep(0.4)
         # Determines all the moves that must be done
         first = True
         buoys = [] # Stores a tuple for each buoy to place with (target theta, pump id)
         for i in range(4):
+            if invert:
+                i = 3 - i
             if colors[i] == color:
                 buoys.append((
                     drop_theta(i, first=first, invert=invert) + theta,
@@ -208,16 +207,16 @@ def drop_start_sorting(self):
             buoys = [(buoys[0][0], buoys[0][1] + ',' + buoys[1][1])]
         # Does all the moves
         for th, pump in buoys:
-            self.left_cup_holder_drop(use_queue=False)
-            self.right_cup_holder_drop(use_queue=False)
-            sleep(0.4)
             status = self.goth(theta=th, use_queue=False)
+            if '7' in pump or '8' in pump: self.left_cup_holder_drop(use_queue=False)
+            if '9' in pump or '0' in pump: self.right_cup_holder_drop(use_queue=False)
+            sleep(0.4)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
             self.pumps_drop(ids=pump, use_queue=False, mirror=False)
             update_buoys_count(color)
             if ',' in pump: update_buoys_count(color)
-            self.left_cup_holder_close(use_queue=False)
-            self.right_cup_holder_close(use_queue=False)
+            if '7' in pump or '8' in pump: self.left_cup_holder_close(use_queue=False)
+            if '9' in pump or '0' in pump: self.right_cup_holder_close(use_queue=False)
             sleep(0.4)
         return RobotStatus.return_status(RobotStatus.Done)
 
@@ -254,7 +253,7 @@ def drop_start_sorting(self):
         print('[ROBOT] Dropping reef red buoys')
         status = self.goto_avoid(x=700, y=300, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-        status = reef_buoys(theta=pi, colors=colors, color=Color.Red, invert=not self.side)
+        status = reef_buoys(theta=0, colors=colors, color=Color.Red, invert=self.side)
         if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # Second buoy of the front arm
@@ -272,7 +271,7 @@ def drop_start_sorting(self):
         print('[ROBOT] Dropping reef green buoys')
         status = self.goto_avoid(x=900, y=300, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-        status = reef_buoys(theta=0, colors=colors, color=Color.Green, invert=self.side)
+        status = reef_buoys(theta=pi, colors=colors, color=Color.Green, invert=not self.side)
         if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
