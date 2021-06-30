@@ -139,24 +139,24 @@ class AI(Service):
         self.reset.set()
 
     @Service.action
-    def get_startegies(self):
-        return self.goals.get_startegies()
+    def get_strategies(self):
+        return self.goals.get_strategies()
 
     @Service.action
     def set_strategy(self, index=0, name=None):
         if name is not None:
-            startegies = self.get_startegies()
+            strategies = self.get_strategies()
 
-            if not name in startegies:
-                print('[AI] Bad startegy name')
+            if not name in strategies:
+                print('[AI] Bad strategy name')
                 return
 
-            self.goals.reset(startegies[name])
+            self.goals.reset(strategies[name])
 
         else:
             self.goals.reset(int(index))
 
-        print('[AI] Current startegy:')
+        print('[AI] Current strategy:')
         print(self.goals.current_strategy)
 
     """ SETUP """

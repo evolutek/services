@@ -8,9 +8,9 @@ from evolutek.lib.utils.wrappers import event_waiter
 
 """ Avoid Strategy Enum """
 class AvoidStrategy(Enum):
-    Wait = 0
-    Timeout = 1
-    Skip = 2
+    Wait = 'wait'
+    Timeout = 'timeout'
+    Skip = 'skip'
 
 
 # Action Class
@@ -153,7 +153,7 @@ class Goal:
 # name: strategy name
 # goals: strategy goals
 # available: robot list fro which the strategy is available
-# use_pathfinding: tell if the startegy use the pathfinding
+# use_pathfinding: tell if the strategy use the pathfinding
 class Strategy:
     def __init__(self, name, goals=None, available=None, use_pathfinding=True):
         self.name = name
@@ -334,7 +334,7 @@ class Goals:
 
         return True
 
-    def get_startegies(self):
+    def get_strategies(self):
         strats = {}
         for i in range(len(self.strategies)):
             strats[self.strategies[i].name] = i
