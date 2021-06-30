@@ -152,9 +152,9 @@ class AI(Service):
 
     @Service.event('match_end')
     def match_end_handler(self):
-        self.match_end.set()
 
         self.robot.abort_action()
+        self.match_end.set()
 
         with self.lock:
             if self.critical_timer is not None:
