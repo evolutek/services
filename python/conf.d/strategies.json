@@ -73,13 +73,11 @@
                 },
                 {
                     "fct": "goto",
-                    "args": [
-                        {
-                            "x": 223,
-                            "y": 590
-                        }
-                    ]
-                },
+                    "args": {
+		        "x": 223,
+		        "y": 590
+                    }
+		},
                 {
                     "fct": "pumps_get",
                     "handler": "robot",
@@ -89,12 +87,10 @@
                 },
                 {
                     "fct": "goto",
-                    "args": [
-                        {
-                            "x": 340,
-                            "y": 910
-                        }
-                    ]
+                    "args": {
+                        "x": 340,
+                        "y": 910
+                    }
                 },
                 {
                     "fct": "front_arm_close",
