@@ -6,9 +6,12 @@ from evolutek.lib.utils.color import Color
 from time import sleep
 from math import pi
 
-# TODO
 def calculate_score(buoys):
-    return buoys[Color.Green] + buoys[Color.Red]
+    green = buoys[Color.Green]
+    red = buoys[Color.Red]
+    pairs = min(green, red)
+    solo = green + red - pairs*2
+    return solo*2 + pairs*6
 
 #########
 # REEFS #
@@ -116,9 +119,7 @@ def push_windsocks(self):
 @use_queue
 def drop_start_sorting(self):
 
-    # TODO Handle end position
     # TODO Handle both sides
-    # TODO Count points
 
     # Start position: 200 400 pi/2
 
@@ -233,7 +234,7 @@ def drop_start_sorting(self):
             rot = 2.75 if reef_arrangement == 2 else 2.45
             pump = '9' if reef_arrangement == 2 else '10'
             status = self.goth(theta=rot, use_queue=False)
-            if status != RobotStatus.Reached:
+            if RobotStatus.get_status(status) != RobotStatus.Reached:
                 self.right_cup_holder_close(use_queue=False)
                 return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
             sleep(0.2)
@@ -285,7 +286,7 @@ def drop_start_sorting(self):
             self.left_cup_holder_close(use_queue=False)
             sleep(0.5)
             status = self.goth(theta=3*pi/4, use_queue=False)
-            if status != RobotStatus.Reached:
+            if RobotStatus.get_status(status) != RobotStatus.Reached:
                 self.right_cup_holder_close(use_queue=False)
                 return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
             sleep(0.2)
@@ -295,15 +296,6 @@ def drop_start_sorting(self):
         self.left_cup_holder_close(use_queue=False)
         self.right_cup_holder_close(use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-
-    status = self.goto_avoid(x=250, y=200, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-    status = self.goth(theta=pi/2, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-    status = self.goto_avoid(x=250, y=150, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-    status = self.recal(0)
-    if RobotStatus.get_status(status) != RobotStatus.NotReached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
