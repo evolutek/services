@@ -5,7 +5,7 @@ import os
 from queue import Queue
 import serial
 from struct import pack, unpack, calcsize
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 from time import sleep
 
 from cellaserv.proxy import CellaservProxy
@@ -17,6 +17,8 @@ make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
+from evolutek.lib.map.point import Point
+from evolutek.lib.sensors.rplidar import Rplidar
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
@@ -138,6 +140,8 @@ class TrajMan(Service):
         self.disabled = Event()
         self.bau_state = None
 
+        self.lock = Lock()
+
         self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
 
         self.thread = Thread(target=self.async_read)
@@ -153,8 +157,10 @@ class TrajMan(Service):
         self.set_pid_trsl(self.pidtp(), self.pidti(), self.pidtd())
         self.set_pid_rot(self.pidrp(), self.pidri(), self.pidrd())
 
-        self.set_trsl_acc(self.trslacc())
-        self.set_trsl_dec(self.trsldec())
+        self.trsl_acc = self.trslacc()
+        self.set_trsl_acc(self.trsl_acc)
+        self.trsl_dec = self.trsldec()
+        self.set_trsl_dec(self.trsl_dec)
         self.trsl_max_speed = self.trslmax()
         self.set_trsl_max_speed(self.trsl_max_speed)
 
@@ -165,16 +171,107 @@ class TrajMan(Service):
         self.set_delta_max_rot(self.deltarot())
         self.set_delta_max_trsl(self.deltatrsl())
 
-        self.set_robot_size_x(self.robot_size_x())
-        self.set_robot_size_y(self.robot_size_y())
+        self.size_x = self.robot_size_x()
+        self.set_robot_size_x(self.size_x)
+        self.size_y = self.robot_size_y()
+        self.set_robot_size_y(self.size_y)
 
-        self.set_telemetry(self.telemetry_refresh())
+        cs = CellaservProxy()
+
+        lidar_config = cs.config.get_section('rplidar')
+        self.lidar = Rplidar(lidar_config)
+        self.lidar.start_scanning()
+        self.lidar.register_callback(self.lidar_callback)
+
+        self.detected_robots = []
+        self.has_avoid = Event()
+        self.avoid_side = None
+        self.is_avoid_enabled = Event()
+        self.destination = None
+        self.robot_size = float(cs.config.get(section='match', option='robot_size'))
+
+        self.robot_position = Point(0, 0)
+        self.robot_orientation = 0.0
+        self.robot_speed = 0.0
+
+        Thread(target=self.avoid_loop).start()
 
         try:
-            cs = CellaservProxy()
             self.handle_bau(cs.actuators[ROBOT].bau_read())
         except Exception as e:
             print('[TRAJMAN] Failed to get BAU status: %s' % str(e))
+
+        self.set_telemetry(self.telemetry_refresh())
+
+    """ AVOID """
+    def lidar_callback(self, cloud, shapes, robots):
+        with self.lock:
+            self.detected_robots = robots
+
+    @Service.action
+    def get_robots(self):
+        robots = []
+        for robot in self.detected_robots:
+            robots.append(robot.change_referencial(self.robot_position, self.robot_orientation).to_dict())
+        return robots
+
+    @Service.action
+    def need_to_avoid(self, detection_dist, side):
+        with self.lock:
+
+            d1 = self.size_y + self.robot_size + 10
+            d2 = detection_dist + self.robot_size
+
+            # Compute the vertexes of the detection zone
+            p1 = Point(self.size_x * (1 if side else -1), d1)
+            p2 = Point(p1.x + d2 * (1 if side else -1), -p1.y)
+
+            for robot in self.detected_robots:
+                if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
+                    min(p1.y, p2.y) < robot.y and robot.y < max(p1.y, p2.y):
+
+                    global_pos = robot.change_referencial(self.robot_position, self.robot_orientation)
+
+                    # Check if it is located on the map
+                    if 0 < global_pos.x and global_pos.x < 2000 and 0 < global_pos.y and global_pos.y < 3000:
+                        print('[ROBOT] Need to avoid robot at dist: %f' % Point(x=0, y=0).dist(robot))
+                        return True
+
+                    else:
+                        print('[ROBOT] Ignoring obstacle: %s' % str(global_pos))
+
+        return False
+
+    @Service.action
+    def stop_robot(self, dist=100):
+        if self.is_moving():
+            self.move_trsl(min(float(dist), 100), 0, 1000, self.robot_speed, int(self.robot_speed > 0))
+
+    def avoid_loop(self):
+        while True:
+
+            sleep(0.01)
+
+            if not self.is_avoid_enabled.is_set():
+                continue
+
+            stop_distance = 0.0
+            detection_dist = 0.0
+            side = False
+
+            with self.lock:
+                stop_distance = (self.robot_speed**2 / (2 * 1000))
+                detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + 50
+                side = self.robot_speed > 0
+
+            if self.need_to_avoid(detection_dist, side):
+
+                with self.lock:
+                    self.avoid_side = self.robot_speed > 0.0
+
+                self.has_avoid.set()
+                self.is_avoid_enabled.clear()
+                self.stop_robot(stop_distance)
 
 
     """ BAU """
@@ -233,10 +330,18 @@ class TrajMan(Service):
 
     @Service.action
     @if_enabled
-    def goto_xy(self, x, y):
+    def goto_xy(self, x, y, avoid=True):
         tab = pack('B', 2 + calcsize('ff'))
         tab += pack('B', Commands.GOTO_XY.value)
         tab += pack('ff', float(x), float(y))
+
+        avoid = get_boolean(avoid)
+
+        self.destination = Point(x=float(x), y=float(y))
+
+        if avoid:
+            self.is_avoid_enabled.set()
+
         self.command(bytes(tab))
 
     @Service.action
@@ -621,11 +726,26 @@ class TrajMan(Service):
                     self.publish(ROBOT + '_started')
                     self.has_stopped.clear()
                     self.has_detected_collision.clear()
+                    self.has_avoid.clear()
 
                 elif tab[1] == Commands.MOVE_END.value:
                     self.log_serial("Robot stopped moving!")
                     self.has_stopped.set()
-                    self.publish(ROBOT + '_stopped', **RobotStatus.return_status(RobotStatus.Reached if not self.has_detected_collision.is_set() else RobotStatus.NotReached))
+                    status = RobotStatus.Reached
+                    if self.has_avoid.is_set():
+                        status = RobotStatus.HasAvoid
+                    elif self.has_detected_collision.is_set():
+                        status = RobotStatus.NotReached
+
+                    self.is_avoid_enabled.clear()
+
+                    avoid_side = None
+                    with self.lock:
+                        self.destination = None
+                        avoid_side = self.avoid_side
+                        self.avoid_side = None
+
+                    self.publish(ROBOT + '_stopped', **RobotStatus.return_status(status, avoid_side=avoid_side))
 
                 elif tab[1] == Commands.GET_SPEEDS.value:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
@@ -708,8 +828,14 @@ class TrajMan(Service):
 
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
                     counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
-                    telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
-                    self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)
+
+                    with self.lock:
+                        self.robot_position = Point(x=xpos, y=ypos)
+                        self.robot_orientation = theta
+                        self.robot_speed = speed * 1000
+
+                    #telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
+                    #self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)
 
                 elif tab[1] == Commands.ERROR.value:
                     self.log("CM returned an error")
