@@ -129,11 +129,6 @@ def drop_start_sorting(self):
     }
     score = 0
 
-    ch1_drop = self.left_cup_holder_drop if self.side else self.right_cup_holder_drop
-    ch1_close = self.left_cup_holder_close if self.side else self.right_cup_holder_close
-    ch2_drop = self.right_cup_holder_drop if self.side else self.left_cup_holder_close
-    ch2_close = self.right_cup_holder_close if self.side else self.left_cup_holder_close
-
     def update_buoys_count(color):
         nonlocal buoys_count
         nonlocal score
@@ -155,11 +150,12 @@ def drop_start_sorting(self):
         sleep(0.2)
         # Counts points
         for prox, color in buoys:
-            if self.actuators.proximity_sensor_read(id=prox):
+            if self.actuators.proximity_sensor_read(id=prox, mirror=False):
                 update_buoys_count(color)
         # Drops the buoys
         self.trajman.move_trsl(dest=30, acc=100, dec=100, maxspeed=100, sens=0)
-        self.pumps_drop(ids=pumps, use_queue=False)
+        self.pumps_drop(ids=pumps, use_queue=False, mirror=False)
+        sleep(0.5)
         # Moves back
         status = self.goto_avoid(x=x, y=350, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
@@ -174,11 +170,12 @@ def drop_start_sorting(self):
         sleep(0.2)
         # Counts points
         prox, color = buoy
-        if self.actuators.proximity_sensor_read(id=prox):
+        if self.actuators.proximity_sensor_read(id=prox, mirror=False):
             update_buoys_count(color)
         # Drops the buoy
         self.trajman.move_trsl(dest=30, acc=100, dec=100, maxspeed=100, sens=0)
-        self.pumps_drop(ids=pump, use_queue=False)
+        self.pumps_drop(ids=pump, use_queue=False, mirror=False)
+        sleep(0.5)
         # Moves back
         status = self.goto_avoid(x=x, y=350, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
@@ -188,28 +185,27 @@ def drop_start_sorting(self):
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # First set of front buoys
-    color = Color.Green if self.side else Color.Red
-    status = front_buoys(x=600, pumps='5,6', buoys=[(3,color),(4,color)])
+    status = front_buoys(x=600 if self.side else 1010, pumps='5,6', buoys=[(3,Color.Green),(4,Color.Green)])
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # Second set of front buoys
-    color = Color.Red if self.side else Color.Green
-    status = front_buoys(x=1010, pumps='2,3', buoys=[(1,color),(2,color)])
+    status = front_buoys(x=1010 if self.side else 600, pumps='2,3', buoys=[(1,Color.Red),(2,Color.Red)])
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
     # First buoy of the front arm
     self.front_arm_open(use_queue=False)
     sleep(0.5)
-    status = arm_buoy(x=1010, pump='1', buoy=(2, color))
+    status = arm_buoy(x=1010 if self.side else 600, pump='1', buoy=(2, Color.Red))
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
-    # Possible arrangements
+    # Possible arrangements on blue side
     # 1: R R G G
     # 2: R G R G
     # 3: R G G R
     reef_arrangement = 0
     def check_arrangement(colors, arrangement):
         for i in range(4):
-            if colors[i] != Color.Unknown and colors[i] != arrangement[i]:
+            if colors[i] == Color.Unknown: continue
+            if (colors[i] != arrangement[i]) ^ self.side:
                 return False
         return True
     colors = self.actuators.color_sensors_read()
@@ -228,17 +224,17 @@ def drop_start_sorting(self):
         status = self.goto_avoid(x=880, y=350, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
         sleep(0.2)
-        ch1_drop(use_queue=False)
-        ch2_drop(use_queue=False)
+        self.left_cup_holder_drop(use_queue=False)
+        self.right_cup_holder_drop(use_queue=False)
         sleep(0.5)
         if reef_arrangement == 1:
-            self.pumps_drop(ids='7,8', use_queue=False)
+            self.pumps_drop(ids='7,8', use_queue=False, mirror=False)
             update_buoys_count(colors[0])
             update_buoys_count(colors[1])
         else:
-            self.pumps_drop(ids='7', use_queue=False)
+            self.pumps_drop(ids='7', use_queue=False, mirror=False)
             update_buoys_count(colors[0])
-            ch1_close(use_queue=False)
+            self.left_cup_holder_close(use_queue=False)
             sleep(0.5)
             rot = 2.75 if reef_arrangement == 2 else 2.45
             pump = '9' if reef_arrangement == 2 else '10'
@@ -247,21 +243,20 @@ def drop_start_sorting(self):
                 self.right_cup_holder_close(use_queue=False)
                 return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
             sleep(0.2)
-            self.pumps_drop(ids=pump, use_queue=False)
+            self.pumps_drop(ids=pump, use_queue=False, mirror=False)
             update_buoys_count(colors[2 if reef_arrangement == 2 else 3])
         status = self.move_trsl(40, 200, 200, 200, 1)
-        ch1_close(use_queue=False)
-        ch2_close(use_queue=False)
+        self.left_cup_holder_close(use_queue=False)
+        self.right_cup_holder_close(use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # Second buoy of the front arm
-    x=550
+    x=550 if self.side else 1030
     status = self.goto_avoid(x=x, y=350, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
     status = self.goth(theta=-pi/2, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-    color = Color.Green if self.side else Color.Red
-    status = arm_buoy(x=x, pump='4', buoy=(3, color))
+    status = arm_buoy(x=x, pump='4', buoy=(3, Color.Green))
     if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # Second set of reef buoys
@@ -270,8 +265,8 @@ def drop_start_sorting(self):
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
         status = self.goto_avoid(x=325, y=350, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-        ch1_drop(use_queue=False)
-        ch2_drop(use_queue=False)
+        self.left_cup_holder_drop(use_queue=False)
+        self.right_cup_holder_drop(use_queue=False)
         rot = 0
         if reef_arrangement == 1: rot = 3*pi/4
         if reef_arrangement == 2: rot = 2.70
@@ -291,20 +286,20 @@ def drop_start_sorting(self):
             pump = '8,9'
             update_buoys_count(colors[1])
             update_buoys_count(colors[2])
-        self.pumps_drop(ids=pump, use_queue=False)
+        self.pumps_drop(ids=pump, use_queue=False, mirror=False)
         if reef_arrangement == 2:
-            ch1_close(use_queue=False)
+            self.left_cup_holder_close(use_queue=False)
             sleep(0.5)
             status = self.goth(theta=3*pi/4, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached:
                 self.right_cup_holder_close(use_queue=False)
                 return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
             sleep(0.2)
-            self.pumps_drop(ids='10', use_queue=False)
+            self.pumps_drop(ids='10', use_queue=False, mirror=False)
             update_buoys_count(colors[3])
         status = self.move_trsl(40, 200, 200, 200, 1)
-        ch1_close(use_queue=False)
-        ch2_close(use_queue=False)
+        self.left_cup_holder_close(use_queue=False)
+        self.right_cup_holder_close(use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
