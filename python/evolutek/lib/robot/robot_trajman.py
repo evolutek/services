@@ -85,7 +85,8 @@ def goto(self, x, y, mirror=True):
     position = self.trajman.get_position()
     distsqr = (x - position['x'])**2 + (y - position['y'])**2
     maxdist = 5
-    if distsqr < maxdist**2: return RobotStatus.Reached
+    if distsqr < maxdist**2:
+        return RobotStatus.return_status(RobotStatus.Reached)
 
     return self.goto_xy(x, y)
 
@@ -98,7 +99,8 @@ def goth(self, theta, mirror=True):
         theta = self.mirror_pos(theta=float(theta))['theta']
 
     current = self.trajman.get_position()['theta']
-    if abs(current - theta) < 0.075: return RobotStatus.Reached
+    if abs(current - theta) < 0.075:
+            return RobotStatus.return_status(RobotStatus.Reached)
 
     return self.goto_theta(theta)
 
