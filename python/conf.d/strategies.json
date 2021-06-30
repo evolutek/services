@@ -127,7 +127,7 @@
         {
           "fct": "goto",
           "args": {
-            "x": 1150,
+            "x": 1100,
             "y": 1250
           }
         },
@@ -266,23 +266,27 @@
         {
           "fct": "goth",
           "args": {
-            "theta": "pi"
+            "theta": "pi / 3"
           }
         },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 1750,
-            "y": 720
-          }
-        }
+	{
+	  "fct": "goto",
+	  "args": {
+	    "x": 1700,
+	    "y": 300
+	  }
+	}
       ]
     }
   ],
   "strategies": [
     {
       "name": "normal_pal",
-      "goals": ["get_buoys_7-8", "get_bottom_reef", "push_windsocks"],
+      "goals": [
+	      "get_buoys_7-8",
+	      "get_bottom_reef",
+	      "push_windsocks"
+      ],
       "available": ["pal"],
       "use_pathfinding": false
     },
