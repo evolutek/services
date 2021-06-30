@@ -360,7 +360,7 @@ def recalibration(self,
         if status != RobotStatus.Reached:
             return RobotStatus.return_status(status)
 
-        status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
+        status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_y)))
         if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
             return RobotStatus.return_status(status)
 
