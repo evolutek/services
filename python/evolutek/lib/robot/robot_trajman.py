@@ -89,7 +89,7 @@ def goto(self, x, y, avoid=True, mirror=True):
         print('[ROBOT] Already reached position')
         return RobotStatus.return_status(RobotStatus.Reached)
 
-    return self.goto_xy(x=x, x=y, avoid=avoid)
+    return self.goto_xy(x=x, y=y, avoid=avoid)
 
 
 @if_enabled
