@@ -137,7 +137,7 @@ class AI(Service):
     def sleep(self, time):
         print('[AI] AI sleeping for %f s' % float(time))
         sleep(float(time))
-        RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Done)
 
     def check_abort(self):
         if self.match_end.is_set() or self.critical_timeout.is_set():

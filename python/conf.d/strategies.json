@@ -289,7 +289,7 @@
         {
           "fct": "sleep",
           "args": {
-            "time": 1
+            "time": 0.5
           }
         }
       ]
