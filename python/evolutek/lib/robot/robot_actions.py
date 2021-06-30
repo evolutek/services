@@ -25,7 +25,7 @@ def get_reef(self):
     sleep(1)
 
     status = RobotStatus.get_status(self.recal(0))
-    if status != RobotStatus.Reached:
+    if status != RobotStatus.NotReached:
         return RobotStatus.return_status(status)
 
     self.left_cup_holder_close(use_queue=False)
@@ -249,7 +249,7 @@ def drop_start_sorting(self):
     status = self.goto(x=250, y=150, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(status)
     status = self.recal(0)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(status)
+    if RobotStatus.get_status(status) != RobotStatus.NotReached: return RobotStatus.return_status(status)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
