@@ -20,12 +20,12 @@ def get_reef(self):
 
     sleep(0.25)
 
-    self.trajman.move_trsl(300, 300, 300, 300, 0)
-
-    sleep(1)
+    status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 0))
+    if status != RobotStatus.Reached:
+        return RobotStatus.return_status(status)
 
     status = RobotStatus.get_status(self.recal(0))
-    if status != RobotStatus.NotReached:
+    if status == RobotStatus.Disabled or status == RobotStatus.Aborted:
         return RobotStatus.return_status(status)
 
     self.left_cup_holder_close(use_queue=False)
@@ -37,7 +37,7 @@ def get_reef(self):
 
     sleep(0.25)
 
-    status = RobotStatus.get_status(self.move_trsl(300, 300, 300, 300, 1))
+    status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 1))
     if status != RobotStatus.Reached:
         return RobotStatus.return_status(status)
 
@@ -48,16 +48,16 @@ def get_reef(self):
 @use_queue
 def start_lighthouse(self):
 
-    self.left_cup_holder_open(use_queue=False) if self.side else self.right_cup_holder_open(use_queue=False)
+    self.left_cup_holder_open(use_queue=False) if not self.side else self.right_cup_holder_open(use_queue=False)
     sleep(0.25)
 
-    status = RobotStatus.get_status(self.goto_avoid(x=180, y=2875, use_queue=False))
+    status = RobotStatus.get_status(self.goto_avoid(x=170, y=330, use_queue=False))
     if status != RobotStatus.Reached:
-        self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
+        self.left_cup_holder_close(use_queue=False) if not self.side else self.right_cup_holder_close(use_queue=False)
         return RobotStatus.return_status(status)
 
-    status = self.get_status(self.goto_avoid(x=200, y=2600, use_queue=False))
-    self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
+    status = RobotStatus.get_status(self.goto_avoid(x=300, y=330, use_queue=False))
+    self.left_cup_holder_close(use_queue=False) if not self.side else self.right_cup_holder_close(use_queue=False)
 
     return RobotStatus.return_status(status if status != RobotStatus.Reached else RobotStatus.Done)
 
@@ -66,7 +66,10 @@ def start_lighthouse(self):
 @use_queue
 def push_windsocks(self):
 
-    self.recal(0)
+    status = RobotStatus.get_status(self.recal(0))
+    if status == RobotStatus.Disabled or status == RobotStatus.Aborted:
+        return RobotStatus.return_status(status)
+
     self.right_arm_open(use_queue=False) if self.side else self.left_arm_open(use_queue=False)
 
     sleep(0.25)
@@ -97,6 +100,10 @@ def push_windsocks(self):
     self.trajman.set_trsl_max_speed(speeds['trmax'])
     self.trajman.set_trsl_acc(speeds['tracc'])
     self.trajman.set_trsl_dec(speeds['trdec'])
+
+    status = RobotStatus.get_status(self.goto_avoid(x=1825, y=650, use_queue=False))
+    if status != RobotStatus.Reached:
+        return RobotStatus.return_status(status)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
