@@ -405,14 +405,14 @@ class TrajMan(Service):
 
     @Service.action
     def disable(self):
-        self.free()
         self.disabled.set()
+        self.free()
 
     @Service.action
     def enable(self):
         if self.bau_state:
-            self.unfree()
             self.disabled.clear()
+            self.unfree()
 
     #######
     # Set #
