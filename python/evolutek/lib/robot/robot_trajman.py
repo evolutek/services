@@ -197,6 +197,7 @@ def goto_with_path(self, x, y, mirror=True):
         y = _destination['y']
 
     destination = Point(x, y)
+    has_moved = False
 
     print('[ROBOT] Goto with path : %s' % destination)
 
@@ -208,10 +209,11 @@ def goto_with_path(self, x, y, mirror=True):
         path = self.get_path(destination)
 
         if (len(path) < 2):
-            return RobotStatus.return_status(RobotStatus.Unreachable)
+            return RobotStatus.return_status(RobotStatus.Unreachable, has_moved=has_moved)
 
         for i in range(1, len(path)):
 
+            has_moved = True
             print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
 
             data = self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False)

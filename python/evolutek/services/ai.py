@@ -156,8 +156,10 @@ class AI(Service):
         else:
             self.goals.reset(int(index))
 
+        self.use_pathfinding = self.goals.current_strategy.use_pathfinding
         print('[AI] Current strategy:')
         print(self.goals.current_strategy)
+
 
     """ SETUP """
     def setup(self):
@@ -199,6 +201,7 @@ class AI(Service):
 
         return States.Waiting
 
+
     """ WAITING """
     def waiting(self):
 
@@ -219,6 +222,7 @@ class AI(Service):
         self.match_start.clear()
 
         return next
+
 
     """ SELECTING """
     def selecting(self):
@@ -249,11 +253,14 @@ class AI(Service):
 
         return States.Making
 
+
     """ MAKING """
     def making(self):
         # TODO :
         # - manage action avoid strategies
-        # - abort to secondary goal
+
+        if self.check_abort() != RobotStatus.Ok:
+            return States.Selecting
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
 
@@ -271,26 +278,67 @@ class AI(Service):
 
             print('[AI] Going with pathfinding')
             status = RobotStatus.NotReached
-            while status != RobotStatus.Reached and self.check_abort() == RobotStatus.Ok:
-                status = RobotStatus.get_status(self.goto_with_path(x=current_goal.position.x, y=current_goal.position.y))
+            has_moved = True
+            timer = None
+            timeout = Event()
+
+            while status != RobotStatus.Reached:
+
+                if timeout.is_set():
+                    print('[AI] Timeout during pathfinding')
+                    self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+                    print('[AI] Selecting secondary goal')
+                    return States.Making
+
+                data = self.goto_with_path(x=current_goal.position.x, y=current_goal.position.y)
+                status = RobotStatus.get_status(data)
 
                 if status == RobotStatus.Unreachable:
+
+                    _has_moved = get_boolean(data['has_moved'])
+                    if current_goal.timeout is not None and has_moved != _has_moved:
+                        if _has_moved:
+                            print('[AI] Stopping timer')
+                            timer.cancel()
+                            timer = None
+                        else:
+                            print('[AI] Starting timer')
+                            timer = Timer(current_goal.timeout, lambda: timeout.set())
+                            timer.start()
+                        has_moved = _has_moved
+
                     sleep(1)
                     continue
 
                 if status == RobotStatus.Aborted:
-                    return States.Making
+                    if timer is not None:
+                        print('[AI] Stopping timer')
+                        timer.cancel()
+                    return States.Selecting
 
                 if status != RobotStatus.Reached:
+                    if timer is not None:
+                        print('[AI] Stopping timer')
+                        timer.cancel()
                     return States.Error
+
+            if timer is not None:
+                print('[AI] Stopping timer')
+                timer.cancel()
 
         else:
 
             print('[AI] Going without pathfinding')
-            status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y))
+
+            status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y, timeout=current_goal.timeout))
+
+            if status == RobotStatus.Timeout:
+                print('[AI] Timeout, selecting secondary goal')
+                self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+                return States.Making
 
             if status == RobotStatus.Aborted:
-                return States.Making
+                return States.Selecting
 
             if status != RobotStatus.Reached:
                 return States.Error
@@ -303,7 +351,7 @@ class AI(Service):
             status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
 
             if status == RobotStatus.Aborted:
-                return States.Making
+                return States.Selecting
 
             if status != RobotStatus.Reached:
                 return States.Error
@@ -355,6 +403,7 @@ class AI(Service):
 
         return States.Selecting
 
+
     """ ENDING """
     def ending(self):
 
@@ -368,6 +417,7 @@ class AI(Service):
 
         return States.Setup
 
+
     """ ERROR """
     def error(self):
         with self.lock:
@@ -379,7 +429,6 @@ class AI(Service):
         self.reset.wait()
 
         return States.Setup
-
 
 def main():
     ai = AI()
