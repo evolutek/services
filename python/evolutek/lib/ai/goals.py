@@ -80,8 +80,9 @@ class Action:
 
         if avoid_strategy == AvoidStrategy.Skip:
             args['skip'] = True
-        elif avoid_strategy == AvoidStrategy.timeout:
+        elif avoid_strategy == AvoidStrategy.Timeout:
             args['timeout'] = timeout
+
 
         new = Action(fct, args=args, avoid_strategy=avoid_strategy, score=score, timeout=timeout)
 

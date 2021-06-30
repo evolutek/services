@@ -30,7 +30,6 @@
                 "x": 900,
                 "y": 280
             },
-            "theta": "pi/2",
             "actions": [
                 {
                     "fct": "pumps_get",

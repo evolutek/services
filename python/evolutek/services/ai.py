@@ -33,9 +33,9 @@ class States(Enum):
 # - interface
 
 @Service.require('config')
-@Service.require('actuators')
-@Service.require('trajman')
-@Service.require('robot')
+@Service.require('actuators', ROBOT)
+@Service.require('trajman', ROBOT)
+@Service.require('robot', ROBOT)
 class AI(Service):
 
     start_event = CellaservEvent('%s_robot_started' % ROBOT)
