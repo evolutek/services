@@ -95,3 +95,10 @@ def push_windsocks(self):
         self.left_arm_close(use_queue=False)
 
     return RobotStatus.return_status(RobotStatus.Done)
+
+
+@if_enabled
+@use_queue
+def drop_start_sorting(self):
+    # TODO
+    pass

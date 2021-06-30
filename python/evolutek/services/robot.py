@@ -61,9 +61,11 @@ class Robot(Service):
     right_cup_holder_open = Service.action(robot_actuators.right_cup_holder_open)
     right_cup_holder_drop = Service.action(robot_actuators.right_cup_holder_drop)
 
-    # Imported from robot_actuators
+    # Imported from robot_actions
     get_reef = Service.action(robot_actions.get_reef)
+    start_lighthouse = Service.action(robot_actions.start_lighthouse)
     push_windsocks = Service.action(robot_actions.push_windsocks)
+    drop_start_sorting = Service.action(robot_actions.drop_start_sorting)
 
     def __init__(self):
 
