@@ -272,6 +272,9 @@ class AI(Service):
         self.reset.clear()
         self.match_start.clear()
 
+        self.red_led.write(True)
+        self.green_led.write(False)
+
         return next
 
 
@@ -492,6 +495,7 @@ class AI(Service):
         self.actuators.disable()
         self.trajman.disable()
 
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
         self.reset.wait()
 
         return States.Setup
@@ -512,6 +516,7 @@ class AI(Service):
         self.actuators.disable()
         self.trajman.disable()
 
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
 
         self.reset.wait()
 
