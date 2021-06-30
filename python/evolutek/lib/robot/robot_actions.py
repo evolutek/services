@@ -127,6 +127,19 @@ def drop_start_sorting(self):
     }
     score = 0
 
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_trsl_max_speed(750)
+    self.trajman.set_trsl_acc(300)
+    self.trajman.set_trsl_dec(300)
+
+    def cleanup_and_exit(status):
+        nonlocal speeds
+        nonlocal score
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
+        self.trajman.set_trsl_acc(speeds['tracc'])
+        self.trajman.set_trsl_dec(speeds['trdec'])
+        return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+
     def update_buoys_count(color):
         nonlocal buoys_count
         nonlocal score
@@ -139,12 +152,12 @@ def drop_start_sorting(self):
         nonlocal score
         # Gets into position
         status = self.goto_avoid(x=x, y=250, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Reached: return
         status = self.goth(theta=-pi/2, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         # Moves forward to place buoys
         status = self.goto_avoid(x=x, y=180, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         sleep(0.2)
         # Counts points
         for prox, color in buoys:
@@ -156,7 +169,7 @@ def drop_start_sorting(self):
         sleep(0.5)
         # Moves back
         status = self.goto_avoid(x=x, y=350, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         return RobotStatus.return_status(RobotStatus.Done)
 
     def arm_buoy(x, pump, buoy):
@@ -164,7 +177,7 @@ def drop_start_sorting(self):
         nonlocal score
         # Moves forward to place the buoy
         status = self.goto_avoid(x=x, y=250, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         sleep(0.2)
         # Counts points
         prox, color = buoy
@@ -176,50 +189,53 @@ def drop_start_sorting(self):
         sleep(0.5)
         # Moves back
         status = self.goto_avoid(x=x, y=350, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         return RobotStatus.return_status(RobotStatus.Done)
 
     def reef_buoys(x, colors, color):
         y = 400
         for i in range(4):
-            if colors[i] != color:
-                continue
+            if colors[i] != color: continue
             # Moves to the right x
             x_offset = i*75 - 109.5
             status = self.goto_avoid(x=x + x_offset, y=y + 100, use_queue=False)
-            if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+            if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
             # Opens the arm
             if i <= 1: self.left_cup_holder_drop(use_queue=False)
             else: self.right_cup_holder_drop(use_queue=False)
+            status = self.goth(theta=pi/2, use_queue=False)
+            if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
+            sleep(0.4)
             # Moves to the right y
             status = self.goto_avoid(x=x + x_offset, y=y, use_queue=False)
-            if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+            if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
             # Closes the arm and moves back slowly
             self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=1)
+            self.pumps_drop(ids=str(i+7), use_queue=False, mirror=False)
             if i <= 1: self.left_cup_holder_close(use_queue=False)
             else: self.right_cup_holder_close(use_queue=False)
-            sleep(1)
+            sleep(0.5)
             y += 80
         return RobotStatus.return_status(RobotStatus.Done)
 
     status = self.recalibration(x=False, y=True, x_sensor=RecalSensor.Left, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+    if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     # First set of front buoys
     print('[ROBOT] Dropping front green buoys')
     status = front_buoys(x=600 if self.side else 1010, pumps='5,6', buoys=[(3,Color.Green),(4,Color.Green)])
-    if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+    if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     # Second set of front buoys
     print('[ROBOT] Dropping front red buoys')
     status = front_buoys(x=1010 if self.side else 600, pumps='2,3', buoys=[(1,Color.Red),(2,Color.Red)])
-    if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+    if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
     # First buoy of the front arm
     print('[ROBOT] Dropping front arm red buoys')
     self.front_arm_open(use_queue=False)
     sleep(0.5)
     status = arm_buoy(x=1010 if self.side else 600, pump='1', buoy=(2, Color.Red))
-    if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+    if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     #       Possible arrangements
     #  Blue side            Yellow side
@@ -234,23 +250,27 @@ def drop_start_sorting(self):
     if Color.Red in colors:
         print('[ROBOT] Dropping reef red buoys')
         status = reef_buoys(x= 1085 if self.side else 515, colors=colors, color=Color.Red)
-        if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     # Second buoy of the front arm
     print('[ROBOT] Dropping front arm green buoys')
     x = 550 if self.side else 1030
     status = self.goto_avoid(x=x, y=300, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta=-pi/2, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = arm_buoy(x=x, pump='4', buoy=(3, Color.Green))
-    if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+    if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     # Second set of reef buoys
     if Color.Green in colors:
         print('[ROBOT] Dropping reef green buoys')
         status = reef_buoys(x= 515 if self.side else 1085, colors=colors, color=Color.Green)
-        if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+        if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
+
+    self.trajman.set_trsl_max_speed(speeds['trmax'])
+    self.trajman.set_trsl_acc(speeds['tracc'])
+    self.trajman.set_trsl_dec(speeds['trdec'])
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
