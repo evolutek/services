@@ -144,6 +144,23 @@ class TrajMan(Service):
         self.bau_state = None
 
         self.lock = Lock()
+        cs = CellaservProxy()
+
+        lidar_config = cs.config.get_section('rplidar')
+        self.lidar = Rplidar(lidar_config)
+        self.lidar.start_scanning()
+        self.lidar.register_callback(self.lidar_callback)
+
+        self.detected_robots = []
+        self.has_avoid = Event()
+        self.avoid_side = None
+        self.is_avoid_enabled = Event()
+        self.destination = None
+        self.robot_size = float(cs.config.get(section='match', option='robot_size'))
+
+        self.robot_position = Point(0, 0)
+        self.robot_orientation = 0.0
+        self.robot_speed = 0.0
 
         self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
 
@@ -179,23 +196,6 @@ class TrajMan(Service):
         self.size_y = self.robot_size_y()
         self.set_robot_size_y(self.size_y)
 
-        cs = CellaservProxy()
-
-        lidar_config = cs.config.get_section('rplidar')
-        self.lidar = Rplidar(lidar_config)
-        self.lidar.start_scanning()
-        self.lidar.register_callback(self.lidar_callback)
-
-        self.detected_robots = []
-        self.has_avoid = Event()
-        self.avoid_side = None
-        self.is_avoid_enabled = Event()
-        self.destination = None
-        self.robot_size = float(cs.config.get(section='match', option='robot_size'))
-
-        self.robot_position = Point(0, 0)
-        self.robot_orientation = 0.0
-        self.robot_speed = 0.0
 
         Thread(target=self.avoid_loop).start()
 
