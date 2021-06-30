@@ -80,9 +80,11 @@ def set_pos(self, x, y, theta=None, mirror=True):
 @use_queue
 def goto(self, x, y, avoid=True, mirror=True):
     mirror = get_boolean(mirror)
+    x = float(x)
+    y = float(y)
 
     if mirror:
-        y = self.mirror_pos(y=float(y))['y']
+        y = self.mirror_pos(y=y)['y']
 
     position = Point(dict=self.trajman.get_position())
     if position.dist(Point(x=x, y=y)) < DELTA_POS:
@@ -96,9 +98,10 @@ def goto(self, x, y, avoid=True, mirror=True):
 @use_queue
 def goth(self, theta, mirror=True):
     mirror = get_boolean(mirror)
+    theta = float(theta)
 
     if mirror:
-        theta = self.mirror_pos(theta=float(theta))['theta']
+        theta = self.mirror_pos(theta=theta)['theta']
 
     current = float(self.trajman.get_position()['theta'])
     if abs(current - theta) < DELTA_ANGLE:
