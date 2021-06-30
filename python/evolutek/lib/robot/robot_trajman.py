@@ -96,6 +96,7 @@ def move_back(self, side):
     side = get_boolean(side)
 
     dist = 0
+    with self.lock:
         dist = self.dist
 
     print('[ROBOT] Move back direction: ' + 'front' if side else 'back')
