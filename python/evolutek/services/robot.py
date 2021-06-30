@@ -179,6 +179,7 @@ class Robot(Service):
             return
 
         self.enable()
+        sleep(2)
 
         self.front_arm_close(use_queue=False)
         self.left_arm_open(use_queue=False)
