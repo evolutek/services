@@ -90,7 +90,7 @@ class AI(Service):
         self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
-        self.ai_interface = AIInterface(self)
+        #self.ai_interface = AIInterface(self)
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()

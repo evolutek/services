@@ -1,7 +1,6 @@
 from os import _exit
 from tkinter import *
 from tkinter import Tk
-from tkinter import ttk
 from evolutek.lib.map.point import Point
 
 
@@ -12,7 +11,11 @@ class Interface:
 		self.window.title("%s Interface" % title)
 		self.window.geometry("800x480")
 		self.interface_refresh = 100
+		self.create_widget()
 		self._update_interface()
+
+	def create_widget(self):
+		pass
 
 	def update_interface(self):
 		"""

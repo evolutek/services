@@ -107,9 +107,9 @@ class StatusFrame(IFRAME):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def create_button(self):
-		Button(self, text="Recalibaration", command=self.recalibration).grid(row=8, column=1)
-		Button(self, text="Reset Match", command=self.reset_match).grid(row=8, column=1)
-		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=0, row=30)
+		Button(self, text="Recalibaration", command=self.recalibration).grid(row=0, column=0)
+		Button(self, text="Reset Match", command=self.reset_match).grid(row=0, column=1)
+		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=0)
 
 	def __init_interface(self):
 		self.create_color()
@@ -141,20 +141,19 @@ class MatchInterface(IFRAME):
 class AIInterface(Interface):
 	def __init__(self, ai):
 		self.ai = ai
-		self.create_widget()
 		super().__init__('AI')
 		self.window.after(self.interface_refresh, self.update_interface)
 		self.window.mainloop()
 
 	def create_widget(self):
-		self.strategies_frame = StrategyFrame(self)
-		self.strategies_frame.config(bd=10)
-		self.strategies_frame.pack()
-		self.strategies_frame.place(height=40, width=150, x=0, y=200)
+		#self.strategies_frame = StrategyFrame(self)
+		#self.strategies_frame.config(bd=10)
+		#self.strategies_frame.pack()
+		#self.strategies_frame.place(height=40, width=150, x=0, y=200)
 
-		self.button_system_frame = ButtonSystem(self)
-		self.button_system_frame.pack()
-		self.button_system_frame.place(height=29, width=213, x=480 / 2, y=0)
+		#self.button_system_frame = ButtonSystem(self)
+		#self.button_system_frame.pack()
+		#self.button_system_frame.place(height=29, width=213, x=480 / 2, y=0)
 
 		self.status_frame = StatusFrame(self)
 		self.status_frame.grid(row=1, column=1, columnspan=3, rowspan=5)
@@ -164,24 +163,13 @@ class AIInterface(Interface):
 	def update_interface(self):
 		match_status = self.ai.cs.match.get_status()
 
-		# self.bau_status_label.config(text='%s' % ' Bau Status: ON' if self.bau_status else 'Bau Status: OFF')
 		if match_status["status"] == "Started":
 			print("[+] Match is running")
-		# self.color_label.config(text="Color: %s" % self.cs.match.get_color(), fg=self.cs.match.get_status()['color'])
-		# self.score_label.config(text="Score: %d" % self.cs.match.get_status()['score'])
-		# self.match_status_label.config(text="Match status: %s" % self.cs.match.get_status()['status'])
-		# self.match_time_label.config(text="Match time: %d" % self.cs.match.get_status()['time'])
-		# self.color_button.config(bg=self.cs.match.get_color())
 		else:
 			print("[+] Fix match not running or problem with this")
 			self.status_frame.update_interface()
-			self.button_system_frame.update_interface()
-			self.strategies_frame.update_interface()
-
-		# self.color_label.config(text="Color: %s" % 'M.C')
-		# self.score_label.config(text="Score: %s" % 'M.C')
-		# self.match_status_label.config(text="Match status: %s" % 'M.C')
-		# self.match_time_label.config(text="Match time: %s" % 'M.C')
+			#self.button_system_frame.update_interface()
+			#self.strategies_frame.update_interface()
 
 		self.window.after(self.interface_refresh, self.update_interface)
 
