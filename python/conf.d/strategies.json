@@ -99,6 +99,16 @@
     ],
     "strategies": [
         {
+            "name": "normal_pal",
+            "goals": [
+                "get_buoys_7-8"
+            ],
+            "available": [
+                "pal"
+            ],
+            "use_pathfinding": false
+        },
+        {
             "name": "normal_pmi",
             "goals": [
                 "get_buoys_1-2",
