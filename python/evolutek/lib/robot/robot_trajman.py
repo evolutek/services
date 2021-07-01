@@ -259,7 +259,7 @@ def goto_with_path(self, x, y, mirror=True):
 
 @if_enabled
 @use_queue
-def homemade_recal(self, decal):
+def homemade_recal(self, decal=0):
 
     print("[ROBOT] Using homemade recal")
 
