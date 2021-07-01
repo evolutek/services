@@ -75,9 +75,9 @@ class ButtonSystem(IFRAME):
 		self.parent.close()
 
 	def create_button(self):
-		Button(self, text="reboot", command=self.reboot).grid(row=0, column=1)
+		Button(self, text="reboot", command=self.reboot).grid(row=0, column=0)
 		Button(self, text="shutdown", command=self.shutdown).grid(row=0, column=2)
-		Button(self, text="close", command=self.close).grid(row=0, column=3)
+		Button(self, text="close", command=self.close).grid(row=0, column=6)
 
 	def __init_interface(self):
 		self.create_button()
@@ -113,10 +113,10 @@ class StatusFrame(IFRAME):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def create_button(self):
-		Button(self, text="Recalibaration", command=self.recalibration).grid(row=1, column=0)
-		Button(self, text="set position", command=self.reset_position).grid(row=2, column=1)
-		Button(self, text="Reset Match", command=self.reset_match).grid(row=3, column=1)
-		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=4)
+		Button(self, text="Recalibaration", command=self.recalibration).grid(row=2, column=1)
+		Button(self, text="set position", command=self.reset_position).grid(row=3, column=1)
+		Button(self, text="Reset Match", command=self.reset_match).grid(row=4, column=1)
+		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=5)
 
 	def __init_interface(self):
 		#self.create_color()
@@ -166,15 +166,15 @@ class AIInterface(Interface):
 			self.strategies_frame = StrategyFrame(self)
 			self.strategies_frame.config(bd=10)
 			self.strategies_frame.pack()
-			self.strategies_frame.place(height=150, width=250, x=0, y=200)
+			self.strategies_frame.place(height=150, width=250, x=0, y=100)
 
 			self.button_system_frame = ButtonSystem(self)
 			self.button_system_frame.pack()
 			self.button_system_frame.place(height=29, width=213, x=480 / 2, y=0)
 
 			self.status_frame = StatusFrame(self)
-			self.status_frame.grid(row=1, column=1, columnspan=3, rowspan=5)
-			self.status_frame.place(height=200, width=300, x=190, y=40)
+			self.status_frame.grid(row=1, column=2)
+			self.status_frame.place(height=200, width=300, x=450, y=40)
 		else:
 			self.match_interfaces_frame = MatchInterface(self)
 			self.match_interfaces_frame.pack()
