@@ -197,7 +197,7 @@ def drop_start_sorting(self):
         for i in range(4):
             if colors[i] != color: continue
             # Moves to the right x
-            x_offset = i*75 - 109.5
+            x_offset = (i*75 - 109.5) * (-1 if self.side else 1)
             status = self.goto_avoid(x=x + x_offset, y=y + 100, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
             # Opens the arm
