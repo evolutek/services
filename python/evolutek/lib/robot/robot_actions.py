@@ -276,6 +276,8 @@ def drop_start_sorting(self):
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
 
+@if_enabled
+@use_queue
 def goto_anchorage(self):
 
     # True == south
@@ -287,9 +289,19 @@ def goto_anchorage(self):
     status = self.goth(theta=pi/2, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
 
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_trsl_max_speed(1000)
+    self.trajman.set_trsl_acc(600)
+    self.trajman.set_trsl_dec(600)
+
     status = self.goto(x=x, y=150, use_queue=False)
+
+    self.trajman.set_trsl_max_speed(speeds['trmax'])
+    self.trajman.set_trsl_acc(speeds['tracc'])
+    self.trajman.set_trsl_dec(speeds['trdec'])
+
     if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
-        score = 10 if self.trajman.get_position()['x'] < 475 else 0
+        score = 10 if self.trajman.get_position()['y'] < 475 else 0
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     status = self.recal(0)

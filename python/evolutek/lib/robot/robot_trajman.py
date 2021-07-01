@@ -10,7 +10,7 @@ from threading import Event
 from time import sleep
 
 DELTA_POS = 5
-DELTA_ANGLE = 0.1
+DELTA_ANGLE = 0.075
 
 class RecalSensor(Enum):
     No = "no"
