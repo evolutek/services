@@ -1,4 +1,3 @@
-from cellaserv.proxy import CellaservProxy
 from os import system
 from time import sleep
 import RPi.GPIO as GPIO
@@ -16,7 +15,6 @@ def main():
 
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(RESET_GPIO, GPIO.IN)
-    cs = CellaservProxy()
     triggered = False
     needRestart = False
     lastVal = GPIO.HIGH
