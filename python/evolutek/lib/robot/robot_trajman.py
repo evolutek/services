@@ -347,7 +347,7 @@ def recalibration(self,
         if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
             return RobotStatus.return_status(status)
 
-        sleep(0.75)
+        sleep(3)
         if y_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror, init=init)
 
@@ -367,7 +367,7 @@ def recalibration(self,
         if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
             return RobotStatus.return_status(status)
 
-        sleep(0.75)
+        sleep(3)
         if x_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror, init=init)
 
