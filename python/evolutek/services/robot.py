@@ -94,7 +94,6 @@ class Robot(Service):
 
         self.disabled = Event()
         self.need_to_abort = Event()
-        self.has_abort = Event()
 
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
@@ -216,7 +215,6 @@ class Robot(Service):
 
     def check_abort(self):
         if self.need_to_abort.is_set():
-            self.has_abort.set()
             # TODO : compute dist
             self.trajman.stop_robot()
             self.need_to_abort.clear()

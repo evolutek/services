@@ -91,16 +91,16 @@ def goth(self, theta, mirror=True):
 
 @if_enabled
 @use_queue
-def move_back(self):
-    side = 0
+def move_back(self, side):
+
+    side = get_boolean(side)
+
     dist = 0
-    with self.lock:
-        side = int(not self.avoid_side)
         dist = self.dist
 
     print('[ROBOT] Move back direction: ' + 'front' if side else 'back')
 
-    return self.move_trsl(acc=200, dec=200, dest=self.dist, maxspeed=400, sens=side)
+    return self.move_trsl(acc=200, dec=200, dest=self.dist, maxspeed=400, sens=int(side))
 
 timeout_event = Event()
 
@@ -133,15 +133,16 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
 
         if status == RobotStatus.HasAvoid:
 
+            side = get_boolean(data['avoid_side'])
+
             # TODO : check if a robot is in front of our robot before move back
-            # _status = RobotStatus.get_status(self.move_back(use_queue=False))
+            # _status = RobotStatus.get_status(self.move_back(side=(not side), use_queue=False))
 
             #if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
             #    return RobotStatus.return_status(_status)
 
             pos = Point(dict=self.trajman.get_position())
             dist = pos.dist(destination)
-            side = get_boolean(data['avoid_side'])
 
             global timeout_event
             timeout_event.clear()
@@ -197,13 +198,15 @@ def goto_with_path(self, x, y, mirror=True):
 
             print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
 
-            status = RobotStatus.get_status(self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False))
+            data = self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False)
+            status = RobotStatus.get_status(data)
+            side = get_boolean(data['avoid_side'])
 
             if status == RobotStatus.HasAvoid:
 
                 sleep(3)
 
-                _status = RobotStatus.get_status(self.move_back(use_queue=False))
+                _status = RobotStatus.get_status(self.move_back(side=(not side), use_queue=False))
 
                 if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
                     return RobotStatus.return_status(_status)
