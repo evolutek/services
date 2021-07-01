@@ -11,6 +11,7 @@ from time import sleep
 
 DELTA_POS = 5
 DELTA_ANGLE = 0.075
+HOMEMADE_RECAL = True
 
 class RecalSensor(Enum):
     No = "no"
@@ -256,6 +257,28 @@ def goto_with_path(self, x, y, mirror=True):
 # RECALIBRATION #
 #################
 
+def homemade_recal(self, axis_x, side, decal):
+
+    print("[ROBOT] Using homemade recal")
+
+    self.trajman.move_trsl(dest=400, acc=300, dec=300, maxspeed=100, sens=0)
+    sleep(3)
+
+    setter = self.trajman.set_x if axis_x else self.trajman.set_y
+    pos = 120 + decal
+    if side: pos = (2000 if axis_x else 3000) - pos
+    setter(pos)
+
+    rot = 0 if axis_x else pi/2
+    if side: rot += pi
+    self.trajman.set_theta(theta=rot)
+
+
+    sleep(1)
+    print(self.trajman.get_position())
+    self.trajman.free()
+
+
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
 # Set left to True to use the left sensor
@@ -343,11 +366,14 @@ def recalibration(self,
         if status != RobotStatus.Reached:
             return RobotStatus.return_status(status)
 
-        status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
-        if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
-            return RobotStatus.return_status(status)
+        if HOMEMADE_RECAL:
+            self.homemade_recal(True, side_x, decal_x)
+        else:
+            status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
+            if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
+                return RobotStatus.return_status(status)
 
-        sleep(3)
+        sleep(1)
         if y_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror, init=init)
 
@@ -363,11 +389,14 @@ def recalibration(self,
         if status != RobotStatus.Reached:
             return RobotStatus.return_status(status)
 
-        status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_y)))
-        if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
-            return RobotStatus.return_status(status)
+        if HOMEMADE_RECAL:
+            self.homemade_recal(False, side_y, decal_y)
+        else:
+            status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_y)))
+            if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
+                return RobotStatus.return_status(status)
 
-        sleep(3)
+        sleep(1)
         if x_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror, init=init)
 
