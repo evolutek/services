@@ -247,7 +247,7 @@ def goto_with_path(self, x, y, mirror=True):
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
 # Set left to True to use the left sensor
-def recalibration_sensors(self, axis_x, side, sensor, mirror=True):
+def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
 
     axis_x = get_boolean(axis_x)
     side = get_boolean(side)
@@ -267,14 +267,20 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True):
     print(f'[ROBOT] Measured distance: {dist}mm')
 
     if not axis_x and (side ^ (sensor == RecalSensor.Left)):
-        dist = 3000 - dist
+        value = 3000 - dist
     if axis_x and ((not side) ^ (sensor == RecalSensor.Left)):
-        dist = 2000 - dist
+        value = 2000 - dist
+
+    if not init:
+        position = self.trajman.get_position()
+        axis = 'x' if axis_x else 'y'
+        if abs(position[axis] - value) > 50:
+            print(f'[ROBOT] WARNING: Recalibration failed, measured position is too far away from current position')
+            print(f'Axis: {axis}. Current position: {position[axis]}. Measured position: {value}')
 
     setter = self.trajman.set_x if axis_x else self.trajman.set_y
-    setter(dist)
+    setter(value)
 
-    return RobotStatus.Done.value
 
 @if_enabled
 @use_queue
@@ -347,7 +353,7 @@ def recalibration(self,
 
         sleep(0.75)
         if y_sensor != RecalSensor.No:
-            self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror)
+            self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror, init=init)
 
         status = RobotStatus.get_status(self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1))
         if status != RobotStatus.Reached:
@@ -367,7 +373,7 @@ def recalibration(self,
 
         sleep(0.75)
         if x_sensor != RecalSensor.No:
-            self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror)
+            self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror, init=init)
 
         status = RobotStatus.get_status(self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1))
         if status != RobotStatus.Reached:
