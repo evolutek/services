@@ -30,9 +30,6 @@ class States(Enum):
     Ending = "Ending"
     Error = "Error"
 
-# TODO :
-# - interface
-
 @Service.require('config')
 @Service.require('actuators', ROBOT)
 @Service.require('trajman', ROBOT)

@@ -1,0 +1,10 @@
+[Unit]
+Description=AI service
+PartOf=evolutek.target
+
+[Service]
+ExecStart=ai
+CPUSchedulingPolicy=rr
+
+[Install]
+WantedBy=multi-user.target
