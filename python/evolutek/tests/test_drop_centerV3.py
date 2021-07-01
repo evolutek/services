@@ -2,7 +2,7 @@ from cellaserv.proxy import CellaservProxy
 from math import pi
 from time import sleep
 
-ROBOT = 'pmi'
+ROBOT = 'pal'
 
 cs = CellaservProxy()
 robot = cs.robot[ROBOT]
