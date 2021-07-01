@@ -73,6 +73,7 @@ class AI(Service):
 
         self.color1 = self.cs.config.get('match', 'color1')
         self.color = self.color1
+        self.bau_state = False
 
         self.lock = Lock()
         self.score = 0
@@ -107,12 +108,30 @@ class AI(Service):
             except Exception as e:
                 print('[AI] Failed to set color: %s' % str(e))
 
+            try:
+                cs = CellaservProxy()
+                self.handle_bau(cs.actuators[ROBOT].bau_read())
+            except Exception as e:
+                print('[AI] Failed to get BAU status: %s' % str(e))
+
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
 
     @Service.event("match_color")
     def color_callback(self, color):
         with self.lock:
             self.color = color
+
+    @Service.event('%s-bau' % ROBOT)
+    def handle_bau(self, value, **kwargs):
+
+        new_state = get_boolean(value)
+        # If the state didn't change, return
+
+        with self.lock:
+            if new_state == self.bau_state:
+                return
+
+            self.bau_state = new_state
 
     @Service.action
     def sleep(self, time):
@@ -133,23 +152,15 @@ class AI(Service):
 
     @Service.event('match_end')
     def match_end_handler(self):
-
-        self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
-        self.red_led.write(True)
-        self.green_led.write(False)
-
         self.match_end.set()
+
+        self.robot.abort_action()
 
         with self.lock:
             if self.critical_timer is not None:
                 self.critical_timer.cancel()
-
         self.critical_timeout.clear()
-        self.robot.abort_action()
 
-        self.robot.disable()
-        self.actuators.disable()
-        self.trajman.disable()
 
     @Service.action
     def reset(self, recalibrate_itself=False):
@@ -184,7 +195,6 @@ class AI(Service):
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
             print('[AI] Current strategy:')
             print(self.goals.current_strategy)
-
 
     """ SETUP """
     def setup(self):
@@ -476,6 +486,12 @@ class AI(Service):
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
+        self.match_end.wait()
+
+        self.robot.disable()
+        self.actuators.disable()
+        self.trajman.disable()
+
         self.reset.wait()
 
         return States.Setup
@@ -489,9 +505,13 @@ class AI(Service):
 
         with self.lock:
             print('[AI] AI in error at %fs' % round(time() - self.match_starting_time, 2))
-        self.match_end_handler()
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Error.value)
+
+        self.robot.disable()
+        self.actuators.disable()
+        self.trajman.disable()
+
 
         self.reset.wait()
 
