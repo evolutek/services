@@ -38,7 +38,7 @@ def get_reef(self):
     if status != RobotStatus.Reached:
         return RobotStatus.return_status(status)
 
-    status = RobotStatus.get_status(self.recal(0))
+    status = RobotStatus.get_status(self.homemade_recal(decal=0))
     if status == RobotStatus.Disabled or status == RobotStatus.Aborted:
         return RobotStatus.return_status(status)
 
@@ -82,7 +82,7 @@ def start_lighthouse(self):
 @use_queue
 def push_windsocks(self):
 
-    status = RobotStatus.get_status(self.recal(0))
+    status = RobotStatus.get_status(self.homemade_recal(decal=0))
     if status == RobotStatus.Disabled or status == RobotStatus.Aborted:
         return RobotStatus.return_status(status)
 
