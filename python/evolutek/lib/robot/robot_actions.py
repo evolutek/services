@@ -72,7 +72,7 @@ def push_windsocks(self):
 
     self.right_arm_open(use_queue=False) if self.side else self.left_arm_open(use_queue=False)
 
-    sleep(0.25)
+    sleep(1)
 
     speeds = self.trajman.get_speeds()
     self.trajman.set_trsl_max_speed(750)

@@ -3,6 +3,38 @@
         {
             "name": "get_buoys_1-2",
             "position": {
+                "x": 340,
+                "y": 910
+            },
+            "actions": [
+                {
+                    "fct": "pumps_get",
+                    "handler": "robot",
+                    "args": [
+                        {
+                            "ids": [3, 6]
+                        }
+                    ]
+                },
+                {
+                    "fct": "goto",
+                    "args": {
+                        "x": 940,
+                        "y": 500
+                    }
+                },
+                {
+                    "fct": "goto",
+                    "args": {
+                        "x": 1090,
+                        "y": 490
+                    }
+                }
+            ]
+        },
+        {
+            "name": "get_buoys_3-4",
+            "position": {
                 "x": 620,
                 "y": 255
             },
@@ -21,6 +53,71 @@
                         "x": 500,
                         "y": 315
                     }
+                }
+            ]
+        },
+        {
+            "name": "get_buoys_6-5",
+            "position": {
+                "x": 500,
+                "y": 315
+            },
+            "actions": [
+                {
+                    "fct": "pumps_get",
+                    "handler": "robot",
+                    "args": {
+                        "ids": [1, 4, 3]
+                    }
+                },
+                {
+                    "fct": "goto",
+                    "args": [
+                        {
+                            "x": 223,
+                            "y": 490
+                        }
+                    ]
+                },
+                {
+                    "fct": "pumps_drop",
+                    "handler": "robot",
+                    "args": {
+                        "ids": [3]
+                    }
+                },
+                {
+                    "fct": "goto",
+                    "args": [
+                        {
+                            "x": 223,
+                            "y": 590
+                        }
+                    ]
+                },
+                {
+                    "fct": "goto",
+                    "args": [
+                        {
+                            "x": 340,
+                            "y": 910
+                        }
+                    ]
+                },
+                {
+                    "fct": "goth",
+                    "handler": "robot",
+                    "args": {
+                        "theta": 0
+                    }
+                },
+                {
+                    "fct": "front_arm_close",
+                    "handler": "robot"
+                },
+                {
+                    "fct": "get_reef",
+                    "handler": "robot"
                 }
             ]
         },
@@ -94,6 +191,89 @@
                     "score" : 15
                 }
             ]
+        },
+        {
+            "name": "get_bottom_reef",
+            "position": {
+                "x": 1640,
+                "y": 250
+            },
+            "theta": "pi/2",
+            "actions": [
+                {
+                    "fct": "recalibration",
+                    "handler": "robot",
+                    "args": {
+                        "x" : false,
+                        "x_sensor" : "right"
+                    }
+                },
+                {
+                    "fct": "goto",
+                    "args": {
+                        "x": 1640,
+                        "y": 250
+                    }
+                },
+                {
+                    "fct": "goth",
+                    "args": {
+                        "theta": "pi/2"
+                    }
+                },
+                {
+                    "fct": "get_reef",
+                    "handler": "robot"
+                }
+            ]
+        },
+        {
+            "name": "push_windsocks",
+            "position": {
+                "x": 1700,
+                "y": 300
+            },
+            "score": 15,
+            "actions": [
+                {
+                    "fct": "goth",
+                    "handler": "robot",
+                    "args": {
+                        "theta": "3*pi/4"
+                    }
+                },
+                {
+                    "fct": "goto",
+                    "args": {
+                        "x": 1825,
+                        "y": 175
+                    }
+                },
+                {
+                    "fct": "goth",
+                    "handler": "robot",
+                    "args": {
+                        "theta": "pi/2"
+                    }
+                },
+                {
+                    "fct": "push_windsocks",
+                    "handler": "robot"
+                },
+                {
+                    "fct": "goth",
+                    "args": {
+                        "theta": "pi"
+                    }
+                },
+                {
+                    "fct": "goto",
+                    "args": {
+                        "x": 1750,
+                        "y": 720
+                    }
+                }
+            ]
         }
     ],
     "strategies": [
@@ -110,7 +290,7 @@
         {
             "name": "normal_pmi",
             "goals": [
-                "get_buoys_1-2",
+                "get_buoys_3-4",
                 "start_lighthouse"
             ],
             "available": [
