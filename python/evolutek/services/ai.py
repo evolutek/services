@@ -90,6 +90,9 @@ class AI(Service):
             print('[AI] Ready with loaded goals :')
             print(self.goals)
 
+            self.red_led.write(True)
+            self.green_led.write(False)
+
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
 
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
@@ -115,6 +118,8 @@ class AI(Service):
     def match_end_handler(self):
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
+        self.red_led.write(True)
+        self.green_led.write(False)
 
         self.match_end.set()
 
@@ -162,6 +167,9 @@ class AI(Service):
     """ SETUP """
     def setup(self):
 
+        self.red_led.write(True)
+        self.green_led.write(False)
+
         self.score = 0
         self.current_goal = None
         self.goals.reset()
@@ -202,6 +210,9 @@ class AI(Service):
 
     """ WAITING """
     def waiting(self):
+
+        self.red_led.write(False)
+        self.green_led.write(True)
 
         while not self.reset.is_set() and not self.match_start.is_set():
             sleep(0.01)
@@ -409,6 +420,9 @@ class AI(Service):
     """ ENDING """
     def ending(self):
 
+        self.red_led.write(False)
+        self.green_led.write(True)
+
         with self.lock:
             print("[AI] Match finished with score %d in %fs" % (self.score, round(time() - self.match_starting_time, 2)))
         #self.match_end_handler()
@@ -422,6 +436,10 @@ class AI(Service):
 
     """ ERROR """
     def error(self):
+
+        self.red_led.write(True)
+        self.green_led.write(False)
+
         with self.lock:
             print('[AI] AI in error at %fs' % round(time() - self.match_starting_time, 2))
         self.match_end_handler()
