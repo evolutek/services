@@ -294,9 +294,7 @@ class TrajMan(Service):
 
         if new_state:
             self.enable()
-            self.unfree()
         else:
-            self.free()
             self.disable()
 
     def write(self, data):
@@ -407,11 +405,13 @@ class TrajMan(Service):
 
     @Service.action
     def disable(self):
+        self.free()
         self.disabled.set()
 
     @Service.action
     def enable(self):
         if self.bau_state:
+            self.unfree()
             self.disabled.clear()
 
     #######
