@@ -17,9 +17,8 @@ def get_reef(self):
     sleep(0.25)
 
     self.trajman.move_trsl(300, 300, 300, 300, 0)
-    self.recal(0)
-
     sleep(1)
+    self.recal(0)
 
     self.left_cup_holder_close(use_queue=False)
     self.right_cup_holder_close(use_queue=False)
@@ -68,7 +67,7 @@ def start_lighthouse(self):
 @if_enabled
 @use_queue
 def push_windsocks(self):
-    
+
     self.recal(0)
     self.right_arm_open(use_queue=False) if self.side else self.left_arm_open(use_queue=False)
 
