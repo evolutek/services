@@ -1,9 +1,9 @@
 [Unit]
-Description=Restart service
+Description=Reset service
 PartOf=evolutek.target
 
 [Service]
-ExecStart=restart
+ExecStart=reset
 CPUSchedulingPolicy=rr
 
 [Install]

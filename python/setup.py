@@ -31,7 +31,7 @@ setup(
             'trajman = evolutek.services.trajman:main',
             'match = evolutek.services.match:main',
             'robot = evolutek.services.robot:main',
-            'restart = evolutek.utils.restart:main',
+            'reset = evolutek.utils.reset:main',
         ],
     },
 )
