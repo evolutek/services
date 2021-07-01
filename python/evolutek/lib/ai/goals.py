@@ -78,6 +78,11 @@ class Action:
         score = action['score'] if 'score' in action else 0
         timeout = action['timeout'] if 'timeout' in action else None
 
+        if avoid_strategy == AvoidStrategy.Skip:
+            args['skip'] = True
+        elif avoid_strategy == AvoidStrategy.timeout:
+            args['timeout'] = timeout
+
         new = Action(fct, args=args, avoid_strategy=avoid_strategy, score=score, timeout=timeout)
 
         return new

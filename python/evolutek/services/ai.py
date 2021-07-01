@@ -210,15 +210,15 @@ class AI(Service):
             self.recalibrate_itself.clear()
             self.recalibration(init=True)
             if ROBOT == 'pal':
-                self.goto(x=400, y=600)
-                self.goto(x=400, y=900)
+                self.goto(x=400, y=600, avoid=False)
+                self.goto(x=400, y=900, avoid=False)
                 self.goth(theta=pi/2)
             else:
-                self.goto(x=300, y=255)
+                self.goto(x=300, y=255, avoid=False)
                 self.goth(theta=pi)
 
             with self.lock:
-                self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y)
+                self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False)
                 self.goth(theta=self.goals.starting_theta)
         else:
             print('[AI] Setting robot position')

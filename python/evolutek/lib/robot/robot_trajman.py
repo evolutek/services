@@ -76,7 +76,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
 
 @if_enabled
 @use_queue
-def goto(self, x, y, mirror=True):
+def goto(self, x, y, avoid=True, mirror=True):
     mirror = get_boolean(mirror)
 
     if mirror:
@@ -88,7 +88,7 @@ def goto(self, x, y, mirror=True):
     if distsqr < maxdist**2:
         return RobotStatus.return_status(RobotStatus.Reached)
 
-    return self.goto_xy(x, y)
+    return self.goto_xy(x, y, avoid=avoid)
 
 @if_enabled
 @use_queue
@@ -126,12 +126,13 @@ def timeout_handler():
 
 @if_enabled
 @use_queue
-def goto_avoid(self, x, y, mirror=True, timeout=None):
+def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
     x = float(x)
     y = float(y)
 
     mirror = get_boolean(mirror)
+    skip = get_boolean(skip)
 
     if mirror:
         _destination = self.mirror_pos(x, y)
@@ -144,10 +145,14 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
     while status != RobotStatus.Reached:
 
         print('[ROBOT] Moving')
-        data = self.goto(x, y, mirror=False, use_queue=False)
+
+        data = self.goto(x, y, avoid=avoid, mirror=False, use_queue=False)
         status = RobotStatus.get_status(data)
 
         if status == RobotStatus.HasAvoid:
+
+            if skip:
+                return RobotStatus.return_status(RobotStatus.NotReached)
 
             side = get_boolean(data['avoid_side'])
 
@@ -163,6 +168,7 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
             global timeout_event
             timeout_event.clear()
 
+            watchdog = None
             if timeout is not None:
                 watchdog = Watchdog(float(timeout), timeout_handler)
                 watchdog.reset()
@@ -176,6 +182,9 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
 
                 print('[ROBOT] Waiting')
                 sleep(0.1)
+
+            if watchdog is not None:
+                watchdog.stop()
 
         elif status != RobotStatus.Reached:
             break
