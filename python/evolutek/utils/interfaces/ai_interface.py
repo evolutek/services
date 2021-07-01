@@ -119,7 +119,7 @@ class StatusFrame(IFRAME):
 		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=1)
 
 	def __init_interface(self):
-		self.create_color()
+		#self.create_color()
 		self.create_button()
 
 	def action_color(self):
@@ -166,7 +166,7 @@ class AIInterface(Interface):
 			self.strategies_frame = StrategyFrame(self)
 			self.strategies_frame.config(bd=10)
 			self.strategies_frame.pack()
-			self.strategies_frame.place(height=450, width=250, x=0, y=200)
+			self.strategies_frame.place(height=150, width=250, x=0, y=200)
 
 			self.button_system_frame = ButtonSystem(self)
 			self.button_system_frame.pack()
@@ -174,14 +174,14 @@ class AIInterface(Interface):
 
 			self.status_frame = StatusFrame(self)
 			self.status_frame.grid(row=1, column=1, columnspan=3, rowspan=5)
-			self.status_frame.place(height=480, width=800, x=190, y=40)
+			self.status_frame.place(height=200, width=300, x=190, y=40)
 		else:
 			self.match_interfaces_frame = MatchInterface(self)
 			self.match_interfaces_frame.pack()
 
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
-		self.window.configure(bg=self.cs.match.get_color())
+		self.window.configure(bd=5, highlightcolor=self.cs.match.get_color(), highlightthickness=5)
 		if match_status["status"] == "Started" or match_status["status"] == "Ended":
 			print("[+] Match is running")
 			if not self.reset:
@@ -206,11 +206,11 @@ class AIInterface(Interface):
 
 
 def main():
-	if len(argv) > 1:
-		global ROBOT
-	interface = AIInterface()
-	interface.window.configure(bg=self.cs.match.get_color())
-
+    if len(argv) > 1:
+       global ROBOT
+    interface = AIInterface()
+    interface.window.configure(bd=0)
+    interface.loop()
 
 if __name__ == "__main__":
 	main()
