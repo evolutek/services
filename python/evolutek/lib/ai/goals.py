@@ -45,7 +45,7 @@ class Action:
     def __str__(self):
         s = str(self.fct)
         s += '\n    -> args: ' + str(self.args)
-        s += '\n    -> avoid_strategy: ' + str(self.avoid_strategy)
+        s += '\n    -> avoid_strategy: ' + self.avoid_strategy.value
         s += '\n    -> score: ' + str(self.score)
         s += '\n    -> timeout: ' + str(self.timeout)
         return s
