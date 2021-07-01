@@ -379,6 +379,7 @@
       "name": "homologation_pmi",
       "goals": [
 	"pmi_starting_sleep",
+	"get_buoys_3-4",
         "start_lighthouse"
       ],
       "available": ["pmi"],
