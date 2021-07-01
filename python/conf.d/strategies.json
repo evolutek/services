@@ -27,7 +27,7 @@
     {
       "name": "get_buoys_3-4",
       "position": {
-        "x": 630,
+        "x": 635,
         "y": 255
       },
       "theta": "7*pi/8",
@@ -377,7 +377,7 @@
     },
     {
       "name": "homologation_pmi",
-      "goals":
+      "goals": [
         "pmi_starting_sleep",
 	"get_buoys_3-4",
 	"start_lighthouse"
