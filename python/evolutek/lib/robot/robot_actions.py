@@ -385,9 +385,9 @@ def drop_center(self):
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
     # Gets the second buoy on the back of the zone
-    status = self.goth(theta=0, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goto_avoid(x=1780, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta=0, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.pumps_get(ids=[6], use_queue=False)
     status = self.goto_avoid(x=1810, y=1910, use_queue=False)
@@ -395,6 +395,8 @@ def drop_center(self):
 
     # Drops the 4 buoys on the front
     status = self.goto_avoid(x=1780, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta=0, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goto_avoid(x=1810, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
