@@ -123,8 +123,9 @@ class AI(Service):
 
         self.match_end.set()
 
-        if self.critical_timer is not None:
-            self.critical_timer.cancel()
+        with self.lock:
+            if self.critical_timer is not None:
+                self.critical_timer.cancel()
 
         self.critical_timeout.clear()
         self.robot.abort_action()
@@ -143,7 +144,8 @@ class AI(Service):
 
     @Service.action
     def get_strategies(self):
-        return self.goals.get_strategies()
+        with self.lock:
+            return self.goals.get_strategies()
 
     @Service.action
     def set_strategy(self, index=0, name=None):
@@ -154,14 +156,17 @@ class AI(Service):
                 print('[AI] Bad strategy name')
                 return
 
-            self.goals.reset(strategies[name])
+            with self.lock:
+                self.goals.reset(strategies[name])
 
         else:
-            self.goals.reset(int(index))
+            with self.lock:
+                self.goals.reset(int(index))
 
-        self.use_pathfinding = self.goals.current_strategy.use_pathfinding
-        print('[AI] Current strategy:')
-        print(self.goals.current_strategy)
+        with self.lock:
+            self.use_pathfinding = self.goals.current_strategy.use_pathfinding
+            print('[AI] Current strategy:')
+            print(self.goals.current_strategy)
 
 
     """ SETUP """
@@ -170,9 +175,13 @@ class AI(Service):
         self.red_led.write(True)
         self.green_led.write(False)
 
-        self.score = 0
-        self.current_goal = None
-        self.goals.reset()
+        with self.lock:
+            self.score = 0
+            self.current_goal = None
+
+        with self.lock:
+            self.goals.reset()
+
         self.match_end.clear()
 
         self.trajman.enable()
@@ -191,16 +200,20 @@ class AI(Service):
             else:
                 self.goto(x=300, y=255)
                 self.goth(theta=pi)
-            self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y)
-            self.goth(theta=self.goals.starting_theta)
+
+            with self.lock:
+                self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y)
+                self.goth(theta=self.goals.starting_theta)
         else:
             print('[AI] Setting robot position')
             self.trajman.free()
-            self.robot.set_pos(
-                x=self.goals.starting_position.x,
-                y=self.goals.starting_position.y,
-                theta=self.goals.starting_theta
-            )
+
+            with self.lock:
+                self.robot.set_pos(
+                    x=self.goals.starting_position.x,
+                    y=self.goals.starting_position.y,
+                    theta=self.goals.starting_theta
+                )
             self.trajman.unfree()
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
@@ -220,12 +233,14 @@ class AI(Service):
         next = States.Setup
         if self.match_start.is_set():
             next = States.Selecting
-            self.match_starting_time = time()
-            print('[AI] Starting match')
 
-            if self.goals.critical_goal is not None:
-                self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critical_timeout.set())
-                self.critical_timer.start()
+            with self.lock:
+                self.match_starting_time = time()
+                print('[AI] Starting match')
+
+                if self.goals.critical_goal is not None:
+                    self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critical_timeout.set())
+                    self.critical_timer.start()
 
         self.reset.clear()
         self.match_start.clear()
@@ -243,22 +258,23 @@ class AI(Service):
 
         if self.critical_timeout.is_set():
             print('[AI] Switching on critical goal')
-            self.current_goal = self.goals.get_critical_goal()
+
+            with self.lock:
+                self.current_goal = self.goals.get_critical_goal()
             self.critical_timeout.clear()
         else:
             print('[AI] Selecting Goal')
-            self.current_goal = self.goals.get_goal()
 
-            if self.current_goal is None:
-                return States.Ending
+            with self.lock:
+                self.current_goal = self.goals.get_goal()
 
-            print(self.current_goal.name)
-            print(self.goals.critical_goal)
+                if self.current_goal is None:
+                    return States.Ending
 
-            if self.current_goal.name == self.goals.critical_goal:
-                print('[AI] Critical selected, stopping timer')
-                self.critical_timer.cancel()
-                self.critical_timeout.clear()
+                if self.current_goal.name == self.goals.critical_goal:
+                    print('[AI] Critical selected, stopping timer')
+                    self.critical_timer.cancel()
+                    self.critical_timeout.clear()
 
         return States.Making
 
@@ -283,7 +299,11 @@ class AI(Service):
         print('[AI] Starting goal at %fs' % round(goal_starting_time - match_starting_time, 2))
         print(current_goal)
 
-        if self.use_pathfinding:
+        use_pathfinding = False
+        with self.lock:
+            use_pathfinding = self.use_pathfinding
+
+        if use_pathfinding:
 
             print('[AI] Going with pathfinding')
             status = RobotStatus.NotReached
@@ -295,7 +315,10 @@ class AI(Service):
 
                 if timeout.is_set():
                     print('[AI] Timeout during pathfinding')
-                    self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+
+                    with self.lock:
+                        self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+
                     print('[AI] Selecting secondary goal')
                     return States.Making
 
@@ -343,7 +366,10 @@ class AI(Service):
 
             if status == RobotStatus.Timeout:
                 print('[AI] Timeout, selecting secondary goal')
-                self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+
+                with self.lock:
+                    self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+
                 return States.Making
 
             if status == RobotStatus.Aborted:
@@ -355,7 +381,7 @@ class AI(Service):
         with self.lock:
             print('[AI] Reach goal position in %fs' % round(time() - goal_starting_time, 2))
 
-        if not self.current_goal.theta is None:
+        if not current_goal.theta is None:
 
             status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
 
@@ -401,9 +427,8 @@ class AI(Service):
 
                 current_goal.score -= action.score
 
-        self.goals.finish_goal()
-
         with self.lock:
+            self.goals.finish_goal()
             print('[AI] Finished goal in %fs' % round(time() - goal_starting_time, 2))
 
         if current_goal.score > 0:
