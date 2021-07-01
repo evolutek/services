@@ -162,6 +162,13 @@ class Robot(Service):
 
             return path
 
+    @Service.event('raise_flags')
+    def raise_flags(self):
+        self.enable()
+        self.actuators.enable()
+        sleep(0.5)
+        self.flags_raise(use_queue=False)
+
     @Service.action
     def enable(self):
         if self.bau_state:
