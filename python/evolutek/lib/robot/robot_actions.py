@@ -276,3 +276,27 @@ def drop_start_sorting(self):
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
 
+def goto_anchorage(self):
+
+    # True == south
+    anchorage = self.cs.match.get_anchorage() == "south"
+
+    x = 1350 if anchorage else 250
+    status = self.goto_avoid(x=x, y=700, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
+    status = self.goth(theta=pi/2, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
+
+    status = self.goto(x=x, y=150, use_queue=False)
+    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
+        score = 10 if self.trajman.get_position()['x'] < 475 else 0
+        return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+
+    status = self.recal(0)
+    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
+        return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
+
+    return RobotStatus.return_status(RobotStatus.Done, score=10)
+
+
+
