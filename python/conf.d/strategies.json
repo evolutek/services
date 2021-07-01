@@ -276,8 +276,22 @@
     {
       "name" : "pmi_starting_sleep",
       "position": {
-          "x" : 620,
-          "y": 255
+        "x": 1000,
+        "y": 300,
+        "theta": "pi / 2"
+      },
+      "actions": [
+        {
+          "fct": "drop_start_sorting",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
+      "name": "pmi_starting_sleep",
+      "position": {
+        "x": 620,
+        "y": 255
       },
       "actions": [
         {

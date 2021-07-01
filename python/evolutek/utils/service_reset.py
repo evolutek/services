@@ -9,11 +9,11 @@ def restartAll():
     print("let's fucking go for a reset lmao")
     system("sudo systemctl restart trajman")
     system("sudo systemctl restart actuators")
-  #  system("sudo systemctl restart robot")
+    system("sudo systemctl restart robot")
     #system("sudo systemctl restart ai")
 
 def main():
-    
+
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(RESET_GPIO, GPIO.IN)
     cs = CellaservProxy()
