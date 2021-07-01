@@ -44,7 +44,9 @@ def set_x(self, x):
     self.trajman.set_x(float(x))
 
 def set_y(self, y, mirror=True):
+
     mirror = get_boolean(mirror)
+
 
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
@@ -54,12 +56,15 @@ def set_y(self, y, mirror=True):
 def set_theta(self, theta, mirror=True):
     mirror = get_boolean(mirror)
 
+
     if mirror:
         theta = self.mirror_pos(theta=float(theta))['theta']
 
     self.trajman.set_theta(theta)
 
 def set_pos(self, x, y, theta=None, mirror=True):
+    mirror = get_boolean(mirror)
+
     self.set_x(x)
     self.set_y(y, mirror)
     if theta is not None:
