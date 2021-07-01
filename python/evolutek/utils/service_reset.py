@@ -9,7 +9,7 @@ def restartAll():
     system("sudo systemctl restart trajman")
     system("sudo systemctl restart actuators")
     system("sudo systemctl restart robot")
-    #system("sudo systemctl restart ai")
+    system("sudo systemctl restart ai")
 
 def main():
 
