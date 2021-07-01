@@ -321,7 +321,9 @@
         "get_buoys_3-4",
         "start_lighthouse",
         "get_buoys_5-6",
-        "get_top_reef"
+        "get_top_reef",
+        "get_buoys_1-2",
+        "drop_start_sorting"
       ],
       "available": ["pmi"],
       "use_pathfinding": false
