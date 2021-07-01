@@ -56,7 +56,7 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
         r = method(*args, **kwargs)
 
         if RobotStatus.get_status(r) == RobotStatus.Disabled:
-            return {'status' : RobotStatus.Disabled.value}
+            return RobotStatus.return_status(RobotStatus.Disabled)
 
         id = None
         if r != None:
@@ -73,7 +73,7 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
                     break
 
             if timeout_event.is_set():
-                return {'status' : RobotStatus.NotStarted.value}
+                return RobotStatus.return_status(RobotStatus.NotStarted)
 
             sleep(0.01)
 
