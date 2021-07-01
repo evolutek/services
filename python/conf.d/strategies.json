@@ -27,7 +27,7 @@
     {
       "name": "get_buoys_3-4",
       "position": {
-        "x": 620,
+        "x": 630,
         "y": 255
       },
       "theta": "7*pi/8",
@@ -290,7 +290,7 @@
             }
         },
         {
-          "fct": "drop_start_sorting",
+          "fct": "drop_start",
           "handler": "robot",
           "score": 30
         }
@@ -377,10 +377,10 @@
     },
     {
       "name": "homologation_pmi",
-      "goals": [
-	"pmi_starting_sleep",
+      "goals":
+        "pmi_starting_sleep",
 	"get_buoys_3-4",
-        "start_lighthouse"
+	"start_lighthouse"
       ],
       "available": ["pmi"],
       "use_pathfinding": false

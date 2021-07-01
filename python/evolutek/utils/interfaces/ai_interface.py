@@ -144,7 +144,7 @@ class MatchInterface(IFRAME):
 
 	def __init_interface(self):
 		Button(self, text="Close", command=self.close).grid(row=0, column=0)
-		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=640)
+		self.canvas = Canvas(self.parent.window, bg=self.cs.match.get_color(), width=800, height=640)
 		self.text = self.canvas.create_text(800 / 2, 480 / 2, text=f"Score: 0")
 		self.canvas.pack()
 		Button(self, text="close", command=self.close).grid(row=0, column=3)
@@ -157,6 +157,7 @@ class MatchInterface(IFRAME):
 class AIInterface(Interface):
 	def __init__(self):
 		self.cs = CellaservProxy()
+		self.color = self.cs.match.get_color()
 		super().__init__('AI')
 		self.window.after(self.interface_refresh, self.update_interface)
 
@@ -180,6 +181,7 @@ class AIInterface(Interface):
 
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
+		self.window.configure(bg=self.cs.match.get_color())
 		if match_status["status"] == "Started" or match_status["status"] == "Ended":
 			print("[+] Match is running")
 			if not self.reset:
@@ -199,14 +201,15 @@ class AIInterface(Interface):
 			else:
 				self.reset = False
 				self.create_widget()
-
+				self.match_interfaces_frame.destroy()
 		self.window.after(self.interface_refresh, self.update_interface)
 
 
 def main():
 	if len(argv) > 1:
 		global ROBOT
-	AIInterface().loop()
+	interface = AIInterface()
+	interface.window.configure(bg=self.cs.match.get_color())
 
 
 if __name__ == "__main__":
