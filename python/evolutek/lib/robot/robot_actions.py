@@ -427,11 +427,12 @@ def drop_center(self):
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.left_cup_holder_drop(use_queue=False)
     
-    self.pumps_drop(ids=[8])
+    self.pumps_drop(ids=[8], use_queue=False)
     self.left_cup_holder_close(use_queue=False)
     
     status = self.goth(theta=pi, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    return RobotStatus.return_status(RobotStatus.Done, score=27)
 
 
 
