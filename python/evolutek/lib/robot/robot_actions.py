@@ -28,13 +28,14 @@ def get_reef(self):
     sleep(0.25)
 
     currentPos = self.trajman.get_position()
-    if currentPos["theta"] > pi / 4 and currentPos["theta"] < 3 * pi / 4:
-        status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"] - 100, use_queue=False))
-    elif currentPos["theta"] > (- pi) / 4 and currentPos["theta"] < pi / 4:
+    # Top reefs
+    if currentPos["theta"] > (- pi) / 4 and currentPos["theta"] < pi / 4:
         status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"] - 100, y = currentPos["y"], use_queue=False))
+    # Bottom
+    elif currentPos["theta"] > pi / 4 and currentPos["theta"] < 3 * pi / 4:
+        status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"] - 100, use_queue=False))
     elif currentPos["theta"] < (-pi) / 4 and currentPos["theta"] > (- 3 * pi) / 4:
-        status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"] + 100, use_queue=False))
-        # status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 0))
+        status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"] + 100, mirror=False, use_queue=False))
     if status != RobotStatus.Reached:
         return RobotStatus.return_status(status)
 
@@ -51,7 +52,7 @@ def get_reef(self):
 
     sleep(0.25)
 
-    
+
     status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"], use_queue=False))
     # status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 1))
     if status != RobotStatus.Reached:
