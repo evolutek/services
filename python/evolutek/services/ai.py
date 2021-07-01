@@ -8,6 +8,7 @@ from evolutek.lib.ai.goals import Goals, AvoidStrategy
 from evolutek.lib.gpio.gpio import Edge
 from evolutek.lib.gpio.gpio_factory import GpioType, create_gpio
 from evolutek.lib.indicators.lightning_mode import LightningMode
+from evolutek.lib.map.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
@@ -17,6 +18,8 @@ from enum import Enum
 from math import pi
 from threading import Event, Lock, Thread, Timer
 from time import sleep, time
+
+DELTA_POS = 5
 
 class States(Enum):
     Setup = "Setup"
@@ -67,6 +70,9 @@ class AI(Service):
         self.fsm.add_state(States.Ending, self.ending, prevs=[States.Setup, States.Waiting, States.Selecting, States.Making])
         self.fsm.add_error_state(self.error)
 
+        self.color1 = self.cs.config.get('match', 'color1')
+        self.color = self.color1
+
         self.lock = Lock()
         self.score = 0
         self.match_starting_time = 0
@@ -95,7 +101,17 @@ class AI(Service):
 
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
 
+            try:
+                self.color_callback(self.cs.match.get_color())
+            except Exception as e:
+                print('[AI] Failed to set color: %s' % str(e))
+
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
+
+    @Service.event("match_color")
+    def color_callback(self, color):
+        with self.lock:
+            self.color = color
 
     @Service.action
     def sleep(self, time):
@@ -281,8 +297,6 @@ class AI(Service):
 
     """ MAKING """
     def making(self):
-        # TODO :
-        # - manage action avoid strategies
 
         if self.check_abort() != RobotStatus.Ok:
             return States.Selecting
@@ -300,86 +314,94 @@ class AI(Service):
         print(current_goal)
 
         use_pathfinding = False
+        destination = current_goal.position
         with self.lock:
             use_pathfinding = self.use_pathfinding
 
-        if use_pathfinding:
+            if self.color != self.color1:
+                destination = Point(destination.x, 3000 - destination.y)
 
-            print('[AI] Going with pathfinding')
-            status = RobotStatus.NotReached
-            has_moved = True
-            timer = None
-            timeout = Event()
+        if Point(dict=self.trajman.get_position()).dist(destination) <= DELTA_POS:
+            print('[AI] Already on goal position')
 
-            while status != RobotStatus.Reached:
+        else:
+            if use_pathfinding:
 
-                if timeout.is_set():
-                    print('[AI] Timeout during pathfinding')
+                print('[AI] Going with pathfinding')
+                status = RobotStatus.NotReached
+                has_moved = True
+                timer = None
+                timeout = Event()
+
+                while status != RobotStatus.Reached:
+
+                    if timeout.is_set():
+                        print('[AI] Timeout during pathfinding')
+
+                        with self.lock:
+                            self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+
+                        print('[AI] Selecting secondary goal')
+                        return States.Making
+
+                    data = self.goto_with_path(x=current_goal.position.x, y=current_goal.position.y)
+                    status = RobotStatus.get_status(data)
+
+                    if status == RobotStatus.Unreachable:
+
+                        _has_moved = get_boolean(data['has_moved'])
+                        if current_goal.timeout is not None and has_moved != _has_moved:
+                            if _has_moved:
+                                print('[AI] Stopping timer')
+                                timer.cancel()
+                                timer = None
+                            else:
+                                print('[AI] Starting timer')
+                                timer = Timer(current_goal.timeout, lambda: timeout.set())
+                                timer.start()
+                            has_moved = _has_moved
+
+                        sleep(1)
+                        continue
+
+                    if status == RobotStatus.Aborted:
+                        if timer is not None:
+                            print('[AI] Stopping timer')
+                            timer.cancel()
+                        return States.Selecting
+
+                    if status != RobotStatus.Reached:
+                        if timer is not None:
+                            print('[AI] Stopping timer')
+                            timer.cancel()
+                        return States.Error
+
+                if timer is not None:
+                    print('[AI] Stopping timer')
+                    timer.cancel()
+
+            else:
+
+                print('[AI] Going without pathfinding')
+
+                status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y, timeout=current_goal.timeout))
+
+                if status == RobotStatus.Timeout:
+                    print('[AI] Timeout, selecting secondary goal')
 
                     with self.lock:
                         self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
 
-                    print('[AI] Selecting secondary goal')
                     return States.Making
 
-                data = self.goto_with_path(x=current_goal.position.x, y=current_goal.position.y)
-                status = RobotStatus.get_status(data)
-
-                if status == RobotStatus.Unreachable:
-
-                    _has_moved = get_boolean(data['has_moved'])
-                    if current_goal.timeout is not None and has_moved != _has_moved:
-                        if _has_moved:
-                            print('[AI] Stopping timer')
-                            timer.cancel()
-                            timer = None
-                        else:
-                            print('[AI] Starting timer')
-                            timer = Timer(current_goal.timeout, lambda: timeout.set())
-                            timer.start()
-                        has_moved = _has_moved
-
-                    sleep(1)
-                    continue
-
                 if status == RobotStatus.Aborted:
-                    if timer is not None:
-                        print('[AI] Stopping timer')
-                        timer.cancel()
                     return States.Selecting
 
                 if status != RobotStatus.Reached:
-                    if timer is not None:
-                        print('[AI] Stopping timer')
-                        timer.cancel()
                     return States.Error
 
-            if timer is not None:
-                print('[AI] Stopping timer')
-                timer.cancel()
-
-        else:
-
-            print('[AI] Going without pathfinding')
-
-            status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y, timeout=current_goal.timeout))
-
-            if status == RobotStatus.Timeout:
-                print('[AI] Timeout, selecting secondary goal')
-
-                with self.lock:
-                    self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
-
-                return States.Making
-
-            if status == RobotStatus.Aborted:
-                return States.Selecting
-
-            if status != RobotStatus.Reached:
-                return States.Error
-
-        with self.lock:
-            print('[AI] Reach goal position in %fs' % round(time() - goal_starting_time, 2))
+            with self.lock:
+                print('[AI] Reach goal position in %fs' % round(time() - goal_starting_time, 2))
 
         if not current_goal.theta is None:
 
@@ -450,7 +472,6 @@ class AI(Service):
 
         with self.lock:
             print("[AI] Match finished with score %d in %fs" % (self.score, round(time() - self.match_starting_time, 2)))
-        #self.match_end_handler()
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
