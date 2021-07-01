@@ -285,6 +285,8 @@ def homemade_recal(self, decal=0):
     sleep(0.1)
     self.trajman.free()
 
+    return RobotStatus.return_status(RobotStatus.Done)
+
 
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
