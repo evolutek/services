@@ -87,7 +87,7 @@ def start_lighthouse(self):
     self.left_cup_holder_open(use_queue=False) if not self.side else self.right_cup_holder_open(use_queue=False)
     sleep(0.25)
 
-    status = RobotStatus.get_status(self.goto_avoid(x=150, y=330, use_queue=False))
+    status = RobotStatus.get_status(self.goto_avoid(x=140, y=330, use_queue=False))
     if status != RobotStatus.Reached:
         self.left_cup_holder_close(use_queue=False) if not self.side else self.right_cup_holder_close(use_queue=False)
         return RobotStatus.return_status(status)
