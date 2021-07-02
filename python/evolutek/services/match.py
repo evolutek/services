@@ -21,10 +21,10 @@ class Match(Service):
     def __init__(self):
 
         super().__init__()
-        cs = CellaservProxy()
+        self.cs = CellaservProxy()
 
         # Get the config of the match
-        match_config = cs.config.get_section('match')
+        match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
         self.match_duration = int(match_config['duration'])
@@ -83,6 +83,7 @@ class Match(Service):
     def raise_flags(self):
         print('[MATCH] Raising flags')
         self.publish('raise_flags')
+        self.set_score(value=10) # Adds 10 points
 
     """ ACTION """
 
