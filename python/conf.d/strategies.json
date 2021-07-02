@@ -287,7 +287,7 @@
         "y": 300
       },
       "theta": "pi / 2",
-      "score": 30,
+      "score": 40,
       "actions": [
         {
             "fct": "goto",
@@ -300,7 +300,12 @@
           "fct": "drop_start",
           "handler": "robot",
           "score": 30
-        }
+        },
+	{
+	  "fct": "goto_anchorage",
+	  "handler": "robot",
+	  "score": 10
+	}
       ]
     },
     {
@@ -396,8 +401,7 @@
 	"get_buoys_5-6",
 	"get_top_reef",
 	"get_buoys_1-2",
-	"drop_start_sorting",
-	"goto_anchorage_pmi"
+	"drop_start_sorting"
       ],
       "available": ["pmi"],
       "use_pathfinding": false

@@ -2,6 +2,7 @@ from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
 from evolutek.lib.robot.robot_trajman import RecalSensor
 from evolutek.lib.utils.color import Color
+from evolutek.lib.settings import ROBOT
 
 from time import sleep
 from math import pi
@@ -358,9 +359,10 @@ def goto_anchorage(self, time=None):
         score = 10 if (current_y if self.side else 3000 - self.current_y) < 475 else 0
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
-    status = self.homemade_recal(use_queue=False)
-    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
-        return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
+    if ROBOT == 'pmi':
+        status = self.homemade_recal(use_queue=False)
+        if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
+            return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
 
     return RobotStatus.return_status(RobotStatus.Done, score=10)
 
