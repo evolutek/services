@@ -15,7 +15,7 @@ CALIBRATE = 10
 
 # Up -> More perturbations (more false positives)
 # Down -> Better detection (more false negatives)
-SENSITIVITY = 1.2
+SENSITIVITY = 1.25
 
 class TCS34725(Component):
 

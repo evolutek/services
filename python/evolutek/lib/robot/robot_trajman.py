@@ -269,7 +269,7 @@ def homemade_recal(self, decal=0):
     theta = position['theta']
 
     self.trajman.move_trsl(dest=400, acc=300, dec=300, maxspeed=200, sens=0)
-    sleep(1.25)
+    sleep(0.75)
 
     if theta < pi/4 and theta > -pi/4:
         self.trajman.set_theta(0)

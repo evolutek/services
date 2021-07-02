@@ -84,16 +84,28 @@ def get_reef(self):
 @use_queue
 def start_lighthouse(self):
 
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_trsl_max_speed(750)
+    self.trajman.set_trsl_acc(300)
+    self.trajman.set_trsl_dec(300)
+
     self.left_cup_holder_open(use_queue=False) if not self.side else self.right_cup_holder_open(use_queue=False)
     sleep(0.25)
 
     status = RobotStatus.get_status(self.goto_avoid(x=140, y=330, use_queue=False))
     if status != RobotStatus.Reached:
         self.left_cup_holder_close(use_queue=False) if not self.side else self.right_cup_holder_close(use_queue=False)
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
+        self.trajman.set_trsl_acc(speeds['tracc'])
+        self.trajman.set_trsl_dec(speeds['trdec'])
         return RobotStatus.return_status(status)
 
     status = RobotStatus.get_status(self.goto_avoid(x=300, y=330, use_queue=False))
     self.left_cup_holder_close(use_queue=False) if not self.side else self.right_cup_holder_close(use_queue=False)
+
+    self.trajman.set_trsl_max_speed(speeds['trmax'])
+    self.trajman.set_trsl_acc(speeds['tracc'])
+    self.trajman.set_trsl_dec(speeds['trdec'])
 
     return RobotStatus.return_status(status if status != RobotStatus.Reached else RobotStatus.Done)
 
@@ -158,8 +170,8 @@ def drop_start(self):
 
     speeds = self.trajman.get_speeds()
     self.trajman.set_trsl_max_speed(1000)
-    self.trajman.set_trsl_acc(600)
-    self.trajman.set_trsl_dec(600)
+    self.trajman.set_trsl_acc(300)
+    self.trajman.set_trsl_dec(300)
 
     def cleanup_and_exit(status):
         nonlocal speeds
@@ -306,7 +318,7 @@ def drop_start(self):
 
 @if_enabled
 @use_queue
-def goto_anchorage(self):
+def goto_anchorage(self, time=None):
 
     # True == south
     # match_status = self.cs.match.get_status()
@@ -315,9 +327,14 @@ def goto_anchorage(self):
     #     match_status = self.cs.match.get_status()
     anchorage = self.cs.match.get_anchorage() == "south"
 
+    print(anchorage)
+
+    current_y = float(self.trajman.get_position()['y'])
     x = 1350 if anchorage else 250
-    status = self.goto_avoid(x=x, y=700, use_queue=False)
+    status = self.goto_avoid(x=x, y=current_y, mirror=False, use_queue=False)
+    
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
+    
     status = self.goth(theta=pi/2, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
 
@@ -326,6 +343,10 @@ def goto_anchorage(self):
     self.trajman.set_trsl_acc(500)
     self.trajman.set_trsl_dec(500)
 
+    if time is not None:
+        while float(time) > float(self.cs.match.get_status()['time']):
+            sleep(0.5)
+
     status = self.goto(x=x, y=150, use_queue=False)
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
@@ -333,7 +354,8 @@ def goto_anchorage(self):
     self.trajman.set_trsl_dec(speeds['trdec'])
 
     if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
-        score = 10 if self.trajman.get_position()['y'] < 475 else 0
+        current_y = float(self.trajman.get_position()['y'])
+        score = 10 if (current_y if self.side else 3000 - self.current_y) < 475 else 0
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     status = self.homemade_recal(use_queue=False)

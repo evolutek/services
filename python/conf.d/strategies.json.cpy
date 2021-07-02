@@ -27,7 +27,7 @@
     {
       "name": "get_buoys_3-4",
       "position": {
-        "x": 630,
+        "x": 635,
         "y": 255
       },
       "theta": "7*pi/8",
@@ -157,7 +157,7 @@
     {
       "name": "get_top_reef",
       "position": {
-        "x": 150,
+        "x": 250,
         "y": 887.5
       },
       "theta": 0,
@@ -276,7 +276,7 @@
     {
       "name" : "drop_start_sorting",
       "position": {
-        "x": 1300,
+        "x": 300,
         "y": 300
       },
       "theta": "pi / 2",
@@ -285,7 +285,7 @@
         {
             "fct": "goto",
             "args": {
-                "x": 1300,
+                "x": 300,
                 "y": 150
             }
         },
@@ -320,7 +320,7 @@
     {
       "name": "pmi_starting_sleep",
       "position": {
-        "x": 630,
+        "x": 620,
         "y": 255
       },
       "actions": [
@@ -333,33 +333,16 @@
       ]
     },
     {
-      "name": "goto_anchorage_pmi",
+      "name": "goto_anchorage",
       "position": {
-        "x": 1100,
-        "y": 600
+        "x": 800,
+        "y": 700
       },
-      "score": 10,
       "actions": [
         {
           "fct": "goto_anchorage",
-          "handler": "robot",
-          "score": 10
+          "handler": "robot"
         }
-      ]
-    },
-    {
-      "name": "goto_anchorage_pal",
-      "position": {
-        "x": 1100,
-	"y": 600
-      },
-      "score": 10,
-      "actions": [
-        {
-	  "fct": "goto_anchorage",
-	  "handler": "robot",
-	  "score": 10
-	}
       ]
     }
   ],
@@ -371,7 +354,7 @@
         "get_bottom_reef",
         "push_windsocks",
         "drop_center_sorting",
-        "goto_anchorage_pal"
+        "goto_anchorage"
       ],
       "available": ["pal"],
       "use_pathfinding": false
@@ -381,12 +364,12 @@
       "goals": [
         "pmi_starting_sleep",
         "get_buoys_3-4",
-	"start_lighthouse",
-	"get_buoys_5-6",
-	"get_top_reef",
-	"get_buoys_1-2",
-	"drop_start_sorting",
-	"goto_anchorage_pmi"
+        "start_lighthouse",
+        "get_buoys_5-6",
+        "get_top_reef",
+        "get_buoys_1-2",
+        "drop_start_sorting",
+        "goto_anchorage"
       ],
       "available": ["pmi"],
       "use_pathfinding": false

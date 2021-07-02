@@ -442,6 +442,8 @@ class AI(Service):
                 with self.lock:
                     self.score += score
 
+            print(status)
+
             if status == RobotStatus.Aborted:
                 return States.Selecting
 
