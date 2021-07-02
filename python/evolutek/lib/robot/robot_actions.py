@@ -170,8 +170,8 @@ def drop_start(self):
 
     speeds = self.trajman.get_speeds()
     self.trajman.set_trsl_max_speed(1000)
-    self.trajman.set_trsl_acc(500)
-    self.trajman.set_trsl_dec(500)
+    self.trajman.set_trsl_acc(600)
+    self.trajman.set_trsl_dec(600)
 
     def cleanup_and_exit(status):
         nonlocal speeds
@@ -496,7 +496,7 @@ def drop_center(self):
     sleep(0.5)
 
     # Drops the first central buoy
-    status = self.goto_avoid(x=1580, y=1800, use_queue=False)
+    status = self.goto_avoid(x=1540, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta= 3 * pi / 4, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
@@ -508,7 +508,7 @@ def drop_center(self):
     sleep(0.5)
 
     # Drops the second central buoy
-    status = self.goto_avoid(x=1540, y=1800, use_queue=False)
+    status = self.goto_avoid(x=1550, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta= -2.5, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
