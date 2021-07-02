@@ -292,10 +292,10 @@ class Goals:
                 self.strategies.append(new)
 
         # Parse critical goal
-        if 'critical_goal' in goals:
+        if 'critical_goals' in goals and robot in goals['critical_goals']:
             try:
-                self.critical_goal = goals['critical_goal']['goal']
-                self.timeout_critical_goal = goals['critical_goal']['timeout']
+                self.critical_goal = goals['critical_goals'][robot]['goal']
+                self.timeout_critical_goal = goals['critical_goals'][robot]['timeout']
             except Exception as e:
                 print('[GOALS] Failed to parse critical goal: %s' % str(e))
                 return False

@@ -10,7 +10,8 @@ class Test:
 
     tested = False
 
-    def test(self, x, y, theta):
+    def test(self, x, y, theta, timeout=None):
+        print(timeout)
         return x == 1000 and y == 1000 and theta == -3 * pi / 4
 
 class Test_Goals:
