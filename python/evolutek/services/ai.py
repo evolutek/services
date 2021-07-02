@@ -214,8 +214,11 @@ class AI(Service):
             print('[AI] Recalibrating robot')
             self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
-            self.robot.set_theta(pi/2)
-            self.recalibration(side_x=ROBOT=='pal')
+            self.recalibration(
+                x = False,
+                x_sensor = 'right' if ROBOT == 'pal' else 'left',
+                side_x = ROBOT == 'pal',
+                init = True)
             if ROBOT == 'pal':
                 self.goto(x=900, y=800, avoid=False)
                 self.goth(theta=pi/2)
