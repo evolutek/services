@@ -33,6 +33,7 @@ from time import sleep
 # - Put components config in a lib / read a JSON
 
 # Actuators service class
+@Service.require('config')
 class Actuators(Service):
 
     def __init__(self):
