@@ -15,6 +15,8 @@ def mirror_pump_id(self, id):
             id = 17 - id
     return id
 
+@if_enabled
+@use_queue
 def pumps_get(self, ids, mirror=True):
     if isinstance(ids, str):
         ids = ids.split(",")
@@ -25,9 +27,13 @@ def pumps_get(self, ids, mirror=True):
     _ids = []
     for id in ids:
         _ids.append(self.mirror_pump_id(int(id)) if mirror else int(id))
+    if 1 in _ids: _ids.append(3)
+    if 4 in _ids: _ids.append(5)
 
     return self.actuators.pumps_get(_ids)
 
+@if_enabled
+@use_queue
 def pumps_drop(self, ids, mirror=True):
     if isinstance(ids, str):
         ids = ids.split(",")
@@ -38,6 +44,8 @@ def pumps_drop(self, ids, mirror=True):
     _ids = []
     for id in ids:
         _ids.append(self.mirror_pump_id(int(id)) if mirror else int(id))
+    if 1 in _ids: _ids.append(5)
+    if 4 in _ids: _ids.append(3)
 
     return self.actuators.pumps_drop(_ids)
 
@@ -65,6 +73,7 @@ def flags_low(self):
 @if_enabled
 @use_queue
 def front_arm_close(self):
+    self.actuators.pumps_drop([3,5])
     return self.actuators.ax_move(1, 512)
 
 # Front Arm Open
@@ -72,6 +81,7 @@ def front_arm_close(self):
 @use_queue
 def front_arm_open(self):
     return self.actuators.ax_move(1, 820)
+
 #############
 # SIDE ARMS #
 #############

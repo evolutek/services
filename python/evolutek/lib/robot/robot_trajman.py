@@ -310,27 +310,45 @@ def recalibration(self,
         self.trajman.set_x(1000)
         self.trajman.set_y(1000)
 
-    # TODO : check trajman returns ?
-
     if x:
         print('[ROBOT] Recalibration X')
         theta = pi if side_x else 0
-        self.goth(theta, mirror=mirror, use_queue=False)
-        self.recal(sens=0, decal=float(decal_x))
+
+        status = RobotStatus.get_status(self.goth(theta, mirror=mirror, use_queue=False))
+        if status != RobotStatus.Reached:
+            return RobotStatus.return_status(status)
+
+        status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
+        if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
+            return RobotStatus.return_status(status)
+
         sleep(0.75)
         if y_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror)
-        self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
+
+        status = RobotStatus.get_status(self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1))
+        if status != RobotStatus.Reached:
+            return RobotStatus.return_status(status)
 
     if y:
         print('[ROBOT] Recalibration Y')
         theta = -pi/2 if side_y else pi/2
-        self.goth(theta, mirror = mirror, use_queue=False)
-        self.recal(sens=0, decal=float(decal_y))
+
+        status = RobotStatus.get_status(self.goth(theta, mirror = mirror, use_queue=False))
+        if status != RobotStatus.Reached:
+            return RobotStatus.return_status(status)
+
+        status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
+        if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
+            return RobotStatus.return_status(status)
+
         sleep(0.75)
         if x_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror)
-        self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1)
+
+        status = RobotStatus.get_status(self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1))
+        if status != RobotStatus.Reached:
+            return RobotStatus.return_status(status)
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
     self.trajman.set_trsl_acc(speeds['tracc'])
