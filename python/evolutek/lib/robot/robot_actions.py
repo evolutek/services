@@ -356,11 +356,6 @@ def drop_center(self):
     self.trajman.set_trsl_acc(600)
     self.trajman.set_trsl_dec(600)
 
-    ch1_drop = self.left_cup_holder_drop if self.side else self.right_cup_holder_drop
-    ch2_drop = self.right_cup_holder_drop if self.side else self.left_cup_holder_drop
-    ch1_close = self.left_cup_holder_close if self.side else self.right_cup_holder_close
-    ch2_close = self.right_cup_holder_close if self.side else self.left_cup_holder_close
-
     def cleanup_and_exit(status):
         nonlocal speeds
         nonlocal score
@@ -461,16 +456,16 @@ def drop_center(self):
     # Gets into position to drop the 2 exterior buoys on the back
     status = self.goth(theta=pi, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    ch1_drop(use_queue=False)
-    ch2_drop(use_queue=False)
+    self.left_cup_holder_drop(use_queue=False)
+    self.right_cup_holder_drop(use_queue=False)
     status = self.goto_avoid(x=1620, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
     # Drops the 2 exterior buoys on the back
     update_buoys_count([colors[0], colors[3]])
-    self.pumps_drop(ids=[7, 10], use_queue=False)
-    ch1_close(use_queue=False)
-    ch2_close(use_queue=False)
+    self.pumps_drop(ids=[7, 10], mirror=False, use_queue=False)
+    self.left_cup_holder_close(use_queue=False)
+    self.right_cup_holder_close(use_queue=False)
     sleep(0.5)
 
     # Drops the first central buoy
@@ -478,23 +473,23 @@ def drop_center(self):
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta= 3 * pi / 4, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    ch2_drop(use_queue=False)
+    self.right_cup_holder_drop(use_queue=False)
     sleep(1)
     update_buoys_count([colors[2]])
-    self.pumps_drop(ids=[9], use_queue=False)
-    ch2_close(use_queue=False)
+    self.pumps_drop(ids=[9], mirror=False, use_queue=False)
+    self.right_cup_holder_close(use_queue=False)
     sleep(0.5)
 
     # Drops the second central buoy
     status = self.goto_avoid(x=1540, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    status = self.goth(theta= -3 * pi / 4, mirror=False, use_queue=False)
+    status = self.goth(theta= -2.5, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    ch1_drop(use_queue=False)
+    self.left_cup_holder_drop(use_queue=False)
     sleep(1)
     update_buoys_count([colors[1]])
-    self.pumps_drop(ids=[8], use_queue=False)
-    ch1_close(use_queue=False)
+    self.pumps_drop(ids=[8], mirror=False, use_queue=False)
+    self.left_cup_holder_close(use_queue=False)
     sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
