@@ -170,8 +170,8 @@ def drop_start(self):
 
     speeds = self.trajman.get_speeds()
     self.trajman.set_trsl_max_speed(1000)
-    self.trajman.set_trsl_acc(300)
-    self.trajman.set_trsl_dec(300)
+    self.trajman.set_trsl_acc(500)
+    self.trajman.set_trsl_dec(500)
 
     def cleanup_and_exit(status):
         nonlocal speeds
@@ -207,7 +207,7 @@ def drop_start(self):
             if self.actuators.proximity_sensor_read(id=prox):
                 update_buoys_count(color)
         # Drops the buoys
-        self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
+        self.trajman.move_trsl(dest=50, acc=800, dec=800, maxspeed=1000, sens=0)
         self.pumps_drop(ids=pumps, use_queue=False, mirror=False)
         sleep(0.5)
         # Moves back
@@ -227,7 +227,7 @@ def drop_start(self):
         if self.actuators.proximity_sensor_read(id=prox):
             update_buoys_count(color)
         # Drops the buoy
-        self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
+        self.trajman.move_trsl(dest=50, acc=800, dec=800, maxspeed=1000, sens=0)
         self.pumps_drop(ids=pump, use_queue=False, mirror=False)
         sleep(0.5)
         # Moves back
@@ -251,7 +251,7 @@ def drop_start(self):
             status = self.goto_avoid(x=x + x_offset, y=y, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
             # Drops, closes the arm and moves back
-            self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=1)
+            self.trajman.move_trsl(dest=50, acc=800, dec=800, maxspeed=1000, sens=1)
             self.pumps_drop(ids=str(i+7), use_queue=False, mirror=False)
             update_buoys_count(color)
             if i <= 1: self.left_cup_holder_close(use_queue=False)
@@ -332,9 +332,9 @@ def goto_anchorage(self, time=None):
     current_y = float(self.trajman.get_position()['y'])
     x = 1350 if anchorage else 250
     status = self.goto_avoid(x=x, y=current_y, mirror=False, use_queue=False)
-    
+
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
-    
+
     status = self.goth(theta=pi/2, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
 
