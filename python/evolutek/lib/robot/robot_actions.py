@@ -334,7 +334,7 @@ def goto_anchorage(self):
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     status = self.homemade_recal(use_queue=False)
-    if RobotStatus.get_status(²status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
+    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
         return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
 
     return RobotStatus.return_status(RobotStatus.Done, score=10)
