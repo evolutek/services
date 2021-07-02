@@ -9,7 +9,7 @@ class RobotStatus(Enum):
     NotStarted = 'not-started'
     Ok = 'ok'
     Timeout = 'timeout'
-    Unknow = 'unknow'
+    Unknown = 'unknown'
 
     # Move
     HasAvoid = 'has-avoid'
@@ -24,7 +24,7 @@ class RobotStatus(Enum):
         try:
             return RobotStatus(dict['status'])
         except:
-            return RobotStatus.Unknow
+            return RobotStatus.Unknown
 
     @staticmethod
     def return_status(status, **kwargs):

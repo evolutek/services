@@ -59,7 +59,7 @@ class TCS34725(Component):
         index = values.index(max(values))
 
         if rgb[index] < self.calibration[index] * SENSITIVITY:
-            return Color.Unknow
+            return Color.Unknown
 
         return [Color.Red, Color.Green, Color.Blue][index]
 

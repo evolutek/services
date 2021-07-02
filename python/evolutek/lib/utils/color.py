@@ -7,11 +7,11 @@ class Color(Enum):
     Orange = (255, 50, 0)
     Red = (255, 0, 0)
     Yellow = (255, 255, 0)
-    Unknow = (-1, -1, -1)
+    Unknown = (-1, -1, -1)
 
     @staticmethod
     def get_by_name(name):
         try:
             return Color.__members__[name.capitalize()]
         except:
-            return Color.Unknow
+            return Color.Unknown

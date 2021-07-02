@@ -229,7 +229,7 @@ def main():
     args = parser.parse_args()
 
     if args.robot not in ['pal', 'pmi']:
-        print('Unknow robot')
+        print('Unknown robot')
         print('Available robot: [pal, pmi]')
         return 1
 
