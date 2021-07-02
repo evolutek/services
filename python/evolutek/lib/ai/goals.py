@@ -3,13 +3,14 @@ import json
 from math import pi
 
 from evolutek.lib.map.point import Point
+from evolutek.lib.utils.wrappers import event_waiter
 
 
 """ Avoid Strategy Enum """
 class AvoidStrategy(Enum):
-    Wait = 0
-    Timeout = 1
-    Skip = 2
+    Wait = 'wait'
+    Timeout = 'timeout'
+    Skip = 'skip'
 
 
 # Action Class
@@ -21,14 +22,13 @@ class AvoidStrategy(Enum):
 # timeout: timeout to abort action after avoiding
 class Action:
 
-    def __init__(self, fct, args=None, avoid=True, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
+    def __init__(self, fct, args=None, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
         self.fct = fct
         self.args = args
         if not args is None and 'theta' in args and isinstance(args['theta'], str):
             args['theta'] = eval(args['theta'])
 
         # Optionals
-        self.avoid = avoid
         self.avoid_strategy = avoid_strategy
         self.score = score
         self.timeout = timeout
@@ -45,8 +45,7 @@ class Action:
     def __str__(self):
         s = str(self.fct)
         s += '\n    -> args: ' + str(self.args)
-        s += '\n    -> avoid: ' + str(self.avoid)
-        s += '\n    -> avoid_strategy: ' + str(self.avoid_strategy)
+        s += '\n    -> avoid_strategy: ' + self.avoid_strategy.value
         s += '\n    -> score: ' + str(self.score)
         s += '\n    -> timeout: ' + str(self.timeout)
         return s
@@ -65,18 +64,27 @@ class Action:
                 fct = getattr(ai, action['fct'])
             else:
                 fct = getattr(getattr(ai, action['handler']), action['fct'])
+
+                if action['handler'] == 'robot':
+                    fct = event_waiter(fct, ai.start_event, ai.stop_event, callback=ai.check_abort)
+
+
         except Exception as e:
             print('[GOALS] Failed to get fct in action %s: %s' % (action['fct'], str(e)))
             return None
 
         args = action['args'] if 'args' in action else None
-        avoid = action['avoid'] if 'avoid' in action else True
         avoid_strategy = eval(action['avoid_strategy']) if 'avoid_strategy' in action else AvoidStrategy.Wait
         score = action['score'] if 'score' in action else 0
         timeout = action['timeout'] if 'timeout' in action else None
 
-        new = Action(fct, args=args, avoid=avoid,\
-                     avoid_strategy=avoid_strategy, score=score, timeout=timeout)
+        if avoid_strategy == AvoidStrategy.Skip:
+            args['skip'] = True
+        elif avoid_strategy == AvoidStrategy.Timeout:
+            args['timeout'] = timeout
+
+
+        new = Action(fct, args=args, avoid_strategy=avoid_strategy, score=score, timeout=timeout)
 
         return new
 
@@ -88,7 +96,7 @@ class Action:
 # score: scored points after making goal
 # obstacles: obstcales to remove from map after making goal
 # secondary_goal: goal to make after aborting this goal
-# timeout: aboirt timeout if we can't make goal
+# timeout: abort timeout if we can't make goal
 class Goal:
 
     def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, secondary_goal=None, timeout=None):
@@ -151,7 +159,7 @@ class Goal:
 # name: strategy name
 # goals: strategy goals
 # available: robot list fro which the strategy is available
-# use_pathfinding: tell if the startegy use the pathfinding
+# use_pathfinding: tell if the strategy use the pathfinding
 class Strategy:
     def __init__(self, name, goals=None, available=None, use_pathfinding=True):
         self.name = name
@@ -183,7 +191,7 @@ class Strategy:
 
             _goals.append(goal)
 
-        use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else True
+        use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else False
 
         new = Strategy(strategy['name'], _goals, strategy['available'], use_pathfinding)
 
@@ -284,10 +292,10 @@ class Goals:
                 self.strategies.append(new)
 
         # Parse critical goal
-        if 'critical_goal' in goals:
+        if 'critical_goals' in goals and robot in goals['critical_goals']:
             try:
-                self.critical_goal = goals['critical_goal']['goal']
-                self.timeout_critical_goal = goals['critical_goal']['timeout']
+                self.critical_goal = goals['critical_goals'][robot]['goal']
+                self.timeout_critical_goal = goals['critical_goals'][robot]['timeout']
             except Exception as e:
                 print('[GOALS] Failed to parse critical goal: %s' % str(e))
                 return False
@@ -331,6 +339,12 @@ class Goals:
         self.current = 0
 
         return True
+
+    def get_strategies(self):
+        strats = {}
+        for i in range(len(self.strategies)):
+            strats[self.strategies[i].name] = i
+        return strats
 
     # Get next goal
     def get_goal(self):

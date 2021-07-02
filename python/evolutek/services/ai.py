@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 
 from cellaserv.proxy import CellaservProxy
+from cellaserv.service import Event as CellaservEvent, Service
 
-from evolutek.lib.fsm import Fsm
-from evolutek.lib.goals import Goals, AvoidStrategy
-from evolutek.lib.gpio import Edge, Gpio
+from evolutek.lib.ai.fsm import Fsm
+from evolutek.lib.ai.goals import Goals, AvoidStrategy
+from evolutek.lib.gpio.gpio import Edge
+from evolutek.lib.gpio.gpio_factory import GpioType, create_gpio
+from evolutek.lib.indicators.lightning_mode import LightningMode
 from evolutek.lib.map.point import Point
-from evolutek.lib.robot import Robot, Status, DELTA_POS
 from evolutek.lib.settings import ROBOT
+from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.boolean import get_boolean
+from evolutek.lib.utils.wrappers import event_waiter
 
 from enum import Enum
-import json
-from threading import Event, Thread, Timer
-from time import sleep
 from math import pi
-import sys
+from threading import Event, Lock, Thread, Timer
+from time import sleep, time
+
+DELTA_POS = 5
 
 class States(Enum):
     Setup = "Setup"
@@ -24,28 +29,39 @@ class States(Enum):
     Ending = "Ending"
     Error = "Error"
 
-if len(sys.argv) < 2 or sys.argv[1].lower() not in ['pal', 'pmi']:
-    print("Usage: python3 ai.py <robot>")
-    print("Robot can be pmi or pal")
-    exit()
-ROBOT=sys.argv[1].lower()
+# TODO :
+# - interface
 
-class Ai():
+@Service.require('config')
+@Service.require('actuators', ROBOT)
+@Service.require('trajman', ROBOT)
+@Service.require('robot', ROBOT)
+class AI(Service):
+
+    start_event = CellaservEvent('%s_robot_started' % ROBOT)
+    stop_event = CellaservEvent('%s_robot_stopped' % ROBOT)
 
     def __init__(self):
+
+        super().__init__(ROBOT)
+
         print('[AI] Init')
 
-        # Robot handlers
         self.cs = CellaservProxy()
         self.actuators = self.cs.actuators[ROBOT]
-        self.robot = Robot(robot=ROBOT, match_end_cb=self.match_end_handler)
+        self.trajman = self.cs.trajman[ROBOT]
+        self.robot = self.cs.robot[ROBOT]
 
-        # Runtime variables
-        self.score = 0
-        self.current_goal = None
-        self.use_pathfinding = True
-        self.critical_timer = None
-        self.critical = Event()
+        self.goth = event_waiter(self.robot.goth, self.start_event, self.stop_event, callback=self.check_abort)
+        self.goto = event_waiter(self.robot.goto_avoid, self.start_event, self.stop_event, callback=self.check_abort)
+        self.goto_with_path = event_waiter(self.robot.goto_with_path, self.start_event, self.stop_event, callback=self.check_abort)
+        self.recalibration = event_waiter(self.robot.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
+
+        self.red_led = create_gpio(23, 'red led', dir=True, type=GpioType.RPI)
+        self.green_led = create_gpio(24, 'green led', dir=True, type=GpioType.RPI)
+
+        self.tirette = create_gpio(17, 'tirette', dir=False, edge=Edge.FALLING, type=GpioType.RPI)
+        self.tirette.auto_refresh(refresh=0.05, callback=self.publish)
 
         self.fsm = Fsm(States)
         self.fsm.add_state(States.Setup, self.setup, prevs=[States.Waiting, States.Ending])
@@ -55,96 +71,240 @@ class Ai():
         self.fsm.add_state(States.Ending, self.ending, prevs=[States.Setup, States.Waiting, States.Selecting, States.Making])
         self.fsm.add_error_state(self.error)
 
-        Gpio(17, "tirette", False, edge=Edge.FALLING).auto_refresh(callback=self.handle_tirette)
+        self.color1 = self.cs.config.get('match', 'color1')
+        self.color = self.color1
+        self.bau_state = False
+
+        self.lock = Lock()
+        self.score = 0
+        self.match_starting_time = 0
+        self.current_goal = None
+        self.use_pathfinding = True
+        self.recalibrate_itself = Event()
+        self.reset = Event()
+        self.match_start = Event()
+        self.match_end = Event()
+
+        self.critical_timer = None
+        self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
 
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()
+
         else:
-            print('[AI] Ready')
+            print('[AI] Ready with loaded goals :')
             print(self.goals)
+
+            self.red_led.write(True)
+            self.green_led.write(False)
 
             self.use_pathfinding = self.goals.current_strategy.use_pathfinding
 
+            try:
+                self.color_callback(self.cs.match.get_color())
+            except Exception as e:
+                print('[AI] Failed to set color: %s' % str(e))
+
+            try:
+                cs = CellaservProxy()
+                self.handle_bau(cs.actuators[ROBOT].bau_read())
+            except Exception as e:
+                print('[AI] Failed to get BAU status: %s' % str(e))
+
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
+
+    @Service.event("match_color")
+    def color_callback(self, color):
+        with self.lock:
+            self.color = color
+
+    @Service.event('%s-bau' % ROBOT)
+    def handle_bau(self, value, **kwargs):
+
+        new_state = get_boolean(value)
+        # If the state didn't change, return
+
+        with self.lock:
+            if new_state == self.bau_state:
+                return
+
+            self.bau_state = new_state
+
+    @Service.action
+    def sleep(self, time):
+        print('[AI] AI sleeping for %f s' % float(time))
+        sleep(float(time))
+        RobotStatus.return_status(RobotStatus.Done)
+
+    def check_abort(self):
+        if self.match_end.is_set() or self.critical_timeout.is_set():
+            print('[AI] Aborting')
+            self.robot.abort_action()
+            return RobotStatus.Aborted
+        return RobotStatus.Ok
+
+    @Service.event('match_start')
+    def match_start_handler(self):
+        self.match_start.set()
+
+    @Service.event('match_end')
+    def match_end_handler(self):
+
+        self.robot.abort_action()
+        self.match_end.set()
+
+        with self.lock:
+            if self.critical_timer is not None:
+                self.critical_timer.cancel()
+        self.critical_timeout.clear()
+
+
+    @Service.action
+    def reset(self, recalibrate_itself=False):
+        recalibrate_itself = get_boolean(recalibrate_itself)
+
+        if recalibrate_itself:
+            self.recalibrate_itself.set()
+        self.reset.set()
+
+    @Service.action
+    def get_strategies(self):
+        with self.lock:
+            return self.goals.get_strategies()
+
+    @Service.action
+    def set_strategy(self, index=0, name=None):
+        if name is not None:
+            strategies = self.get_strategies()
+
+            if not name in strategies:
+                print('[AI] Bad strategy name')
+                return
+
+            with self.lock:
+                self.goals.reset(strategies[name])
+
+        else:
+            with self.lock:
+                self.goals.reset(int(index))
+
+        with self.lock:
+            self.use_pathfinding = self.goals.current_strategy.use_pathfinding
+            print('[AI] Current strategy:')
+            print(self.goals.current_strategy)
 
     """ SETUP """
     def setup(self):
 
-        # Reset Robot
-        self.robot.tm.enable()
-        self.robot.tm.error_mdb(False)
-        self.robot.tm.disable_avoid()
-        self.robot.tm.set_mdb_config(mode=2)
-        self.actuators.reset()
+        self.red_led.write(True)
+        self.green_led.write(False)
 
-        # Reset variables
-        self.current_goal = None
-        self.goals.reset()
-        self.score = 0
+        with self.lock:
+            self.score = 0
+            self.current_goal = None
 
+        with self.lock:
+            self.goals.reset()
 
-        if self.goals.critical_goal is not None:
-            self.critical_timer = Timer(self.goals.timeout_critical_goal, self.critical_timeout_handler)
+        self.match_end.clear()
 
-        #if self.cs.match.change_strategy.is_set():
-        #    self.cs.match.get_strategy(ROBOT)
-        #    self.cs.match.change_strategy.is_set()
-        # Recalibration wanted
-        if self.robot._recalibration.is_set():
+        self.trajman.enable()
+        self.actuators.enable()
+        self.robot.reset()
+
+        if self.recalibrate_itself.is_set():
             print('[AI] Recalibrating robot')
-            self.robot._recalibration.clear()
-            self.robot.recalibration(init=True)
-            self.robot.go_home(self.goals.starting_position, self.goals.starting_theta)
+            self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
+            self.recalibrate_itself.clear()
+            self.recalibration(init=True)
+            if ROBOT == 'pal':
+                self.goto(x=400, y=600, avoid=False)
+                self.goto(x=900, y=600, avoid=False)
+                self.goth(theta=pi/2)
+            else:
+                self.goto(x=300, y=255, avoid=False)
+                self.goth(theta=pi)
 
-        # No recalibration wanted
+            with self.lock:
+                self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False)
+                self.goth(theta=self.goals.starting_theta)
         else:
             print('[AI] Setting robot position')
-            self.robot.tm.free()
-            self.robot.set_pos(
-                self.goals.starting_position.x,
-                self.goals.starting_position.y,
-                self.goals.starting_theta)
-            self.robot.tm.unfree()
+            self.trajman.free()
 
-        self.robot.match_end.clear()
+            with self.lock:
+                self.robot.set_pos(
+                    x=self.goals.starting_position.x,
+                    y=self.goals.starting_position.y,
+                    theta=self.goals.starting_theta
+                )
+            self.trajman.unfree()
+
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
         return States.Waiting
 
 
     """ WAITING """
     def waiting(self):
-        while not self.robot.reset.is_set() and not self.robot.match_start.is_set():
+
+        self.red_led.write(False)
+        self.green_led.write(True)
+
+        while not self.reset.is_set() and not self.match_start.is_set():
             sleep(0.01)
 
-        next = States.Selecting if self.robot.match_start.is_set() else States.Setup
-        self.robot.reset.clear()
-        self.robot.match_start.clear()
+        next = States.Setup
+        if self.match_start.is_set():
+            next = States.Selecting
 
-        self.robot.tm.enable_avoid()
-        if next == States.Selecting and self.critical_timer is not None:
-            self.critical_timer.start()
+            with self.lock:
+                self.match_starting_time = time()
+                print('[AI] Starting match')
+
+                if self.goals.critical_goal is not None:
+                    self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critical_timeout.set())
+                    self.critical_timer.start()
+
+        self.reset.clear()
+        self.match_start.clear()
+
+        self.red_led.write(True)
+        self.green_led.write(False)
 
         return next
 
 
     """ SELECTING """
     def selecting(self):
-        if self.robot.match_end.is_set():
+        # TODO :
+        # - select secondary
+
+        if self.match_end.is_set():
             return States.Ending
 
-        if self.critical.is_set():
-            self.current_goal = self.goals.get_critical_goal()
-            self.critical.clear()
+        if self.critical_timeout.is_set():
+            print('[AI] Switching on critical goal')
+
+            with self.lock:
+                self.current_goal = self.goals.get_critical_goal()
+            self.critical_timeout.clear()
         else:
-            self.current_goal = self.goals.get_goal()
-            if not self.goals.critical_goal is None and self.current_goal.name == self.goals.critical_goal:
-                self.critical_timer.stop()
+            print('[AI] Selecting Goal')
 
-        if self.current_goal is None:
-            return States.Ending
+            with self.lock:
+                self.current_goal = self.goals.get_goal()
+
+                if self.current_goal is None:
+                    return States.Ending
+
+                if self.current_goal.name == self.goals.critical_goal:
+                    print('[AI] Critical selected, stopping timer')
+                    self.critical_timer.cancel()
+                    self.critical_timeout.clear()
 
         return States.Making
 
@@ -152,104 +312,168 @@ class Ai():
     """ MAKING """
     def making(self):
 
-        print("[AI] Making goal:\n%s" % str(self.current_goal))
-
-        if self.robot.match_end.is_set():
-            return States.Ending
-
-        if self.critical.is_set():
+        if self.check_abort() != RobotStatus.Ok:
             return States.Selecting
 
-        goal_score = self.current_goal.score
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
 
-        status = None
-        pos = self.robot.mirror_pos(x=self.current_goal.position.x, y=self.current_goal.position.y)
-        pos = {"x" : pos[0], "y": pos[1]}
+        match_starting_time = 0
+        goal_starting_time = time()
+        current_goal = None
+        with self.lock:
+            match_starting_time = self.match_starting_time
+            current_goal = self.current_goal
 
-        current_pos = self.robot.tm.get_position()
+        print('[AI] Starting goal at %fs' % round(goal_starting_time - match_starting_time, 2))
+        print(current_goal)
 
-        if Point.dist_dict(pos, current_pos) < DELTA_POS:
-            print('[AI] Already on goal pos')
+        use_pathfinding = False
+        destination = current_goal.position
+        with self.lock:
+            use_pathfinding = self.use_pathfinding
+
+            if self.color != self.color1:
+                destination = Point(destination.x, 3000 - destination.y)
+
+        if Point(dict=self.trajman.get_position()).dist(destination) <= DELTA_POS:
+            print('[AI] Already on goal position')
 
         else:
+            if use_pathfinding:
 
-            print("[AI] Going %d %d" % (pos['x'], pos['y']))
-
-            if self.use_pathfinding:
                 print('[AI] Going with pathfinding')
-                status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+                status = RobotStatus.NotReached
+                has_moved = True
+                timer = None
+                timeout = Event()
 
-                while status != Status.reached:
+                while status != RobotStatus.Reached:
 
-                    t = 0.0
+                    if timeout.is_set():
+                        print('[AI] Timeout during pathfinding')
 
-                    if (self.current_goal.timeout is not None  and t > self.current_goal.timeout)\
-                        or self.current_goal.secondary_goal is not None:
+                        with self.lock:
+                            self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
 
-                        self.current_goal = self.goals.get_secondary(self.current_goal.secondary_goal)
-                        return Status.Making
+                        print('[AI] Selecting secondary goal')
+                        return States.Making
 
-                    t += 100
-                    sleep(0.1)
+                    data = self.goto_with_path(x=current_goal.position.x, y=current_goal.position.y)
+                    status = RobotStatus.get_status(data)
 
-                    status = self.robot.goto_with_path(self.current_goal.position.x, self.current_goal.position.y)
+                    if status == RobotStatus.Unreachable:
 
+                        _has_moved = get_boolean(data['has_moved'])
+                        if current_goal.timeout is not None and has_moved != _has_moved:
+                            if _has_moved:
+                                print('[AI] Stopping timer')
+                                timer.cancel()
+                                timer = None
+                            else:
+                                print('[AI] Starting timer')
+                                timer = Timer(current_goal.timeout, lambda: timeout.set())
+                                timer.start()
+                            has_moved = _has_moved
+
+                        sleep(1)
+                        continue
+
+                    if status == RobotStatus.Aborted:
+                        if timer is not None:
+                            print('[AI] Stopping timer')
+                            timer.cancel()
+                        return States.Selecting
+
+                    if status != RobotStatus.Reached:
+                        if timer is not None:
+                            print('[AI] Stopping timer')
+                            timer.cancel()
+                        return States.Error
+
+                if timer is not None:
+                    print('[AI] Stopping timer')
+                    timer.cancel()
 
             else:
+
                 print('[AI] Going without pathfinding')
 
-                status = self.robot.goto_avoid(self.current_goal.position.x, self.current_goal.position.y)
-                # TODO : timeout ?
-                # TODO : move_back
+                status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y, timeout=current_goal.timeout))
 
-        if not self.current_goal.theta is None:
+                if status == RobotStatus.Timeout:
+                    print('[AI] Timeout, selecting secondary goal')
 
-            print('[AI] Going to %s' % self.robot.mirror_pos(theta=self.current_goal.theta)[2])
-            status = self.robot.goth(self.current_goal.theta)
+                    with self.lock:
+                        self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
 
+                    return States.Making
 
-            if status == Status.unreached:
-                status = self.robot.goth(self.current_goal.theta)
+                if status == RobotStatus.Aborted:
+                    return States.Selecting
 
-                if status != Status.reached:
-                    return States.error
+                if status != RobotStatus.Reached:
+                    return States.Error
 
+            with self.lock:
+                print('[AI] Reach goal position in %fs' % round(time() - goal_starting_time, 2))
 
-        if self.robot.match_end.is_set():
-            return States.Ending
+        if not current_goal.theta is None:
 
-        if self.critical.is_set():
-            return States.Selecting
+            status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
 
-        avoid = True
+            if status == RobotStatus.Aborted:
+                return States.Selecting
 
-        for action in self.current_goal.actions:
+            if status != RobotStatus.Reached:
+                return States.Error
 
-            if avoid and not action.avoid:
-                self.robot.tm.disable_avoid()
-                avoid = False
+        for action in current_goal.actions:
 
-            if not avoid and action.avoid:
-                self.robot.tm.enable_avoid()
-                avoid = True
+            action_starting_time = time()
+            print('[AI] Making action at %fs' % round(action_starting_time - match_starting_time, 2))
+            print(action)
 
-            print("[AI] Making action:\n%s" % str(action))
+            data = action.make()
+            status = RobotStatus.get_status(data)
 
-            status = None
-            action.make()
+            if status == RobotStatus.Aborted:
+                return States.Selecting
+
+            if status == RobotStatus.Timeout and action.avoid_strategy == AvoidStrategy.Timeout:
+                return States.Selecting
+
+            if status == RobotStatus.NotReached and action.avoid_strategy == AvoidStrategy.Skip:
+                return States.Selecting
+
+            if status != RobotStatus.Done and status != RobotStatus.Reached:
+                return States.Error
+
+            print('[AI] Finished action in %fs' % round(time() - action_starting_time, 2))
 
             if action.score > 0:
-                self.robot.client.publish("score", data=json.dumps({"value" : action.score}).encode())
-                self.score += action.score
-                goal_score -= action.score
+                score = action.score
 
-        if not avoid:
-            self.robot.tm.enable_avoid()
+                if 'score' in data:
+                    score = int(data['score'])
 
-        self.goals.finish_goal()
-        if self.current_goal.score > 0:
-            self.robot.client.publish("score", data=json.dumps({"value" : goal_score}).encode())
-            self.score += goal_score
+                self.publish("score", value=score)
+
+                with self.lock:
+                    self.score += score
+
+                current_goal.score -= action.score
+
+        with self.lock:
+            self.goals.finish_goal()
+            print('[AI] Finished goal in %fs' % round(time() - goal_starting_time, 2))
+
+        if current_goal.score > 0:
+            self.publish("score", value=current_goal.score)
+
+            with self.lock:
+                self.score += current_goal.score
+
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
         return States.Selecting
 
@@ -257,73 +481,50 @@ class Ai():
     """ ENDING """
     def ending(self):
 
-        print("[AI] Match finished with score %d" % self.score)
+        self.red_led.write(False)
+        self.green_led.write(True)
 
-        self.match_end_handler()
+        with self.lock:
+            print("[AI] Match finished with score %d in %fs" % (self.score, round(time() - self.match_starting_time, 2)))
 
-        self.robot.reset.wait()
-        self.robot.reset.clear()
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
+
+        self.match_end.wait()
+
+        self.robot.disable()
+        self.actuators.disable()
+        self.trajman.disable()
+
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
+        self.reset.wait()
 
         return States.Setup
 
 
     """ ERROR """
     def error(self):
-        print('[AI] AI in error')
 
-        self.match_end_handler()
+        self.red_led.write(True)
+        self.green_led.write(False)
 
-        self.robot.tm.error_mdb()
+        with self.lock:
+            print('[AI] AI in error at %fs' % round(time() - self.match_starting_time, 2))
 
-        while True:
-            pass
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Error.value)
 
+        self.robot.disable()
+        self.actuators.disable()
+        self.trajman.disable()
 
-    """ HANDLERS """
-    def match_end_handler(self):
-        if self.critical_timer is not None:
-            self.critical_timer.stop()
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
 
-        self.robot.match_end.set()
-        self.robot.tm.free()
-        self.robot.tm.disable()
-        #self.actuators.free()
-        #self.actuators.disable()
+        self.reset.wait()
 
-        self.robot.tm.disable_avoid()
-        self.robot.tm.set_mdb_config(mode=2)
-
-        self.critical.clear()
-        self.robot.match_start.clear()
-        self.robot._recalibration.clear()
-        self.robot.reset.clear()
-
-    def critical_timeout_handler(self):
-        self.critical_timer.stop()
-        self.critical.set()
-
-
-    """ OTHERS ACTIONS """
-    def set_strategy(self, index):
-        status = self.goals.reset(int(index))
-        if status:
-            self.use_pathfinding = self.goals.current_strategy.use_pathfinding
-        return status
-
-    def sleep_ai(self, time):
-        print('[AI] I am sleeping')
-        sleep(float(time))
-
-
-    def handle_tirette(self, **kwargs):
-        del(kwargs['event'])
-        data = json.dumps(kwargs).encode()
-        self.robot.client.publish('tirette', data=data)
+        return States.Setup
 
 def main():
-    ai = Ai()
-    while True:
-        pass
+    ai = AI()
+    ai.run()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

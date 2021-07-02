@@ -1,4 +1,4 @@
-from evolutek.lib.fsm import Fsm
+from evolutek.lib.ai.fsm import Fsm
 
 from enum import Enum
 from threading import Event, Thread

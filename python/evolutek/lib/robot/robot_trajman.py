@@ -9,6 +9,8 @@ from math import pi
 from threading import Event
 from time import sleep
 
+DELTA_POS = 5
+DELTA_ANGLE = 0.075
 
 class RecalSensor(Enum):
     No = "no"
@@ -76,19 +78,19 @@ def set_pos(self, x, y, theta=None, mirror=True):
 
 @if_enabled
 @use_queue
-def goto(self, x, y, mirror=True):
+def goto(self, x, y, avoid=True, mirror=True):
     mirror = get_boolean(mirror)
 
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
-    position = self.trajman.get_position()
-    distsqr = (x - position['x'])**2 + (y - position['y'])**2
-    maxdist = 5
-    if distsqr < maxdist**2:
+    position = Point(dict=self.trajman.get_position())
+    if position.dist(Point(x=x, y=y)) < DELTA_POS:
+        print('[ROBOT] Already reached position')
         return RobotStatus.return_status(RobotStatus.Reached)
 
-    return self.goto_xy(x, y)
+    return self.goto_xy(x=x, y=y, avoid=avoid)
+
 
 @if_enabled
 @use_queue
@@ -98,8 +100,9 @@ def goth(self, theta, mirror=True):
     if mirror:
         theta = self.mirror_pos(theta=float(theta))['theta']
 
-    current = self.trajman.get_position()['theta']
-    if abs(current - theta) < 0.075:
+    current = float(self.trajman.get_position()['theta'])
+    if abs(current - theta) < DELTA_ANGLE:
+            print('[ROBOT] Already reached angle')
             return RobotStatus.return_status(RobotStatus.Reached)
 
     return self.goto_theta(theta)
@@ -126,12 +129,13 @@ def timeout_handler():
 
 @if_enabled
 @use_queue
-def goto_avoid(self, x, y, mirror=True, timeout=None):
+def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
     x = float(x)
     y = float(y)
 
     mirror = get_boolean(mirror)
+    skip = get_boolean(skip)
 
     if mirror:
         _destination = self.mirror_pos(x, y)
@@ -144,10 +148,14 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
     while status != RobotStatus.Reached:
 
         print('[ROBOT] Moving')
-        data = self.goto(x, y, mirror=False, use_queue=False)
+
+        data = self.goto(x, y, avoid=avoid, mirror=False, use_queue=False)
         status = RobotStatus.get_status(data)
 
         if status == RobotStatus.HasAvoid:
+
+            if skip:
+                return RobotStatus.return_status(RobotStatus.NotReached)
 
             side = get_boolean(data['avoid_side'])
 
@@ -163,6 +171,7 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
             global timeout_event
             timeout_event.clear()
 
+            watchdog = None
             if timeout is not None:
                 watchdog = Watchdog(float(timeout), timeout_handler)
                 watchdog.reset()
@@ -176,6 +185,9 @@ def goto_avoid(self, x, y, mirror=True, timeout=None):
 
                 print('[ROBOT] Waiting')
                 sleep(0.1)
+
+            if watchdog is not None:
+                watchdog.stop()
 
         elif status != RobotStatus.Reached:
             break
@@ -197,6 +209,7 @@ def goto_with_path(self, x, y, mirror=True):
         y = _destination['y']
 
     destination = Point(x, y)
+    has_moved = False
 
     print('[ROBOT] Goto with path : %s' % destination)
 
@@ -208,10 +221,11 @@ def goto_with_path(self, x, y, mirror=True):
         path = self.get_path(destination)
 
         if (len(path) < 2):
-            return RobotStatus.return_status(RobotStatus.Unreachable)
+            return RobotStatus.return_status(RobotStatus.Unreachable, has_moved=has_moved)
 
         for i in range(1, len(path)):
 
+            has_moved = True
             print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
 
             data = self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False)

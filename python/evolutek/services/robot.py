@@ -168,7 +168,6 @@ class Robot(Service):
             self.disabled.clear()
             self.queue.run_queue()
 
-    @Service.event('match_end')
     @Service.action
     def disable(self):
         self.disabled.set()

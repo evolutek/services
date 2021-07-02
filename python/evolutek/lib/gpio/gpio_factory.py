@@ -1,12 +1,14 @@
 from enum import Enum
 from evolutek.lib.gpio.gpio import Edge
 
-import evolutek.lib.gpio.ads1115_adc as ads1115_adc
-import evolutek.lib.gpio.rpi_gpio as rpi_gpio
-import evolutek.lib.gpio.fake_gpio as fake_gpio
-import evolutek.lib.gpio.mcp23017_gpio as mcp23017_gpio
-
 from evolutek.lib.settings import SIMULATION
+
+if SIMULATION:
+    import evolutek.lib.gpio.fake_gpio as fake_gpio
+else:
+    import evolutek.lib.gpio.ads1115_adc as ads1115_adc
+    import evolutek.lib.gpio.rpi_gpio as rpi_gpio
+    import evolutek.lib.gpio.mcp23017_gpio as mcp23017_gpio
 
 # Gpio type
 class GpioType(Enum):
