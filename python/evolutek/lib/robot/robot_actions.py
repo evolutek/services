@@ -257,7 +257,7 @@ def drop_start(self):
             if i <= 1: self.left_cup_holder_close(use_queue=False)
             else: self.right_cup_holder_close(use_queue=False)
             sleep(0.5)
-            y += 80
+            y += 100
         return RobotStatus.return_status(RobotStatus.Done)
 
     status = self.recalibration(x=False, y=True, x_sensor=RecalSensor.Left, use_queue=False)
