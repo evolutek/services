@@ -368,6 +368,7 @@ def recalibration(self,
         self.set_theta(pi/2)
         self.trajman.set_x(1000)
         self.trajman.set_y(1000)
+        sleep(1)
 
     if x:
         print('[ROBOT] Recalibration X')

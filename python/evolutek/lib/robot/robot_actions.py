@@ -310,6 +310,9 @@ def drop_start(self):
         print('[ROBOT] Dropping reef green buoys')
         status = reef_buoys(x= 515 if self.side else 1085, colors=colors, color=Color.Green)
         if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
+    if colors.count(Color.Red) != 2:
+        status = self.goto_avoid(x=515, y=2385, use_queue=False) if self.side else self.goto(x=515, y=2385, use_queue=False)
+        if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
     self.trajman.set_trsl_acc(speeds['tracc'])
@@ -343,17 +346,18 @@ def goto_anchorage(self, time=None):
         while float(time) > float(self.cs.match.get_status()['time']):
             sleep(0.5)
 
-    status = self.goto(x=x, y=150 if ROBOT=='pmi' else 400, avoid=False, use_queue=False)
+    status = self.goto(x=x, y=130 if ROBOT=='pmi' else 400, avoid=False, use_queue=False)
 
     if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
         current_y = float(self.trajman.get_position()['y'])
         score = 10 if (current_y if self.side else 3000 - current_y) < 475 else 0
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
-    if ROBOT == 'pmi':
-        status = self.homemade_recal(use_queue=False)
-        if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
-            return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
+   # if ROBOT == 'pmi':
+        #status = self.homemade_recal(use_queue=False)
+        #status = self.goto(x=130, )
+        #if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
+         #   return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
 
     return RobotStatus.return_status(RobotStatus.Done, score=10)
 
