@@ -217,7 +217,6 @@ class AI(Service):
             self.recalibration(
                 x = False,
                 x_sensor = 'right' if ROBOT == 'pal' else 'left',
-                side_x = ROBOT == 'pal',
                 init = True)
             if ROBOT == 'pal':
                 self.goto(x=900, y=800, avoid=False)
