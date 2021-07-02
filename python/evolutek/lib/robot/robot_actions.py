@@ -21,8 +21,12 @@ def get_reef(self):
     sleep(0.25)
 
     self.trajman.move_trsl(300, 300, 300, 300, 0)
+
     sleep(1)
-    self.recal(0)
+
+    status = RobotStatus.get_status(self.recal(0))
+    if status != RobotStatus.Reached:
+        return RobotStatus.return_status(status)
 
     self.left_cup_holder_close(use_queue=False)
     self.right_cup_holder_close(use_queue=False)
@@ -43,29 +47,19 @@ def get_reef(self):
 @if_enabled
 @use_queue
 def start_lighthouse(self):
+
     self.left_cup_holder_open(use_queue=False) if self.side else self.right_cup_holder_open(use_queue=False)
     sleep(0.25)
-    status = self.check_abort()
-
-    if status != RobotStatus.Ok:
-        self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
-        return RobotStatus.return_status(status)
 
     status = RobotStatus.get_status(self.goto_avoid(x=180, y=2875, use_queue=False))
-
     if status != RobotStatus.Reached:
         self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
         return RobotStatus.return_status(status)
 
     status = self.get_status(self.goto_avoid(x=200, y=2600, use_queue=False))
-
-    if status != RobotStatus.Reached:
-        self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
-        return RobotStatus.return_status(status)
-
     self.left_cup_holder_close(use_queue=False) if self.side else self.right_cup_holder_close(use_queue=False)
 
-    return RobotStatus.return_status(RobotStatus.Done)
+    return RobotStatus.return_status(status if status != RobotStatus.Reached else RobotStatus.Done)
 
 
 @if_enabled
@@ -77,16 +71,18 @@ def push_windsocks(self):
 
     sleep(0.25)
 
-    status = self.check_abort()
-    if status != RobotStatus.Ok:
-        self.right_arm_close(use_queue=False) if self.side else self.left_arm_close(use_queue=False)
-        return RobotStatus.return_status(status)
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_trsl_max_speed(750)
+    self.trajman.set_trsl_acc(300)
+    self.trajman.set_trsl_dec(300)
 
-    # TODO : Change deltas of CM ?
 
     status = RobotStatus.get_status(self.goto_avoid(x=1825, y=720, use_queue=False))
     if status != RobotStatus.Reached:
         self.right_arm_close(use_queue=False) if self.side else self.left_arm_close(use_queue=False)
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
+        self.trajman.set_trsl_acc(speeds['tracc'])
+        self.trajman.set_trsl_dec(speeds['trdec'])
         return RobotStatus.return_status(status)
 
     if self.side:
@@ -97,6 +93,10 @@ def push_windsocks(self):
         self.left_arm_push(use_queue=False)
         sleep(0.25)
         self.left_arm_close(use_queue=False)
+
+    self.trajman.set_trsl_max_speed(speeds['trmax'])
+    self.trajman.set_trsl_acc(speeds['tracc'])
+    self.trajman.set_trsl_dec(speeds['trdec'])
 
     return RobotStatus.return_status(RobotStatus.Done)
 
