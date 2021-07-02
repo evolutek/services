@@ -9,6 +9,8 @@ from math import pi
 from threading import Event
 from time import sleep
 
+DELTA_POS = 5
+DELTA_ANGLE = 0.075
 
 class RecalSensor(Enum):
     No = "no"
@@ -82,10 +84,9 @@ def goto(self, x, y, avoid=True, mirror=True):
     if mirror:
         y = self.mirror_pos(y=float(y))['y']
 
-    position = self.trajman.get_position()
-    distsqr = (x - position['x'])**2 + (y - position['y'])**2
-    maxdist = 5
-    if distsqr < maxdist**2:
+    position = Point(dict=self.trajman.get_position())
+    if position.dist(Point(x=x, y=y)) < DELTA_POS:
+        print('[ROBOT] Already reached position')
         return RobotStatus.return_status(RobotStatus.Reached)
 
     return self.goto_xy(x=x, x=y, avoid=avoid)
@@ -99,8 +100,9 @@ def goth(self, theta, mirror=True):
     if mirror:
         theta = self.mirror_pos(theta=float(theta))['theta']
 
-    current = self.trajman.get_position()['theta']
-    if abs(current - theta) < 0.075:
+    current = float(self.trajman.get_position()['theta'])
+    if abs(current - theta) < DELTA_ANGLE:
+            print('[ROBOT] Already reached angle')
             return RobotStatus.return_status(RobotStatus.Reached)
 
     return self.goto_theta(theta)
