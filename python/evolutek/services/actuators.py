@@ -33,6 +33,7 @@ from time import sleep
 # - Put components config in a lib / read a JSON
 
 # Actuators service class
+@Service.require('config')
 class Actuators(Service):
 
     def __init__(self):
@@ -120,6 +121,8 @@ class Actuators(Service):
         self.rgb_sensors = RGBSensors(
             [1, 2, 3, 4]
         )
+
+        sleep(5)
 
         self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
