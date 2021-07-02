@@ -360,7 +360,7 @@
 	  "fct": "goto_anchorage",
 	  "handler": "robot",
 	  "args": {
-	    "time": 93
+	    "time": 95
 	  },
 	  "score": 10
 	}
