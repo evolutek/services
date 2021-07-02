@@ -15,11 +15,6 @@ class RecalSensor(Enum):
     Left = "left"
     Right = "right"
 
-class RecalSensor(Enum):
-    No = "no"
-    Left = "left"
-    Right = "right"
-
 ##########
 # COMMON #
 ##########
