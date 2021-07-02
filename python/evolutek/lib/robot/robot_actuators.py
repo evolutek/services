@@ -44,8 +44,8 @@ def pumps_drop(self, ids, mirror=True):
     _ids = []
     for id in ids:
         _ids.append(self.mirror_pump_id(int(id)) if mirror else int(id))
-    if 1 in _ids: _ids.append(5)
-    if 4 in _ids: _ids.append(3)
+    if 1 in _ids: _ids.append(3)
+    if 4 in _ids: _ids.append(5)
 
     return self.actuators.pumps_drop(_ids)
 
