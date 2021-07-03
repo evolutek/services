@@ -74,7 +74,7 @@ class Action:
             return None
 
         args = action['args'] if 'args' in action else None
-        avoid_strategy = eval(action['avoid_strategy']) if 'avoid_strategy' in action else AvoidStrategy.Wait
+        avoid_strategy = AvoidStrategy(action['avoid_strategy']) if 'avoid_strategy' in action else AvoidStrategy.Wait
         score = action['score'] if 'score' in action else 0
         timeout = action['timeout'] if 'timeout' in action else None
 
