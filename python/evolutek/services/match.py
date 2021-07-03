@@ -2,9 +2,10 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 from evolutek.lib.gpio.gpio_factory import create_gpio, GpioType
 
+import cv2 as cv
 from enum import Enum
 from threading import Timer, Thread
-from time import sleep, time
+from time import localtime, sleep, time, strftime
 
 WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
 WEATHERCOCK_GPIO = 24 # Number of the GPIO used by the weathercock reader
@@ -49,23 +50,21 @@ class Match(Service):
         self.score += int(value)
         print('[MATCH] score is now: %d' % self.score)
 
-
-
-    def record_match(match_duration=100):
+    def record_match(self, match_duration=100):
         # Define the duration (in seconds) of the video capture here
         DIM = (1280, 720)
-        capture_duration = int(match_duration)
+        capture_duration = int(match_duration + 5)
         cap = cv.VideoCapture(0)
         cap.set(cv.CAP_PROP_FRAME_WIDTH, DIM[0])
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, DIM[1])
 
-        ts = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+        ts = strftime("%Y-%m-%d_%H-%M-%S", localtime())
         # Define the codec and create VideoWriter object
         fourcc = cv.VideoWriter_fourcc(*'XVID')
         video_title = f'/home/pi/{ts}_match.avi'
         out = cv.VideoWriter(video_title, fourcc, 20.0, DIM)
-        start_time = time.time()
-        while int(time.time() - start_time) < capture_duration:
+        start_time = time()
+        while int(time() - start_time) < capture_duration:
             ret, frame = cap.read()
             if ret:
                 out.write(frame)
