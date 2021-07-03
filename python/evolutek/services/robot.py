@@ -13,9 +13,12 @@ from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.action_queue import ActQueue
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
+from evolutek.utils.interfaces.debug_map import Interface
 
 from time import time, sleep
-from threading import Event, Lock
+from threading import Event, Lock, Thread
+
+ROBOT = 'pmi'
 
 
 @Service.require('config')
@@ -105,6 +108,8 @@ class Robot(Service):
         fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map = Map(width, height, self.size)
         self.map.add_obstacles(fixed_obstacles)
+        self.path = []
+        self.robots = []
 
         def start_callback(id):
             self.need_to_abort.clear()
@@ -129,6 +134,8 @@ class Robot(Service):
             self.color_callback(self.cs.match.get_color())
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % str(e))
+
+        Thread(target=Interface).start()
 
     @Service.event("match_color")
     def color_callback(self, color):
@@ -160,6 +167,8 @@ class Robot(Service):
             for tag in robots_tags:
                 self.map.remove_obstacle(tag)
 
+            self.path = path
+            self.robots = robots
             return path
 
     @Service.action
