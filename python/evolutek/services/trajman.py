@@ -266,9 +266,13 @@ class TrajMan(Service):
             side = False
 
             with self.lock:
+
+                if self.robot_speed == 0.0:
+                    continue
+
                 stop_distance = (self.robot_speed**2 / (2 * 1000))
                 detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + 50
-                side = self.robot_speed > 0
+                side = self.robot_speed > 0.0
 
             if self.need_to_avoid(detection_dist, side):
 
