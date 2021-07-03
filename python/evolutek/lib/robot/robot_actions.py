@@ -180,14 +180,16 @@ def drop_start_sorting(self):
         return RobotStatus.return_status(RobotStatus.Done)
 
     # The robot must be at 185mm from the center of the band
-    def drop_theta(place, first):
+    def drop_theta(place, first, invert):
+        multiplier = -1 if invert else 1
+        if invert: place = 3 - place
         if not first: place -= 1
-        if place == 0: return 0
-        if place == 1: return 0.35
-        if place == 2: return 0.75
-        if place == 3: return 1.1
+        if place == 0: return 0    * multiplier
+        if place == 1: return 0.35 * multiplier
+        if place == 2: return 0.75 * multiplier
+        if place == 3: return 1.1  * multiplier
 
-    def reef_buoys(theta, colors, color, multiplier=1):
+    def reef_buoys(theta, colors, color, invert):
         self.left_cup_holder_drop(use_queue=False)
         self.right_cup_holder_drop(use_queue=False)
         sleep(0.4)
@@ -197,7 +199,7 @@ def drop_start_sorting(self):
         for i in range(4):
             if colors[i] == color:
                 buoys.append((
-                    drop_theta(i, first=first) * multiplier + theta,
+                    drop_theta(i, first=first, invert=invert) + theta,
                     str(i+7)
                 ))
                 first = False
@@ -252,7 +254,7 @@ def drop_start_sorting(self):
         print('[ROBOT] Dropping reef red buoys')
         status = self.goto_avoid(x=700, y=300, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-        status = reef_buoys(theta=0, colors=colors, color=Color.Red, multiplier= 1 if self.side else -1)
+        status = reef_buoys(theta=pi, colors=colors, color=Color.Red, invert=not self.side)
         if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # Second buoy of the front arm
@@ -270,7 +272,7 @@ def drop_start_sorting(self):
         print('[ROBOT] Dropping reef green buoys')
         status = self.goto_avoid(x=900, y=300, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-        status = reef_buoys(theta=pi, colors=colors, color=Color.Green, multiplier= -1 if self.side else 1)
+        status = reef_buoys(theta=0, colors=colors, color=Color.Green, invert=self.side)
         if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
