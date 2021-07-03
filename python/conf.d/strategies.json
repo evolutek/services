@@ -282,7 +282,7 @@
   "strategies": [
     {
       "name": "normal_pal",
-      "goals": ["get_buoys_7-8"],
+      "goals": ["get_buoys_7-8", "get_bottom_reef", "push_windsocks"],
       "available": ["pal"],
       "use_pathfinding": false
     },
