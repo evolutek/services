@@ -163,6 +163,41 @@
             ]
         },
         {
+            "name": "get_top_reef",
+            "position": {
+                "x": 250,
+                "y": 800
+            },
+            "theta": 0,
+            "actions": [
+                {
+                    "fct": "recalibration",
+                    "handler": "robot",
+                    "args": {
+                        "y" : false,
+                        "y_sensor" : "right"
+                    }
+                },
+                {
+                    "fct": "goto",
+                    "args": {
+                        "x": 250,
+                        "y": 800
+                    }
+                },
+                {
+                    "fct": "goth",
+                    "args": {
+                        "theta": "0"
+                    }
+                },
+                {
+                    "fct": "get_reef",
+                    "handler": "robot"
+                }
+            ]
+        },
+        {
             "name": "get_bottom_reef",
             "position": {
                 "x": 1640,
@@ -262,7 +297,8 @@
             "goals": [
                 "get_buoys_3-4",
                 "start_lighthouse",
-                "get_buoys_5-6"
+                "get_buoys_5-6",
+                "get_top_reef"
             ],
             "available": [
                 "pmi"
