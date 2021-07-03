@@ -436,31 +436,32 @@ class AI(Service):
             data = action.make()
             status = RobotStatus.get_status(data)
 
+            score = None
+            if action.score > 0 and 'score' in data:
+                    score = data['score']
+                    self.publish("score", value=int(data['score']))
+
+                current_goal.score -= score
+
+                with self.lock:
+                    self.score += score
+
             if status == RobotStatus.Aborted:
                 return States.Selecting
 
             if status == RobotStatus.Timeout and action.avoid_strategy == AvoidStrategy.Timeout:
-                return States.Selecting
+                continue
 
             if status == RobotStatus.NotReached and action.avoid_strategy == AvoidStrategy.Skip:
-                return States.Selecting
+                continue
 
             if status != RobotStatus.Done and status != RobotStatus.Reached:
                 return States.Error
 
             print('[AI] Finished action in %fs' % round(time() - action_starting_time, 2))
 
-            if action.score > 0:
-                score = action.score
-
-                if 'score' in data:
-                    score = int(data['score'])
-
-                self.publish("score", value=score)
-
-                with self.lock:
-                    self.score += score
-
+            if action.score > 0 and score is None:
+                self.publish("score", value=action.score)
                 current_goal.score -= action.score
 
         with self.lock:
