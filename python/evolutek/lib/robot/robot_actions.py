@@ -179,45 +179,27 @@ def drop_start_sorting(self):
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
         return RobotStatus.return_status(RobotStatus.Done)
 
-    # The robot must be at 185mm from the center of the band
-    def drop_theta(place, first, invert):
-        multiplier = -1 if invert else 1
-        if invert: place = 3 - place
-        if not first: place -= 1
-        if place == 0: return 0    * multiplier
-        if place == 1: return 0.35 * multiplier
-        if place == 2: return 0.75 * multiplier
-        if place == 3: return 1.1  * multiplier
-
-    def reef_buoys(theta, colors, color, invert):
-        # Determines all the moves that must be done
-        first = True
-        buoys = [] # Stores a tuple for each buoy to place with (target theta, pump id)
+    def reef_buoys(x, colors, color):
+        y = 400
         for i in range(4):
-            if invert:
-                i = 3 - i
-            if colors[i] == color:
-                buoys.append((
-                    drop_theta(i, first=first, invert=invert) + theta,
-                    str(i+7)
-                ))
-                first = False
-        # Combines pump drops if possible
-        if len(buoys) == 2 and buoys[0][0] == buoys[1][0]:
-            buoys = [(buoys[0][0], buoys[0][1] + ',' + buoys[1][1])]
-        # Does all the moves
-        for th, pump in buoys:
-            status = self.goth(theta=th, use_queue=False)
-            if '7' in pump or '8' in pump: self.left_cup_holder_drop(use_queue=False)
-            if '9' in pump or '0' in pump: self.right_cup_holder_drop(use_queue=False)
-            sleep(0.4)
+            if colors[i] != color:
+                continue
+            # Moves to the right x
+            x_offset = i*75 - 109.5
+            status = self.goto_avoid(x=x + x_offset, y=y + 100, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-            self.pumps_drop(ids=pump, use_queue=False, mirror=False)
-            update_buoys_count(color)
-            if ',' in pump: update_buoys_count(color)
-            if '7' in pump or '8' in pump: self.left_cup_holder_close(use_queue=False)
-            if '9' in pump or '0' in pump: self.right_cup_holder_close(use_queue=False)
-            sleep(0.4)
+            # Opens the arm
+            if i <= 1: self.left_cup_holder_drop(use_queue=False)
+            else: self.right_cup_holder_drop(use_queue=False)
+            # Moves to the right y
+            status = self.goto_avoid(x=x + x_offset, y=y, use_queue=False)
+            if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+            # Closes the arm and moves back slowly
+            self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=1)
+            if i <= 1: self.left_cup_holder_close(use_queue=False)
+            else: self.right_cup_holder_close(use_queue=False)
+            sleep(1)
+            y += 80
         return RobotStatus.return_status(RobotStatus.Done)
 
     status = self.recalibration(x=False, y=True, x_sensor=RecalSensor.Left, use_queue=False)
@@ -251,9 +233,7 @@ def drop_start_sorting(self):
     # First set of reef buoys
     if Color.Red in colors:
         print('[ROBOT] Dropping reef red buoys')
-        status = self.goto_avoid(x=700, y=300, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-        status = reef_buoys(theta=0, colors=colors, color=Color.Red, invert=self.side)
+        status = reef_buoys(x= 1085 if self.side else 515, colors=colors, color=Color.Red)
         if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     # Second buoy of the front arm
@@ -269,9 +249,7 @@ def drop_start_sorting(self):
     # Second set of reef buoys
     if Color.Green in colors:
         print('[ROBOT] Dropping reef green buoys')
-        status = self.goto_avoid(x=900, y=300, use_queue=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
-        status = reef_buoys(theta=pi, colors=colors, color=Color.Green, invert=not self.side)
+        status = reef_buoys(x= 515 if self.side else 1085, colors=colors, color=Color.Green)
         if RobotStatus.get_status(status) != RobotStatus.Done: return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
