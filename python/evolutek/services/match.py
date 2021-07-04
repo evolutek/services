@@ -143,7 +143,6 @@ class Match(Service):
     """ End match """
     @Service.action
     def match_end(self):
-        self.score += 10 # Usefull ?
         self.publish('match_end')
         self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
