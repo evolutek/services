@@ -198,7 +198,7 @@
     {
       "name": "get_bottom_reef",
       "position": {
-        "x": 1640,
+        "x": 1637.5,
         "y": 250
       },
       "theta": "pi/2",
@@ -214,7 +214,7 @@
         {
           "fct": "goto",
           "args": {
-            "x": 1640,
+            "x": 1637.5,
             "y": 250
           }
         },
@@ -261,7 +261,8 @@
         },
         {
           "fct": "push_windsocks",
-          "handler": "robot"
+          "handler": "robot",
+          "score": 15
         },
         {
           "fct": "goth",
@@ -269,13 +270,28 @@
             "theta": "pi / 3"
           }
         },
-	{
-	  "fct": "goto",
-	  "args": {
-	    "x": 1700,
-	    "y": 300
-	  }
-	}
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1700,
+            "y": 300
+          }
+        }
+      ]
+    },
+    {
+      "name" : "pmi_starting_sleep",
+      "position": {
+          "x" : 620,
+          "y": 255
+      },
+      "actions": [
+        {
+          "fct": "sleep",
+          "args": {
+            "time": 1
+          }
+        }
       ]
     }
   ],
@@ -293,6 +309,7 @@
     {
       "name": "normal_pmi",
       "goals": [
+        "pmi_startring_sleep",
         "get_buoys_3-4",
         "start_lighthouse",
         "get_buoys_5-6",
