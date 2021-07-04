@@ -1,0 +1,34 @@
+from cellaserv.proxy import CellaservProxy
+from os import system
+from time import sleep
+import RPi.GPIO as GPIO
+
+RESET_GPIO = 40
+
+def restartAll():
+    system("sudo systemctl restart trajman")
+    system("sudo systemctl restart actuators")
+    system("sudo systemctl restart robot")
+    system("sudo systemctl restart ai")
+
+def main():
+    
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(RESET_GPIO, GPIO.IN)
+    cs = CellaservProxy()
+    triggered = False
+    while True:
+        val = GPIO.input(RESET_GPIO)
+        if val == GPIO.LOW and not triggered:
+            triggered = True
+        elif val == GPIO.HIGH and triggered:
+            triggered = False
+        if triggered:
+            restartAll()
+
+        sleep(0.5)
+
+
+
+if __name__ == '__main__':
+    main()
