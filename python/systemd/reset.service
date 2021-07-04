@@ -1,0 +1,10 @@
+[Unit]
+Description=Reset service
+PartOf=evolutek.target
+
+[Service]
+ExecStart=reset
+CPUSchedulingPolicy=rr
+
+[Install]
+WantedBy=multi-user.target
