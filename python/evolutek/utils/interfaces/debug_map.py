@@ -47,7 +47,7 @@ class Interface:
         self.canvas.grid(row=3, column=0)
 
         print('[DEBUG_MAP] Window created')
-        self.window.after(int(self.service.refresh), self.update)
+        self.window.after(100, self.update)
         self.window.mainloop()
 
     def close(self):
@@ -127,17 +127,14 @@ class Interface:
         for i in range(len(robots)):
             color = colors[i % len(colors)]
             p = robots[i]
-            if self.service.debug:
-                self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 10, p.x * unit + 10, fill=color)
-            else:
-                self.canvas.create_rectangle((p['y'] - self.service.robot_size) * unit,
-                (p['x'] - self.service.robot_size) * unit, (p['y'] + self.service.robot_size) * unit,
-                (p['x'] + self.service.robot_size) * unit, fill='red')
+            self.canvas.create_rectangle((p['y'] - self.robot.robot_size) * unit,
+            (p['x'] - self.robot.robot_size) * unit, (p['y'] + self.robot.robot_size) * unit,
+            (p['x'] + self.robot.robot_size) * unit, fill='red')
 
     def update(self):
 
         self.canvas.delete('all')
-        self.canvas.create_image(self.width * self.unit, self.height * self.unit, image=self.image)
+        self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
 
         if self.robot.robots:
             with self.robot.lock:
@@ -149,4 +146,4 @@ class Interface:
             self.print_path(p)
         self.print_merged_map()
 
-        self.window.after(self.service.refresh, self.update)
+        self.window.after(100, self.update)

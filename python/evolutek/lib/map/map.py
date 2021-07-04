@@ -116,11 +116,16 @@ class Map:
         if not self.is_inside(p1) or not self.is_inside(p2):
             return False
 
+        x1 = min(p1.x, p2.x)
+        x2 = max(p1.x, p2.x)
+        y1 = min(p1.y, p2.y)
+        y2 = max(p1.y, p2.y)
+
         l = [
-            (p1.x - self.robot_radius, p1.y - self.robot_radius),
-            (p1.x - self.robot_radius, p2.y + self.robot_radius),
-            (p2.x + self.robot_radius, p2.y + self.robot_radius),
-            (p2.x + self.robot_radius, p1.y - self.robot_radius)
+            (x1 - self.robot_radius, y1 - self.robot_radius),
+            (x1 - self.robot_radius, y2 + self.robot_radius),
+            (x2 + self.robot_radius, y2 + self.robot_radius),
+            (x2 + self.robot_radius, y1 - self.robot_radius)
         ]
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
@@ -166,8 +171,8 @@ class Map:
                 p1 = Point(dict=obstacle['p1'])
                 p2 = Point(dict=obstacle['p2'])
                 if mirror:
-                    p1 = Point(x=p1.x, y=3000 - p1.y)
-                    p2 = Point(x=p2.x, y=3000 - p2.y)
+                    p1 = Point(x=p1.x, y=(3000 - p1.y))
+                    p2 = Point(x=p2.x, y=(3000 - p2.y))
                 obstacle['p1'] = p1
                 obstacle['p2'] = p2
                 self.add_rectangle_obstacle(**obstacle, type=type)
@@ -175,9 +180,10 @@ class Map:
                 if not 'center' in obstacle:
                     print('[MAP] Bad circle obstacle in parsing')
                     continue
-                obstacle['center'] = Point(dict=obstacle['center'])
+                center = Point(dict=obstacle['center'])
                 if mirror:
-                    obstacle['center'].y = 3000 - obstacle['center'].y
+                    center = Point(x=center.x, y=(3000 - center.y))
+                obstacle['center'] = center
                 self.add_octogon_obstacle(**obstacle, type=type)
             else:
                 print('[MAP] Obstacle form not found')
