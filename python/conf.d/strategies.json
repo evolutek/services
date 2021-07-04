@@ -309,7 +309,7 @@
     {
       "name": "normal_pmi",
       "goals": [
-        "pmi_startring_sleep",
+        "pmi_starting_sleep",
         "get_buoys_3-4",
         "start_lighthouse",
         "get_buoys_5-6",
