@@ -438,8 +438,8 @@ class AI(Service):
 
             score = None
             if action.score > 0 and 'score' in data:
-                    score = data['score']
-                    self.publish("score", value=int(data['score']))
+                    score = int(data['score'])
+                    self.publish("score", value=score)
 
                 current_goal.score -= score
 
