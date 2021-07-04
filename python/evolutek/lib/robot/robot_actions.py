@@ -224,18 +224,18 @@ def drop_start_sorting(self):
 
     # First set of front buoys
     print('[ROBOT] Dropping front green buoys')
-    status = front_buoys(x=600 if self.side else 1010, pumps='5,6', buoys=[(3,Color.Green),(4,Color.Green)])
+    status = front_buoys(x=599 if self.side else 1001, pumps='5,6', buoys=[(3,Color.Green),(4,Color.Green)])
     if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     # Second set of front buoys
     print('[ROBOT] Dropping front red buoys')
-    status = front_buoys(x=1010 if self.side else 600, pumps='2,3', buoys=[(1,Color.Red),(2,Color.Red)])
+    status = front_buoys(x=1001 if self.side else 599, pumps='2,3', buoys=[(1,Color.Red),(2,Color.Red)])
     if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
     # First buoy of the front arm
     print('[ROBOT] Dropping front arm red buoys')
     self.front_arm_open(use_queue=False)
     sleep(0.5)
-    status = arm_buoy(x=1010 if self.side else 600, pump='1', buoy=(2, Color.Red))
+    status = arm_buoy(x=1001 if self.side else 599, pump='1', buoy=(2, Color.Red))
     if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     #       Possible arrangements
@@ -255,7 +255,7 @@ def drop_start_sorting(self):
 
     # Second buoy of the front arm
     print('[ROBOT] Dropping front arm green buoys')
-    x = 550 if self.side else 1030
+    x = 556 if self.side else 1044
     status = self.goto_avoid(x=x, y=300, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta=-pi/2, use_queue=False)
