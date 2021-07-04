@@ -13,6 +13,7 @@ from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
+from evolutek.utils.interfaces.ai_interface import AIInterface
 
 from enum import Enum
 from math import pi
@@ -89,7 +90,7 @@ class AI(Service):
         self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
-
+        self.ai_interface = AIInterface(self)
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()
