@@ -3,29 +3,23 @@
     {
       "name": "get_buoys_1-2",
       "position": {
-        "x": 340,
-        "y": 910
+        "x": 530,
+        "y": 800,
+        "theta": "- pi / 8"
       },
       "actions": [
         {
           "fct": "pumps_get",
           "handler": "robot",
           "args": {
-            "ids": [3, 6]
+            "ids": [3, 5]
           }
         },
         {
           "fct": "goto",
           "args": {
-            "x": 940,
-            "y": 500
-          }
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 1090,
-            "y": 490
+            "x": 1200,
+            "y": 445
           }
         }
       ]
