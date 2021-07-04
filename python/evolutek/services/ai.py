@@ -243,6 +243,7 @@ class AI(Service):
                 )
             self.trajman.unfree()
 
+        self.reset.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
         return States.Waiting
