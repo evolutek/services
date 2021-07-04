@@ -8,7 +8,7 @@ from threading import Timer, Thread
 from time import localtime, sleep, time, strftime
 
 WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
-WEATHERCOCK_GPIO = 24 # Number of the GPIO used by the weathercock reader
+WEATHERCOCK_GPIO = 23 # Number of the GPIO used by the weathercock reader (S1: 23, S2: 24)
 
 class MatchStatus(Enum):
     unstarted = "Unstarted"
@@ -70,7 +70,7 @@ class Match(Service):
                 out.write(frame)
             else:
                 break
-        
+
 
         # Release everything if job is finished
         cap.release()
@@ -103,12 +103,14 @@ class Match(Service):
         flags_timer.start()
 
     """ WeatherCock """
+    @Service.action
     def read_weathercock(self):
         print('[MATCH] reading weathercock position')
         white = create_gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False, type=GpioType.RPI).read()
-        side = 'north' if not white else 'south'
-        self.publish('anchorage', side=(side))
+        side = 'north' if white else 'south'
+        self.publish('anchorage', side=side)
         self.anchorage = side
+        return side
 
     """ Raise flags """
     def raise_flags(self):
