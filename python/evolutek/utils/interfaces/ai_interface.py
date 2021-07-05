@@ -146,6 +146,7 @@ class AIInterface(Interface):
 		self.ai = ai
 		print("bonjour")
 		super().__init__('AI')
+		self.update_interface()
 
 	def create_widget(self, start_match=False):
 		if not start_match:
