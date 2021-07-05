@@ -319,10 +319,8 @@
       },
       "actions": [
         {
-          "args": {
-            "fct": "goto_anchorage",
-            "handler": "robot"
-          }
+          "fct": "goto_anchorage",
+          "handler": "robot"
         }
       ]
     }
