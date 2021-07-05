@@ -297,6 +297,20 @@
       ]
     },
     {
+      "name": "drop_center_sorting",
+      "position": {
+        "x": 1400,
+        "y": 1705,
+        "theta": 0
+      },
+      "actions": [
+        {
+          "fct": "drop_center",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
       "name": "pmi_starting_sleep",
       "position": {
         "x": 620,
@@ -332,6 +346,7 @@
         "get_buoys_7-8",
         "get_bottom_reef",
         "push_windsocks",
+        "drop_center_sorting",
         "goto_anchorage"
       ],
       "available": ["pal"],
