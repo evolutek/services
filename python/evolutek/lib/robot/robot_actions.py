@@ -343,7 +343,7 @@ def drop_center(self):
         score = calculate_score(buoys_count)
 
     # Gets the first buoy in front of the zone
-    self.pumps_drop(ids='5', use_queue=False)
+    self.pumps_drop(ids=[5], use_queue=False)
     status = self.goto_avoid(x=1750, y=1705, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
@@ -354,78 +354,135 @@ def drop_center(self):
     if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     # Gets the second buoy in front of the zone
+    self.pumps_get(ids=[3], use_queue=False)
+    status = self.goto_avoid(x=1720, y=1855, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goto_avoid(x=1780, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta=0, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.pumps_get(ids=[2], use_queue=False)
+    status = self.goto_avoid(x=1810, y=1680, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goto_avoid(x=1780, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)    
+    self.pumps_get(ids=[6], use_queue=False)
+    status = self.goto_avoid(x=1810, y=1910, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goto_avoid(x=1780, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta=0, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goto_avoid(x=1810, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
+    self.pumps_drop(ids=[2, 3, 5, 6])
+    status = self.goto_avoid(x=1700, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.front_arm_open()
+    status = self.goto_avoid(x=1720, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.pumps_drop(ids=[1, 3, 4, 5])
+    sleep(1)
+    status = self.goto_avoid(x=1500, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta=pi)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.left_cup_holder_drop()
+    self.right_cup_holder_drop()
+    status = self.goto_avoid(x=1620, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.pumps_drop(ids=[7, 10])
+    status = self.goto_avoid(x=1580, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta= 3 * pi / 4, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.pumps_drop(ids=[9])
+    self.left_cup_holder_close()
+    self.right_cup_holder_close()
+    status = self.goto_avoid(x=1540, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta= -3 * pi / 4, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.left_cup_holder_drop()
+    self.pumps_drop(ids=[8])
+    self.left_cup_holder_close()
+    status = self.goth(theta=pi, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+
+
 
 """
-robot.pumps_get(ids=[3])
-robot.goto(1720, 1855)
+robot.pumps_get(ids=[3]) done
+robot.goto(1720, 1855) done
 input()
 
-robot.goto(1780, 1800)
+robot.goto(1780, 1800) done
+robot.goth(0) done
+input()
+
+robot.pumps_get(ids=[2]) done
+robot.goto(1810, 1680) done
+input()
+
+robot.goto(1780, 1800) done
 robot.goth(0)
 input()
 
-robot.pumps_get(ids=[2])
-robot.goto(1810, 1680)
+robot.pumps_get(ids=[6]) done
+robot.goto(1810, 1910) done
 input()
 
-robot.goto(1780, 1800)
-robot.goth(0)
+robot.goto(1780, 1800) done
+robot.goth(0) done
 input()
 
-robot.pumps_get(ids=[6])
-robot.goto(1810, 1910)
+robot.goto(1810, 1800) done
 input()
 
-robot.goto(1780, 1800)
-robot.goth(0)
+trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0) done
+robot.pumps_drop(ids=[2, 3, 5, 6]) done
+robot.goto(1700, 1800) done
 input()
 
-robot.goto(1810, 1800)
+robot.front_arm_open() done
+robot.goto(1720, 1800) done
 input()
 
-trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
-robot.pumps_drop(ids=[2, 3, 5, 6])
-robot.goto(1700, 1800)
+robot.pumps_drop(ids=[1, 3, 4, 5]) done
+sleep(1) done
+robot.goto(1500, 1800) done
 input()
 
-robot.front_arm_open()
-robot.goto(1720, 1800)
+robot.goth(pi) done
+robot.left_cup_holder_drop() done
+robot.right_cup_holder_drop() done
 input()
 
-robot.pumps_drop(ids=[1, 3, 4, 5])
-sleep(1)
-robot.goto(1500, 1800)
+robot.goto(1620, 1800) done
 input()
 
-robot.goth(pi)
-robot.left_cup_holder_drop()
-robot.right_cup_holder_drop()
+robot.pumps_drop(ids=[7, 10]) done
+robot.goto(1580, 1800) done
 input()
 
-robot.goto(1620, 1800)
+robot.goth(3*pi/4) done
 input()
 
-robot.pumps_drop(ids=[7, 10])
-robot.goto(1580, 1800)
+robot.pumps_drop(ids=[9]) done
+robot.left_cup_holder_close() done
+robot.right_cup_holder_close() done
 input()
 
-robot.goth(3*pi/4)
+robot.goto(1540, 1800) done
+robot.goth(-3*pi/4) done
+robot.left_cup_holder_drop() done
 input()
 
-robot.pumps_drop(ids=[9])
-robot.left_cup_holder_close()
-robot.right_cup_holder_close()
+robot.pumps_drop(ids=[8]) done
+robot.left_cup_holder_close() done
 input()
 
-robot.goto(1540, 1800)
-robot.goth(-3*pi/4)
-robot.left_cup_holder_drop()
-input()
-
-robot.pumps_drop(ids=[8])
-robot.left_cup_holder_close()
-input()
-
-robot.goth(pi)
-input()
+robot.goth(pi) done
+input() 
 """
