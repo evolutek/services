@@ -310,6 +310,17 @@
           }
         }
       ]
+    },
+    {
+      "name": "goto_anchorage",
+      "actions": [
+        {
+          "args": {
+            "fct": "goto_anchorage",
+            "handler": "robot"
+          }
+        }
+      ]
     }
   ],
   "strategies": [
@@ -318,7 +329,8 @@
       "goals": [
         "get_buoys_7-8",
         "get_bottom_reef",
-        "push_windsocks"
+        "push_windsocks",
+        "goto_anchorage"
       ],
       "available": ["pal"],
       "use_pathfinding": false
@@ -332,7 +344,8 @@
         "get_buoys_5-6",
         "get_top_reef",
         "get_buoys_1-2",
-        "drop_start_sorting"
+        "drop_start_sorting",
+        "goto_anchorage"
       ],
       "available": ["pmi"],
       "use_pathfinding": false
