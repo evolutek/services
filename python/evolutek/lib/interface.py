@@ -10,7 +10,7 @@ class Interface:
 		self.window.bind('<Escape>', lambda e: self.close())
 		self.window.title("%s Interface" % title)
 		self.window.geometry("800x480")
-		self.interface_refresh = 100
+		self.interface_refresh = 500
 		self.start_match = False
 		self.reset = False
 		self.create_widget()

@@ -90,7 +90,9 @@ class AI(Service):
         self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
-        Thread(target=self.create_interfaces).start()
+        thd = Thread(target=self.create_interfaces)  # gui thread
+        thd.daemon = True
+        thd.start()
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()
@@ -123,8 +125,10 @@ class AI(Service):
             self.color = color
 
     def create_interfaces(self):
-        interface = AIInterface(self)
-        interface.window.mainloop()
+        app = AIInterface(self)
+        app.window.title('Sample application')
+        app.window.mainloop()
+
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

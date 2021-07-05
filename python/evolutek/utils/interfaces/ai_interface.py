@@ -146,7 +146,7 @@ class AIInterface(Interface):
 		self.ai = ai
 		print("bonjour")
 		super().__init__('AI')
-		self.update_interface()
+		self.window.after(self.interface_refresh, self.update_interface)
 
 	def create_widget(self, start_match=False):
 		if not start_match:
@@ -169,7 +169,7 @@ class AIInterface(Interface):
 
 	def update_interface(self):
 		match_status = self.ai.cs.match.get_status()
-		print("debug")
+
 		if match_status["status"] == "Started" or match_status["status"] == "Ending":
 			print("[+] Match is running")
 			if not self.reset:
