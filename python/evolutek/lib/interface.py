@@ -11,9 +11,9 @@ class Interface:
 		self.window.title("%s Interface" % title)
 		self.window.geometry("800x480")
 		self.interface_refresh = 100
-		self.create_widget()
 		self.start_match = False
 		self.reset = False
+		self.create_widget()
 		self._update_interface()
 
 	def create_widget(self):

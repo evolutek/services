@@ -193,6 +193,7 @@ class AIInterface(Interface):
 
 		self.window.after(self.interface_refresh, self.update_interface)
 
+
 def main():
 	if len(argv) > 1:
 		global ROBOT
