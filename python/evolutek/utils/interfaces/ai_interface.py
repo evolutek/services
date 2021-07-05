@@ -129,8 +129,12 @@ class MatchInterface(IFRAME):
 		super().__init__(container)
 		self.__init_interface()
 
+	def close(self):
+		self.parent.close()
+
 	def __init_interface(self):
-		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=800)
+		Button(self, text="Close", command=self.close).grid(row=0, column=0)
+		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=700)
 		self.canvas.create_text(800/2, 450/2, text=f"Score: ")
 		self.canvas.pack()
 
@@ -145,31 +149,47 @@ class AIInterface(Interface):
 		self.window.after(self.interface_refresh, self.update_interface)
 		self.window.mainloop()
 
-	def create_widget(self):
-		#self.strategies_frame = StrategyFrame(self)
-		#self.strategies_frame.config(bd=10)
-		#self.strategies_frame.pack()
-		#self.strategies_frame.place(height=40, width=150, x=0, y=200)
+	def create_widget(self, start_match=False):
+		if not start_match:
+			self.strategies_frame = StrategyFrame(self)
+			self.strategies_frame.config(bd=10)
+			self.strategies_frame.pack()
+			self.strategies_frame.place(height=40, width=150, x=0, y=200)
 
-		#self.button_system_frame = ButtonSystem(self)
-		#self.button_system_frame.pack()
-		#self.button_system_frame.place(height=29, width=213, x=480 / 2, y=0)
+			self.button_system_frame = ButtonSystem(self)
+			self.button_system_frame.pack()
+			self.button_system_frame.place(height=29, width=213, x=480 / 2, y=0)
 
-		self.status_frame = StatusFrame(self)
-		self.status_frame.grid(row=1, column=1, columnspan=3, rowspan=5)
-		self.status_frame.place(height=400, width=800, x=190, y=40)
+			self.status_frame = StatusFrame(self)
+			self.status_frame.grid(row=1, column=1, columnspan=3, rowspan=5)
+			self.status_frame.place(height=200, width=400, x=190, y=40)
+		else:
+			self.match_interfaces_frame = MatchInterface(self)
+			self.match_interfaces_frame.pack()
 
 
 	def update_interface(self):
 		match_status = self.ai.cs.match.get_status()
 
-		if match_status["status"] == "Started":
+		if match_status["status"] == "Started" or match_status["status"] == "Ending":
 			print("[+] Match is running")
+			if not self.reset:
+				self.status_frame.destroy()
+				self.button_system_frame.destroy()
+				self.strategies_frame.destroy()
+				self.reset = True
+				self.create_widget(True)
+			else:
+				self.match_interfaces_frame.update_interface()
 		else:
 			print("[+] Fix match not running or problem with this")
-			self.status_frame.update_interface()
-			#self.button_system_frame.update_interface()
-			#self.strategies_frame.update_interface()
+			if not self.reset:
+				self.status_frame.update_interface()
+				self.button_system_frame.update_interface()
+				self.strategies_frame.update_interface()
+			else:
+				self.reset = False
+				self.create_widget()
 
 		self.window.after(self.interface_refresh, self.update_interface)
 
