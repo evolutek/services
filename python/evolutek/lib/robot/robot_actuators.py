@@ -73,9 +73,10 @@ def flags_low(self):
 @if_enabled
 @use_queue
 def front_arm_close(self):
-    self.actuators.pumps_drop([3,5])
     self.actuators.ax_set_speed(1, 256)
-    return self.actuators.ax_move(1, 512)
+    res = self.actuators.ax_move(1, 512)
+    self.actuators.pumps_drop([3,5])
+    return res
 
 # Front Arm Open
 @if_enabled
