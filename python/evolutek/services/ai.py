@@ -82,7 +82,7 @@ class AI(Service):
         self.current_goal = None
         self.use_pathfinding = True
         self.recalibrate_itself = Event()
-        self.reset = Event()
+        self.reset_event = Event()
         self.match_start = Event()
         self.match_end = Event()
 
@@ -90,7 +90,7 @@ class AI(Service):
         self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
-        #self.ai_interface = AIInterface(self)
+        self.ai_interface = AIInterface(self)
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()
@@ -169,7 +169,7 @@ class AI(Service):
 
         if recalibrate_itself:
             self.recalibrate_itself.set()
-        self.reset.set()
+        self.reset_event.set()
 
     @Service.action
     def get_strategies(self):
@@ -244,7 +244,7 @@ class AI(Service):
                 )
             self.trajman.unfree()
 
-        self.reset.clear()
+        self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 
         return States.Waiting
@@ -256,7 +256,7 @@ class AI(Service):
         self.red_led.write(False)
         self.green_led.write(True)
 
-        while not self.reset.is_set() and not self.match_start.is_set():
+        while not self.reset_event.is_set() and not self.match_start.is_set():
             sleep(0.01)
 
         next = States.Setup
@@ -271,7 +271,7 @@ class AI(Service):
                     self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critical_timeout.set())
                     self.critical_timer.start()
 
-        self.reset.clear()
+        self.reset_event.clear()
         self.match_start.clear()
 
         self.red_led.write(True)
@@ -502,7 +502,7 @@ class AI(Service):
         self.trajman.disable()
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
-        self.reset.wait()
+        self.reset_event.wait()
 
         return States.Setup
 
@@ -524,7 +524,7 @@ class AI(Service):
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
 
-        self.reset.wait()
+        self.reset_event.wait()
 
         return States.Setup
 
