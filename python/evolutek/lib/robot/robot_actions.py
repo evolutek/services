@@ -310,5 +310,33 @@ def goto_anchorage(self):
 
     return RobotStatus.return_status(RobotStatus.Done, score=10)
 
+@if_enabled
+@use_queue
+def drop_center(self):
 
+    buoys_count = {
+        Color.Green: 0,
+        Color.Red: 0,
+    }
+    score = 0
+
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_trsl_max_speed(1000)
+    self.trajman.set_trsl_acc(600)
+    self.trajman.set_trsl_dec(600)
+
+    def cleanup_and_exit(status):
+        nonlocal speeds
+        nonlocal score
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
+        self.trajman.set_trsl_acc(speeds['tracc'])
+        self.trajman.set_trsl_dec(speeds['trdec'])
+        return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+
+    def update_buoys_count(color):
+        nonlocal buoys_count
+        nonlocal score
+        if color not in [Color.Green, Color.Red]: return
+        buoys_count[color] += 1
+        score = calculate_score(buoys_count)
 
