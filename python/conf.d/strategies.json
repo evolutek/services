@@ -313,12 +313,14 @@
     },
     {
       "name": "goto_anchorage",
+      "position": {
+        "x": 800,
+        "y": 700
+      },
       "actions": [
         {
-          "args": {
-            "fct": "goto_anchorage",
-            "handler": "robot"
-          }
+          "fct": "goto_anchorage",
+          "handler": "robot"
         }
       ]
     }
