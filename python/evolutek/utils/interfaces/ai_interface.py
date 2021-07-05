@@ -106,9 +106,9 @@ class StatusFrame(IFRAME):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def create_button(self):
-		Button(self, text="Recalibaration", command=self.recalibration).grid(row=0, column=0)
-		Button(self, text="Reset Match", command=self.reset_match).grid(row=0, column=1)
-		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=0)
+		Button(self, text="Recalibaration", command=lambda: self.recalibration).grid(row=0, column=0)
+		Button(self, text="Reset Match", command=lambda: self.reset_match).grid(row=0, column=1)
+		Button(self, width=20, text="Change Color", command=lambda: self.action_color).grid(column=1, row=0)
 
 	def __init_interface(self):
 		self.create_color()
@@ -146,8 +146,6 @@ class AIInterface(Interface):
 		self.ai = ai
 		print("bonjour")
 		super().__init__('AI')
-		self.window.after(self.interface_refresh, self.update_interface)
-		self.window.mainloop()
 
 	def create_widget(self, start_match=False):
 		if not start_match:

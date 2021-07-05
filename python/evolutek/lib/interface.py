@@ -33,8 +33,8 @@ class Interface:
 		#     (2000 * self.interface_ratio) / 2,
 		#     image=self.map,
 		#     tag="background")
-		self.update_interface()
 		self.window.after(self.interface_refresh, self._update_interface)
+		self.update_interface()
 
 	def loop(self):
 		"""
