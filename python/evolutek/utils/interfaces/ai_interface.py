@@ -85,9 +85,8 @@ class StatusFrame(IFRAME):
 
 	def __init__(self, container):
 		super().__init__(container)
-		match_config = self.ai.cs.config.get_section('match')
-		self.color1 = match_config['color1']
-		self.color2 = match_config['color2']
+		self.color1 = "blue"
+		self.color2 = "yellow"
 		self.__init_interface()
 
 	def create_color(self):
@@ -145,6 +144,7 @@ class MatchInterface(IFRAME):
 class AIInterface(Interface):
 	def __init__(self, ai):
 		self.ai = ai
+		print("bonjour")
 		super().__init__('AI')
 		self.window.after(self.interface_refresh, self.update_interface)
 		self.window.mainloop()
