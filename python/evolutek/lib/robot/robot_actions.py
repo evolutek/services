@@ -128,9 +128,9 @@ def drop_start_sorting(self):
     score = 0
 
     speeds = self.trajman.get_speeds()
-    self.trajman.set_trsl_max_speed(750)
-    self.trajman.set_trsl_acc(300)
-    self.trajman.set_trsl_dec(300)
+    self.trajman.set_trsl_max_speed(1000)
+    self.trajman.set_trsl_acc(600)
+    self.trajman.set_trsl_dec(600)
 
     def cleanup_and_exit(status):
         nonlocal speeds
@@ -164,7 +164,7 @@ def drop_start_sorting(self):
             if self.actuators.proximity_sensor_read(id=prox):
                 update_buoys_count(color)
         # Drops the buoys
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=0)
+        self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
         self.pumps_drop(ids=pumps, use_queue=False, mirror=False)
         sleep(0.5)
         # Moves back
@@ -184,7 +184,7 @@ def drop_start_sorting(self):
         if self.actuators.proximity_sensor_read(id=prox):
             update_buoys_count(color)
         # Drops the buoy
-        self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=0)
+        self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
         self.pumps_drop(ids=pump, use_queue=False, mirror=False)
         sleep(0.5)
         # Moves back
@@ -209,8 +209,8 @@ def drop_start_sorting(self):
             # Moves to the right y
             status = self.goto_avoid(x=x + x_offset, y=y, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
-            # Closes the arm and moves back slowly
-            self.trajman.move_trsl(dest=50, acc=100, dec=100, maxspeed=100, sens=1)
+            # Closes the arm and moves back
+            self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=1)
             self.pumps_drop(ids=str(i+7), use_queue=False, mirror=False)
             update_buoys_count(color)
             if i <= 1: self.left_cup_holder_close(use_queue=False)
@@ -274,5 +274,41 @@ def drop_start_sorting(self):
     self.trajman.set_trsl_dec(speeds['trdec'])
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
+
+
+@if_enabled
+@use_queue
+def goto_anchorage(self):
+
+    # True == south
+    anchorage = self.cs.match.get_anchorage() == "south"
+
+    x = 1350 if anchorage else 250
+    status = self.goto_avoid(x=x, y=700, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
+    status = self.goth(theta=pi/2, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
+
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_trsl_max_speed(1000)
+    self.trajman.set_trsl_acc(600)
+    self.trajman.set_trsl_dec(600)
+
+    status = self.goto(x=x, y=150, use_queue=False)
+
+    self.trajman.set_trsl_max_speed(speeds['trmax'])
+    self.trajman.set_trsl_acc(speeds['tracc'])
+    self.trajman.set_trsl_dec(speeds['trdec'])
+
+    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
+        score = 10 if self.trajman.get_position()['y'] < 475 else 0
+        return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
+
+    status = self.recal(0)
+    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
+        return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
+
+    return RobotStatus.return_status(RobotStatus.Done, score=10)
+
 
 

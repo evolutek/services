@@ -66,6 +66,7 @@ class Robot(Service):
     start_lighthouse = Service.action(robot_actions.start_lighthouse)
     push_windsocks = Service.action(robot_actions.push_windsocks)
     drop_start_sorting = Service.action(robot_actions.drop_start_sorting)
+    goto_anchorage = Service.action(robot_actions.goto_anchorage)
 
     def __init__(self):
 

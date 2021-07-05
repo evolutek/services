@@ -3,10 +3,10 @@
     {
       "name": "get_buoys_1-2",
       "position": {
-        "x": 530,
-        "y": 800,
-        "theta": "- pi / 8"
+        "x": 800,
+        "y": 534.25
       },
+      "theta": "- pi / 6",
       "actions": [
         {
           "fct": "pumps_get",
@@ -19,7 +19,7 @@
           "fct": "goto",
           "args": {
             "x": 1200,
-            "y": 445
+            "y": 345.35
           }
         }
       ]
@@ -276,14 +276,23 @@
     {
       "name" : "drop_start_sorting",
       "position": {
-        "x": 1000,
-        "y": 300,
-        "theta": "pi / 2"
+        "x": 300,
+        "y": 300
       },
+      "theta": "pi / 2",
+      "score": 30,
       "actions": [
         {
+            "fct": "goto",
+            "args": {
+                "x": 300,
+                "y": 150
+            }
+        },
+        {
           "fct": "drop_start_sorting",
-          "handler": "robot"
+          "handler": "robot",
+          "score": 30
         }
       ]
     },
@@ -307,9 +316,9 @@
     {
       "name": "normal_pal",
       "goals": [
-	      "get_buoys_7-8",
-	      "get_bottom_reef",
-	      "push_windsocks"
+        "get_buoys_7-8",
+        "get_bottom_reef",
+        "push_windsocks"
       ],
       "available": ["pal"],
       "use_pathfinding": false
