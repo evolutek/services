@@ -95,11 +95,13 @@ class StatusFrame(IFRAME):
 		self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
-                print('hallo')
-                self.cs.ai[ROBOT].reset(True)
+        self.cs.ai[ROBOT].reset(True)
 
 	def close(self):
 		self.parent.close()
+
+	def reset_position(self):
+		self.cs.ai[ROBOT].reset(False)
 
 	def reset_match(self):
 		try:
@@ -109,8 +111,9 @@ class StatusFrame(IFRAME):
 
 	def create_button(self):
 		Button(self, text="Recalibaration", command=self.recalibration).grid(row=0, column=0)
-		Button(self, text="Reset Match", command=self.reset_match).grid(row=0, column=1)
-		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=0)
+		Button(self, text="set position", command=self.reset_position).grid(row=0, column=1)
+		Button(self, text="Reset Match", command=self.reset_match).grid(row=1, column=0)
+		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=1)
 
 	def __init_interface(self):
 		self.create_color()
@@ -135,8 +138,8 @@ class MatchInterface(IFRAME):
 
 	def __init_interface(self):
 		Button(self, text="Close", command=self.close).grid(row=0, column=0)
-		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=700)
-		self.text = self.canvas.create_text(800/2, 450/2, text=f"Score: 0")
+		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=640)
+		self.text = self.canvas.create_text(800/2, 480/2, text=f"Score: 0")
 		self.canvas.pack()
 
 	def update_interface(self):
@@ -163,7 +166,7 @@ class AIInterface(Interface):
 
 			self.status_frame = StatusFrame(self)
 			self.status_frame.grid(row=1, column=1, columnspan=3, rowspan=5)
-			self.status_frame.place(height=200, width=800, x=190, y=40)
+			self.status_frame.place(height=480, width=800, x=190, y=40)
 		else:
 			self.match_interfaces_frame = MatchInterface(self)
 			self.match_interfaces_frame.pack()
@@ -171,7 +174,7 @@ class AIInterface(Interface):
 
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
-		if match_status["status"] == "Started" or match_status["status"] == "Ending":
+		if match_status["status"] == "Started" or match_status["status"] == "Ended":
 			print("[+] Match is running")
 			if not self.reset:
 				self.status_frame.destroy()
