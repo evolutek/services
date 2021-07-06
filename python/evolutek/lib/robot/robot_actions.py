@@ -344,7 +344,7 @@ def drop_center(self):
         score = calculate_score(buoys_count)
 
     self.pumps_get(ids=[1, 4, 7, 8, 9, 10])
-    self.front_arm_close()
+    self.front_arm_close(use_queue=False)
 
     # Gets the first buoy in front of the zone
     self.pumps_get(ids=[5], use_queue=False)
@@ -393,37 +393,42 @@ def drop_center(self):
     status = self.goto_avoid(x=1700, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     
-    self.front_arm_open()
+    self.front_arm_open(use_queue=False)
     status = self.goto_avoid(x=1720, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     self.pumps_drop(ids=[1, 3, 4, 5], use_queue=False)
     sleep(1)
     status = self.goto_avoid(x=1500, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     status = self.goth(theta=pi, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    self.left_cup_holder_drop()
-    self.right_cup_holder_drop()
+    self.left_cup_holder_drop(use_queue=False)
+    self.right_cup_holder_drop(use_queue=False)
     
     status = self.goto_avoid(x=1620, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     self.pumps_drop(ids=[7, 10], use_queue=False)
     status = self.goto_avoid(x=1580, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     
     status = self.goth(theta= 3 * pi / 4, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     self.pumps_drop(ids=[9], use_queue=False)
-    self.left_cup_holder_close()
-    self.right_cup_holder_close()
+    self.left_cup_holder_close(use_queue=False)
+    self.right_cup_holder_close(use_queue=False)
     
     status = self.goto_avoid(x=1540, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta= -3 * pi / 4, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    self.left_cup_holder_drop()
-    self.pumps_drop(ids=[8], use_queue=False)
-    self.left_cup_holder_close()
+    self.left_cup_holder_drop(use_queue=False)
+    
+    self.pumps_drop(ids=[8])
+    self.left_cup_holder_close(use_queue=False)
     
     status = self.goth(theta=pi, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
