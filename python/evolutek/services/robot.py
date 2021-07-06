@@ -13,10 +13,12 @@ from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.action_queue import ActQueue
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
+from evolutek.utils.interfaces.debug_map import Interface
 
 from time import time, sleep
-from threading import Event, Lock
+from threading import Event, Lock, Thread
 
+DEBUG = False
 
 @Service.require('config')
 @Service.require('actuators', ROBOT)
@@ -107,6 +109,9 @@ class Robot(Service):
         fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map = Map(width, height, self.size)
         self.map.add_obstacles(fixed_obstacles)
+        self.path = []
+        self.robots = []
+        self.robots_tags = []
 
         def start_callback(id):
             self.need_to_abort.clear()
@@ -132,6 +137,9 @@ class Robot(Service):
         except Exception as e:
             print('[ROBOT] Failed to set color: %s' % str(e))
 
+        if DEBUG:
+            Thread(target=Interface, args=[self]).start()
+
     @Service.event("match_color")
     def color_callback(self, color):
         with self.lock:
@@ -144,24 +152,30 @@ class Robot(Service):
 
     def get_path(self, destination):
 
-        robots_tags = []
         robots = self.trajman.get_robots()
         detected_robots = [ Point(dict=robot) for robot in robots ]
         origin = Point(dict=self.trajman.get_position())
 
         with self.lock:
+            # Remove robots
+            for tag in self.robots_tags:
+                self.map.remove_obstacle(tag)
+            self.robots_tags.clear()
+
             # Add robots on the map
-            for i in range(len(self.detected_robots)):
-                robots_tags.append('robot-%d' % i)
-                self.map.add_octogon_obstacle(self.detected_robots[i], self.robot_size + 10, tag=robots_tags[-1], type=ObstacleType.robot)
+            for i in range(len(detected_robots)):
+                self.robots_tags.append('robot-%d' % i)
+                self.map.add_octogon_obstacle(detected_robots[i], self.robot_size + 10, tag=self.robots_tags[-1], type=ObstacleType.robot)
 
             # Compute path
             path = self.map.get_path(origin, destination)
 
             # Remove robots
-            for tag in robots_tags:
-                self.map.remove_obstacle(tag)
+            #for tag in robots_tags:
+            #    self.map.remove_obstacle(tag)
 
+            self.path = path
+            self.robots = robots
             return path
 
     @Service.event('raise_flags')

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from evolutek.lib.map.map import ObstacleType
 from evolutek.lib.map.point import Point
-from evolutek.lib.map.tim import DebugMode
 
 from tkinter import *
 from PIL import Image
@@ -15,18 +14,18 @@ colors = ["yellow", "orange", "red", "purple", "blue", "cyan", "green"]
 #TODO: add robot angle
 class Interface:
 
-    def __init__(self, map, service):
+    def __init__(self, robot):
 
         print('[DEBUG_MAP] Init interface')
 
         self.window = Tk()
         self.unit = self.window
         self.window.attributes('-fullscreen', True)
-        self.window.bind('<Escape>',lambda e: self.close())
+        self.window.bind('<Escape>', lambda e: self.close())
         self.window.title('Map interface')
 
-        self.map = map
-        self.service = service
+        self.robot = robot
+        self.map = self.robot.map
 
         unit_width = self.window.winfo_screenwidth() / self.map.width
         unit_height = (self.window.winfo_screenheight() - 50) / self.map.height
@@ -35,57 +34,25 @@ class Interface:
         self.width = self.map.width * self.unit
         self.height = self.map.height * self.unit
 
-        nb_tims = len(self.service.tim)
-        center = int(ceil(nb_tims/2))
-
         self.close_button = Button(self.window, text='Close', command=self.close)
-        self.close_button.grid(row=1, column=center)
-
-        self.tim_labels = []
-        i = 0
-        for ip in self.service.tim:
-            connected = self.service.tim[ip].connected
-            label = Label(self.window,
-                text='TIM %s: %s' % (ip, 'connected' if connected  else 'disconnected'),
-                fg='green' if connected else 'red', height=1)
-            label.grid(row=2, column=i)
-            i += 1
-            self.tim_labels.append((label, ip))
+        self.close_button.grid(row=1, column=1)
 
         self.canvas = Canvas(self.window, width=self.width, height=self.height)
 
         img = Image.open('/etc/conf.d/map.png')
         img = img.resize((int(self.width), int(self.height)), Image.ANTIALIAS)
-        self.image =  ImageTk.PhotoImage(img)
+        self.image = ImageTk.PhotoImage(img)
 
         self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
-        if nb_tims > 0:
-            self.canvas.grid(row=3, column=0, columnspan=nb_tims)
         self.canvas.grid(row=3, column=0)
 
         print('[DEBUG_MAP] Window created')
-        self.window.after(int(self.service.refresh), self.update)
+        self.window.after(100, self.update)
         self.window.mainloop()
 
     def close(self):
         self.window.destroy()
         _exit(0)
-
-    def update_tims(self):
-
-        for label, ip in self.tim_labels:
-            connected = self.service.tim[ip].connected
-            label.config(text='TIM %s: %s' % (ip, 'connected' if connected  else 'disconnected'),
-            fg='green' if connected else 'red')
-
-    def print_raw_data(self, raw_data):
-        for p in raw_data:
-            self.canvas.create_rectangle(p.y * self.unit, p.x * self.unit, p.y * self.unit + 5, p.x * self.unit + 5, fill='white')
-
-    def print_shapes(self, shapes, color):
-        for i in range(len(shapes)):
-            for p in shapes[i]:
-                self.canvas.create_rectangle(p.y * self.unit, p.x * self.unit, p.y * self.unit + 5, p.x * self.unit + 5, fill=color)
 
     def print_robots(self, robots, color):
         for i in range(len(robots)):
@@ -94,17 +61,6 @@ class Interface:
             else:
                 p = robots[i]
             self.canvas.create_rectangle(p.y * self.unit, p.x * self.unit, p.y * self.unit + 10, p.x * self.unit + 10, fill=color)
-
-    def print_tims(self, debug_tims=False):
-        i = 0
-        for ip in self.service.tim:
-            tim = self.service.tim[ip]
-            color = colors[i % len(colors)]
-            self.print_raw_data(tim.raw_data)
-            if debug_tims:
-                self.print_shapes(tim.shapes, color)
-                self.print_robots(tim.robots, color)
-            i += 1
 
     def print_polygon(self, points, color):
 
@@ -165,63 +121,29 @@ class Interface:
             y2 = (p.x + 10) * self.unit
             self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
 
-    def print_graph(self, graph):
-
-        for point in graph:
-
-            for p in graph[point]:
-
-                self.canvas.create_line(point.y * self.unit, point.x * self.unit,
-                    p.y * self.unit, p.x * self.unit, width=5, fill='yellow')
-
-        for p in graph:
-            x1 = (p.y - 10) * self.unit
-            x2 = (p.y + 10) * self.unit
-            y1 = (p.x - 10) * self.unit
-            y2 = (p.x + 10) * self.unit
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill='violet')
-
-    def print_raw_data(self, raw_data):
-        #print("data points: %d" % len(raw_data))
-        for p in raw_data:
-            #print(p)
-            self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill='white')
-
-    def print_shapes(self, shapes):
-        #print("nb shapes: %d" % len(shapes))
-        for i in range(len(shapes)):
-            color = colors[i % len(colors)]
-            for p in shapes[i]:
-                self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 5, p.x * unit + 5, fill=color)
-
     def print_robots(self, robots):
-        #print("nb robots: %d" % len(robots))
+
+        unit = self.unit
         for i in range(len(robots)):
             color = colors[i % len(colors)]
             p = robots[i]
-            if self.service.debug:
-                self.canvas.create_rectangle(p.y * unit, p.x * unit, p.y * unit + 10, p.x * unit + 10, fill=color)
-            else:
-                self.canvas.create_rectangle((p['y'] - self.service.robot_size) * unit,
-                (p['x'] - self.service.robot_size) * unit, (p['y'] + self.service.robot_size) * unit,
-                (p['x'] + self.service.robot_size) * unit, fill='red')
+            self.canvas.create_rectangle((p['y'] - self.robot.robot_size) * unit,
+            (p['x'] - self.robot.robot_size) * unit, (p['y'] + self.robot.robot_size) * unit,
+            (p['x'] + self.robot.robot_size) * unit, fill='red')
 
     def update(self):
 
-        #print('[DEBUG_MAP] Update interface')
         self.canvas.delete('all')
-        self.canvas.create_image(self.width * unit, self.height * unit, image=self.image)
-        if self.service.debug:
-            self.print_raw_data(self.service.raw_data)
-            self.print_shapes(self.service.shapes) 
-            self.print_robots(self.service.robots)
-        else:
-            self.print_merged_map()
-        """if hasattr(self.service, 'pal_telem') and hasattr(self.service, 'pal_size_y'):
-            self.print_robot(self.service.pal_telem, self.service.pal_size_y)
-        if hasattr(self.service, 'pmi_telem') and hasattr(self.service, 'pmi_size_y'):
-            self.print_robot(self.service.pmi_telem, self.service.pmi_size)"""
+        self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
 
-        if hasattr(self.service, 'path'):
-            self.print_path(self.service.path)
-        self.window.after(self.service.refresh, self.update)
+        if self.robot.robots:
+            with self.robot.lock:
+                r = self.robot.robots[:]
+            self.print_robots(r)
+        if self.robot.path:
+            with self.robot.lock:
+                p = self.robot.path[:]
+            self.print_path(p)
+        self.print_merged_map()
+
+        self.window.after(100, self.update)
