@@ -327,6 +327,7 @@ def drop_center(self):
     self.trajman.set_trsl_acc(600)
     self.trajman.set_trsl_dec(600)
 
+
     def cleanup_and_exit(status):
         nonlocal speeds
         nonlocal score
@@ -341,6 +342,9 @@ def drop_center(self):
         if color not in [Color.Green, Color.Red]: return
         buoys_count[color] += 1
         score = calculate_score(buoys_count)
+
+    self.pumps_get(ids=[1, 4, 7, 8, 9, 10])
+    self.front_arm_close()
 
     # Gets the first buoy in front of the zone
     self.pumps_get(ids=[5], use_queue=False)
@@ -357,28 +361,38 @@ def drop_center(self):
     self.pumps_get(ids=[3], use_queue=False)
     status = self.goto_avoid(x=1720, y=1855, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+
     status = self.goto_avoid(x=1780, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta=0, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     self.pumps_get(ids=[2], use_queue=False)
     status = self.goto_avoid(x=1810, y=1680, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     status = self.goto_avoid(x=1780, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)    
+    status = self.goth(theta = 0, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)    
+
     self.pumps_get(ids=[6], use_queue=False)
     status = self.goto_avoid(x=1810, y=1910, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     status = self.goto_avoid(x=1780, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta=0, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     status = self.goto_avoid(x=1810, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
     self.pumps_drop(ids=[2, 3, 5, 6], use_queue=False)
     status = self.goto_avoid(x=1700, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     self.front_arm_open()
     status = self.goto_avoid(x=1720, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
@@ -390,16 +404,19 @@ def drop_center(self):
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.left_cup_holder_drop()
     self.right_cup_holder_drop()
+    
     status = self.goto_avoid(x=1620, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.pumps_drop(ids=[7, 10], use_queue=False)
     status = self.goto_avoid(x=1580, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    
     status = self.goth(theta= 3 * pi / 4, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.pumps_drop(ids=[9], use_queue=False)
     self.left_cup_holder_close()
     self.right_cup_holder_close()
+    
     status = self.goto_avoid(x=1540, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta= -3 * pi / 4, use_queue=False)
@@ -407,6 +424,7 @@ def drop_center(self):
     self.left_cup_holder_drop()
     self.pumps_drop(ids=[8], use_queue=False)
     self.left_cup_holder_close()
+    
     status = self.goth(theta=pi, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
