@@ -117,11 +117,11 @@ class AI(Service):
                 self.handle_bau(cs.actuators[ROBOT].bau_read())
             except Exception as e:
                 print('[AI] Failed to get BAU status: %s' % str(e))
-            Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
             thd = Thread(target=self.create_interfaces)  # gui thread
             thd.daemon = True
             thd.start()
             sleep(1.5)
+            Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
 
     @Service.event("match_color")
     def color_callback(self, color):
@@ -131,7 +131,8 @@ class AI(Service):
     def create_interfaces(self):
         app = AIInterface(self)
         app.window.mainloop()
-
+        while 1:
+            print("lols")
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

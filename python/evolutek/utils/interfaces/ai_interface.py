@@ -174,7 +174,7 @@ class AIInterface(Interface):
 	def update_interface(self):
 		with self.ai.lock:
 			match_status = self.ai.cs.match.get_status()
-
+		print("update")
 		if match_status["status"] == "Started" or match_status["status"] == "Ending":
 			print("[+] Match is running")
 			if not self.reset:
