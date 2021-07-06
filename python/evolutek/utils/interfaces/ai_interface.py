@@ -36,8 +36,8 @@ class StrategyFrame(IFRAME):
 		self.__init_interface()
 
 	def action_strategy(self):
-		print(f"action_strategy: {self.strategy_number.get()}")
-		self.ai.set_strategy(self.strategy_number.get())
+		with self.ai.lock:
+			self.ai.set_strategy(self.strategy_number.get())
 
 	def __create_radio_strategy(self):
 		list_strategy = self.ai.get_strategies()
@@ -90,18 +90,21 @@ class StatusFrame(IFRAME):
 		self.__init_interface()
 
 	def create_color(self):
-		self.change_color = Frame(self, relief="raised", background=self.ai.cs.match.get_color(), width=500, height=400)
-		self.change_color.grid(column=5, row=5)
+		with self.ai.lock:
+			self.change_color = Frame(self, relief="raised", background=self.ai.cs.match.get_color(), width=500, height=400)
+			self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
-		self.ai.reset(True)
+		with self.ai.lock:
+			self.ai.reset(True)
 
 	def close(self):
 		self.parent.close()
 
 	def reset_match(self):
 		try:
-			self.ai.cs.match.reset_match()
+			with self.lock:
+				self.ai.cs.match.reset_match()
 		except Exception as e:
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
@@ -115,12 +118,13 @@ class StatusFrame(IFRAME):
 		self.create_button()
 
 	def action_color(self):
-		if self.ai.cs.match.get_color() == self.color1:
-			self.ai.cs.match.set_color(self.color2)
-			self.change_color.config(bg=self.color2)
-		else:
-			self.ai.cs.match.set_color(self.color1)
-			self.change_color.config(bg=self.color1)
+		with self.ai.lock:
+			if self.ai.cs.match.get_color() == self.color1:
+				self.ai.cs.match.set_color(self.color2)
+				self.change_color.config(bg=self.color2)
+			else:
+				self.ai.cs.match.set_color(self.color1)
+				self.change_color.config(bg=self.color1)
 
 
 class MatchInterface(IFRAME):
@@ -168,7 +172,8 @@ class AIInterface(Interface):
 
 
 	def update_interface(self):
-		match_status = self.ai.cs.match.get_status()
+		with self.lock:
+			match_status = self.ai.cs.match.get_status()
 
 		if match_status["status"] == "Started" or match_status["status"] == "Ending":
 			print("[+] Match is running")
