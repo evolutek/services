@@ -299,11 +299,19 @@
     {
       "name": "drop_center_sorting",
       "position": {
-        "x": 1400,
-        "y": 1705,
+        "x":  1600,
+        "y":  200,
         "theta": 0
       },
       "actions": [
+        {
+          "fct": "goto_with_path",
+          "handler": "robot",
+          "args": {
+            "x": 1400,
+            "y": 1705
+          }
+        },
         {
           "fct": "drop_center",
           "handler": "robot"
