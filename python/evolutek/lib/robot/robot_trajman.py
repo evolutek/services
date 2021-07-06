@@ -374,7 +374,7 @@ def recalibration(self,
             return RobotStatus.return_status(status)
 
         if HOMEMADE_RECAL:
-            self.homemade_recal(decal_x)
+            self.homemade_recal(decal_x, use_queue=False)
         else:
             status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
@@ -397,7 +397,7 @@ def recalibration(self,
             return RobotStatus.return_status(status)
 
         if HOMEMADE_RECAL:
-            self.homemade_recal(decal_y)
+            self.homemade_recal(decal_y, use_queue=False)
         else:
             status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_y)))
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
