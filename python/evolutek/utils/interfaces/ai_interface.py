@@ -90,12 +90,13 @@ class StatusFrame(IFRAME):
 		self.__init_interface()
 
 	def create_color(self):
-		with self.ai.lock:
-			self.change_color = Frame(self, relief="raised", background=self.cs.ai[ROBOT].match.get_color(), width=500, height=400)
-			self.change_color.grid(column=5, row=5)
+	
+		self.change_color = Frame(self, relief="raised", background=self.cs.match.get_color(), width=500, height=400)
+		self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
-		self.cs.ai[ROBOT].reset(True)
+                print('hallo')
+                self.cs.ai[ROBOT].reset(True)
 
 	def close(self):
 		self.parent.close()
@@ -107,9 +108,9 @@ class StatusFrame(IFRAME):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def create_button(self):
-		Button(self, text="Recalibaration", command=lambda: self.recalibration).grid(row=0, column=0)
-		Button(self, text="Reset Match", command=lambda: self.reset_match).grid(row=0, column=1)
-		Button(self, width=20, text="Change Color", command=lambda: self.action_color).grid(column=1, row=0)
+		Button(self, text="Recalibaration", command=self.recalibration).grid(row=0, column=0)
+		Button(self, text="Reset Match", command=self.reset_match).grid(row=0, column=1)
+		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=0)
 
 	def __init_interface(self):
 		self.create_color()
