@@ -93,6 +93,7 @@ class AI(Service):
         thd = Thread(target=self.create_interfaces)  # gui thread
         thd.daemon = True
         thd.start()
+        sleep(1.5)
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()

@@ -14,6 +14,7 @@ class Interface:
 		self.start_match = False
 		self.reset = False
 		self.create_widget()
+		self.update_interface()
 
 	def create_widget(self):
 		pass
