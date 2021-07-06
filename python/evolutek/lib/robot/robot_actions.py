@@ -143,6 +143,7 @@ def drop_start(self):
     def update_buoys_count(color):
         nonlocal buoys_count
         nonlocal score
+        print(f'[ROBOT] Adding {color.value} buoy to the score')
         if color not in [Color.Green, Color.Red]: return
         buoys_count[color] += 1
         score = calculate_score(buoys_count)
@@ -327,7 +328,6 @@ def drop_center(self):
     self.trajman.set_trsl_acc(600)
     self.trajman.set_trsl_dec(600)
 
-
     def cleanup_and_exit(status):
         nonlocal speeds
         nonlocal score
@@ -339,15 +339,26 @@ def drop_center(self):
     def update_buoys_count(color):
         nonlocal buoys_count
         nonlocal score
-        if color not in [Color.Green, Color.Red]: return
-        buoys_count[color] += 1
+        print(f'[ROBOT] Adding {color.value} buoy to the score')
+        if isinstance(color, list):
+            for c in color:
+                buoys_count[c] += 1
+        else:
+            if color not in [Color.Green, Color.Red]: return
+            buoys_count[color] += 1
         score = calculate_score(buoys_count)
 
-    self.pumps_get(ids=[1, 4, 7, 8, 9, 10])
-    self.front_arm_close(use_queue=False)
+    def check_front_buoys(buoys):
+        for prox, color in buoys:
+            if not self.side:
+                color = Color.Green if color == Color.Red else Color.Red
+            if self.actuators.proximity_sensor_read(id=prox):
+                update_buoys_count(color)
 
     # Gets the first buoy in front of the zone
     self.pumps_get(ids=[5], use_queue=False)
+    status = self.goth(theta=0, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goto_avoid(x=1750, y=1705, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
@@ -362,151 +373,86 @@ def drop_center(self):
     status = self.goto_avoid(x=1720, y=1855, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
+    # Gets the first buoy on the back of the zone
     status = self.goto_avoid(x=1780, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    status = self.goth(theta=0, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
     self.pumps_get(ids=[2], use_queue=False)
     status = self.goto_avoid(x=1810, y=1680, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
-    status = self.goto_avoid(x=1780, y=1800, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)    
-    status = self.goth(theta = 0, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)    
 
+    # Gets the second buoy on the back of the zone
+    status = self.goto_avoid(x=1780, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.pumps_get(ids=[6], use_queue=False)
     status = self.goto_avoid(x=1810, y=1910, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
+
+    # Drops the 4 buoys on the front
     status = self.goto_avoid(x=1780, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    status = self.goth(theta=0, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
     status = self.goto_avoid(x=1810, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
+    check_front_buoys([(1, Color.Red),(2, Color.Red),(3, Color.Green),(4, Color.Green)])
     self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
     self.pumps_drop(ids=[2, 3, 5, 6], use_queue=False)
+
+    # Gets into position to drop the front arm buoys
     status = self.goto_avoid(x=1700, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
     self.front_arm_open(use_queue=False)
+    sleep(0.5)
     status = self.goto_avoid(x=1720, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
+
+    # Drops the front arm buoys
+    check_front_buoys([(2, Color.Red),(3, Color.Green)])
+    self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
     self.pumps_drop(ids=[1, 3, 4, 5], use_queue=False)
-    sleep(1)
     status = self.goto_avoid(x=1500, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
+
+    # Gets the color of all the reef buoy
+    colors = self.actuators.color_sensors_read()
+    colors = list(map(lambda c: Color.get_by_name(c), colors))
+    print(f'[ROBOT] Read RGB sensors: {colors}')
+
+    # Gets into position to drop the 2 exterior buoys on the back
     status = self.goth(theta=pi, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.left_cup_holder_drop(use_queue=False)
     self.right_cup_holder_drop(use_queue=False)
-    
     status = self.goto_avoid(x=1620, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
+
+    # Drops the 2 exterior buoys on the back
+    update_buoys_count([colors[0], colors[3]])
     self.pumps_drop(ids=[7, 10], use_queue=False)
-    status = self.goto_avoid(x=1580, y=1800, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
-    status = self.goth(theta= 3 * pi / 4, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    
-    self.pumps_drop(ids=[9], use_queue=False)
     self.left_cup_holder_close(use_queue=False)
     self.right_cup_holder_close(use_queue=False)
-    
+    sleep(0.5)
+
+    # Drops the first central buoy
+    status = self.goto_avoid(x=1580, y=1800, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goth(theta= 3 * pi / 4, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    self.right_cup_holder_drop(use_queue=False)
+    sleep(1)
+    update_buoys_count([colors[2]])
+    self.pumps_drop(ids=[9], use_queue=False)
+    self.right_cup_holder_close(use_queue=False)
+    sleep(0.5)
+
+    # Drops the second central buoy
     status = self.goto_avoid(x=1540, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     status = self.goth(theta= -3 * pi / 4, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.left_cup_holder_drop(use_queue=False)
-    
+    sleep(1)
+    update_buoys_count([colors[1]])
     self.pumps_drop(ids=[8], use_queue=False)
     self.left_cup_holder_close(use_queue=False)
-    
-    status = self.goth(theta=pi, use_queue=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    return RobotStatus.return_status(RobotStatus.Done, score=27)
+    sleep(0.5)
 
-
-
-"""
-robot.pumps_get(ids=[3]) done
-robot.goto(1720, 1855) done
-input()
-
-robot.goto(1780, 1800) done
-robot.goth(0) done
-input()
-
-robot.pumps_get(ids=[2]) done
-robot.goto(1810, 1680) done
-input()
-
-robot.goto(1780, 1800) done
-robot.goth(0)
-input()
-
-robot.pumps_get(ids=[6]) done
-robot.goto(1810, 1910) done
-input()
-
-robot.goto(1780, 1800) done
-robot.goth(0) done
-input()
-
-robot.goto(1810, 1800) done
-input()
-
-trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0) done
-robot.pumps_drop(ids=[2, 3, 5, 6]) done
-robot.goto(1700, 1800) done
-input()
-
-robot.front_arm_open() done
-robot.goto(1720, 1800) done
-input()
-
-robot.pumps_drop(ids=[1, 3, 4, 5]) done
-sleep(1) done
-robot.goto(1500, 1800) done
-input()
-
-robot.goth(pi) done
-robot.left_cup_holder_drop() done
-robot.right_cup_holder_drop() done
-input()
-
-robot.goto(1620, 1800) done
-input()
-
-robot.pumps_drop(ids=[7, 10]) done
-robot.goto(1580, 1800) done
-input()
-
-robot.goth(3*pi/4) done
-input()
-
-robot.pumps_drop(ids=[9]) done
-robot.left_cup_holder_close() done
-robot.right_cup_holder_close() done
-input()
-
-robot.goto(1540, 1800) done
-robot.goth(-3*pi/4) done
-robot.left_cup_holder_drop() done
-input()
-
-robot.pumps_drop(ids=[8]) done
-robot.left_cup_holder_close() done
-input()
-
-robot.goth(pi) done
-input() 
-"""
+    return RobotStatus.return_status(RobotStatus.Done, score=score)
