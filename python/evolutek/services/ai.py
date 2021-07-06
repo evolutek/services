@@ -90,10 +90,10 @@ class AI(Service):
         self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
-        thd = Thread(target=self.create_interfaces)  # gui thread
-        thd.daemon = True
-        thd.start()
-        sleep(1.5)
+        # thd = Thread(target=self.create_interfaces)  # gui thread
+        # thd.daemon = True
+        # thd.start()
+        # sleep(1.5)
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()
@@ -117,6 +117,10 @@ class AI(Service):
                 self.handle_bau(cs.actuators[ROBOT].bau_read())
             except Exception as e:
                 print('[AI] Failed to get BAU status: %s' % str(e))
+            thd = Thread(target=self.create_interfaces)  # gui thread
+            thd.daemon = True
+            thd.start()
+            sleep(1.5)
 
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
 
