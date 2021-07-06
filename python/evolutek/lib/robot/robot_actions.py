@@ -339,11 +339,12 @@ def drop_center(self):
     def update_buoys_count(color):
         nonlocal buoys_count
         nonlocal score
-        print(f'[ROBOT] Adding {color.value} buoy to the score')
         if isinstance(color, list):
             for c in color:
+                print(f'[ROBOT] Adding {c.value} buoy to the score')
                 buoys_count[c] += 1
         else:
+            print(f'[ROBOT] Adding {color.value} buoy to the score')
             if color not in [Color.Green, Color.Red]: return
             buoys_count[color] += 1
         score = calculate_score(buoys_count)
