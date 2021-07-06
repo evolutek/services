@@ -148,7 +148,6 @@ class MatchInterface(IFRAME):
 class AIInterface(Interface):
 	def __init__(self, ai):
 		self.ai = ai
-		print("bonjour")
 		super().__init__('AI')
 		self.window.after(self.interface_refresh, self.update_interface)
 
@@ -165,7 +164,7 @@ class AIInterface(Interface):
 
 			self.status_frame = StatusFrame(self)
 			self.status_frame.grid(row=1, column=1, columnspan=3, rowspan=5)
-			self.status_frame.place(height=200, width=400, x=190, y=40)
+			self.status_frame.place(height=200, width=800, x=190, y=40)
 		else:
 			self.match_interfaces_frame = MatchInterface(self)
 			self.match_interfaces_frame.pack()
@@ -174,7 +173,6 @@ class AIInterface(Interface):
 	def update_interface(self):
 		with self.ai.lock:
 			match_status = self.ai.cs.match.get_status()
-		print("update")
 		if match_status["status"] == "Started" or match_status["status"] == "Ending":
 			print("[+] Match is running")
 			if not self.reset:
