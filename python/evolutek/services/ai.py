@@ -90,10 +90,6 @@ class AI(Service):
         self.critical_timeout = Event()
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
-        # thd = Thread(target=self.create_interfaces)  # gui thread
-        # thd.daemon = True
-        # thd.start()
-        # sleep(1.5)
         if not self.goals.parsed:
             print('[AI] Failed to parsed goals')
             Thread(target=self.fsm.run_error).start()
@@ -113,26 +109,15 @@ class AI(Service):
                 print('[AI] Failed to set color: %s' % str(e))
 
             try:
-                cs = CellaservProxy()
-                self.handle_bau(cs.actuators[ROBOT].bau_read())
+                self.handle_bau(self.cs.actuators[ROBOT].bau_read())
             except Exception as e:
                 print('[AI] Failed to get BAU status: %s' % str(e))
-            thd = Thread(target=self.create_interfaces)  # gui thread
-            thd.daemon = True
-            thd.start()
-            sleep(1.5)
             Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
 
     @Service.event("match_color")
     def color_callback(self, color):
         with self.lock:
             self.color = color
-
-    def create_interfaces(self):
-        app = AIInterface(self)
-        app.window.mainloop()
-        while 1:
-            print("lols")
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

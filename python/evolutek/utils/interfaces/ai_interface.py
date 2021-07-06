@@ -4,6 +4,7 @@ import os
 
 from evolutek.lib.settings import ROBOT
 from cellaserv.service import Service
+from cellaserv.proxy import CellaservProxy
 import json
 from tkinter import *
 from evolutek.lib.settings import SIMULATION
@@ -19,7 +20,7 @@ from evolutek.lib.interface import Interface
 class IFRAME(Frame):
 	def __init__(self, container, border=0):
 		self.parent = container
-		self.ai = container.ai
+		self.cs = container.cs
 		super().__init__(self.parent.window, bd=border)
 
 	def update_interface(self):
@@ -36,11 +37,10 @@ class StrategyFrame(IFRAME):
 		self.__init_interface()
 
 	def action_strategy(self):
-		with self.ai.lock:
-			self.ai.set_strategy(self.strategy_number.get())
+		self.cs.ai[ROBOT].set_strategy(self.strategy_number.get())
 
 	def __create_radio_strategy(self):
-		list_strategy = self.ai.get_strategies()
+		list_strategy = self.cs.ai[ROBOT].get_strategies()
 		buttons = []
 
 		for strategy in list_strategy:
@@ -91,20 +91,18 @@ class StatusFrame(IFRAME):
 
 	def create_color(self):
 		with self.ai.lock:
-			self.change_color = Frame(self, relief="raised", background=self.ai.cs.match.get_color(), width=500, height=400)
+			self.change_color = Frame(self, relief="raised", background=self.cs.ai[ROBOT].match.get_color(), width=500, height=400)
 			self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
-		with self.ai.lock:
-			self.ai.reset(True)
+		self.cs.ai[ROBOT].reset(True)
 
 	def close(self):
 		self.parent.close()
 
 	def reset_match(self):
 		try:
-			with self.lock:
-				self.ai.cs.match.reset_match()
+			self.cs.match.reset_match()
 		except Exception as e:
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
@@ -118,13 +116,12 @@ class StatusFrame(IFRAME):
 		self.create_button()
 
 	def action_color(self):
-		with self.ai.lock:
-			if self.ai.cs.match.get_color() == self.color1:
-				self.ai.cs.match.set_color(self.color2)
-				self.change_color.config(bg=self.color2)
-			else:
-				self.ai.cs.match.set_color(self.color1)
-				self.change_color.config(bg=self.color1)
+		if self.cs.match.get_color() == self.color1:
+			self.cs.match.set_color(self.color2)
+			self.change_color.config(bg=self.color2)
+		else:
+			self.cs.match.set_color(self.color1)
+			self.change_color.config(bg=self.color1)
 
 
 class MatchInterface(IFRAME):
@@ -138,16 +135,17 @@ class MatchInterface(IFRAME):
 	def __init_interface(self):
 		Button(self, text="Close", command=self.close).grid(row=0, column=0)
 		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=700)
-		self.canvas.create_text(800/2, 450/2, text=f"Score: ")
+		self.text = self.canvas.create_text(800/2, 450/2, text=f"Score: 0")
 		self.canvas.pack()
 
 	def update_interface(self):
-		pass
+		match_status = self.cs.match.get_status()
+		self.canvas.itemconfig(self.text, text=f"Score: {match_status['score']}")
 
 
 class AIInterface(Interface):
-	def __init__(self, ai):
-		self.ai = ai
+	def __init__(self):
+		self.cs = CellaservProxy()
 		super().__init__('AI')
 		self.window.after(self.interface_refresh, self.update_interface)
 
@@ -171,8 +169,7 @@ class AIInterface(Interface):
 
 
 	def update_interface(self):
-		with self.ai.lock:
-			match_status = self.ai.cs.match.get_status()
+		match_status = self.cs.match.get_status()
 		if match_status["status"] == "Started" or match_status["status"] == "Ending":
 			print("[+] Match is running")
 			if not self.reset:
@@ -199,7 +196,7 @@ class AIInterface(Interface):
 def main():
 	if len(argv) > 1:
 		global ROBOT
-		ROBOT = argv[1]
+	AIInterface().loop()
 
 if __name__ == "__main__":
 	main()
