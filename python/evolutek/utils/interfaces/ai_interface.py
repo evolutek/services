@@ -165,7 +165,7 @@ class AIInterface(Interface):
 			self.strategies_frame = StrategyFrame(self)
 			self.strategies_frame.config(bd=10)
 			self.strategies_frame.pack()
-			self.strategies_frame.place(height=450, width=550, x=0, y=200)
+			self.strategies_frame.place(height=450, width=250, x=0, y=200)
 
 			self.button_system_frame = ButtonSystem(self)
 			self.button_system_frame.pack()
