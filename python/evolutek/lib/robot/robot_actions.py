@@ -304,12 +304,15 @@ def drop_start(self):
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
-
 @if_enabled
 @use_queue
 def goto_anchorage(self):
 
     # True == south
+    match_status = self.cs.match.get_status()
+    while match_status["time"] < 5:
+        sleep(0.5)
+        match_status = self.cs.match.get_status()
     anchorage = self.cs.match.get_anchorage() == "south"
 
     x = 1350 if anchorage else 250
