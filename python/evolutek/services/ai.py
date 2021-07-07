@@ -216,7 +216,7 @@ class AI(Service):
             self.recalibrate_itself.clear()
 
             self.robot.set_theta(pi/2)
-            self.recalibration(x = False, x_sensor = 'right' if ROBOT == 'pal' else 'left')
+            self.recalibration(x = False, x_sensor = 'right' if ROBOT == 'pal' else 'left', init=True)
 
             if ROBOT == 'pal':
                 self.goto(x=900, y=800, avoid=False)
