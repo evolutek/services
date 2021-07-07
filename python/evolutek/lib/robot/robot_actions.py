@@ -319,9 +319,9 @@ def goto_anchorage(self):
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
 
     speeds = self.trajman.get_speeds()
-    self.trajman.set_trsl_max_speed(1000)
-    self.trajman.set_trsl_acc(600)
-    self.trajman.set_trsl_dec(600)
+    self.trajman.set_trsl_max_speed(500)
+    self.trajman.set_trsl_acc(500)
+    self.trajman.set_trsl_dec(500)
 
     status = self.goto(x=x, y=150, use_queue=False)
 
@@ -334,7 +334,7 @@ def goto_anchorage(self):
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     status = self.homemade_recal(use_queue=False)
-    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
+    if RobotStatus.get_status(²status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
         return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
 
     return RobotStatus.return_status(RobotStatus.Done, score=10)
@@ -430,6 +430,7 @@ def drop_center(self):
     status = self.goto_avoid(x=1810, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     check_front_buoys([(1, Color.Red),(2, Color.Red),(3, Color.Green),(4, Color.Green)])
+    sleep(0.1)
     self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
     self.pumps_drop(ids=[2, 3, 5, 6], use_queue=False)
 
@@ -443,6 +444,7 @@ def drop_center(self):
 
     # Drops the front arm buoys
     check_front_buoys([(2, Color.Red),(3, Color.Green)])
+    sleep(0.1)
     self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=0)
     self.pumps_drop(ids=[1, 3, 4, 5], use_queue=False)
     status = self.goto_avoid(x=1500, y=1800, use_queue=False)
