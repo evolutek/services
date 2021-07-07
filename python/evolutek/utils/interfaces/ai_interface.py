@@ -38,6 +38,7 @@ class StrategyFrame(IFRAME):
 
 	def action_strategy(self):
 		self.cs.ai[ROBOT].set_strategy(self.strategy_number.get())
+		print(f"new strategy: {self.cs.ai[ROBOT].get_strategies()}")
 
 	def __create_radio_strategy(self):
 		list_strategy = self.cs.ai[ROBOT].get_strategies()
@@ -164,7 +165,7 @@ class AIInterface(Interface):
 			self.strategies_frame = StrategyFrame(self)
 			self.strategies_frame.config(bd=10)
 			self.strategies_frame.pack()
-			self.strategies_frame.place(height=450, width=150, x=0, y=200)
+			self.strategies_frame.place(height=450, width=550, x=0, y=200)
 
 			self.button_system_frame = ButtonSystem(self)
 			self.button_system_frame.pack()
