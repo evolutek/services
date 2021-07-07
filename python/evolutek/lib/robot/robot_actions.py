@@ -87,7 +87,7 @@ def start_lighthouse(self):
     self.left_cup_holder_open(use_queue=False) if not self.side else self.right_cup_holder_open(use_queue=False)
     sleep(0.25)
 
-    status = RobotStatus.get_status(self.goto_avoid(x=150, y=330, use_queue=False))
+    status = RobotStatus.get_status(self.goto_avoid(x=140, y=330, use_queue=False))
     if status != RobotStatus.Reached:
         self.left_cup_holder_close(use_queue=False) if not self.side else self.right_cup_holder_close(use_queue=False)
         return RobotStatus.return_status(status)
@@ -304,12 +304,15 @@ def drop_start(self):
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
-
 @if_enabled
 @use_queue
 def goto_anchorage(self):
 
     # True == south
+    match_status = self.cs.match.get_status()
+    while match_status["time"] < 5:
+        sleep(0.5)
+        match_status = self.cs.match.get_status()
     anchorage = self.cs.match.get_anchorage() == "south"
 
     x = 1350 if anchorage else 250
@@ -334,7 +337,7 @@ def goto_anchorage(self):
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     status = self.homemade_recal(use_queue=False)
-    if RobotStatus.get_status(²status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
+    if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
         return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
 
     return RobotStatus.return_status(RobotStatus.Done, score=10)
