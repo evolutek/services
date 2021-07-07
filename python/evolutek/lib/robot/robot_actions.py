@@ -27,7 +27,14 @@ def get_reef(self):
 
     sleep(0.25)
 
-    status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 0))
+    currentPos = self.trajman.get_position()
+    if currentPos["theta"] > pi / 4 and currentPos["theta"] < 3 * pi / 4:
+        status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"] - 100))
+    elif currentPos["theta"] > (- pi) / 4 and currentPos["theta"] < pi / 4:
+        status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"] - 100, y = currentPos["y"]))
+    elif currentPos["theta"] > (-pi) / 4 and currentPos["theta"] < (- 3 * pi) / 4:
+        status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"] + 100))
+        # status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 0))
     if status != RobotStatus.Reached:
         return RobotStatus.return_status(status)
 
@@ -44,7 +51,9 @@ def get_reef(self):
 
     sleep(0.25)
 
-    status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 1))
+    
+    status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"]))
+    # status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 1))
     if status != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
