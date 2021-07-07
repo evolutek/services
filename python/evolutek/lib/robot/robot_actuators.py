@@ -147,7 +147,7 @@ def left_cup_holder_open(self):
 @if_enabled
 @use_queue
 def left_cup_holder_drop(self):
-    self.actuators.ax_set_speed(4, 800)
+    self.actuators.ax_set_speed(4, 500)
     return self.actuators.ax_move(4, 490)
 
 # Right CH Close
@@ -168,5 +168,5 @@ def right_cup_holder_open(self):
 @if_enabled
 @use_queue
 def right_cup_holder_drop(self):
-    self.actuators.ax_set_speed(5, 800)
+    self.actuators.ax_set_speed(5, 500)
     return self.actuators.ax_move(5, 490)

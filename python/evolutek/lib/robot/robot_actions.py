@@ -211,16 +211,14 @@ def drop_start(self):
             x_offset = (i*75 - 109.5) * (-1 if self.side else 1)
             status = self.goto_avoid(x=x + x_offset, y=y + 100, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
-            # Opens the arm
-            if i <= 1: self.left_cup_holder_drop(use_queue=False)
-            else: self.right_cup_holder_drop(use_queue=False)
+            # Moves to the right y and lowers the arm
             status = self.goth(theta=pi/2, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
-            sleep(0.4)
-            # Moves to the right y
+            if i <= 1: self.left_cup_holder_drop(use_queue=False)
+            else: self.right_cup_holder_drop(use_queue=False)
             status = self.goto_avoid(x=x + x_offset, y=y, use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
-            # Closes the arm and moves back
+            # Drops, closes the arm and moves back
             self.trajman.move_trsl(dest=50, acc=1000, dec=1000, maxspeed=1000, sens=1)
             self.pumps_drop(ids=str(i+7), use_queue=False, mirror=False)
             update_buoys_count(color)
