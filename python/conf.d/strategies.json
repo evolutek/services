@@ -299,13 +299,13 @@
     {
       "name": "drop_center_sorting",
       "position": {
-        "x":  1400,
-        "y":  700
+        "x":  1000,
+        "y":  1200
       },
+      "score": 30,
       "actions": [
         {
-          "fct": "goto_avoid",
-          "handler": "robot",
+          "fct": "goto",
           "args": {
             "x": 1400,
             "y": 1705
@@ -313,7 +313,8 @@
         },
         {
           "fct": "drop_center",
-          "handler": "robot"
+          "handler": "robot",
+	  "score": 30
         }
       ]
     },
@@ -350,14 +351,17 @@
     {
       "name": "goto_anchorage_pal",
       "position": {
-        "x": 1100,
-	"y": 600
+        "x": 800,
+	"y": 1000
       },
       "score": 10,
       "actions": [
         {
 	  "fct": "goto_anchorage",
 	  "handler": "robot",
+	  "args": {
+	    "time": 93
+	  },
 	  "score": 10
 	}
       ]
