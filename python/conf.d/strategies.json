@@ -27,7 +27,7 @@
     {
       "name": "get_buoys_3-4",
       "position": {
-        "x": 620,
+        "x": 630,
         "y": 255
       },
       "theta": "7*pi/8",

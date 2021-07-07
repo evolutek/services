@@ -83,7 +83,7 @@ def start_lighthouse(self):
 @use_queue
 def push_windsocks(self):
 
-    status = RobotStatus.get_status(self.homemade_recal(decal=0))
+    status = RobotStatus.get_status(self.homemade_recal(decal=0, use_queue=False))
     if status == RobotStatus.Disabled or status == RobotStatus.Aborted:
         return RobotStatus.return_status(status)
 
