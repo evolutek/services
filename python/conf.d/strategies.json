@@ -290,7 +290,7 @@
             }
         },
         {
-          "fct": "drop_start_sorting",
+          "fct": "drop_start",
           "handler": "robot",
           "score": 30
         }
@@ -378,7 +378,7 @@
     {
       "name": "homologation_pmi",
       "goals": [
-	"pmi_starting_sleep",
+        "pmi_starting_sleep",
         "start_lighthouse"
       ],
       "available": ["pmi"],
