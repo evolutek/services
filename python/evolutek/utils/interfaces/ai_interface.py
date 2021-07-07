@@ -38,7 +38,6 @@ class StrategyFrame(IFRAME):
 
 	def action_strategy(self):
 		self.cs.ai[ROBOT].set_strategy(self.strategy_number.get())
-		print(f"new strategy: {self.cs.ai[ROBOT].get_strategies().index(self.strategy_number.get())}")
 
 	def __create_radio_strategy(self):
 		list_strategy = self.cs.ai[ROBOT].get_strategies()
