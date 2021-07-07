@@ -378,7 +378,7 @@
     {
       "name": "homologation_pmi",
       "goals": [
-        "start_lighthouse",
+        "start_lighthouse"
       ],
       "available": ["pmi"],
       "use_pathfinding": false
