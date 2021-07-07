@@ -404,7 +404,7 @@ def drop_center(self):
 
     # Gets the second buoy in front of the zone
     self.pumps_get(ids=[3], use_queue=False)
-    status = self.goto_avoid(x=1720, y=1855, use_queue=False)
+    status = self.goto_avoid(x=1730, y=1835, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
     # Gets the first buoy on the back of the zone

@@ -261,6 +261,8 @@ def goto_with_path(self, x, y, mirror=True):
 @use_queue
 def homemade_recal(self, decal=0):
 
+    decal = float(decal)
+
     print("[ROBOT] Using homemade recal")
 
     position = self.trajman.get_position()
