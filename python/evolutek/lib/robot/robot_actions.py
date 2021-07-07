@@ -347,7 +347,7 @@ def goto_anchorage(self, time=None):
 
     if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
         current_y = float(self.trajman.get_position()['y'])
-        score = 10 if (current_y if self.side else 3000 - self.current_y) < 475 else 0
+        score = 10 if (current_y if self.side else 3000 - current_y) < 475 else 0
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
     if ROBOT == 'pmi':
