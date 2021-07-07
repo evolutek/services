@@ -63,7 +63,7 @@ class AI(Service):
 
         self.fsm = Fsm(States)
         self.fsm.add_state(States.Setup, self.setup, prevs=[States.Waiting, States.Ending])
-        self.fsm.add_state(States.Waiting, self.waiting, prevs=[States.Setup])
+        self.fsm.add_state(States.Waiting, self.waiting, prevs=[States.Setup, States.Waiting])
         self.fsm.add_state(States.Selecting, self.selecting, prevs=[States.Waiting, States.Making])
         self.fsm.add_state(States.Making, self.making, prevs=[States.Selecting, States.Making])
         self.fsm.add_state(States.Ending, self.ending, prevs=[States.Setup, States.Waiting, States.Selecting, States.Making])
