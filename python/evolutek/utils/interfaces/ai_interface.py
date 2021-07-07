@@ -97,6 +97,7 @@ class StatusFrame(IFRAME):
 		self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
+		print("bponjour recalibration")
 		self.cs.ai[ROBOT].reset(True)
 
 	def close(self):
