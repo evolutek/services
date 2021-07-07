@@ -336,7 +336,7 @@
       "name": "goto_anchorage",
       "position": {
         "x": 800,
-        "y": 700
+        "y": 1000
       },
       "actions": [
         {
