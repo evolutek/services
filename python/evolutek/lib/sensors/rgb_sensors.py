@@ -61,7 +61,9 @@ class TCS34725(Component):
         if rgb[index] < self.calibration[index] * SENSITIVITY:
             return Color.Unknown
 
-        return [Color.Red, Color.Green, Color.Blue][index]
+        res = [Color.Red, Color.Green, Color.Blue][index]
+        if res == Color.Blue: return Color.Green
+        return res
 
     def __str__(self):
         s = "----------\n"
