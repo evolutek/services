@@ -41,6 +41,7 @@ class StrategyFrame(IFRAME):
 
 	def __create_radio_strategy(self):
 		list_strategy = self.cs.ai[ROBOT].get_strategies()
+		print(f"bonjour: {list_strategy}")
 		buttons = []
 
 		for strategy in list_strategy:
@@ -95,7 +96,7 @@ class StatusFrame(IFRAME):
 		self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
-        self.cs.ai[ROBOT].reset(True)
+		self.cs.ai[ROBOT].reset(True)
 
 	def close(self):
 		self.parent.close()
@@ -136,11 +137,16 @@ class MatchInterface(IFRAME):
 	def close(self):
 		self.parent.close()
 
+	 def close(self):
+		 self.parent.close()
+
 	def __init_interface(self):
 		Button(self, text="Close", command=self.close).grid(row=0, column=0)
 		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=640)
 		self.text = self.canvas.create_text(800/2, 480/2, text=f"Score: 0")
 		self.canvas.pack()
+		Button(self, text="close", command=self.close).grid(row=0, column=3)
+
 
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
