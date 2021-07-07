@@ -309,14 +309,14 @@ def drop_start(self):
 def goto_anchorage(self):
 
     # True == south
-    match_status = self.cs.match.get_status()
-    while match_status["time"] < 95:
-        sleep(0.5)
-        match_status = self.cs.match.get_status()
+    # match_status = self.cs.match.get_status()
+    # while match_status["time"] < 95:
+    #     sleep(0.5)
+    #     match_status = self.cs.match.get_status()
     anchorage = self.cs.match.get_anchorage() == "south"
 
     x = 1350 if anchorage else 250
-    status = self.goto_avoid(x=x, y=1000, use_queue=False)
+    status = self.goto_avoid(x=x, y=700, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
     status = self.goth(theta=pi/2, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
