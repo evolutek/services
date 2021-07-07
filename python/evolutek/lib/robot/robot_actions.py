@@ -452,7 +452,7 @@ def drop_center(self):
     print(f'[ROBOT] Read RGB sensors: {colors}')
 
     # Gets into position to drop the 2 exterior buoys on the back
-    status = self.goth(theta=pi, use_queue=False)
+    status = self.goth(theta=pi, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.left_cup_holder_drop(use_queue=False)
     self.right_cup_holder_drop(use_queue=False)
@@ -469,7 +469,7 @@ def drop_center(self):
     # Drops the first central buoy
     status = self.goto_avoid(x=1580, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    status = self.goth(theta= 3 * pi / 4, use_queue=False)
+    status = self.goth(theta= 3 * pi / 4, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.right_cup_holder_drop(use_queue=False)
     sleep(1)
@@ -481,7 +481,7 @@ def drop_center(self):
     # Drops the second central buoy
     status = self.goto_avoid(x=1540, y=1800, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
-    status = self.goth(theta= -3 * pi / 4, use_queue=False)
+    status = self.goth(theta= -3 * pi / 4, mirror=False, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
     self.left_cup_holder_drop(use_queue=False)
     sleep(1)
