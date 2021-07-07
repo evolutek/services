@@ -374,6 +374,25 @@
       ],
       "available": ["pmi"],
       "use_pathfinding": false
+    },
+    {
+      "name": "homologation_pmi",
+      "goals": [
+        "start_lighthouse",
+      ],
+      "available": ["pmi"],
+      "use_pathfinding": false
+    },
+    {
+
+      "name": "homologation_pal",
+      "goals": [
+        "get_buoys_7-8",
+        "get_bottom_reef",
+        "push_windsocks"
+      ],
+      "available": ["pal"],
+      "use_pathfinding": false
     }
   ],
   "starting_pos": {
