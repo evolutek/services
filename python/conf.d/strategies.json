@@ -267,8 +267,8 @@
         {
           "fct": "goto",
           "args": {
-            "x": 1700,
-            "y": 300
+            "x": 1800,
+            "y": 400
           }
         }
       ]
@@ -299,13 +299,12 @@
     {
       "name": "drop_center_sorting",
       "position": {
-        "x":  1600,
-        "y":  200,
-        "theta": 0
+        "x":  1400,
+        "y":  700
       },
       "actions": [
         {
-          "fct": "goto_with_path",
+          "fct": "goto_avoid",
           "handler": "robot",
           "args": {
             "x": 1400,
