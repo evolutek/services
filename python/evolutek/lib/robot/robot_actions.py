@@ -223,7 +223,7 @@ def drop_start(self):
         status = self.goto_avoid(x=x, y=250, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         if rot:
-            status = self.goth(theta=pi/2+pi/3, use_queue=False)
+            status = self.goth(theta=(-pi/2)+(-pi/6), use_queue=False)
             if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         # Counts points
         prox, color = buoy
