@@ -41,7 +41,7 @@ class Robot(Service):
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
     recalibration_sensors = robot_trajman.recalibration_sensors
-    homemade_recal = robot_trajman.homemade_recal
+    homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
     mirror_pump_id = robot_actuators.mirror_pump_id

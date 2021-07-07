@@ -106,8 +106,8 @@ def goth(self, theta, mirror=True):
 
     current = float(self.trajman.get_position()['theta'])
     if abs(current - theta) < DELTA_ANGLE:
-            print('[ROBOT] Already reached angle')
-            return RobotStatus.return_status(RobotStatus.Reached)
+        print('[ROBOT] Already reached angle')
+        return RobotStatus.return_status(RobotStatus.Reached)
 
     return self.goto_theta(theta)
 
@@ -257,25 +257,32 @@ def goto_with_path(self, x, y, mirror=True):
 # RECALIBRATION #
 #################
 
-def homemade_recal(self, axis_x, side, decal):
+@if_enabled
+@use_queue
+def homemade_recal(self, decal):
 
     print("[ROBOT] Using homemade recal")
 
+    position = self.trajman.get_position()
+    theta = position['theta']
+
     self.trajman.move_trsl(dest=400, acc=300, dec=300, maxspeed=100, sens=0)
-    sleep(3)
+    sleep(2.5)
 
-    setter = self.trajman.set_x if axis_x else self.trajman.set_y
-    pos = 120 + decal
-    if side: pos = (2000 if axis_x else 3000) - pos
-    setter(pos)
+    if theta < pi/4 and theta > -pi/4:
+        self.trajman.set_theta(0)
+        self.trajman.set_x(120 + decal)
+    elif theta > pi/4 and theta < 3*pi/4:
+        self.trajman.set_theta(pi/2)
+        self.trajman.set_y(120 + decal)
+    elif theta > 3*pi/4 or theta < -3*pi/4:
+        self.trajman.set_theta(pi)
+        self.trajman.set_x(2000 - 120 - decal)
+    else:
+        self.trajman.set_theta(-pi/2)
+        self.trajman.set_y(3000 - 120 - decal)
 
-    rot = 0 if axis_x else pi/2
-    if side: rot += pi
-    self.trajman.set_theta(theta=rot)
-
-
-    sleep(1)
-    print(self.trajman.get_position())
+    sleep(0.1)
     self.trajman.free()
 
 
@@ -322,16 +329,16 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
 @if_enabled
 @use_queue
 def recalibration(self,
-                    x=True,
-                    y=True,
-                    x_sensor=RecalSensor.No,
-                    y_sensor=RecalSensor.No,
-                    decal_x=0,
-                    decal_y=0,
-                    side_x=False,
-                    side_y=False,
-                    init=False,
-                    mirror=True):
+        x=True,
+        y=True,
+        x_sensor=RecalSensor.No,
+        y_sensor=RecalSensor.No,
+        decal_x=0,
+        decal_y=0,
+        side_x=False,
+        side_y=False,
+        init=False,
+        mirror=True):
 
     speeds = self.trajman.get_speeds()
     self.trajman.free()
@@ -367,7 +374,7 @@ def recalibration(self,
             return RobotStatus.return_status(status)
 
         if HOMEMADE_RECAL:
-            self.homemade_recal(True, side_x, decal_x)
+            self.homemade_recal(decal_x)
         else:
             status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
@@ -390,7 +397,7 @@ def recalibration(self,
             return RobotStatus.return_status(status)
 
         if HOMEMADE_RECAL:
-            self.homemade_recal(False, side_y, decal_y)
+            self.homemade_recal(decal_y)
         else:
             status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_y)))
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
