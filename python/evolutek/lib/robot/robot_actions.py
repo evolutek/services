@@ -27,6 +27,11 @@ def get_reef(self):
 
     sleep(0.25)
 
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_trsl_max_speed(500)
+    self.trajman.set_trsl_acc(300)
+    self.trajman.set_trsl_dec(300)
+
     currentPos = self.trajman.get_position()
     # Top reefs
     if currentPos["theta"] > (- pi) / 4 and currentPos["theta"] < pi / 4:
@@ -37,10 +42,16 @@ def get_reef(self):
     elif currentPos["theta"] < (-pi) / 4 and currentPos["theta"] > (- 3 * pi) / 4:
         status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"] + 100, mirror=False, use_queue=False))
     if status != RobotStatus.Reached:
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
+        self.trajman.set_trsl_acc(speeds['tracc'])
+        self.trajman.set_trsl_dec(speeds['trdec'])
         return RobotStatus.return_status(status)
 
     status = RobotStatus.get_status(self.homemade_recal(use_queue=False))
     if status == RobotStatus.Disabled or status == RobotStatus.Aborted:
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
+        self.trajman.set_trsl_acc(speeds['tracc'])
+        self.trajman.set_trsl_dec(speeds['trdec'])
         return RobotStatus.return_status(status)
 
     self.left_cup_holder_close(use_queue=False)
@@ -48,15 +59,23 @@ def get_reef(self):
 
     status = self.check_abort()
     if status != RobotStatus.Ok:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
+        self.trajman.set_trsl_acc(speeds['tracc'])
+        self.trajman.set_trsl_dec(speeds['trdec'])
+        return RobotStatus.return_status(status)
 
     sleep(0.25)
 
 
     status = RobotStatus.get_status(self.goto_avoid(x = currentPos["x"], y = currentPos["y"], mirror=False, use_queue=False))
     # status = RobotStatus.get_status(self.move_trsl(100, 300, 300, 300, 1))
+
+    self.trajman.set_trsl_max_speed(speeds['trmax'])
+    self.trajman.set_trsl_acc(speeds['tracc'])
+    self.trajman.set_trsl_dec(speeds['trdec'])
+
     if status != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
+        return RobotStatus.return_status(status)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
