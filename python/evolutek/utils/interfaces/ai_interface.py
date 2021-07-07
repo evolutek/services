@@ -45,7 +45,8 @@ class StrategyFrame(IFRAME):
 		buttons = []
 
 		for strategy in list_strategy:
-			l = Radiobutton(self, text=strategy, variable=self.strategy_number, value=list_strategy[strategy], command=self.action_strategy)
+			l = Radiobutton(self, text=strategy, variable=self.strategy_number, value=list_strategy[strategy],
+							command=self.action_strategy)
 			l.pack()
 			buttons.append(l)
 
@@ -91,7 +92,7 @@ class StatusFrame(IFRAME):
 		self.__init_interface()
 
 	def create_color(self):
-	
+
 		self.change_color = Frame(self, relief="raised", background=self.cs.match.get_color(), width=500, height=400)
 		self.change_color.grid(column=5, row=5)
 
@@ -137,16 +138,15 @@ class MatchInterface(IFRAME):
 	def close(self):
 		self.parent.close()
 
-	 def close(self):
-		 self.parent.close()
+	def close(self):
+		self.parent.close()
 
 	def __init_interface(self):
 		Button(self, text="Close", command=self.close).grid(row=0, column=0)
 		self.canvas = Canvas(self.parent.window, bg="orange", width=800, height=640)
-		self.text = self.canvas.create_text(800/2, 480/2, text=f"Score: 0")
+		self.text = self.canvas.create_text(800 / 2, 480 / 2, text=f"Score: 0")
 		self.canvas.pack()
 		Button(self, text="close", command=self.close).grid(row=0, column=3)
-
 
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
@@ -177,7 +177,6 @@ class AIInterface(Interface):
 			self.match_interfaces_frame = MatchInterface(self)
 			self.match_interfaces_frame.pack()
 
-
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
 		if match_status["status"] == "Started" or match_status["status"] == "Ended":
@@ -207,6 +206,7 @@ def main():
 	if len(argv) > 1:
 		global ROBOT
 	AIInterface().loop()
+
 
 if __name__ == "__main__":
 	main()
