@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import tkinter.font
 
 from evolutek.lib.settings import ROBOT
 from cellaserv.service import Service
@@ -145,7 +146,8 @@ class MatchInterface(IFRAME):
 	def __init_interface(self):
 		Button(self, text="Close", command=self.close).grid(row=0, column=0)
 		self.canvas = Canvas(self.parent.window, bg=self.cs.match.get_color(), width=800, height=640)
-		self.text = self.canvas.create_text(800 / 2, 480 / 2, text=f"Score: 0")
+		fonts = tkinter.font.Font(family='Helvetica', size=36, weight='bold')
+		self.text = self.canvas.create_text(800 / 2, 480 / 2, text=f"Score: 0", font=fonts)
 		self.canvas.pack()
 		Button(self, text="close", command=self.close).grid(row=0, column=3)
 
