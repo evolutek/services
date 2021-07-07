@@ -78,15 +78,15 @@
           }
         },
         {
-          "fct": "front_arm_close",
-          "handler": "robot"
-        },
-        {
           "fct": "goto",
           "args": {
             "x": 340,
             "y": 910
           }
+	},
+        {
+          "fct": "front_arm_close",
+          "handler": "robot"
         }
       ]
     },
@@ -104,6 +104,13 @@
             "ids": [1, 3]
           }
         },
+	{
+	  "fct": "goto",
+	  "args": {
+	    "x": 900,
+	    "y": 500
+	  }
+	},
         {
           "fct": "goto",
           "args": {
