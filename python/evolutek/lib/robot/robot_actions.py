@@ -315,7 +315,7 @@ def goto_anchorage(self):
         score = 10 if self.trajman.get_position()['y'] < 475 else 0
         return RobotStatus.return_status(RobotStatus.get_status(status), score=score)
 
-    status = self.recal(0)
+    status = self.homemade_recal()
     if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.NotReached]:
         return RobotStatus.return_status(RobotStatus.get_status(status), score=10)
 
