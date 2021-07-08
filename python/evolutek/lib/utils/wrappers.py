@@ -77,8 +77,6 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
 
             sleep(0.01)
 
-        print('STARTED')
-
         status = None
         while True:
             if stop_event.is_set():
@@ -95,7 +93,6 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
             sleep(callback_refresh)
 
         stop_event.wait()
-        print('STOPPED')
 
         if status is None or status == RobotStatus.Ok:
             status = RobotStatus.get_status(stop_event.data)
