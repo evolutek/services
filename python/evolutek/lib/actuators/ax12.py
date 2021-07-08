@@ -42,7 +42,7 @@ def retry_dxl_send(method):
     def wrapped(self, *args, **kwargs):
         i = 0
         while i < NB_TRY:
-            method(self, args, kwargs)
+            method(self, *args, **kwargs)
 
             if self._dxl_get_result() == 1:
                 return True
@@ -157,7 +157,7 @@ class AX12Controller(ComponentsHolder):
 
     def __init__(self, ids):
         self.lock = Lock()
-        super().__init__('AX12 holder', ids, AX12, self.lock)
+        super().__init__('AX12 holder', ids, AX12, [self.lock])
 
     def _initialize(self):
         libdxl = None
