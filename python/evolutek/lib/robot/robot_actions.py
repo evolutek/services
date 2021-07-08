@@ -343,7 +343,7 @@ def goto_anchorage(self, time=None):
         while float(time) > float(self.cs.match.get_status()['time']):
             sleep(0.5)
 
-    status = self.goto_avoid(x=x, y=150 if ROBOT=='pmi' else 500, use_queue=False)
+    status = self.goto(x=x, y=150 if ROBOT=='pmi' else 400, avoid=False, use_queue=False)
 
     if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
         current_y = float(self.trajman.get_position()['y'])
