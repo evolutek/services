@@ -150,10 +150,6 @@ def push_windsocks(self):
     self.trajman.set_trsl_acc(speeds['tracc'])
     self.trajman.set_trsl_dec(speeds['trdec'])
 
-    status = RobotStatus.get_status(self.goto_avoid(x=1825, y=650, use_queue=False))
-    if status != RobotStatus.Reached:
-        return RobotStatus.return_status(status)
-
     return RobotStatus.return_status(RobotStatus.Done)
 
 
