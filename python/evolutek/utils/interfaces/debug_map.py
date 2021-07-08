@@ -136,6 +136,7 @@ class Interface:
         self.canvas.delete('all')
         self.canvas.create_image(int(self.width / 2), int(self.height / 2), image=self.image)
 
+        self.print_merged_map()
         if self.robot.robots:
             with self.robot.lock:
                 r = self.robot.robots[:]
@@ -144,6 +145,5 @@ class Interface:
             with self.robot.lock:
                 p = self.robot.path[:]
             self.print_path(p)
-        self.print_merged_map()
 
         self.window.after(100, self.update)
