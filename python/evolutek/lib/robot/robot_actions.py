@@ -394,6 +394,7 @@ def drop_center(self):
                 print(f'[ROBOT] Adding {c.value} buoy to the score')
                 buoys_count[c] += 1
         else:
+            
             if color not in [Color.Green, Color.Red]: return
             print(f'[ROBOT] Adding {color.value} buoy to the score')
             buoys_count[color] += 1
@@ -421,8 +422,10 @@ def drop_center(self):
     if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     # Gets the second buoy in front of the zone
-    self.pumps_get(ids=[3], use_queue=False)
-    status = self.goto_avoid(x=1720, y=1845, use_queue=False)
+    self.pumps_get(ids=[3], use_queue=False)    
+    status = self.goto_avoid(x=1696, y=1700, use_queue=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
+    status = self.goto_avoid(x=1696, y=1850, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return cleanup_and_exit(status)
 
     # Gets the first buoy on the back of the zone

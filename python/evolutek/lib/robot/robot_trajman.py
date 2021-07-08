@@ -412,7 +412,7 @@ def recalibration(self,
         if x_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror, init=init)
 
-        status = RobotStatus.get_status(self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1))
+        status = RobotStatus.get_status(self.move_trsl(dest=100, acc=200, dec=200, maxspeed=200, sens=1))
         if status != RobotStatus.Reached:
             return RobotStatus.return_status(status)
 
