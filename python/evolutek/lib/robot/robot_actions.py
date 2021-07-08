@@ -339,20 +339,11 @@ def goto_anchorage(self, time=None):
     status = self.goth(theta=pi/2, use_queue=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
 
-    speeds = self.trajman.get_speeds()
-    self.trajman.set_trsl_max_speed(500)
-    self.trajman.set_trsl_acc(500)
-    self.trajman.set_trsl_dec(500)
-
     if time is not None:
         while float(time) > float(self.cs.match.get_status()['time']):
             sleep(0.5)
 
-    status = self.goto(x=x, y=150, use_queue=False)
-
-    self.trajman.set_trsl_max_speed(speeds['trmax'])
-    self.trajman.set_trsl_acc(speeds['tracc'])
-    self.trajman.set_trsl_dec(speeds['trdec'])
+    status = self.goto_avoid(x=x, y=150 if ROBOT=='pmi' else 500, use_queue=False)
 
     if RobotStatus.get_status(status) not in [RobotStatus.Reached, RobotStatus.HasAvoid]:
         current_y = float(self.trajman.get_position()['y'])
