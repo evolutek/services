@@ -216,13 +216,15 @@ def drop_start(self):
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         return RobotStatus.return_status(RobotStatus.Done)
 
-    def arm_buoy(x, pump, buoy):
+    def arm_buoy(x, pump, buoy, rot=False):
         nonlocal buoys_count
         nonlocal score
         # Moves forward to place the buoy
         status = self.goto_avoid(x=x, y=250, use_queue=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
-        sleep(0.2)
+        if rot:
+            status = self.goth(theta=pi/2+pi/3, use_queue=False)
+            if RobotStatus.get_status(status) != RobotStatus.Reached: return RobotStatus.return_status(RobotStatus.get_status(status))
         # Counts points
         prox, color = buoy
         if self.actuators.proximity_sensor_read(id=prox):
@@ -277,7 +279,7 @@ def drop_start(self):
     print('[ROBOT] Dropping front arm red buoys')
     self.front_arm_open(use_queue=False)
     sleep(0.5)
-    status = arm_buoy(x=1001 if self.side else 599, pump='1', buoy=(2, Color.Red))
+    status = arm_buoy(x=1001 if self.side else 599, pump='1', buoy=(2, Color.Red), rot=True)
     if RobotStatus.get_status(status) != RobotStatus.Done: return cleanup_and_exit(status)
 
     #       Possible arrangements
