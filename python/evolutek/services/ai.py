@@ -255,9 +255,15 @@ class AI(Service):
         while not self.reset_event.is_set() and not self.match_start.is_set():
             sleep(0.01)
 
+        if self.reset_event.is_set() and self.tirette.read():
+            print('[AI] Tirette on the robot')
+            self.reset_event.clear()
+            return States.Waiting
+
         next = States.Setup
         if self.match_start.is_set():
             next = States.Selecting
+            self.match_start.clear()
 
             with self.lock:
                 self.match_starting_time = time()
@@ -266,9 +272,6 @@ class AI(Service):
                 if self.goals.critical_goal is not None:
                     self.critical_timer = Timer(self.goals.timeout_critical_goal, lambda: self.critical_timeout.set())
                     self.critical_timer.start()
-
-        self.reset_event.clear()
-        self.match_start.clear()
 
         self.red_led.write(True)
         self.green_led.write(False)
