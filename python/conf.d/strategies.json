@@ -311,18 +311,11 @@
     {
       "name": "drop_center_sorting",
       "position": {
-        "x":  1000,
-        "y":  1200
+        "x":  1400,
+        "y":  1705
       },
       "score": 30,
       "actions": [
-        {
-          "fct": "goto",
-          "args": {
-            "x": 1400,
-            "y": 1705
-          }
-        },
         {
           "fct": "drop_center",
           "handler": "robot",
@@ -390,7 +383,7 @@
         "goto_anchorage_pal"
       ],
       "available": ["pal"],
-      "use_pathfinding": false
+      "use_pathfinding": true
     },
     {
       "name": "normal_pmi",
