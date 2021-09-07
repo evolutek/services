@@ -179,6 +179,15 @@ class Robot(Service):
             self.robots = robots
             return path
 
+    def clean_map(self):
+
+         with self.lock:
+            # Remove robots
+            for tag in self.robots_tags:
+                self.map.remove_obstacle(tag)
+            self.robots_tags.clear()
+
+
     @Service.event('raise_flags')
     def raise_flags(self):
         self.enable()

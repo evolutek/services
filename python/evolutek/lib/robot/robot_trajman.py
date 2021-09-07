@@ -221,7 +221,6 @@ def goto_with_path(self, x, y, mirror=True):
 
     while status != RobotStatus.Reached:
 
-
         path = self.get_path(destination)
 
         if (len(path) < 2):
@@ -238,18 +237,20 @@ def goto_with_path(self, x, y, mirror=True):
 
             if status == RobotStatus.HasAvoid:
 
-                sleep(3)
-
                 _status = RobotStatus.get_status(self.move_back(side=(not side), use_queue=False))
+                sleep(0.5)
 
                 if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                    self.clean_map()
                     return RobotStatus.return_status(_status)
 
                 break
 
             elif status != RobotStatus.Reached:
+                self.clean_map()
                 return RobotStatus.return_status(status)
 
+    self.clean_map()
     return RobotStatus.return_status(status)
 
 
