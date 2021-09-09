@@ -3,6 +3,8 @@ import os
 
 from evolutek.lib.component import Component, ComponentsHolder
 from functools import wraps
+from threading import Lock
+from time import sleep
 
 LIBDXL_PATH = [".", "/usr/lib"]
 
@@ -13,6 +15,8 @@ if LIBDXL_PATH_ENV:
 DEVICE_ID = 0
 BAUD_RATE = 1  # Main robot USB2AX
 DXL = None
+
+NB_TRY = 3
 
 AX_TORQUE_ENABLE_B     = 24
 AX_GOAL_POSITION_L     = 30
@@ -26,77 +30,99 @@ AX_PRESENT_TEMPERATURE = 43
 AX_CW_ANGLE_LIMIT_L    = 6
 AX_CCW_ANGLE_LIMIT_L   = 8
 
-def five_times(function):
-    @wraps(function)
-    def wrapped(*args, **kwargs):
-        for _ in range(4):
-            function(*args, **kwargs)
-        return function(*args, **kwargs)
+def lock_dxl(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        with self.lock:
+            return method(self, *args, **kwargs)
     return wrapped
+
+def retry_dxl_send(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        i = 0
+        while i < NB_TRY:
+            method(self, *args, **kwargs)
+
+            if self._dxl_get_result() == 1:
+                return True
+
+            i += 1
+            sleep(0.025)
+
+        print(f"[{self.name}] Failed to send command to AX {self.id} after {NB_TRY} tries")
+        return False
+    return wrapped
+
 
 class AX12(Component):
 
-    def __init__(self, id):
+    def __init__(self, id, lock):
         self.dxl = DXL
+        self.lock = lock
         super().__init__('AX12', id)
 
-    @five_times
-    def dxl_get_result(self):
+    def _dxl_get_result(self):
         return int(self.dxl.dxl_get_result())
 
-    @five_times
+    @lock_dxl
+    @retry_dxl_send
     def move(self, goal):
         print(f"[{self.name}] Moving {self.id} to {goal}")
-        return self.dxl.dxl_write_word(self.id, AX_GOAL_POSITION_L, int(goal))
+        self.dxl.dxl_write_word(self.id, AX_GOAL_POSITION_L, int(goal))
 
-    @five_times
+    @lock_dxl
     def get_present_position(self):
         return self.dxl.dxl_read_word(self.id, AX_PRESENT_POSTION_L)
 
-    @five_times
+    @lock_dxl
     def get_present_speed(self):
         return self.dxl.dxl_read_word(self.id, AX_PRESENT_SPEED_L)
 
-    @five_times
+    @lock_dxl
     def get_present_load(self):
         return self.dxl.dxl_read_word(self.id, AX_PRESENT_LOAD_L)
 
-    @five_times
+    @lock_dxl
     def get_present_voltage(self):
         return self.dxl.dxl_read_byte(self.id, AX_PRESENT_VOLTAGE)
 
-    @five_times
+    @lock_dxl
     def get_present_temperature(self):
         return self.dxl.dxl_read_byte(self.id, AX_PRESENT_TEMPERATURE)
 
-    @five_times
+    @lock_dxl
     def get_cw_angle_limit(self):
         return self.dxl.dxl_read_word(self.id, AX_CW_ANGLE_LIMIT_L)
 
-    @five_times
+    @lock_dxl
     def get_ccw_angle_limit(self):
         return self.dxl.dxl_read_word(self.id, AX_CCW_ANGLE_LIMIT_L)
 
-    @five_times
+    @lock_dxl
+    @retry_dxl_send
     def mode_wheel(self):
         self.dxl.dxl_write_word(self.id, AX_CW_ANGLE_LIMIT_L, 0)
-        return self.dxl.dxl_write_word(self.id, AX_CCW_ANGLE_LIMIT_L, 0)
+        self.dxl.dxl_write_word(self.id, AX_CCW_ANGLE_LIMIT_L, 0)
 
-    @five_times
+    @lock_dxl
+    @retry_dxl_send
     def mode_joint(self):
         self.dxl.dxl_write_word(self.id, AX_CW_ANGLE_LIMIT_L, 0)
-        return self.dxl.dxl_write_word(self.id, AX_CCW_ANGLE_LIMIT_L, 1023)
+        self.dxl.dxl_write_word(self.id, AX_CCW_ANGLE_LIMIT_L, 1023)
 
-    @five_times
+    @lock_dxl
+    @retry_dxl_send
     def moving_speed(self, speed):
-        return self.dxl.dxl_write_word(self.id, AX_MOVING_SPEED_L, int(speed))
+        self.dxl.dxl_write_word(self.id, AX_MOVING_SPEED_L, int(speed))
 
-    @five_times
+    @lock_dxl
+    @retry_dxl_send
     def turn(self, side, speed):
-        self.dxl.dxl_write_word(self.id, AX_MOVING_SPEED_L,
-                                (2**10 if side else 0) | int(speed))
+        self.dxl.dxl_write_word(self.id, AX_MOVING_SPEED_L, (2**10 if side else 0) | int(speed))
 
-    @five_times
+    @lock_dxl
+    @retry_dxl_send
     def free(self):
         self.dxl.dxl_write_byte(self.id, AX_TORQUE_ENABLE_B, 0)
 
@@ -130,7 +156,8 @@ class AX12(Component):
 class AX12Controller(ComponentsHolder):
 
     def __init__(self, ids):
-        super().__init__('AX12 holder', ids, AX12)
+        self.lock = Lock()
+        super().__init__('AX12 holder', ids, AX12, [self.lock])
 
     def _initialize(self):
         libdxl = None
