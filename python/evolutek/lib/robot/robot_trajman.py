@@ -231,7 +231,7 @@ def goto_with_path(self, x, y, mirror=True):
             has_moved = True
             print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
 
-            data = self.goto(path[i].x, path[i].y, mirror=mirror, use_queue=False)
+            data = self.goto(path[i].x, path[i].y, mirror=False, use_queue=False)
             status = RobotStatus.get_status(data)
             side = get_boolean(data['avoid_side'])
 
