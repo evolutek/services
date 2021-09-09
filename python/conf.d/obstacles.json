@@ -85,6 +85,24 @@
             "radius": 20,
             "tag": "buoy2",
             "form": "octogon"
+        },
+        {
+            "center": {
+                "x": 1655,
+                "y": 1065
+            },
+            "radius": 20,
+            "tag": "buoy3",
+            "form": "octogon"
+        },
+        {
+            "center": {
+                "x": 1655,
+                "y": 1335
+            },
+            "radius": 20,
+            "tag": "buoy4",
+            "form": "octogon"
         }
     ]
 }
