@@ -5,7 +5,7 @@ from evolutek.lib.utils.watchdog import Watchdog
 from evolutek.lib.utils.wrappers import if_enabled, use_queue
 
 from enum import Enum
-from math import pi
+from math import pi, cos, sin
 from threading import Event
 from time import sleep
 
@@ -120,6 +120,21 @@ def move_back(self, side):
     dist = 0
     with self.lock:
         dist = self.dist
+
+    _pos = self.trajman.get_position()
+    position = Point(dict=_pos)
+    angle = float(_pos['theta']) + (0 if side else pi)
+
+    x = position.x + dist * cos(angle)
+    y = position.y + dist * sin(angle)
+
+    x_dist = min(x, 2000 - x)
+    y_dist = min(y, 3000 - y)
+
+    if x_dist < dist or y_dist < dist:
+        print("[ROBOT] Can't move back, too close of the wall")
+        # TODO : compute new dist
+        return RobotStatus.return_status(RobotStatus.NotReached)
 
     print('[ROBOT] Move back direction: ' + 'front' if side else 'back')
 

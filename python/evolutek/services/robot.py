@@ -157,6 +157,7 @@ class Robot(Service):
         detected_robots = [ Point(dict=robot) for robot in robots ]
         origin = Point(dict=self.trajman.get_position())
 
+        # TODO : useful ?
         with self.lock:
             # Remove robots
             for tag in self.robots_tags:
@@ -186,6 +187,7 @@ class Robot(Service):
             for tag in self.robots_tags:
                 self.map.remove_obstacle(tag)
             self.robots_tags.clear()
+            self.path.clear()
 
 
     @Service.event('raise_flags')
