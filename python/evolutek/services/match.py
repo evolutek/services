@@ -28,6 +28,7 @@ class Match(Service):
         match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
+        self.stop_delay = int(match_config['stop_delay'])
         self.match_duration = int(match_config['duration'])
 
         # Match Status
@@ -71,13 +72,10 @@ class Match(Service):
             else:
                 break
 
-
         # Release everything if job is finished
         cap.release()
         out.release()
         cv.destroyAllWindows()
-
-
 
     """ Tirette """
     @Service.event('tirette')
@@ -173,12 +171,16 @@ class Match(Service):
     def get_anchorage(self):
         return self.anchorage
 
+    def _set_match_end(self):
+        self.match_status = MatchStatus.ended
+        print('[MATCH] Match End')
+
     """ End match """
     @Service.action
     def match_end(self):
+        print('[MATCH] Call for match end')
         self.publish('match_end')
-        self.match_status = MatchStatus.ended
-        print('[MATCH] Match End')
+        Timer(self.stop_delay, self._set_match_end).start()
 
 def main():
     match = Match()
