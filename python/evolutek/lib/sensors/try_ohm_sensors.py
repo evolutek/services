@@ -24,7 +24,7 @@ class TryOhm(Component):
     def __str__(self):
         s = "----------\n"
         s += "TryOhm sensor: %d\n" % self.id
-        s += "Detection: %d\n" % self.read().name
+        s += "Detection: %s\n" % self.read().name
         s += "----------"
         return s
 
