@@ -160,6 +160,11 @@ class Actuators(Service):
         self.free()
 
     @Service.action
+    def read_sensors_pattern(self):
+        values = self.sensors_calc.read_all_sensors()
+        return [ value.name for value in values.values() ] 
+
+    @Service.action
     def print_status(self):
         for actuators in self.all_actuators:
             print(actuators)

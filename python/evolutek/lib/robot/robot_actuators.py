@@ -307,7 +307,14 @@ def set_elevator_config(self, arm, config):
 
 def get_pattern(self):
     all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
-    result = self.actuators.sensors_calc.read_all_sensor()
+    result = self.actuators.read_sensors_pattern()
+    result = [ Color[r] for r in result ]
+    
+    #result =[]
+
+    #for sensor in self.actuators.sensor_calc:
+        #result.append(self.actuators.sensor_calc[sensor])
+        #print(self.actuators.sensor_calc[sensor])
 
     if (result[0], result[1]) == (Color.Red, Color.Purple) or (Color.Purple, Color.Red) == (result[0], result[1]):
         return 1
@@ -319,5 +326,7 @@ def get_pattern(self):
         return 4
     elif (result[0], result[1]) == (Color.Red, Color.Unknown):
         return 5
-    else:
+    elif (result[0], result[1]) == (Color.Yellow, Color.Unknown):
         return 6
+    else:
+        return 7
