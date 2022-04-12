@@ -71,7 +71,7 @@ class WS2812BLedStrip(Component):
 
     def set_loading_color(self, color):
         with self.lock:
-            print('[%s] Setting loading color to: %s' % (self.name, str(color.value)))
+            print('[%s] Setting loading color to: %s' % (self.name, str(color.name)))
             self.loading_color = color
 
     def run(self):

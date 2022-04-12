@@ -7,7 +7,7 @@ class Color(Enum):
     Orange = (255, 50, 0)
     Red = (255, 0, 0)
     Yellow = (255, 255, 0)
-    Purple = (125, 31, 122)
+    Purple = (115, 25, 115)
     Unknown = (-1, -1, -1)
 
     @staticmethod
