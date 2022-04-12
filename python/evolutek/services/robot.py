@@ -214,28 +214,28 @@ class Robot(Service):
 
         self.enable()
 
-        self.set_head_speed(robot_actuators.FrontArmsEnum.Right, robot_actuators.HeadConfig.Default, use_queue=False)
+        self.set_head_speed(robot_actuators.FrontArmsEnum.Right, robot_actuators.HeadSpeed.Default, use_queue=False)
         self.set_head_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.HeadConfig.Mid, use_queue=False)
-        self.set_head_speed(robot_actuators.FrontArmsEnum.Center, robot_actuators.HeadConfig.Default, use_queue=False)
+        self.set_head_speed(robot_actuators.FrontArmsEnum.Center, robot_actuators.HeadSpeed.Default, use_queue=False)
         self.set_head_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.HeadConfig.Mid, use_queue=False)
-        self.set_head_speed(robot_actuators.FrontArmsEnum.Left, robot_actuators.HeadConfig.Default, use_queue=False)
+        self.set_head_speed(robot_actuators.FrontArmsEnum.Left, robot_actuators.HeadSpeed.Default, use_queue=False)
         self.set_head_config(robot_actuators.FrontArmsEnum.Left, robot_actuators.HeadConfig.Mid, use_queue=False)
 
-        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorConfig.Default, use_queue=False)
+        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorSpeed.Default, use_queue=False)
         self.set_elevator_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorConfig.Mid, use_queue=False)
-        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorConfig.Default, use_queue=False)
+        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorSpeed.Default, use_queue=False)
         self.set_elevator_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorConfig.Mid, use_queue=False)
-        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Left, robot_actuators.ElevatorConfig.Default, use_queue=False)
+        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Left, robot_actuators.ElevatorSpeed.Default, use_queue=False)
         self.set_elevator_config(robot_actuators.FrontArmsEnum.Left, robot_actuators.ElevatorConfig.Mid, use_queue=False)
 
         self.left_arm_open(use_queue=False)
         self.right_arm_open(use_queue=False)
         self.snowplow_open(use_queue=False)
         self.bumper_open(use_queue=False)
-        sleep(1.5)
+        input()
 
         self.set_elevator_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorConfig.Closed, use_queue=False)
-        self.set_elevator_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorConfig.Closed, use_queue=False)
+        self.set_elevator_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorConfig.StoreStatuette, use_queue=False)
         self.set_elevator_config(robot_actuators.FrontArmsEnum.Left, robot_actuators.ElevatorConfig.Closed, use_queue=False)
 
         self.set_head_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.HeadConfig.Closed, use_queue=False)

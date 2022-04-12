@@ -117,7 +117,7 @@ def right_arm_close(self):
 @if_enabled
 @use_queue
 def right_arm_open(self):
-    return self.actuators.ax_move(3, 512)
+    return self.actuators.ax_move(7, 290)
 
 ##############
 # FRONT ARMS #
@@ -147,7 +147,7 @@ class FrontArmsEnum(Enum):
 
 class HeadSpeed(Enum):
     Default = 1023
-    With Statuette = 512
+    WithStatuette = 512
     WithSample = 255
 
     @staticmethod
@@ -203,7 +203,7 @@ HEADS = {
 
 class ElevatorSpeed(Enum):
     Default = 1023
-    With Statuette = 512
+    WithStatuette = 512
     WithSample = 255
 
     @staticmethod
@@ -219,10 +219,11 @@ class ElevatorSpeed(Enum):
 
 class ElevatorConfig(Enum):
     Closed = 0
-    Floor = 1
+    Down = 1
     Mid = 2
     GaleryLow = 3
     ExcavationSquares = 4
+    StoreStatuette = 5
 
     @staticmethod
     def get_config(config):
@@ -239,20 +240,21 @@ ELEVATORS = {
     FrontArmsEnum.Right : {
         ElevatorConfig.Closed : 187,
         ElevatorConfig.Down : 768,
-        ElevatorConfig.Mid : 518,
+        ElevatorConfig.Mid : 537,
         ElevatorConfig.GaleryLow : 581,
         ElevatorConfig.ExcavationSquares : 420
     },
     FrontArmsEnum.Center : {
         ElevatorConfig.Closed : 405,
         ElevatorConfig.Down : 815,
-        ElevatorConfig.Mid : 632,
-        ElevatorConfig.GaleryLow : 707
+        ElevatorConfig.Mid : 639,
+        ElevatorConfig.GaleryLow : 707,
+        ElevatorConfig. StoreStatuette : 509
     },
     FrontArmsEnum.Left : {
         ElevatorConfig.Closed : 835,
         ElevatorConfig.Down : 220,
-        ElevatorConfig.Mid : 421,
+        ElevatorConfig.Mid : 486,
         ElevatorConfig.GaleryLow : 361,
         ElevatorConfig.ExcavationSquares : 540
     }
@@ -260,7 +262,7 @@ ELEVATORS = {
 
 @if_enabled
 @use_queue
-def set_head_speed(arm, speed):
+def set_head_speed(self, arm, speed):
     arm = FrontArmsEnum.get_arm(arm)
     speed = HeadSpeed.get_speed(speed)
 
@@ -271,7 +273,7 @@ def set_head_speed(arm, speed):
 
 @if_enabled
 @use_queue
-def set_head_config(arm, config):
+def set_head_config(self, arm, config):
     arm = FrontArmsEnum.get_arm(arm)
     config = HeadConfig.get_config(config)
 
@@ -282,9 +284,9 @@ def set_head_config(arm, config):
 
 @if_enabled
 @use_queue
-def set_elevator_speed(arm, speed):
+def set_elevator_speed(self, arm, speed):
     arm = FrontArmsEnum.get_arm(arm)
-    speed = ElevatorConfig.get_speed(speed)
+    speed = ElevatorSpeed.get_speed(speed)
 
     if arm is None or speed is None:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -293,11 +295,11 @@ def set_elevator_speed(arm, speed):
 
 @if_enabled
 @use_queue
-def set_elevator_config(arm, config):
+def set_elevator_config(self, arm, config):
     arm = FrontArmsEnum.get_arm(arm)
     config = ElevatorConfig.get_config(config)
 
     if arm is None or config is None:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    return self.actuators.ax_move(arm.get_head_id(), ELEVATORS[arm][config])
+    return self.actuators.ax_move(arm.get_elevator_id(), ELEVATORS[arm][config])
