@@ -15,6 +15,7 @@ from evolutek.lib.actuators.pump import PumpController
 from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
+from evolutek.lib.sensors.try_ohm_sensors import TryOhmSensors
 from evolutek.lib.actuators.servo import ServoHandler
 
 # Other imports
@@ -45,16 +46,16 @@ class Actuators(Service):
             [1, 2, 3, 4, 5, 6, 7, 8]
         )
 
-        self.sensors_calc = {
-            1: [
-                create_gpio(13, 'sensor1a', dir=False, type=GpioType.RPI),
-                create_gpio(19, 'sensor1b', dir=False, type=GpioType.RPI)
+        self.sensors_calc = TryOhmSensors{
+         1: [
+            create_gpio(13, 'sensor1a', dir=False, type=GpioType.RPI),
+            create_gpio(19, 'sensor1b', dir=False, type=GpioType.RPI)
             ],
-            2: [
-                create_gpio(16, 'sensor2a', dir=False, type=GpioType.RPI),
-                create_gpio(26, 'sensor2b', dir=False, type=GpioType.RPI)
+         2: [
+             create_gpio(16, 'sensor2a', dir=False, type=GpioType.RPI),
+             create_gpio(26, 'sensor2b', dir=False, type=GpioType.RPI)
             ]
-        }
+        })
 
         self.servo = ServoHandler({
             0: [
@@ -139,7 +140,7 @@ class Actuators(Service):
             self.pumps,
             self.proximity_sensors,
             self.recal_sensors,
-            self.sensors_calc
+         #   self.sensors_calc
         ]
 
         self.is_initialized = True
