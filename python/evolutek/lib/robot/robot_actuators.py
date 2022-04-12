@@ -305,6 +305,8 @@ def set_elevator_config(self, arm, config):
 
     return self.actuators.ax_move(arm.get_elevator_id(), ELEVATORS[arm][config])
 
+@if_enabled
+@use_queue
 def get_pattern(self):
     all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
     result = self.actuators.sensors_calc.read_all_sensor()
