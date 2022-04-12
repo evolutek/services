@@ -1,16 +1,27 @@
+#!/bin/python3
+
 from evolutek.lib.gpio.gpio_factory import create_adc, AdcType
 from evolutek.lib.sensors.recal_sensors import RecalSensor
 
-DIST_MIN = 60
-DIST_MAX = 1530
-DIST_SIDE = 30
-DIST_1 = 100
-DIST_2 = 230
-DIST_3 = 1330
+"""
+ WARNING
 
-# WARNING: If you change these values, make sure you dont break the readings
-# by checking the values in lib/sensors/recal_sensors.py
+ If you change these values, make sure you dont break the readings
+ by checking the values in lib/sensors/recal_sensors.py
 
+"""
+
+# Distance between the glass of the sensor and the side of the robot
+DIST_SIDE = 48
+
+# The minimum measurable distance for the sensor is 100mm
+DIST_MIN = 60 + DIST_SIDE
+# The maximum measurable distance for the sensor is 2500mm
+DIST_MAX = 1300 + DIST_SIDE
+
+DIST_1 = 100 + DIST_SIDE
+DIST_2 = 500 + DIST_SIDE
+DIST_3 = 1100 + DIST_SIDE
 def wait():
     input("Press enter to continue\n")
 
@@ -30,12 +41,13 @@ def main():
 
     obstacle(DIST_MIN)
     wait()
-    print("Press the QA button on the sensor for 1 second")
+    button = "bottom" if sensorid == 1 else "top"
+    print(f"Press the QA button ({button}) on the sensor for 1 second")
     print("The yellow LED led should start blinking")
     wait()
     obstacle(DIST_MAX)
     wait()
-    print("Press the QA button on the sensor for 1 second")
+    print(f"Press the QA button ({button}) on the sensor for 1 second")
     print("The yellow LED led should stop blinking")
     wait()
 
@@ -57,9 +69,9 @@ def main():
     wait()
     measure3 = sensor.read(repetitions=10, use_calibration=False)
     print(f"Measured {measure3}")
-    err1 = measure1 - DIST_1 
-    err2 = measure2 - DIST_2 
-    err3 = measure3 - DIST_3 
+    err1 = measure1 - DIST_1
+    err2 = measure2 - DIST_2
+    err3 = measure3 - DIST_3
 
     slope1 = (err2 - err1) / (DIST_2 - DIST_1)
     intercept1 = err2 - (DIST_2)*slope1
