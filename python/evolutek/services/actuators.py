@@ -46,7 +46,7 @@ class Actuators(Service):
             [1, 2, 3, 4, 5, 6, 7, 8]
         )
 
-        self.sensors_calc = TryOhmSensors{
+        self.sensors_calc = TryOhmSensors({
          1: [
             create_gpio(13, 'sensor1a', dir=False, type=GpioType.RPI),
             create_gpio(19, 'sensor1b', dir=False, type=GpioType.RPI)
