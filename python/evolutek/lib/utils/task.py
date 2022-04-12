@@ -43,9 +43,8 @@ def async_task(method):
 
         args = [self] + list(args)
         global CURRENT_TASK_ID
-        kwargs[id] = CURRENT_TASK_ID(
-        CURRENT_TASK_ID = CURRENT_TASK_ID + 1) % (MAX_TASK_ID + 1)
-        task = Task(method, args, kwargs)
+        task = Task(method, args, kwargs, id=CURRENT_TASK_ID)
+        CURRENT_TASK_ID = (CURRENT_TASK_ID + 1) % (MAX_TASK_ID + 1)
 
         if async_task:
             with self.lock:

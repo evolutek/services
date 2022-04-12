@@ -128,8 +128,12 @@ class Robot(Service):
 
             self.need_to_abort.clear()
             self.publish('%s_robot_started' % ROBOT, id=task.id)
-
-            r = task.run()
+            r = None
+            try:
+                r = task.run()
+            except Exception as e:
+                print('[ROBOT] Task crashed due to %s' % str(e))
+                r = RobotStatus.return_status(RobotStatus.Failed)
 
             self.publish('%s_robot_stopped' % ROBOT, id=task.id, **r)
 
