@@ -15,7 +15,8 @@ class I2CServo(Component):
     def _initialize(self):
         KIT.servo[self.channel].frequency = self.frequency
         KIT.servo[self.channel].actuation_range = self.actuation_range
-        KIT.servo[self.channel].angle = 180
+        #KIT.servo[self.channel].angle = self.actuation_range if self.actuation_range != 0 else self.actuation_range + 1
+        return True
 
     def set_angle(self, angle: int):
         KIT.servo[self.channel].angle = angle

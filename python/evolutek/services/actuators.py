@@ -129,8 +129,6 @@ class Actuators(Service):
             self.pumps,
             self.proximity_sensors,
             self.recal_sensors,
-            self.rgb_sensors,
-            self.rgb_led_strip
         ]
 
         self.is_initialized = True
@@ -141,13 +139,6 @@ class Actuators(Service):
 
         if self.is_initialized:
             self.rgb_led_strip.start()
-
-            print("[ACTUATORS] Calibrating rgb sensors")
-            self.white_led_strip_set(True)
-            for sensor in self.rgb_sensors:
-                self.rgb_sensors[sensor].calibrate()
-            self.white_led_strip_set(False)
-
             print("[ACTUATORS] Fully initialized")
 
     def stop(self):
@@ -255,20 +246,6 @@ class Actuators(Service):
             return None
         return self.axs[int(id)].moving_speed(int(speed))
 
-    #################
-    # COLOR SENSORS #
-    #################
-    @Service.action
-    def color_sensor_read(self, id):
-        if self.rgb_sensors[int(id)] == None:
-            return None
-
-        self.white_led_strip_set(True)
-        sleep(0.2)
-        value = self.rgb_sensors[int(id)].read().name
-        self.white_led_strip_set(False)
-
-        return value
 
     @Service.action
     def color_sensors_read(self):
@@ -311,13 +288,6 @@ class Actuators(Service):
         else:
             self.free()
             self.disable()
-
-    ###################
-    # WHITE LED STRIP #
-    ###################
-    @Service.action
-    def white_led_strip_set(self, on):
-        self.white_led_strip.write(get_boolean(on))
 
     #################
     # RGB LED STRIP #
