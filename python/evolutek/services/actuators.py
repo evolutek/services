@@ -223,7 +223,7 @@ class Actuators(Service):
     def servo_set_angle(self, ids, angle):
         if self.servo[int(ids)] == None:
             return None
-        return self.servo[int(id)].set_angle(angle)
+        return self.servo[int(ids)].set_angle(angle)
 
     #######
     # AXS #

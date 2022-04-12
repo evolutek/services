@@ -54,14 +54,42 @@ def pumps_drop(self, ids, mirror=True):
 @if_enabled
 @use_queue
 def snowplow_open(self):
+    self.actuators.servo_set_angle(0, 0)
+    self.actuators.servo_set_angle(15, 120)
+
+@if_enabled
+@use_queue
+def snowplow_close(self):
     self.actuators.servo_set_angle(0, 120)
     self.actuators.servo_set_angle(15, 0)
 
 @if_enabled
 @use_queue
-def snowplow_close(self):
-    self.actuators.servo_set_angle(0, 0)
-    self.actuators.servo_set_angle(15, 120)
+def bumper_open(self):
+    self.actuators.servo_set_angle(1, 0)
+    self.actuators.servo_set_angle(14, 98)
+
+@if_enabled
+@use_queue
+def bumper_close(self):
+    self.actuators.servo_set_angle(1, 98)
+    self.actuators.servo_set_angle(14, 0)
+
+# Front Arm Close
+@if_enabled
+@use_queue
+def front_arm_close(self):
+    self.actuators.ax_set_speed(1, 256)
+    res = self.actuators.ax_move(1, 512)
+    self.actuators.pumps_drop([3,5])
+    return res
+
+# Front Arm Open
+@if_enabled
+@use_queue
+def front_arm_open(self):
+    self.actuators.ax_set_speed(1, 800)
+    return self.actuators.ax_move(7, 290)
 
 #############
 # SIDE ARMS #
@@ -83,7 +111,7 @@ def left_arm_open(self):
 @if_enabled
 @use_queue
 def right_arm_close(self):
-    return self.actuators.ax_move(3, 290)
+    return self.actuators.ax_move(7, 512)
 
 # Right Arm Open
 @if_enabled
