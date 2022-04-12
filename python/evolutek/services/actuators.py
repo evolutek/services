@@ -48,7 +48,7 @@ class Actuators(Service):
 
         self.servo = ServoHandler({
             0: [
-                50,
+                333,
                 180
             ],
             1: [
@@ -56,7 +56,7 @@ class Actuators(Service):
                 180
             ],
             14: [
-                333,
+                50,
                 180
             ],
             15: [
@@ -221,10 +221,10 @@ class Actuators(Service):
     # SERVO #
     #########
     @Service.action
-    def servo_set_angle(self, id, angle):
-        if self.servo[int(id)] == None:
+    def servo_set_angle(self, ids, angle):
+        if self.servo[int(ids)] == None:
             return None
-        return self.servo[int(id)].set_angle(int(angle))
+        return self.servo.set_angle_all({ids: angle})
 
     #######
     # AXS #
