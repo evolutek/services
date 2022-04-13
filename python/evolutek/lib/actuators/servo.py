@@ -33,3 +33,13 @@ class ServoHandler(ComponentsHolder):
             print('[%s] Failed to open Servo Handler' % self.name)
             return False
         return True
+
+    def set_angle_all(self, angles):
+        for key, values in angles.items():
+            if not isinstance(key, int):
+                print('[%s] bad key id' % self.name)
+                continue
+            if not key in self.components:
+                print('[%s] bad key id' % self.name)
+                continue
+            self.components[key].set_angle(values)
