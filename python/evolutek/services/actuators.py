@@ -219,7 +219,7 @@ class Actuators(Service):
         return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action
-    def pumps_stop_ev(self, ids):
+    def stop_evs(self, ids):
         if isinstance(ids, str):
             ids = ids.split(",")
 
@@ -232,7 +232,7 @@ class Actuators(Service):
         if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.pumps.stop_ev(_ids)
+        self.pumps.stop_evs(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled
@@ -290,7 +290,8 @@ class Actuators(Service):
     def ax_set_speed(self, id, speed):
         if self.axs[int(id)] == None:
             return None
-        return self.axs[int(id)].moving_speed(int(speed))
+        self.axs[int(id)].moving_speed(int(speed))
+        return RobotStatus.return_status(RobotStatus.Done)
 
 
     @Service.action

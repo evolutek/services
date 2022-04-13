@@ -46,7 +46,7 @@ def pumps_drop(self, ids, mirror=True):
 
 @if_enabled
 @async_task
-def pumps_stop_ev(self, ids, mirror=True):
+def stop_evs(self, ids, mirror=True):
     if isinstance(ids, str):
         ids = ids.split(",")
 
@@ -57,7 +57,7 @@ def pumps_stop_ev(self, ids, mirror=True):
     for id in ids:
         _ids.append(self.mirror_pump_id(int(id)) if mirror else int(id))
 
-    return self.actuators.pumps_stop_ev(_ids)
+    return self.actuators.stop_evs(_ids)
 
 #############
 # FRONT ARM #
