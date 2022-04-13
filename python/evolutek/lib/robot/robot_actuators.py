@@ -235,7 +235,7 @@ ELEVATORS = {
         ElevatorConfig.Closed : 405,
         ElevatorConfig.Down : 815,
         ElevatorConfig.Mid : 639,
-        ElevatorConfig.GaleryLow : 707,
+        ElevatorConfig.GaleryLow : 750, # Peut-être en rajouter une autre
         ElevatorConfig. StoreStatuette : 509
     },
     FrontArmsEnum.Left : {
