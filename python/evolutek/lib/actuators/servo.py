@@ -32,3 +32,4 @@ class ServoHandler(ComponentsHolder):
         except:
             print('[%s] Failed to open Servo Handler' % self.name)
             return False
+        return True
