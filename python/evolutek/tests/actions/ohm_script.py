@@ -54,7 +54,7 @@ def action2():
     input()
 
 def tests():
-    pattern = cs.robot.[ROBOT].pattern - 1
+    pattern = cs.robot[ROBOT].pattern - 1
     patterns = [
             [True, True, False, False, True, True, False],
             [False, True, True, True, False, False, True],
