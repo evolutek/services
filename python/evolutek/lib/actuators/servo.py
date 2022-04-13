@@ -28,7 +28,7 @@ class ServoHandler(ComponentsHolder):
     def _initialize(self):
         global KIT
         try:
-            KIT = ServoKit(channels=NB_CHANNEL, frequency=self.frequency)
+            KIT = ServoKit(channels=NB_CHANNEL)
         except:
             print('[%s] Failed to open Servo Handler' % self.name)
             return False
