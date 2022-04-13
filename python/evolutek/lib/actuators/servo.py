@@ -5,7 +5,7 @@ NB_CHANNEL = 16
 KIT: ServoKit = None
 
 class I2CServo(Component):
-    def __init__(self, id_channel, frequency, actuation_range):
+    def __init__(self, id_channel, frequency, actuation_range=180):
         self.frequency = frequency
         self.actuation_range = actuation_range
         self.channel = id_channel
