@@ -54,9 +54,25 @@ def action2():
     input()
 
 def tests():
+    pattern = cs.robot.[ROBOT].pattern - 1
+    patterns = [
+            [True, True, False, False, True, True, False],
+            [False, True, True, True, False, False, True],
+            [True, True, False, True, False, False, True],
+            [False, True, True, False, True, True, False]
+            ]
+    if pattern in [0, 3]:
+        plot = 5
+    else:
+        plot = 6
     while cs.trajman[ROBOT].get_position()['y'] > 760:
-        print(cs.trajman[ROBOT].get_position(), cs.trajman[ROBOT].get_position()['y'], type(cs.trajman[ROBOT].get_position()['y']), type(cs.trajman[ROBOT].get_position()['y']))
-        cs.trajman[ROBOT].goto(1830, cs.trajman[ROBOT].get_position()['y']+100)
+        cs.robot[ROBOT].goto(1830, cs.trajman[ROBOT].get_position()['y']-185)
+        input()
+        if patterns[pattern][plot]:
+            cs.robot[ROBOT].left_arm_open()
+            input()
+            cs.robot[ROBOT].left_arm_close()
+            input()
 
 
 if __name__ == '__main__':
