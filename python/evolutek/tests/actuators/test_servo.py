@@ -4,7 +4,6 @@ from time import sleep
 
 pumps = {
     0: [
-           0,
             33,
             180
     ]
