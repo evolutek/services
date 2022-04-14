@@ -4,7 +4,7 @@
       "name": "pmi_starting_sleep",
       "position": {
         "x": 545,
-        "y": 140
+        "y": 250
       },
       "actions": [
         {
@@ -21,20 +21,19 @@
         "x": 300,
         "y": 810
       },
-      "score": 3,
       "actions": [
         {
           "fct": "goto",
           "args": {
-            "x": 1170,
-            "y": 300
+            "x": 300,
+            "y": 1170
           }
         },
         {
           "fct": "goto",
           "args": {
-            "x": 1170,
-            "y": 675
+            "x": 675,
+            "y": 1170
           }
         },
         {
@@ -50,8 +49,42 @@
         {
           "fct": "goto",
           "args": {
-            "x": 400,
-            "y": 675
+            "x": 675,
+            "y": 400
+          },
+          "score": 3
+        }
+      ]
+    },
+    {
+      "name": "indiana_jones",
+      "position": {
+        "x": 1550,
+        "y": 450
+      },
+      "theta": "-pi/4",
+      "actions": [
+        {
+          "fct": "indiana_jones",
+          "handler": "robot",
+          "score": 15
+        }
+      ]
+    },
+    {
+      "name": "drop_start",
+      "position": {
+        "x": 1100,
+        "y": 230
+      },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "pumps_drop",
+          "handler": "robot",
+          "score": 2,
+          "args": {
+            "ids": "1,3"
           }
         }
       ]
@@ -64,27 +97,29 @@
         "pmi_starting_sleep",
         "push_starting_samples"
       ],
-      "available": ["pmi"],
+      "available": ["pal"],
       "use_pathfinding": false
     },
     {
 
       "name": "homologation_pal",
       "goals": [
+        "indiana_jones",
+        "drop_start"
       ],
-      "available": ["pal"],
+      "available": ["pmi"],
       "use_pathfinding": false
     }
   ],
   "starting_pos": {
     "pal": {
       "x": 855,
-      "y": 140,
+      "y": 250,
       "theta": "pi/2"
     },
     "pmi": {
       "x": 545,
-      "y": 140,
+      "y": 250,
       "theta": "pi/2"
     }
   }

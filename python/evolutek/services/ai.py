@@ -217,14 +217,6 @@ class AI(Service):
 
             self.robot.set_theta(pi/2)
             self.recalibration(x = False, x_sensor = 'right' if ROBOT == 'pal' else 'left', init=True)
-
-            if ROBOT == 'pal':
-                self.goto(x=900, y=800, avoid=False)
-                self.goth(theta=pi/2)
-            else:
-                self.goto(x=300, y=255, avoid=False)
-                self.goth(theta=pi)
-
             with self.lock:
                 self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False)
                 self.goth(theta=self.goals.starting_theta)
@@ -239,6 +231,14 @@ class AI(Service):
                     theta=self.goals.starting_theta
                 )
             self.trajman.unfree()
+
+        """
+        TODO: Remove or True
+        """
+
+        if ROBOT == 'pal'              or True:
+            self.robot.pumps_get(ids='4', async_task=False)
+            self.robot.set_elevator_config(arm=2, config=2, async_task=False)
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)

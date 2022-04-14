@@ -272,7 +272,7 @@ ELEVATORS = {
         ElevatorConfig.Mid : 639,
         ElevatorConfig.LowMid: 680,
         ElevatorConfig.GaleryLow : 750,
-        ElevatorConfig. StoreStatuette : 509
+        ElevatorConfig.StoreStatuette : 509
     },
     FrontArmsEnum.Left : {
         ElevatorConfig.Closed : 835,
@@ -331,7 +331,7 @@ def get_pattern(self):
     all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
     result = self.actuators.read_sensors_pattern()
     result = [ Color[r] for r in result ]
-    
+
     #result =[]
 
     #for sensor in self.actuators.sensor_calc:
