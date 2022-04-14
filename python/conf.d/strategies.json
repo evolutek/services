@@ -97,7 +97,7 @@
         "pmi_starting_sleep",
         "push_starting_samples"
       ],
-      "available": ["pal"],
+      "available": ["pmi"],
       "use_pathfinding": false
     },
     {
@@ -107,7 +107,7 @@
         "indiana_jones",
         "drop_start"
       ],
-      "available": ["pmi"],
+      "available": ["pal"],
       "use_pathfinding": false
     }
   ],
