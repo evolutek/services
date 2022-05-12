@@ -13,11 +13,11 @@ class TryOhm(Component):
         b = self.gpiob.read()
 
         if a and b:
-            return Color.Yellow
-        elif a:
             return Color.Purple
-        elif b:
+        elif a:
             return Color.Red
+        elif b:
+            return Color.Yellow
         else:
             return Color.Unknown
 
