@@ -16,6 +16,7 @@ from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.sensors.rgb_sensors import RGBSensors
+from evolutek.lib.actuators.servo import ServoHandler
 
 # Other imports
 from evolutek.lib.settings import ROBOT
@@ -42,8 +43,27 @@ class Actuators(Service):
         atexit.register(self.stop)
 
         self.axs = AX12Controller(
-            [1, 2, 3, 4, 5, 6]
+            [1, 2, 3, 4, 5, 6, 7, 8]
         )
+
+        self.servo = ServoHandler({
+            0: [
+                50,
+                180
+            ],
+            1: [
+                50,
+                180
+            ],
+            14: [
+                333,
+                180
+            ],
+            15: [
+                333,
+                180
+            ]
+        }, 180)
 
         self.pumps = PumpController(
             {
@@ -62,30 +82,6 @@ class Actuators(Service):
                 4: [
                     create_gpio(6, 'pump4', dir=True, type=GpioType.MCP),
                     create_gpio(7, 'ev4', dir=True, type=GpioType.MCP)
-                ],
-                5 : [
-                    create_gpio(8, 'pump5', dir=True, type=GpioType.MCP),
-                    create_gpio(9, 'ev5', dir=True, type=GpioType.MCP)
-                ],
-                6 : [
-                    create_gpio(10, 'pump6', dir=True, type=GpioType.MCP),
-                    create_gpio(11, 'ev6', dir=True, type=GpioType.MCP)
-                ],
-                7 : [
-                    create_gpio(12, 'pump7', dir=True, type=GpioType.MCP),
-                    create_gpio(13, 'ev7', dir=True, type=GpioType.MCP)
-                ],
-                8 : [
-                    create_gpio(14, 'pump8', dir=True, type=GpioType.MCP),
-                    create_gpio(15, 'ev8', dir=True, type=GpioType.MCP)
-                ],
-                9 : [
-                    create_gpio(18, 'pump9', dir=True, type=GpioType.MCP),
-                    create_gpio(19, 'ev9', dir=True, type=GpioType.MCP)
-                ],
-                10 : [
-                    create_gpio(20, 'pump10', dir=True, type=GpioType.MCP),
-                    create_gpio(21, 'ev10', dir=True, type=GpioType.MCP)
                 ]
             }
         )
@@ -95,7 +91,6 @@ class Actuators(Service):
                 1 : [create_gpio(24, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
                 2 : [create_gpio(25, 'proximity_sensors2', dir=False, type=GpioType.MCP)],
                 3 : [create_gpio(26, 'proximity_sensors3', dir=False, type=GpioType.MCP)],
-                4 : [create_gpio(27, 'proximity_sensors4', dir=False, type=GpioType.MCP)]
             }
         )
 
@@ -117,16 +112,11 @@ class Actuators(Service):
         self.recal_sensors[1].calibrate(left_slope1, left_intercept1, left_slope2, left_intercept2)
         self.recal_sensors[2].calibrate(right_slope1, right_intercept1, right_slope2, right_intercept2)
 
-        self.rgb_sensors = RGBSensors(
-            [1, 2, 3, 4]
-        )
-
         self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
         self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
-        self.white_led_strip = create_gpio(16, 'leds strips', dir=True, type=GpioType.MCP)
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
         try:
