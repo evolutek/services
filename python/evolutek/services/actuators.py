@@ -217,6 +217,15 @@ class Actuators(Service):
         self.pumps.gets(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
+    #########
+    # SERVO #
+    #########
+    @Service.action
+    def servo_set_angle(self, id, angle):
+        if self.servo[int(id)] == None:
+            return None
+        return self.servo[int(id)].set_angle(int(angle))
+
     #######
     # AXS #
     #######
