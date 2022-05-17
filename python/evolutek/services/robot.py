@@ -50,6 +50,8 @@ class Robot(Service):
     left_arm_open = Service.action(robot_actuators.left_arm_open)
     right_arm_close = Service.action(robot_actuators.right_arm_close)
     right_arm_open = Service.action(robot_actuators.right_arm_open)
+    snowplow_open = Service.action(robot_actuators.snowplow_open)
+    snowplow_close = Service.action(robot_actuators.snowplow_close)
 
     def __init__(self):
 
@@ -189,7 +191,6 @@ class Robot(Service):
             self.robots_tags.clear()
             self.path.clear()
 
-
     @Service.action
     def enable(self):
         if self.bau_state:
@@ -211,10 +212,12 @@ class Robot(Service):
 
         self.left_arm_open(use_queue=False)
         self.right_arm_open(use_queue=False)
+        self.snowplow_open(use_queue=False)
         sleep(1.5)
 
         self.left_arm_close(use_queue=False)
         self.right_arm_close(use_queue=False)
+        self.snowplow_close(use_queue=False)
         sleep(1.5)
 
     @Service.event('%s-bau' % ROBOT)

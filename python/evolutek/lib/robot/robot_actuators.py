@@ -47,6 +47,22 @@ def pumps_drop(self, ids, mirror=True):
     return self.actuators.pumps_drop(_ids)
 
 #############
+# FRONT ARM #
+#############
+
+@if_enabled
+@use_queue
+def snowplow_open(self):
+    self.actuators.servo_set_angle(0, 120)
+    self.actuators.servo_set_angle(15, 0)
+
+@if_enabled
+@use_queue
+def snowplow_close(self):
+    self.actuators.servo_set_angle(0, 0)
+    self.actuators.servo_set_angle(15, 120)
+
+#############
 # SIDE ARMS #
 #############
 
