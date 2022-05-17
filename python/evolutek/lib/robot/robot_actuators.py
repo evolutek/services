@@ -45,3 +45,31 @@ def pumps_drop(self, ids, mirror=True):
     if 4 in _ids: _ids.append(5)
 
     return self.actuators.pumps_drop(_ids)
+
+#############
+# SIDE ARMS #
+#############
+
+# Left Arm Close
+@if_enabled
+@use_queue
+def left_arm_close(self):
+    return self.actuators.ax_move(8, 512)
+
+# Left Arm Open
+@if_enabled
+@use_queue
+def left_arm_open(self):
+    return self.actuators.ax_move(8, 755)
+
+# Right Arm Close
+@if_enabled
+@use_queue
+def right_arm_close(self):
+    return self.actuators.ax_move(3, 290)
+
+# Right Arm Open
+@if_enabled
+@use_queue
+def right_arm_open(self):
+    return self.actuators.ax_move(3, 512)

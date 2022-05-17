@@ -46,8 +46,10 @@ class Robot(Service):
     mirror_pump_id = robot_actuators.mirror_pump_id
     pumps_get = Service.action(robot_actuators.pumps_get)
     pumps_drop = Service.action(robot_actuators.pumps_drop)
-
-    # Imported from robot_actions
+    left_arm_close = Service.action(robot_actuators.left_arm_close)
+    left_arm_open = Service.action(robot_actuators.left_arm_open)
+    right_arm_close = Service.action(robot_actuators.right_arm_close)
+    right_arm_open = Service.action(robot_actuators.right_arm_open)
 
     def __init__(self):
 
@@ -204,6 +206,16 @@ class Robot(Service):
             return
 
         self.enable()
+
+        sleep(2)
+
+        self.left_arm_open(use_queue=False)
+        self.right_arm_open(use_queue=False)
+        sleep(1.5)
+
+        self.left_arm_close(use_queue=False)
+        self.right_arm_close(use_queue=False)
+        sleep(1.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

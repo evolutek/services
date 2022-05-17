@@ -15,7 +15,6 @@ from evolutek.lib.actuators.pump import PumpController
 from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
-from evolutek.lib.sensors.rgb_sensors import RGBSensors
 from evolutek.lib.actuators.servo import ServoHandler
 
 # Other imports
@@ -224,7 +223,7 @@ class Actuators(Service):
     def servo_set_angle(self, ids, angle):
         if self.servo[int(ids)] == None:
             return None
-        return self.servo.set_angle_all({ids: angle})
+        return self.servo[int(id)].set_angle(angle)
 
     #######
     # AXS #
