@@ -102,24 +102,3 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
         return RobotStatus.return_status(status, **stop_event.data)
 
     return wrapped
-
-def use_queue(method):
-
-    @wraps(method)
-    def wrapped(self, *args, **kwargs):
-
-        use_queue = True
-        if 'use_queue' in kwargs:
-            use_queue = get_boolean(kwargs['use_queue'])
-
-            del kwargs['use_queue']
-
-        args = [self] + list(args)
-        task = Task(method, args, kwargs)
-
-        if use_queue:
-            return self.queue.run_action(task)
-        else:
-            return task.run()
-
-    return wrapped

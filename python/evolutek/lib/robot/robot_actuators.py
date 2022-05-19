@@ -1,5 +1,6 @@
 from evolutek.lib.status import RobotStatus
-from evolutek.lib.utils.wrappers import if_enabled, use_queue
+from evolutek.lib.utils.task import async_task
+from evolutek.lib.utils.wrappers import if_enabled
 
 #########
 # PUMPS #
@@ -12,7 +13,7 @@ def mirror_pump_id(self, id):
     return id
 
 @if_enabled
-@use_queue
+@async_task
 def pumps_get(self, ids, mirror=True):
     if isinstance(ids, str):
         ids = ids.split(",")
@@ -29,7 +30,7 @@ def pumps_get(self, ids, mirror=True):
     return self.actuators.pumps_get(_ids)
 
 @if_enabled
-@use_queue
+@async_task
 def pumps_drop(self, ids, mirror=True):
     if isinstance(ids, str):
         ids = ids.split(",")

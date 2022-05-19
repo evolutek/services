@@ -10,7 +10,6 @@ import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
-from evolutek.lib.utils.action_queue import ActQueue
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
 from evolutek.utils.interfaces.debug_map import Interface
@@ -92,18 +91,8 @@ class Robot(Service):
         self.robots = []
         self.robots_tags = []
 
-        def start_callback(id):
-            self.need_to_abort.clear()
-            self.publish('%s_robot_started' % ROBOT, id=id)
-
-        def end_callback(id, status):
-            self.publish('%s_robot_stopped' % ROBOT, id=id, **status)
-
-        self.queue = ActQueue(
-            start_callback,
-            end_callback
-        )
-        self.queue.run_queue()
+        self.current_task = None
+        Thread(target=self.run_tasks).start()
 
         try:
             cs = CellaservProxy()
@@ -118,6 +107,33 @@ class Robot(Service):
 
         if DEBUG:
             Thread(target=Interface, args=[self]).start()
+
+    def run_tasks(self):
+        while True:
+            sleep(0.1)
+
+            if self.disabled.is_set():
+                continue
+
+            if self.current_task is None:
+                continue
+
+            task = None
+            with self.lock:
+                task = self.current_task
+
+            print('[ROBOT] Running task:')
+            print(task)
+
+            self.need_to_abort.clear()
+            self.publish('%s_robot_started' % ROBOT, id=task.id)
+
+            r = task.run()
+
+            self.publish('%s_robot_stopped' % ROBOT, id=task.id, **r)
+
+            with self.lock:
+                self.current_task = None
 
     @Service.event("match_color")
     def color_callback(self, color):
@@ -159,7 +175,6 @@ class Robot(Service):
             return path
 
     def clean_map(self):
-
          with self.lock:
             # Remove robots
             for tag in self.robots_tags:
@@ -168,23 +183,14 @@ class Robot(Service):
             self.path.clear()
 
 
-    @Service.event('raise_flags')
-    def raise_flags(self):
-        self.enable()
-        self.actuators.enable()
-        sleep(0.5)
-        self.flags_raise(use_queue=False)
-
     @Service.action
     def enable(self):
         if self.bau_state:
             self.disabled.clear()
-            self.queue.run_queue()
 
     @Service.action
     def disable(self):
         self.disabled.set()
-        self.queue.stop_queue()
         self.need_to_abort.set()
 
     @Service.action
@@ -212,7 +218,6 @@ class Robot(Service):
     @Service.action
     def abort_action(self):
         self.need_to_abort.set()
-        self.queue.clear_queue()
 
     def check_abort(self):
         if self.need_to_abort.is_set():
