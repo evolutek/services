@@ -36,6 +36,12 @@ class PumpController(ComponentsHolder):
         super().__init__('Pump Controller', pumps, Pump)
         self.valve_delay = DEFAULT_VALVE_DELAY if valve_delay is None else valve_delay
 
+    def gets(self, ids):
+        for id in ids:
+            if self.components[id] is None:
+                continue
+            self.components[id].get()
+
     def drops(self, ids):
         for id in ids:
             if self.components[id] is None:

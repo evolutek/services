@@ -22,7 +22,6 @@ from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.color import Color
-from evolutek.lib.utils.lma import launch_multiple_actions
 from evolutek.lib.utils.task import Task
 from evolutek.lib.utils.wrappers import if_enabled
 from threading import Event
@@ -227,16 +226,16 @@ class Actuators(Service):
         if isinstance(ids, str):
             ids = ids.split(",")
 
-        tasks = []
-        for i in ids:
-            if self.pumps[int(i)] == None:
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
                 continue
-            tasks.append(Task(self.pumps[int(i)].get))
+            _ids.append(int(id))
 
-        if len(tasks) < 1:
+        if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        launch_multiple_actions(tasks)
+        self.pumps.gets(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
     #######
