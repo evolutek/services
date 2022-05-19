@@ -7,6 +7,8 @@ MIN_DISTANCE = 60
 MAX_DISTANCE = 1530
 CALIB_MIDPOINT = 230
 
+# TODO : rework this
+
 class RecalSensor(Component):
 
     def __init__(self, id, adc):

@@ -47,30 +47,8 @@ class Robot(Service):
     mirror_pump_id = robot_actuators.mirror_pump_id
     pumps_get = Service.action(robot_actuators.pumps_get)
     pumps_drop = Service.action(robot_actuators.pumps_drop)
-    flags_raise = Service.action(robot_actuators.flags_raise)
-    flags_low = Service.action(robot_actuators.flags_low)
-    front_arm_close = Service.action(robot_actuators.front_arm_close)
-    front_arm_open = Service.action(robot_actuators.front_arm_open)
-    left_arm_close = Service.action(robot_actuators.left_arm_close)
-    left_arm_open = Service.action(robot_actuators.left_arm_open)
-    left_arm_push = Service.action(robot_actuators.left_arm_push)
-    right_arm_close = Service.action(robot_actuators.right_arm_close)
-    right_arm_open = Service.action(robot_actuators.right_arm_open)
-    right_arm_push = Service.action(robot_actuators.right_arm_push)
-    left_cup_holder_close = Service.action(robot_actuators.left_cup_holder_close)
-    left_cup_holder_open = Service.action(robot_actuators.left_cup_holder_open)
-    left_cup_holder_drop = Service.action(robot_actuators.left_cup_holder_drop)
-    right_cup_holder_close = Service.action(robot_actuators.right_cup_holder_close)
-    right_cup_holder_open = Service.action(robot_actuators.right_cup_holder_open)
-    right_cup_holder_drop = Service.action(robot_actuators.right_cup_holder_drop)
 
     # Imported from robot_actions
-    get_reef = Service.action(robot_actions.get_reef)
-    start_lighthouse = Service.action(robot_actions.start_lighthouse)
-    push_windsocks = Service.action(robot_actions.push_windsocks)
-    drop_start = Service.action(robot_actions.drop_start)
-    drop_center = Service.action(robot_actions.drop_center)
-    goto_anchorage = Service.action(robot_actions.goto_anchorage)
 
     def __init__(self):
 
@@ -215,23 +193,6 @@ class Robot(Service):
             return
 
         self.enable()
-        sleep(2)
-
-        self.front_arm_close(use_queue=False)
-        self.left_arm_open(use_queue=False)
-        self.right_arm_open(use_queue=False)
-        self.left_cup_holder_open(use_queue=False)
-        self.right_cup_holder_open(use_queue=False)
-        self.flags_raise(use_queue=False)
-        sleep(1.5)
-
-        self.front_arm_open(use_queue=False)
-        self.left_arm_close(use_queue=False)
-        self.right_arm_close(use_queue=False)
-        self.left_cup_holder_close(use_queue=False)
-        self.right_cup_holder_close(use_queue=False)
-        self.flags_low(use_queue=False)
-        sleep(1.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
@@ -244,7 +205,7 @@ class Robot(Service):
         self.bau_state = new_state
 
         if new_state:
-            self.reset()
+            self.enable()
         else:
             self.disable()
 

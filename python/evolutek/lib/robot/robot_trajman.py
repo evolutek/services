@@ -309,6 +309,7 @@ def homemade_recal(self, decal=0):
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
 # Set left to True to use the left sensor
+# TODO : rework
 def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
 
     axis_x = get_boolean(axis_x)
@@ -322,7 +323,8 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')
 
     # Distance between the sensor and the center of the robot
-    dist_to_center = 109
+    # TODO : put this in robot config maybe
+    dist_to_center = 92
 
     id = 1 if (sensor == RecalSensor.Left) ^ (not self.side and mirror) else 2
     pos = self.actuators.recal_sensor_read(id) + dist_to_center
