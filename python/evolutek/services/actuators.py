@@ -45,6 +45,17 @@ class Actuators(Service):
             [1, 2, 3, 4, 5, 6, 7, 8]
         )
 
+        self.sensors_calc = {
+            1: [
+                create_gpio(13, 'sensor1a', dir=False, type=GpioType.RPI),
+                create_gpio(19, 'sensor1b', dir=False, type=GpioType.RPI)
+            ],
+            2: [
+                create_gpio(16, 'sensor2a', dir=False, type=GpioType.RPI),
+                create_gpio(26, 'sensor2b', dir=False, type=GpioType.RPI)
+            ]
+        }
+
         self.servo = ServoHandler({
             0: [
                 333,
@@ -128,6 +139,7 @@ class Actuators(Service):
             self.pumps,
             self.proximity_sensors,
             self.recal_sensors,
+            self.sensors_calc
         ]
 
         self.is_initialized = True

@@ -1,5 +1,6 @@
 from enum import Enum
 from evolutek.lib.status import RobotStatus
+from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.task import async_task
 from evolutek.lib.utils.wrappers import if_enabled
 
@@ -303,3 +304,20 @@ def set_elevator_config(self, arm, config):
         return RobotStatus.return_status(RobotStatus.Failed)
 
     return self.actuators.ax_move(arm.get_elevator_id(), ELEVATORS[arm][config])
+
+def get_pattern(self):
+    all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
+    result = self.actuators.sensors_calc.read_all_sensor()
+
+    if (result[0], result[1]) == (Color.Red, Color.Purple) or (Color.Purple, Color.Red) == (result[0], result[1]):
+        return 1
+    elif (result[0], result[1]) == (Color.Yellow, Color.Yellow) or (Color.Yellow, Color.Purple) == (result[0], result[1]):
+        return 2
+    elif (result[0], result[1]) == (Color.Red, Color.Yellow) or (Color.Yellow, Color.Red) == (result[0], result[1]):
+        return 3
+    elif (result[0], result[1]) == (Color.Yellow, Color.Purple) or (Color.Purple, Color.Purple) == (result[0], result[1]):
+        return 4
+    elif (result[0], result[1]) == (Color.Red, Color.Unknown):
+        return 5
+    else:
+        return 6
