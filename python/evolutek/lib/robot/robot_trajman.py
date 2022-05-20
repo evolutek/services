@@ -323,12 +323,8 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     print('[ROBOT] Recalibration with sensors')
     print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')
 
-    # Distance between the sensor and the center of the robot
-    # TODO : put this in robot config maybe
-    dist_to_center = 92
-
     id = 1 if (sensor == RecalSensor.Left) ^ (not self.side and mirror) else 2
-    pos = self.actuators.recal_sensor_read(id) + dist_to_center
+    pos = self.actuators.recal_sensor_read(id) + self.dist_to_center
     print(f'[ROBOT] Measured distance: {pos}mm')
 
     if not axis_x and (side ^ (sensor == RecalSensor.Left)):

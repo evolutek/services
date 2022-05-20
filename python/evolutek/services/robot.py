@@ -64,6 +64,7 @@ class Robot(Service):
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
         self.size = float(self.cs.config.get(section=ROBOT, option='robot_size'))
+        self.dist_to_center = float(self.cs.config.get(section=ROBOT, option='dist_to_center'))
 
         # TODO: rename
         self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
