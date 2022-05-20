@@ -58,6 +58,7 @@ class Robot(Service):
     set_head_config = Service.action(robot_actuators.set_head_config)
     set_elevator_speed = Service.action(robot_actuators.set_elevator_speed)
     set_elevator_config = Service.action(robot_actuators.set_elevator_config)
+    get_pattern = Service.action(robot_actuators.get_pattern)
 
     def __init__(self):
 
