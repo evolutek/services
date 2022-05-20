@@ -121,8 +121,6 @@ class Actuators(Service):
             [1, 2, 3, 4]
         )
 
-        sleep(5)
-
         self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
