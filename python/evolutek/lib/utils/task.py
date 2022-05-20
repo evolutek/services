@@ -1,5 +1,8 @@
 from functools import wraps
 
+MAX_TASK_ID = 42
+CURRENT_TASK_ID = 0
+
 class Task:
 
     def __init__(self, action, args=None, kwargs=None, id=-1):
@@ -39,6 +42,9 @@ def async_task(method):
             del kwargs['async_task']
 
         args = [self] + list(args)
+        global CURRENT_TASK_ID
+        kwargs[id] = CURRENT_TASK_ID(
+        CURRENT_TASK_ID = CURRENT_TASK_ID + 1) % (MAX_TASK_ID + 1)
         task = Task(method, args, kwargs)
 
         if async_task:
