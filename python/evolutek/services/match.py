@@ -1,14 +1,10 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
-from evolutek.lib.gpio.gpio_factory import create_gpio, GpioType
 
 import cv2 as cv
 from enum import Enum
 from threading import Timer, Thread
 from time import localtime, sleep, time, strftime
-
-WEATHERCOCK_TIME = 25 # Time (sec) between the match start and the weathercock reading
-WEATHERCOCK_GPIO = 23 # Number of the GPIO used by the weathercock reader (S1: 23, S2: 24)
 
 class MatchStatus(Enum):
     unstarted = "Unstarted"
@@ -22,10 +18,10 @@ class Match(Service):
     def __init__(self):
 
         super().__init__()
-        self.cs = CellaservProxy()
+        cs = CellaservProxy()
 
         # Get the config of the match
-        match_config = self.cs.config.get_section('match')
+        match_config = cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
         self.stop_delay = int(match_config['stop_delay'])
@@ -37,7 +33,6 @@ class Match(Service):
         self.set_color(self.color1)
         self.score = 0
         self.start_time = 0
-        self.anchorage = None
 
         print('[MATCH] Match ready')
 
@@ -93,13 +88,6 @@ class Match(Service):
         self.match_status = MatchStatus.started
         print('[MATCH] Match start')
 
-        # Reads the weathercock position 25 seconds after the start of the match
-        weathercock_timer = Timer(WEATHERCOCK_TIME, self.read_weathercock)
-        weathercock_timer.start()
-
-        flags_timer = Timer(self.match_duration - 2, self.raise_flags)
-        flags_timer.start()
-
     """ WeatherCock """
     @Service.action
     def read_weathercock(self):
@@ -109,12 +97,6 @@ class Match(Service):
         self.publish('anchorage', side=side)
         self.anchorage = side
         return side
-
-    """ Raise flags """
-    def raise_flags(self):
-        print('[MATCH] Raising flags')
-        self.publish('raise_flags')
-        self.set_score(value=10) # Adds 10 points
 
     """ ACTION """
 
@@ -165,11 +147,6 @@ class Match(Service):
         match['time'] = time() - self.start_time
 
         return match
-
-    """ GET anchorage """
-    @Service.action
-    def get_anchorage(self):
-        return self.anchorage
 
     def _set_match_end(self):
         self.match_status = MatchStatus.ended

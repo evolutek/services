@@ -1,8 +1,9 @@
 from evolutek.lib.map.point import Point
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
+from evolutek.lib.utils.task import async_task
 from evolutek.lib.utils.watchdog import Watchdog
-from evolutek.lib.utils.wrappers import if_enabled, use_queue
+from evolutek.lib.utils.wrappers import if_enabled
 
 from enum import Enum
 from math import pi, cos, sin
@@ -78,7 +79,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
 #########
 
 @if_enabled
-@use_queue
+@async_task
 def goto(self, x, y, avoid=True, mirror=True):
     mirror = get_boolean(mirror)
     x = float(x)
@@ -96,7 +97,7 @@ def goto(self, x, y, avoid=True, mirror=True):
 
 
 @if_enabled
-@use_queue
+@async_task
 def goth(self, theta, mirror=True):
     mirror = get_boolean(mirror)
     theta = float(theta)
@@ -112,7 +113,7 @@ def goth(self, theta, mirror=True):
     return self.goto_theta(theta)
 
 @if_enabled
-@use_queue
+@async_task
 def move_back(self, side):
 
     side = get_boolean(side)
@@ -147,7 +148,7 @@ def timeout_handler():
     timeout_event.set()
 
 @if_enabled
-@use_queue
+@async_task
 def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
     x = float(x)
@@ -168,7 +169,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
         print('[ROBOT] Moving')
 
-        data = self.goto(x, y, avoid=avoid, mirror=False, use_queue=False)
+        data = self.goto(x, y, avoid=avoid, mirror=False, async_task=False)
         status = RobotStatus.get_status(data)
 
         if status == RobotStatus.HasAvoid:
@@ -179,7 +180,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
             side = get_boolean(data['avoid_side'])
 
             # TODO : check if a robot is in front of our robot before move back
-            # _status = RobotStatus.get_status(self.move_back(side=(not side), use_queue=False))
+            # _status = RobotStatus.get_status(self.move_back(side=(not side), async_task=False))
 
             #if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
             #    return RobotStatus.return_status(_status)
@@ -214,7 +215,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
     return RobotStatus.return_status(status)
 
 @if_enabled
-@use_queue
+@async_task
 def goto_with_path(self, x, y, mirror=True):
 
     x = float(x)
@@ -246,13 +247,13 @@ def goto_with_path(self, x, y, mirror=True):
             has_moved = True
             print('[ROBOT] Going from %s to %s' % (str(path[i - 1]), path[i]))
 
-            data = self.goto(path[i].x, path[i].y, mirror=False, use_queue=False)
+            data = self.goto(path[i].x, path[i].y, mirror=False, async_task=False)
             status = RobotStatus.get_status(data)
             side = get_boolean(data['avoid_side'])
 
             if status == RobotStatus.HasAvoid:
 
-                _status = RobotStatus.get_status(self.move_back(side=(not side), use_queue=False))
+                _status = RobotStatus.get_status(self.move_back(side=(not side), async_task=False))
                 sleep(0.5)
 
                 if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
@@ -274,7 +275,7 @@ def goto_with_path(self, x, y, mirror=True):
 #################
 
 @if_enabled
-@use_queue
+@async_task
 def homemade_recal(self, decal=0):
 
     decal = float(decal)
@@ -309,6 +310,7 @@ def homemade_recal(self, decal=0):
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
 # Set left to True to use the left sensor
+# TODO : rework
 def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
 
     axis_x = get_boolean(axis_x)
@@ -321,11 +323,8 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     print('[ROBOT] Recalibration with sensors')
     print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')
 
-    # Distance between the sensor and the center of the robot
-    dist_to_center = 109
-
     id = 1 if (sensor == RecalSensor.Left) ^ (not self.side and mirror) else 2
-    pos = self.actuators.recal_sensor_read(id) + dist_to_center
+    pos = self.actuators.recal_sensor_read(id) + self.dist_to_center
     print(f'[ROBOT] Measured distance: {pos}mm')
 
     if not axis_x and (side ^ (sensor == RecalSensor.Left)):
@@ -347,7 +346,7 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
 
 
 @if_enabled
-@use_queue
+@async_task
 def recalibration(self,
         x=True,
         y=True,
@@ -390,12 +389,12 @@ def recalibration(self,
         print('[ROBOT] Recalibration X')
         theta = pi if side_x else 0
 
-        status = RobotStatus.get_status(self.goth(theta, mirror=mirror, use_queue=False))
+        status = RobotStatus.get_status(self.goth(theta, mirror=mirror, async_task=False))
         if status != RobotStatus.Reached:
             return RobotStatus.return_status(status)
 
         if HOMEMADE_RECAL:
-            self.homemade_recal(decal_x, use_queue=False)
+            self.homemade_recal(decal_x, async_task=False)
         else:
             status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_x)))
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
@@ -413,12 +412,12 @@ def recalibration(self,
         print('[ROBOT] Recalibration Y')
         theta = -pi/2 if side_y else pi/2
 
-        status = RobotStatus.get_status(self.goth(theta, mirror = mirror, use_queue=False))
+        status = RobotStatus.get_status(self.goth(theta, mirror = mirror, async_task=False))
         if status != RobotStatus.Reached:
             return RobotStatus.return_status(status)
 
         if HOMEMADE_RECAL:
-            self.homemade_recal(decal_y, use_queue=False)
+            self.homemade_recal(decal_y, async_task=False)
         else:
             status = RobotStatus.get_status(self.recal(sens=0, decal=float(decal_y)))
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:

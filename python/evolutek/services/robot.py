@@ -10,7 +10,6 @@ import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
-from evolutek.lib.utils.action_queue import ActQueue
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.wrappers import event_waiter
 from evolutek.utils.interfaces.debug_map import Interface
@@ -47,30 +46,8 @@ class Robot(Service):
     mirror_pump_id = robot_actuators.mirror_pump_id
     pumps_get = Service.action(robot_actuators.pumps_get)
     pumps_drop = Service.action(robot_actuators.pumps_drop)
-    flags_raise = Service.action(robot_actuators.flags_raise)
-    flags_low = Service.action(robot_actuators.flags_low)
-    front_arm_close = Service.action(robot_actuators.front_arm_close)
-    front_arm_open = Service.action(robot_actuators.front_arm_open)
-    left_arm_close = Service.action(robot_actuators.left_arm_close)
-    left_arm_open = Service.action(robot_actuators.left_arm_open)
-    left_arm_push = Service.action(robot_actuators.left_arm_push)
-    right_arm_close = Service.action(robot_actuators.right_arm_close)
-    right_arm_open = Service.action(robot_actuators.right_arm_open)
-    right_arm_push = Service.action(robot_actuators.right_arm_push)
-    left_cup_holder_close = Service.action(robot_actuators.left_cup_holder_close)
-    left_cup_holder_open = Service.action(robot_actuators.left_cup_holder_open)
-    left_cup_holder_drop = Service.action(robot_actuators.left_cup_holder_drop)
-    right_cup_holder_close = Service.action(robot_actuators.right_cup_holder_close)
-    right_cup_holder_open = Service.action(robot_actuators.right_cup_holder_open)
-    right_cup_holder_drop = Service.action(robot_actuators.right_cup_holder_drop)
 
     # Imported from robot_actions
-    get_reef = Service.action(robot_actions.get_reef)
-    start_lighthouse = Service.action(robot_actions.start_lighthouse)
-    push_windsocks = Service.action(robot_actions.push_windsocks)
-    drop_start = Service.action(robot_actions.drop_start)
-    drop_center = Service.action(robot_actions.drop_center)
-    goto_anchorage = Service.action(robot_actions.goto_anchorage)
 
     def __init__(self):
 
@@ -87,6 +64,7 @@ class Robot(Service):
         self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
         self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
         self.size = float(self.cs.config.get(section=ROBOT, option='robot_size'))
+        self.dist_to_center = float(self.cs.config.get(section=ROBOT, option='dist_to_center'))
 
         # TODO: rename
         self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
@@ -114,18 +92,8 @@ class Robot(Service):
         self.robots = []
         self.robots_tags = []
 
-        def start_callback(id):
-            self.need_to_abort.clear()
-            self.publish('%s_robot_started' % ROBOT, id=id)
-
-        def end_callback(id, status):
-            self.publish('%s_robot_stopped' % ROBOT, id=id, **status)
-
-        self.queue = ActQueue(
-            start_callback,
-            end_callback
-        )
-        self.queue.run_queue()
+        self.current_task = None
+        Thread(target=self.run_tasks).start()
 
         try:
             cs = CellaservProxy()
@@ -140,6 +108,37 @@ class Robot(Service):
 
         if DEBUG:
             Thread(target=Interface, args=[self]).start()
+
+    def run_tasks(self):
+        while True:
+            sleep(0.1)
+
+            if self.disabled.is_set():
+                continue
+
+            if self.current_task is None:
+                continue
+
+            task = None
+            with self.lock:
+                task = self.current_task
+
+            print('[ROBOT] Running task:')
+            print(task)
+
+            self.need_to_abort.clear()
+            self.publish('%s_robot_started' % ROBOT, id=task.id)
+            r = None
+            try:
+                r = task.run()
+            except Exception as e:
+                print('[ROBOT] Task crashed due to %s' % str(e))
+                r = RobotStatus.return_status(RobotStatus.Failed)
+
+            self.publish('%s_robot_stopped' % ROBOT, id=task.id, **r)
+
+            with self.lock:
+                self.current_task = None
 
     @Service.event("match_color")
     def color_callback(self, color):
@@ -181,7 +180,6 @@ class Robot(Service):
             return path
 
     def clean_map(self):
-
          with self.lock:
             # Remove robots
             for tag in self.robots_tags:
@@ -190,23 +188,14 @@ class Robot(Service):
             self.path.clear()
 
 
-    @Service.event('raise_flags')
-    def raise_flags(self):
-        self.enable()
-        self.actuators.enable()
-        sleep(0.5)
-        self.flags_raise(use_queue=False)
-
     @Service.action
     def enable(self):
         if self.bau_state:
             self.disabled.clear()
-            self.queue.run_queue()
 
     @Service.action
     def disable(self):
         self.disabled.set()
-        self.queue.stop_queue()
         self.need_to_abort.set()
 
     @Service.action
@@ -215,23 +204,6 @@ class Robot(Service):
             return
 
         self.enable()
-        sleep(2)
-
-        self.front_arm_close(use_queue=False)
-        self.left_arm_open(use_queue=False)
-        self.right_arm_open(use_queue=False)
-        self.left_cup_holder_open(use_queue=False)
-        self.right_cup_holder_open(use_queue=False)
-        self.flags_raise(use_queue=False)
-        sleep(1.5)
-
-        self.front_arm_open(use_queue=False)
-        self.left_arm_close(use_queue=False)
-        self.right_arm_close(use_queue=False)
-        self.left_cup_holder_close(use_queue=False)
-        self.right_cup_holder_close(use_queue=False)
-        self.flags_low(use_queue=False)
-        sleep(1.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
@@ -244,14 +216,13 @@ class Robot(Service):
         self.bau_state = new_state
 
         if new_state:
-            self.reset()
+            self.enable()
         else:
             self.disable()
 
     @Service.action
     def abort_action(self):
         self.need_to_abort.set()
-        self.queue.clear_queue()
 
     def check_abort(self):
         if self.need_to_abort.is_set():
