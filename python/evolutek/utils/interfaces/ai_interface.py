@@ -39,7 +39,7 @@ class StrategyFrame(IFRAME):
 
 	def action_strategy(self):
 		self.cs.ai[ROBOT].set_strategy(self.strategy_number.get())
-		print(f"new strategy: {self.cs.ai[ROBOT].get_strategies().keys(self.strategy_number.get())}")
+		print(f"New strategy: {self.cs.ai[ROBOT].get_strategies().keys(self.strategy_number.get())}")
 
 	def __create_radio_strategy(self):
 		list_strategy = self.cs.ai[ROBOT].get_strategies()
@@ -88,8 +88,8 @@ class StatusFrame(IFRAME):
 
 	def __init__(self, container):
 		super().__init__(container)
-		self.color1 = "blue"
-		self.color2 = "yellow"
+		self.color1 = self.cs.config.get('match', 'color1')
+		self.color2 = self.cs.config.get('match', 'color2')
 		self.__init_interface()
 
 	def create_color(self):
@@ -98,7 +98,7 @@ class StatusFrame(IFRAME):
 		self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
-		print("bponjour recalibration")
+		print("Bonjour recalibration")
 		self.cs.ai[ROBOT].reset(True)
 
 	def close(self):
@@ -114,7 +114,7 @@ class StatusFrame(IFRAME):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
 	def create_button(self):
-		Button(self, text="Recalibaration", command=self.recalibration).grid(row=2, column=1)
+		Button(self, text="Recalibration", command=self.recalibration).grid(row=2, column=1)
 		Button(self, text="set position", command=self.reset_position).grid(row=3, column=1)
 		Button(self, text="Reset Match", command=self.reset_match).grid(row=4, column=1)
 		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=5)
