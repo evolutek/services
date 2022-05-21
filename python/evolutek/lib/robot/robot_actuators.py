@@ -53,32 +53,32 @@ def pumps_drop(self, ids, mirror=True):
 #############
 
 @if_enabled
-@use_queue
+@async_task
 def snowplow_open(self):
     self.actuators.servo_set_angle(0, 0)
     self.actuators.servo_set_angle(15, 120)
 
 @if_enabled
-@use_queue
+@async_task
 def snowplow_close(self):
     self.actuators.servo_set_angle(0, 120)
     self.actuators.servo_set_angle(15, 0)
 
 @if_enabled
-@use_queue
+@async_task
 def bumper_open(self):
     self.actuators.servo_set_angle(1, 0)
     self.actuators.servo_set_angle(14, 98)
 
 @if_enabled
-@use_queue
+@async_task
 def bumper_close(self):
     self.actuators.servo_set_angle(1, 98)
     self.actuators.servo_set_angle(14, 0)
 
 # Front Arm Close
 @if_enabled
-@use_queue
+@async_task
 def front_arm_close(self):
     self.actuators.ax_set_speed(1, 256)
     res = self.actuators.ax_move(1, 512)
@@ -87,7 +87,7 @@ def front_arm_close(self):
 
 # Front Arm Open
 @if_enabled
-@use_queue
+@async_task
 def front_arm_open(self):
     self.actuators.ax_set_speed(1, 800)
     return self.actuators.ax_move(7, 290)
@@ -98,25 +98,25 @@ def front_arm_open(self):
 
 # Left Arm Close
 @if_enabled
-@use_queue
+@async_task
 def left_arm_close(self):
     return self.actuators.ax_move(8, 512)
 
 # Left Arm Open
 @if_enabled
-@use_queue
+@async_task
 def left_arm_open(self):
     return self.actuators.ax_move(8, 755)
 
 # Right Arm Close
 @if_enabled
-@use_queue
+@async_task
 def right_arm_close(self):
     return self.actuators.ax_move(7, 512)
 
 # Right Arm Open
 @if_enabled
-@use_queue
+@async_task
 def right_arm_open(self):
     return self.actuators.ax_move(7, 290)
 
@@ -262,7 +262,7 @@ ELEVATORS = {
 }
 
 @if_enabled
-@use_queue
+@async_task
 def set_head_speed(self, arm, speed):
     arm = FrontArmsEnum.get_arm(arm)
     speed = HeadSpeed.get_speed(speed)
@@ -273,7 +273,7 @@ def set_head_speed(self, arm, speed):
     return self.actuators.ax_set_speed(arm.get_head_id(), speed.value)
 
 @if_enabled
-@use_queue
+@async_task
 def set_head_config(self, arm, config):
     arm = FrontArmsEnum.get_arm(arm)
     config = HeadConfig.get_config(config)
@@ -284,7 +284,7 @@ def set_head_config(self, arm, config):
     return self.actuators.ax_move(arm.get_head_id(), HEADS[arm][config])
 
 @if_enabled
-@use_queue
+@async_task
 def set_elevator_speed(self, arm, speed):
     arm = FrontArmsEnum.get_arm(arm)
     speed = ElevatorSpeed.get_speed(speed)
@@ -295,7 +295,7 @@ def set_elevator_speed(self, arm, speed):
     return self.actuators.ax_set_speed(arm.get_elevator_id(), speed.value)
 
 @if_enabled
-@use_queue
+@async_task
 def set_elevator_config(self, arm, config):
     arm = FrontArmsEnum.get_arm(arm)
     config = ElevatorConfig.get_config(config)
@@ -305,8 +305,6 @@ def set_elevator_config(self, arm, config):
 
     return self.actuators.ax_move(arm.get_elevator_id(), ELEVATORS[arm][config])
 
-@if_enabled
-@use_queue
 def get_pattern(self):
     all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
     result = self.actuators.sensors_calc.read_all_sensor()

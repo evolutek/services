@@ -233,7 +233,7 @@ class Robot(Service):
         self.right_arm_open(use_queue=False)
         self.snowplow_open(use_queue=False)
         self.bumper_open(use_queue=False)
-        input()
+        sleep(1.5)
 
         self.set_elevator_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorConfig.Closed, use_queue=False)
         self.set_elevator_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorConfig.StoreStatuette, use_queue=False)
