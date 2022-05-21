@@ -5,7 +5,7 @@ from time import sleep
 def test():
     cs: CellaservProxy = CellaservProxy()
     cs.trajman['pmi'].free()
-    cs.robot['pmi'].set_pos(x=1800, y=1130, theta=pi)
+    cs.robot['pmi'].set_pos(x=1800, y=1130, theta=0)
     cs.trajman['pmi'].unfree()
 
     cs.robot["pmi"].set_elevator_config(arm=1, config=0)
@@ -14,13 +14,20 @@ def test():
     input()
     cs.robot["pmi"].set_elevator_config(arm=2, config=0)
     input()
-    cs.robot["pmi"].goto(90, 1130)
+    cs.robot["pmi"].goto(1910, 1130)
+    input()
+    cs.trajman["pmi"].move_trsl(50, 150, 150, 500, 1)
+    input()
+    pattern = cs.robot['pmi'].get_pattern()
     input()
     cs.robot['pmi'].set_elevator_config(arm=1, config=4)
     input()
     cs.robot['pmi'].set_elevator_config(arm=3, config=4)
     input()
     cs.robot['pmi'].set_elevator_config(arm=3, config=4)
+    input()
+    cs.robot["pmi"].goto(1910, 1130)
+    cs.robot["pmi"].goto(1800, 1130)
 
     #
     # cs.actuators['pmi'].pumps_get(ids='2')
