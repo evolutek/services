@@ -55,42 +55,30 @@ def pumps_drop(self, ids, mirror=True):
 @if_enabled
 @async_task
 def snowplow_open(self):
-    self.actuators.servo_set_angle(0, 0)
-    self.actuators.servo_set_angle(15, 120)
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 0))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 120))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == status2 == RobotStatus.Done else RobotStatus.Failed)
 
 @if_enabled
 @async_task
 def snowplow_close(self):
-    self.actuators.servo_set_angle(0, 120)
-    self.actuators.servo_set_angle(15, 0)
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 120))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 0))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == status2 == RobotStatus.Done else RobotStatus.Failed)
 
 @if_enabled
 @async_task
 def bumper_open(self):
-    self.actuators.servo_set_angle(1, 0)
-    self.actuators.servo_set_angle(14, 98)
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 0))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(14, 98))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == status2 == RobotStatus.Done else RobotStatus.Failed)
 
 @if_enabled
 @async_task
 def bumper_close(self):
-    self.actuators.servo_set_angle(1, 98)
-    self.actuators.servo_set_angle(14, 0)
-
-# Front Arm Close
-@if_enabled
-@async_task
-def front_arm_close(self):
-    self.actuators.ax_set_speed(1, 256)
-    res = self.actuators.ax_move(1, 512)
-    self.actuators.pumps_drop([3,5])
-    return res
-
-# Front Arm Open
-@if_enabled
-@async_task
-def front_arm_open(self):
-    self.actuators.ax_set_speed(1, 800)
-    return self.actuators.ax_move(7, 290)
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 98))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(14, 0))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == status2 == RobotStatus.Done else RobotStatus.Failed)
 
 #############
 # SIDE ARMS #
