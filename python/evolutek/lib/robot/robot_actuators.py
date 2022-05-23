@@ -189,6 +189,7 @@ class HeadConfig(Enum):
     Down = 1
     Mid = 2
     Galery = 3
+    Pickup = 4
 
     @staticmethod
     def get_config(config):
@@ -213,6 +214,7 @@ HEADS = {
         HeadConfig.Down : 768,
         HeadConfig.Mid : 460,
         HeadConfig.Galery : 574,
+        HeadConfig.Pickup : 170
     },
     FrontArmsEnum.Left : {
         HeadConfig.Closed : 150,
