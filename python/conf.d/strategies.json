@@ -74,7 +74,7 @@
     {
       "name": "drop_start",
       "position": {
-        "x": 1100,
+        "x": 1000,
         "y": 230
       },
       "theta": "pi",
