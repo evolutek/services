@@ -28,7 +28,7 @@ def test():
     sleep(0.5)
     cs.actuators[ROBOT].pumps_get(ids='3')#a enlever
     input()
-    cs.robot[ROBOT].goto(215, 820)
+    cs.robot[ROBOT].goto(200, 820)
     input()
     cs.robot[ROBOT].set_head_config(arm=1, config=2)
     sleep(0.5)
