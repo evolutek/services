@@ -150,7 +150,7 @@ def indiana_jones(self):
 
     return RobotStatus.return_status(RobotStatus.Done)
 
-def open_arm(side, self):
+def open_arm(side, score, self):
     if (side):
         self.right_arm_open(async_task = False)
         sleep(1)
@@ -159,6 +159,7 @@ def open_arm(side, self):
         self.left_arm_open(async_task = False)
         sleep(1)
         self.left_arm_close(async_task = False)
+    return (score + 5)
 
 @if_enabled
 @async_task
@@ -233,7 +234,7 @@ def reverse_pattern(self):
         self.goto_avoid(1830, pos, async_task=False)
     """
     coords = self.get_pattern()
-
+    score = 5
     self.set_elevator_config(arm=1, config = 0, async_task=False)
     self.set_elevator_config(arm=3, config = 0, async_task=False)
     my_y = self.trajman.get_position()['y']
@@ -247,7 +248,7 @@ def reverse_pattern(self):
     while(len(coords) != 0):
         self.goto_avoid(1830, coords[0], async_task=False)
         self.goth(1.57, async_task=False)
-        open_arm(self.side, self)
+        score = open_arm(self.side, score, self)
         coords.pop(0)
 
     return RobotStatus.return_status(RobotStatus.Done)
