@@ -286,7 +286,7 @@ def homemade_recal(self, decal=0):
     theta = position['theta']
 
     self.trajman.move_trsl(dest=200, acc=300, dec=300, maxspeed=200, sens=0)
-    sleep(0.75)
+    sleep(2)
 
     if theta < pi/4 and theta > -pi/4:
         self.trajman.set_theta(0)
@@ -300,9 +300,6 @@ def homemade_recal(self, decal=0):
     else:
         self.trajman.set_theta(-pi/2)
         self.trajman.set_y(3000 - 120 - decal)
-
-    sleep(0.1)
-    self.trajman.free()
 
     return RobotStatus.return_status(RobotStatus.Done)
 
@@ -360,7 +357,6 @@ def recalibration(self,
         mirror=True):
 
     speeds = self.trajman.get_speeds()
-    self.trajman.free()
 
     self.trajman.set_trsl_max_speed(100)
     self.trajman.set_trsl_acc(300)
@@ -383,7 +379,7 @@ def recalibration(self,
         self.set_theta(pi/2)
         self.trajman.set_x(1000)
         self.trajman.set_y(1000)
-        sleep(1)
+        sleep(0.1)
 
     if x:
         print('[ROBOT] Recalibration X')
@@ -400,7 +396,6 @@ def recalibration(self,
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
                 return RobotStatus.return_status(status)
 
-        sleep(1)
         if y_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror, init=init)
 
@@ -423,7 +418,6 @@ def recalibration(self,
             if status not in [RobotStatus.NotReached, RobotStatus.Reached]:
                 return RobotStatus.return_status(status)
 
-        sleep(1)
         if x_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror, init=init)
 
@@ -434,6 +428,9 @@ def recalibration(self,
     self.trajman.set_trsl_max_speed(speeds['trmax'])
     self.trajman.set_trsl_acc(speeds['tracc'])
     self.trajman.set_trsl_dec(speeds['trdec'])
+
+    self.trajman.free()
+    self.trajman.move_trsl(dest=50, acc=300, dec=300, maxspeed=200, sens=1)
 
     print('[ROBOT] New position: ' + str(self.trajman.get_position()))
 
