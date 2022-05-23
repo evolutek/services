@@ -28,7 +28,7 @@ def test():
     sleep(0.5)
     cs.actuators[ROBOT].pumps_get(ids='3')#a enlever
     input()
-    cs.trajman[ROBOT].goto(215, 820)
+    cs.robot[ROBOT].goto(215, 820)
     input()
     cs.robot[ROBOT].set_head_config(arm=1, config=2)
     sleep(0.5)
@@ -42,7 +42,7 @@ def test():
     sleep(0.5)
     cs.actuators[ROBOT].pumps_drop(ids='3')
     input()
-    cs.trajman[ROBOT].goto(415, 820)
+    cs.robot[ROBOT].goto(415, 820)
     input()
 
 
