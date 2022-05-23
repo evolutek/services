@@ -124,6 +124,7 @@ def indiana_jones(self):
     self.set_elevator_config(arm=2, config=3, async_task=False)  # Elevator to gallery
     sleep(0.5)
     self.set_elevator_config(arm=2, config=0, async_task=False)  # Elevator to closed
+    self.snowplow_open(async_task=False)
     sleep(1)
     self.move_trsl(acc=200, dec=200, dest=100, maxspeed=400, sens=1)  # Advance to 100
     sleep(1)
@@ -135,7 +136,7 @@ def indiana_jones(self):
     sleep(0.6)
     move_side_arms("elevator_up", self)  # Activate arm movement func up
     sleep(0.2)
-    status = self.goto_avoid(x=default_x, y=default_y, async_task=False)
+    status = self.goto_avoid(x=1500, y=500, async_task=False)
     #if RobotStatus.get_status(status) != RobotStatus.Reached:
      #   return RobotStatus.return_status(RobotStatus.get_status(status))
     self.snowplow_close(async_task=False)
