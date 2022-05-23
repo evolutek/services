@@ -61,6 +61,29 @@ def snowplow_open(self):
 
 @if_enabled
 @async_task
+def snowplow_close_left(self):
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 0))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == RobotStatus.Done else RobotStatus.Failed)
+@if_enabled
+@async_task
+def snowplow_close_right(self):
+    status1 = RobotStatus.get_status(self.actuators.servo_angle(0, 120))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == RobotStatus.Done else RobotStatus.Failed)
+
+@if_enabled
+@async_task
+def snowplow_open_left(self):
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 120))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == RobotStatus.Done else RobotStatus.Failed)
+
+@if_enabled
+@async_task
+def snowplow_open_right(self):
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 0))
+    return RobotStatus.return_status(RobotStatus.Done if status1 == RobotStatus.Done else RobotStatus.Failed)
+
+@if_enabled
+@async_task
 def snowplow_close(self):
     status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 120))
     status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 0))
