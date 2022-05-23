@@ -41,6 +41,7 @@ def test():
     input()
     cs.actuators['pmi'].pumps_drop(ids='3')
     input()
+    # A modifier en goto()
     cs.trajman['pmi'].move_trsl(dest=240, acc=300, dec=300, maxspeed=200, sens=0)
     input()
 
