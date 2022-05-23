@@ -22,11 +22,11 @@ def test():
     sleep(0.5)
     cs.robot[ROBOT].set_head_config(arm=3, config=3)
     input()
-    cs.actuators[ROBOT].pumps_get(ids='1')
+    cs.actuators[ROBOT].pumps_get(ids='1') #a enlever
     sleep(0.5)
-    cs.actuators[ROBOT].pumps_get(ids='2')
+    cs.actuators[ROBOT].pumps_get(ids='2')#a enlever
     sleep(0.5)
-    cs.actuators[ROBOT].pumps_get(ids='3')
+    cs.actuators[ROBOT].pumps_get(ids='3')#a enlever
     input()
     cs.trajman[ROBOT].move_trsl(dest=240, acc=300, dec=300, maxspeed=200, sens=1)
     input()
