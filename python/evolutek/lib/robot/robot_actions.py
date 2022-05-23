@@ -251,7 +251,7 @@ def reverse_pattern(self):
         score = open_arm(self.side, score, self)
         coords.pop(0)
 
-    return RobotStatus.return_status(RobotStatus.Done)
+    return RobotStatus.return_status(RobotStatus.Done, score=score)
 
     # #if patterns[pattern][plot]:
     #    sleep(1)
