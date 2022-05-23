@@ -424,6 +424,7 @@ def recalibration(self,
 
     self.trajman.free()
     self.trajman.move_trsl(dest=50, acc=300, dec=300, maxspeed=200, sens=1)
+    sleep(0.5)
 
     print('[ROBOT] New position: ' + str(self.trajman.get_position()))
 

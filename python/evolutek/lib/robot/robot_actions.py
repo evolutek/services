@@ -15,7 +15,7 @@ def pickup_statuette(self):
     self.set_elevator_config(arm=2, config=ElevatorConfig.Mid, async_task=False)
     self.set_head_config(arm=2, config=HeadConfig.Pickup, async_task=False)
     self.pumps_get(ids="2", async_task=False)   # Pump the central arm pump
-    sleep(0.2)
+    sleep(0.5)
     # Pickup
     self.set_elevator_config(arm=2, config=ElevatorConfig.StoreStatuette, async_task=False)
     sleep(0.2)
@@ -30,24 +30,25 @@ def statuette(self):
     # Places it
     self.set_head_config(arm=2, config=2, async_task=False)
     self.set_elevator_config(arm=2, config=2, async_task=False)
-    status = self.goto_avoid(120, 225, async_task=False)
+    status = self.goto_avoid(140, 225, async_task=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(0.2)
     self.pumps_drop(ids='2', async_task=False)
     sleep(0.1)
     # Moves back
-    self.set_head_config(arm=2, config=0, async_task=False)
-    self.set_elevator_config(arm=2, config=5, async_task=False)
     status = self.goto_avoid(x=250, y=225, async_task=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
+    sleep(0.3)
+    self.set_head_config(arm=2, config=0, async_task=False)
+    self.set_elevator_config(arm=2, config=5, async_task=False)
     return RobotStatus.return_status(RobotStatus.Done)
 
 
 def drop_carrying(self):
     """Drop the carrying statuette"""
-    pickup_statuette()
+    pickup_statuette(self)
     self.set_head_config(arm=2, config=1, async_task=False)  # Head Down
     self.set_elevator_config(arm=2, config=2, async_task=False)  # Elevator to mid
     sleep(0.5)
@@ -132,7 +133,6 @@ def indiana_jones(self):
     self.move_trsl(acc=200, dec=200, dest=100, maxspeed=400, sens=1)  # Advance to 100
     sleep(1)
     self.pumps_drop(ids="2", async_task=False)  # Drop the pump 2
-    sleep(1)
     move_side_arms("head", self)
     sleep(0.3)
     move_side_arms("elevator_down", self)  # Activate arm movement func down
@@ -324,7 +324,7 @@ def place_under(self):
 
     # Got to back pos
     self.goto_avoid(*back_pos, async_task=False)
-    
+
     # Push the middle sample
     self.goto_avoid(*front_pos, async_task=False) # Forward
     self.goto_avoid(*back_pos, async_task=False) # Backward

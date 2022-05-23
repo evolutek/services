@@ -105,11 +105,23 @@
     {
       "name": "drop_start",
       "position": {
-        "x": 1000,
-        "y": 230
+        "x": 350,
+        "y": 550
       },
-      "theta": "pi",
       "actions": [
+        {
+          "fct": "goto",
+          "args": {
+            "x": 380,
+            "y": 225
+          }
+        },
+        {
+          "fct": "goth",
+          "args": {
+            "theta": "0"
+          }
+        },
         {
           "fct": "pumps_drop",
           "handler": "robot",
@@ -119,12 +131,29 @@
           }
         }
       ]
+    },
+    {
+      "name": "end_pos_pal",
+      "position": {
+        "x": 350,
+        "y": 550
+      },
+      "actions": [
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1175,
+            "y": 1000
+          }
+        }
+      ]
     }
   ],
   "strategies": [
     {
       "name": "normal_pmi",
       "goals": [
+        "pmi_starting_sleep",
         "reverse_pattern",
         "place_under"
       ],
@@ -132,11 +161,12 @@
       "use_pathfinding": false
     },
     {
-      "normal": "normal_pal",
+      "name": "normal_pal",
       "goals": [
         "indiana_jones",
         "drop_start",
-        "statuette"
+        "statuette",
+        "end_pos_pal"
       ],
       "available": ["pal"],
       "use_pathfinding": false
