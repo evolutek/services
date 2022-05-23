@@ -59,7 +59,7 @@ def parsing():
     parser = ArgumentParser(description='Configuration of the gains of the robot using recal sensors')
     parser.add_argument("robot", help="Robot to configure (pal or pmi)")
     parser.add_argument("sensor", help="Sensor to use (left or right)")
-    parser.add_argument("-d", "--distance", help="The distance the robot will travel", default=1500)
+    parser.add_argument("-d", "--distance", help="The distance the robot will travel", default=1300)
     args = parser.parse_args()
 
     args.robot = args.robot.lower()
@@ -76,7 +76,7 @@ def parsing():
         return False
     sensor = 1 if args.sensor == 'left' else 2
 
-    dist = args.distance
+    dist = float(args.distance)
     return True
 
 
