@@ -6,7 +6,7 @@ ROBOT = 'pmi'
 
 def test():
     cs: CellaservProxy = CellaservProxy()
-    cs.robot[ROBOT].set_pos(x=400, y=820, theta=pi)
+    cs.robot[ROBOT].set_pos(x=415, y=820, theta=pi)
 
 # Dépôt inférieur
 
@@ -28,7 +28,7 @@ def test():
     sleep(0.5)
     cs.actuators[ROBOT].pumps_get(ids='3')#a enlever
     input()
-    cs.trajman[ROBOT].move_trsl(dest=240, acc=300, dec=300, maxspeed=200, sens=1)
+    cs.trajman[ROBOT].goto(215, 820)
     input()
     cs.robot[ROBOT].set_head_config(arm=1, config=2)
     sleep(0.5)
@@ -42,8 +42,7 @@ def test():
     sleep(0.5)
     cs.actuators[ROBOT].pumps_drop(ids='3')
     input()
-    # A modifier en goto()
-    cs.trajman[ROBOT].move_trsl(dest=240, acc=300, dec=300, maxspeed=200, sens=0)
+    cs.trajman[ROBOT].goto(415, 820)
     input()
 
 
