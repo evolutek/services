@@ -182,7 +182,7 @@ class Actuators(Service):
     @Service.action
     def free(self):
         self.axs_free([1, 2, 3, 4, 5, 6])
-        self.pumps_drop([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        self.pumps_drop([1, 2, 3, 4])
 
     # Disable Actuators
     @Service.action
