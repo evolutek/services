@@ -153,8 +153,28 @@
         "x": 250,
         "y": 225
       },
-      "theta": "pi",
       "actions": [
+        {
+          "fct": "recalibration",
+          "handler": "robot",
+          "args": {
+            "x": "False",
+            "y": "True"
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 250,
+            "y": 225
+          }
+        },
+        {
+          "fct": "goth",
+          "args": {
+            "theta": "pi"
+          }
+        },
         {
           "fct": "statuette",
           "handler": "robot",
