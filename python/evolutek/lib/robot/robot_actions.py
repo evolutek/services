@@ -136,7 +136,7 @@ def indiana_jones(self):
     sleep(0.6)
     move_side_arms("elevator_up", self)  # Activate arm movement func up
     sleep(0.2)
-    status = self.goto_avoid(x=1500, y=500, async_task=False)
+    status = self.goto_avoid(x=1400, y=600, async_task=False)
     #if RobotStatus.get_status(status) != RobotStatus.Reached:
      #   return RobotStatus.return_status(RobotStatus.get_status(status))
     self.snowplow_close(async_task=False)
