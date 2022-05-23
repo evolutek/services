@@ -1,6 +1,22 @@
 {
   "goals": [
     {
+      "name": "place_under",
+      "position": {
+        "x": 995,
+        "y": 1360
+      },
+      "theta": "pi/2"
+    },
+    {
+      "name": "reverse_pattern",
+      "position": {
+        "x": 1830,
+        "y": 1130
+      },
+      "theta": 0
+    },
+    {
       "name": "pmi_starting_sleep",
       "position": {
         "x": 545,
@@ -72,6 +88,21 @@
       ]
     },
     {
+      "name": "statuette",
+      "position": {
+        "x": 250,
+        "y": 225
+      },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "statuette",
+          "handler": "robot",
+          "score": 15
+        }
+      ]
+    },
+    {
       "name": "drop_start",
       "position": {
         "x": 1000,
@@ -91,6 +122,25 @@
     }
   ],
   "strategies": [
+    {
+      "name": "normal_pmi",
+      "goals": [
+        "reverse_pattern",
+        "place_under"
+      ],
+      "available": ["pmi"],
+      "use_pathfinding": false
+    },
+    {
+      "normal": "normal_pal",
+      "goals": [
+        "indiana_jones",
+        "drop_start",
+        "statuette"
+      ],
+      "available": ["pal"],
+      "use_pathfinding": false
+    },
     {
       "name": "homologation_pmi",
       "goals": [
