@@ -41,8 +41,11 @@ def action2():
     input()
     if(cs.robot[ROBOT].pattern == 1 or cs.robot[ROBOT].pattern == 4):
         cs.robot[ROBOT].goto(1800, 1670)
+        print("purple")
     else:
         cs.robot[ROBOT].goto(1800, 1777.5)
+        print("yellow")
+    sleep(1)
 if __name__ == '__main__':
     test()
     action2()
