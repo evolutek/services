@@ -1,9 +1,5 @@
 from evolutek.lib.component import Component, ComponentsHolder
 
-from time import sleep
-
-DEFAULT_VALVE_DELAY = 1
-
 class Pump(Component):
     def __init__(self, id, pump_gpio, ev_gpio):
         super().__init__('Pump', id)
@@ -13,6 +9,14 @@ class Pump(Component):
 
     def get(self):
         self.pump_gpio.write(True)
+        self.ev_gpio.write(False)
+
+    def drop(self):
+        self.pump_gpio.write(False)
+        self.ev_gpio.write(True)
+
+    def stop_ev(self):
+        self.ev_gpio.write(False)
 
     def __str__(self):
         s = "----------\n"
@@ -46,12 +50,12 @@ class PumpController(ComponentsHolder):
         for id in ids:
             if self.components[id] is None:
                 continue
-            self.components[id].pump_gpio.write(False)
-            self.components[id].ev_gpio.write(True)
+            self.components[id].drop()
 
         sleep(self.valve_delay)
 
+    def stop_evs(self, ids):
         for id in ids:
             if self.components[id] is None:
                 continue
-            self.components[id].ev_gpio.write(False)
+            self.components[id].stop_ev()

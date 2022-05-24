@@ -183,6 +183,8 @@ class Actuators(Service):
     def free(self):
         self.axs_free([1, 2, 3, 4, 5, 6])
         self.pumps_drop([1, 2, 3, 4])
+        sleep(0.5)
+        self.stop_evs([1, 2, 3, 4])
 
     # Disable Actuators
     @Service.action
@@ -214,6 +216,23 @@ class Actuators(Service):
             return RobotStatus.return_status(RobotStatus.Failed)
 
         self.pumps.drops(_ids)
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @Service.action
+    def pumps_stop_ev(self, ids):
+        if isinstance(ids, str):
+            ids = ids.split(",")
+
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
+                continue
+            _ids.append(int(id))
+
+        if len(_ids) < 1:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        self.pumps.stop_ev(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled

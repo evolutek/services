@@ -46,6 +46,7 @@ class Robot(Service):
     mirror_pump_id = robot_actuators.mirror_pump_id
     pumps_get = Service.action(robot_actuators.pumps_get)
     pumps_drop = Service.action(robot_actuators.pumps_drop)
+    pumps_stop_ev = Service.action(robot_actuators.pumps_stop_ev)
     left_arm_close = Service.action(robot_actuators.left_arm_close)
     bumper_open = Service.action(robot_actuators.bumper_open)
     bumper_close = Service.action(robot_actuators.bumper_close)
