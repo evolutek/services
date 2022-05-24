@@ -234,6 +234,7 @@ class ElevatorConfig(Enum):
     GaleryLow = 3
     ExcavationSquares = 4
     StoreStatuette = 5
+    LowMid=6
 
     @staticmethod
     def get_config(config):
@@ -257,9 +258,9 @@ ELEVATORS = {
     FrontArmsEnum.Center : {
         ElevatorConfig.Closed : 405,
         ElevatorConfig.Down : 815,
-        ElevatorConfig.Mid : 537,
-        #ElevatorConfig.LowMid: 639,
-        ElevatorConfig.GaleryLow : 750, # Peut-être en rajouter une autre
+        ElevatorConfig.Mid : 639,
+        ElevatorConfig.LowMid: 680,
+        ElevatorConfig.GaleryLow : 750,
         ElevatorConfig. StoreStatuette : 509
     },
     FrontArmsEnum.Left : {
