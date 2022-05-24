@@ -66,17 +66,17 @@ def move_side_arms(status, cs):
 def drop_carrying(cs):
     """Drop the carrying statuette"""
     cs.robot[BotName].set_elevator_config(arm = 2, config = 2) # Elevator to mid
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_head_config(arm = 2, config = 0) # Head Closed
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].pumps_get(ids = "2") # Pump the pump 2
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 5) # Elevator to store statuette
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_head_config(arm = 2, config = 1) # Head Down
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 3) # Elevator to mid
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].pumps_drop(ids = "2") # Drop the pumps
     print("Drop carrying : Done")
 
@@ -84,61 +84,61 @@ def run_movement():
     cs = init_bot()
 
     cs.robot[BotName].bumper_open()
-    sleep(2)
+    sleep(0.5)
     drop_carrying(cs) # Drop the carry statuette
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 5) # Elevator to store statuette
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_head_config(arm = 2, config = 2) # Head to mid
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 3) # Elevator to mid
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].pumps_get(ids = "2") # Pump the pump 2
-    sleep(2)
+    sleep(0.5)
     cs.trajman[BotName].move_trsl(acc = 200, dec = 200, dest = 95, maxspeed = 500, sens = 1) # Advance to 95
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].goto(x = default_x, y = default_y)
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 5) # Elevator to store statuette
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].pumps_get(ids = "4") # Pump the pump 4
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_head_config(arm = 2, config = 0) # Head up
-    sleep(2)
+    sleep(0.5)
     #cs.robot[BotName].pumps_drop(ids = "2") # Drop the pumps
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 3) # Elevator to mid
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_head_config(arm = 2, config = 1) # Head down
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 0) # Elevator to closed
-    sleep(2)
+    sleep(0.5)
     cs.trajman[BotName].move_trsl(acc = 200, dec = 200, dest = 100, maxspeed = 500, sens = 1) # Advance to 100
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].pumps_get(ids = "2") # Pump the pump 2
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 3) # Elevator to gallery
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 0) # Elevator to closed
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].snowplow_open()
-    sleep(2)
+    sleep(0.5)
     cs.trajman[BotName].move_trsl(acc = 200, dec = 200, dest = 90, maxspeed = 400, sens = 1) # Advance to 90
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].pumps_drop(ids = "2") # Drop the pump 2
-    sleep(2)
+    sleep(0.5)
     move_side_arms("head", cs)
-    sleep(2)
+    sleep(0.5)
     move_side_arms("elevator_down", cs) # Activate arm movement func down
-    sleep(2)
+    sleep(0.5)
     move_side_arms("elevator_up", cs) # Activate arm movement func up
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].goto(x = default_x, y = default_y)
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].snowplow_close()
-    sleep(2)
+    sleep(0.5)
     cs.robot[BotName].bumper_close()
-    sleep(2)
+    sleep(0.5)
     input("Finished !")
 
 if __name__ == "__main__":
