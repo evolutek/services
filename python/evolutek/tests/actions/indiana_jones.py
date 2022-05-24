@@ -17,7 +17,7 @@ from time import sleep
 # ExcavationSquares...4
 # StoreStatuette......5
 
-BotName = "pmi"
+BotName = "pal"
 default_x = 1550
 default_y = 450
 default_angle = (5 * pi) / 4
@@ -105,7 +105,7 @@ def run_movement():
     sleep(2)
     cs.robot[BotName].set_head_config(arm = 2, config = 0) # Head up
     sleep(2)
-    cs.robot[BotName].pumps_drop(ids = "2") # Drop the pumps
+    #cs.robot[BotName].pumps_drop(ids = "2") # Drop the pumps
     sleep(2)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 3) # Elevator to mid
     sleep(2)
