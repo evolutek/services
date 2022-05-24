@@ -21,7 +21,7 @@ def drop_galery(self):
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
 
     # Goto to galery
-    status = RobotStatus.get_status(self.goto_avoid(300, 800, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(300, 810, async_task=False))
     if status == RobotStatus.Reached:
         status = RobotStatus.get_status(self.goth(pi, async_task=False))
     if status != RobotStatus.Reached:
@@ -40,7 +40,7 @@ def drop_galery(self):
     score += 3 if get_boolean(self.actuators.proximity_sensor_read(id = 3)) else 0
 
     # Forward
-    status = RobotStatus.get_status(self.goto_avoid(150, 800, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(150, 810, async_task=False))
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
@@ -49,7 +49,7 @@ def drop_galery(self):
     self.pumps_drop(ids="1,3", async_task=False)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.goto_avoid(300, 800, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(300, 810, async_task=False))
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
