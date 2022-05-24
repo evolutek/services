@@ -72,7 +72,7 @@ def indiana_jones(self):
     has_point_dropping = drop_carrying(self)  # Drop the carry statuette
     if (has_point_dropping):
         print("SUCCESS : Point earned by dropping idol")
-        score += 20
+        #score += 20
     else:
         print("FAILURE : Point has not been earned")
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)  # Elevator to store statuette
@@ -126,4 +126,4 @@ def indiana_jones(self):
     self.snowplow_close(async_task=False)
     self.bumper_close(async_task=False)
 
-    return RobotStatus.return_status(RobotStatus.Done, score = score + 17)
+    return RobotStatus.return_status(RobotStatus.Done, score = 17)

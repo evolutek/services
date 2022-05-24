@@ -89,7 +89,8 @@
       "actions": [
         {
           "fct": "collect_middle",
-          "handler": "robot"
+          "handler": "robot",
+	  "score": 9
         }
       ]
     },
