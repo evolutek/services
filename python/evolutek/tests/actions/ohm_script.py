@@ -45,6 +45,7 @@ def action2():
         print("purple")
     else:
         print("yellow")
+    print(cs.trajman[ROBOT].get_position()['y'])
     while(cs.trajman[ROBOT].get_position()['y'] < y-1 and cs.trajman[ROBOT].get_position()['y'] > y+1):
         cs.robot[ROBOT].goto(1800, y)
     # input()
