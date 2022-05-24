@@ -45,9 +45,10 @@ def action2():
         print("purple")
     else:
         print("yellow")
-    cs.robot[ROBOT].goto(1800, y)
-    input()
-    cs.robot[ROBOT].goto(1800, y)
+    while(cs.trajman[ROBOT].get_position().y != y):
+        cs.robot[ROBOT].goto(1800, y)
+    # input()
+    # cs.robot[ROBOT].goto(1800, y)
     input()
 if __name__ == '__main__':
     test()
