@@ -39,17 +39,16 @@ def test():
 def action2():
     cs.robot[ROBOT].goth(theta = -pi/2)
     input()
+    y = 1777.5
     if(cs.robot[ROBOT].pattern == 1 or cs.robot[ROBOT].pattern == 4):
-        cs.robot[ROBOT].goto(1800, 1670)
-        sleep(2z)
-        cs.robot[ROBOT].goto(1800, 1670)
+        y = 1670
         print("purple")
     else:
-        cs.robot[ROBOT].goto(1800, 1777.5)
-        sleep(2)
-        cs.robot[ROBOT].goto(1800, 1777.5)
         print("yellow")
-    sleep(1)
+    cs.robot[ROBOT].goto(1800, y)
+    input()
+    cs.robot[ROBOT].goto(1800, y)
+    input()
 if __name__ == '__main__':
     test()
     action2()
