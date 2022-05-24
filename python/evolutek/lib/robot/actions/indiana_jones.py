@@ -1,4 +1,5 @@
 from evolutek.lib.robot.robot_actions_imports import *
+from evolutek.lib.utils.boolean import get_boolean
 
 
 def drop_carrying(self):
@@ -69,13 +70,13 @@ def indiana_jones(self):
     """
 
     self.bumper_open(async_task=False)
-    drop_carrying(self)  # Drop the carry statuette
+    has_dropped = drop_carrying(self)  # Drop the carry statuette
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)  # Elevator to store statuette
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)  # Head to mid
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
     sleep(1)
-    status = self.goto_avoid(x=1620, y=380, async_task=False, timeout=10)
+    status = self.goto_avoid(x=1620, y=400, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -84,12 +85,14 @@ def indiana_jones(self):
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
+    score += (5 if get_boolean(self.actuators.proximity_sensor_read(id = 2)) else 0)
     self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.VeryLow, async_task=False) # Reduce speed
     self.pumps_get(ids="4", async_task=False)  # Pump the pump 4
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.StoreStatuette, async_task=False)  # Head up
     sleep(1.5)
     self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.Default, async_task=False) # Reduce speed
+    score += (10 if get_boolean(self.actuators.proximity_sensor_read(id = 2)) else 0)
     self.pumps_drop(ids="2", async_task=False)
     sleep(0.1)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
@@ -121,4 +124,4 @@ def indiana_jones(self):
     self.snowplow_close(async_task=False)
     self.bumper_close(async_task=False)
 
-    return RobotStatus.return_status(RobotStatus.Done, score = 15)
+    return RobotStatus.return_status(RobotStatus.Done, score = score)
