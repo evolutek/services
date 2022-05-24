@@ -19,7 +19,7 @@ def test():
     input()
     cs.robot[ROBOT].goto(1910, 1130)
     input()
-    cs.trajman[ROBOT].move_trsl(50, 150, 150, 500, 1)
+    cs.trajman[ROBOT].move_trsl(10, 150, 150, 100, 1)
     input()
     cs.robot[ROBOT].set_elevator_config(arm=1, config=4)
     input()
