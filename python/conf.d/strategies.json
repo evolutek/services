@@ -205,7 +205,8 @@
       "actions": [
         {
           "fct": "drop_start",
-          "handler": "robot"
+          "handler": "robot",
+          "score": 2
         }
       ]
     },
