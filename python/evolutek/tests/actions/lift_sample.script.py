@@ -34,7 +34,7 @@ def init_bot():
 def test():
     init_bot()
 
-    cs.robot[ROBOT].goto(x, y+365)
+    cs.robot[ROBOT].goto(x, y+355)
     input()
     cs.robot[ROBOT].set_elevator_config(arm=2, config=2)
     input()
