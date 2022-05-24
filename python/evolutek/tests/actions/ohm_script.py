@@ -46,11 +46,19 @@ def action2():
     else:
         print("yellow")
     print(cs.trajman[ROBOT].get_position()['y'])
-    while(cs.trajman[ROBOT].get_position()['y'] < y-1 and cs.trajman[ROBOT].get_position()['y'] > y+1):
+    while(cs.trajman[ROBOT].get_position()['y'] < y-1 or cs.trajman[ROBOT].get_position()['y'] > y+1):
+
         cs.robot[ROBOT].goto(1800, y)
     # input()
     # cs.robot[ROBOT].goto(1800, y)
     input()
+
+def tests():
+    while cs.trajman[ROBOT].get_position()['y'] > 620:
+        cs.trajman[ROBOT].goto(1800, cs.trajman[ROBOT].get_position()['y']+100)
+
+
 if __name__ == '__main__':
-    test()
-    action2()
+    #test()
+    #action2()
+    tests()
