@@ -21,7 +21,7 @@ def drop_galery(self):
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
 
     # Goto to galery
-    status = RobotStatus.get_status(self.goto_avoid(220, 800, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(300, 800, async_task=False))
     if status == RobotStatus.Reached:
         status = RobotStatus.get_status(self.goth(pi, async_task=False))
     if status != RobotStatus.Reached:
@@ -31,8 +31,8 @@ def drop_galery(self):
     # Configure elevators and heads
     self.set_elevator_config(arm=FrontArmsEnum.Left,  config=ElevatorConfig.Closed, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
-    self.set_head_config(arm=FrontArmsEnum.Left,  config=HeadConfig.Galery, async_task=False)
-    self.set_head_config(arm=FrontArmsEnum.Right, config=HeadConfig.Galery, async_task=False)
+    self.set_head_config(arm=FrontArmsEnum.Left,  config=HeadConfig.Mid, async_task=False)
+    self.set_head_config(arm=FrontArmsEnum.Right, config=HeadConfig.Mid, async_task=False)
     sleep(0.4)
 
     # Update score
@@ -49,7 +49,7 @@ def drop_galery(self):
     self.pumps_drop(ids="1,3", async_task=False)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.goto_avoid(220, 800, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(300, 800, async_task=False))
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)

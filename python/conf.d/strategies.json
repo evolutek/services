@@ -213,7 +213,7 @@
     {
       "name": "drop_galery",
       "position": {
-        "x": 220,
+        "x": 300,
         "y": 800
       },
       "actions": [
