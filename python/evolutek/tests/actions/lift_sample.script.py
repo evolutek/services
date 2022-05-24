@@ -36,9 +36,10 @@ def test():
 
     cs.robot[ROBOT].goto(x, y+300)
     input()
+    cs.robot[ROBOT].set_elevator_config(arm=2, config=2)
+    input()
     cs.robot[ROBOT].goto(x, y)
     input()
-    cs.robot[ROBOT].set_elevator_config(arm=2, config=2)
 
 
 if __name__ == '__main__':
