@@ -32,7 +32,7 @@ def test():
     input()
     cs.robot[ROBOT].set_elevator_config(arm=3, config=0)
     input()
-    cs.trajman[ROBOT].move_trsl(50, 150, 150, 500, 0)
+    cs.trajman[ROBOT].move_trsl(10, 150, 150, 000, 0)
     input()
     cs.robot[ROBOT].goto(1800, 1130)
 
