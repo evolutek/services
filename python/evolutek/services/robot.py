@@ -65,6 +65,11 @@ class Robot(Service):
     set_elevator_config = Service.action(robot_actuators.set_elevator_config)
     get_pattern = Service.action(robot_actuators.get_pattern)
 
+    reverse_pattern = Service.action(robot_actions.reverse_pattern)
+    indiana_jones = Service.action(robot_actions.indiana_jones)
+    statuette = Service.action(robot_actions.statuette)
+    lif_sample = Service.action(robot_actions.lift_sample)
+
     def __init__(self):
 
         super().__init__(ROBOT)
@@ -95,7 +100,7 @@ class Robot(Service):
         self.recal = event_waiter(self.trajman.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
         self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
-
+        self.pattern = None
         self.disabled = Event()
         self.need_to_abort = Event()
 

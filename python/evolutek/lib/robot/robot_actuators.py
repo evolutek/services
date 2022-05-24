@@ -277,7 +277,7 @@ ELEVATORS = {
     FrontArmsEnum.Left : {
         ElevatorConfig.Closed : 835,
         ElevatorConfig.Down : 220,
-        ElevatorConfig.Mid : 537,
+        ElevatorConfig.Mid : 486,
         ElevatorConfig.GaleryLow : 361,
         ElevatorConfig.ExcavationSquares : 600
     }
