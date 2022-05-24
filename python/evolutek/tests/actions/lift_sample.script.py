@@ -38,10 +38,11 @@ def test():
     input()
     cs.robot[ROBOT].set_elevator_config(arm=2, config=2)
     input()
-    cs.robot[ROBOT].set_elevator_config(arm=2, config=1)
+    cs.robot[ROBOT].set_elevator_config(arm=2, config=0)
     input()
     cs.robot[ROBOT].goto(x, y)
     input()
+    cs.actuators[ROBOT].pumps_drop(ids='2')
 
 
 if __name__ == '__main__':
