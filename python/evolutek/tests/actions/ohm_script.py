@@ -38,11 +38,11 @@ def test():
 
 def action2():
     cs.robot[ROBOT].goth(theta = -pi/2)
-    sleep(0.5)
+    input()
     if(cs.robot[ROBOT].pattern == 1 or cs.robot[ROBOT].pattern == 4):
-        cs.robot[ROBOT].goto(1800, 1850)
-    else:
         cs.robot[ROBOT].goto(1800, 1670)
+    else:
+        cs.robot[ROBOT].goto(1800, 1850)
 if __name__ == '__main__':
     test()
     action2()
