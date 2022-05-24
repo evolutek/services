@@ -47,7 +47,7 @@ def collect_middle(self):
                     self.goto_avoid(675, 815, async_task=False)
                 self.trajman.set_trsl_max_speed(speed)
                 sleep(0.2)
-    
+
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
@@ -57,7 +57,7 @@ def collect_middle(self):
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Down, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Right,  config=ElevatorConfig.Down, async_task=False)
     sleep(0.2)
-    
+
     # Activated pump
     self.pumps_get(ids="1,2,3", async_task=False)
     sleep(1)
@@ -87,7 +87,7 @@ def collect_middle(self):
     score += (3 if get_boolean(self.actuators.proximity_sensor_read(id = 1)) else 0) * flip
     score += (3 if get_boolean(self.actuators.proximity_sensor_read(id = 2)) else 0) * flip
     score += (3 if get_boolean(self.actuators.proximity_sensor_read(id = 3)) else 0) * flip
-    
+
     # Close snowplow
     self.snowplow_close(async_task=False)
 

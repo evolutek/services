@@ -1,4 +1,5 @@
 from evolutek.lib.robot.robot_actions_imports import *
+from evolutek.lib.utils.boolean import get_boolean
 
 @if_enabled
 @async_task
@@ -15,20 +16,26 @@ def broom_square(self):
     self.trajman.set_trsl_max_speed(200)
     #Advance to push the samples
     self.goto_avoid(x = 1360, y = 510, async_task = False)
-    #self.goth(theta = -pi/2, async_task = False)
-    #Set speed back to mid
-    self.trajman.set_trsl_max_speed(400)
-    #Go in front of the shelter
-    self.goto_avoid(x = 1490, y = 510, async_task = False)
-    input("\nPute\n")
+    #Set middle head to down
+    self.set_head_config(arm = 2, config = HeadConfig.Down, async_task = False)
+    #Set elevator to down
+    self.set_elevator_config(arm = 2, config = ElevatorConfig.Mid, async_task = False)
+    sleep(1)
+    #Check proximity sensor -> if good continue
+    #                       -> if not : fuck
+    # if (get_boolean(self.actuators.proximity_sensor_read(id = 2))):
+    #     self.pumps_get(ids = "2", async_task = False)
+    # else:
+    #     return
+    self.pumps_get(ids = "2", async_task = False)
+    # Set elevator to close
+    self.set_elevator_config(arm = 2, config = 0, async_task = False)
+    # Set head to pickup
+    self.set_head_config(arm = 2, config = 4, async_task = False)
+    # Go to indiana pos
+    self.goto_avoid(x = 1550, y = 450, asyn_task = False)
     self.goth(theta = -pi / 4, async_task = False)
-    input()
-    self.goto_avoid(x = 1430, y = 450, async_task = False)
-    input()
-    self.bumper_open(async_task = False)
-    input()
-    self.goto_avoid(x = 1490, y = 510, async_task = False)
-    #self.goth(theta  = 5 * pi /4, async_task = False)
+
 
     #Set speed back to normal
     self.trajman.set_trsl_max_speed(600)
