@@ -1,7 +1,7 @@
 from cellaserv.proxy import CellaservProxy
 from time import sleep
 
-ROBOT = "pmi"
+ROBOT = "pal"
 
 def home():
     cs = CellaservProxy()
