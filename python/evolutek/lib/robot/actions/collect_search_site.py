@@ -20,7 +20,7 @@ def cleanup(self):
     sleep(1)
 
 
-def play_path(rbt, path, score):
+def play_path(rbt, path):
     for i in range(len(path)):
         point = path[i]
         if point[0] == "goto":
@@ -49,7 +49,7 @@ def collect_search_site(self):
 
     status = play_path(self, path)
     if status:
-        cleanup()
+        cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
     # Be ready to collect samples
@@ -66,7 +66,7 @@ def collect_search_site(self):
 
     status = play_path(self, path)
     if status:
-        cleanup()
+        cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
     # Reset move speed
@@ -92,7 +92,7 @@ def collect_search_site(self):
     # Got to back pos
     status = self.goto_avoid(*back_pos, async_task=False, timeout=10)
     if status != RobotStatus.Reached:
-        cleanup()
+        cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
     # Push the middle sample
@@ -102,7 +102,7 @@ def collect_search_site(self):
         status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False, timeout=10)) # Backward
 
     if status != RobotStatus.Reached:
-        cleanup()
+        cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
     # Release the two extern sample
@@ -128,15 +128,15 @@ def collect_search_site(self):
         status = RobotStatus.get_status(self.goth(to_radians(-45), async_task=False))
 
     if status != RobotStatus.Reached:
-        cleanup()
+        cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
     # Down bumpers
     status = RobotStatus.get_status(self.goto_avoid(1450, 550, async_task=False, timeout=10))
     if status != RobotStatus.Reached:
-        cleanup()
+        cleanup(self)
         return RobotStatus.return_status(status, score=score)
-    
+
     self.bumper_open(async_task=False)
     sleep(0.5)
 
@@ -145,9 +145,9 @@ def collect_search_site(self):
     if status == RobotStatus.Reached:
         score += 5 * 2
         status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False, timeout=10)) # Backward
-    
+
     if status != RobotStatus.Reached:
-        cleanup()
+        cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
     # Close snowplows
