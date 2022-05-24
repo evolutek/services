@@ -38,6 +38,8 @@ def test():
     input()
     cs.robot[ROBOT].set_elevator_config(arm=2, config=2)
     input()
+    cs.robot[ROBOT].set_elevator_config(arm=2, config=1)
+    input()
     cs.robot[ROBOT].goto(x, y)
     input()
 
