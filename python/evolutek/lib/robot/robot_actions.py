@@ -149,6 +149,7 @@ def indiana_jones(self):
     sleep(0.5)
     print("Finished !")
 
+@if_enabled
 def reverse_pattern(self):
     # Partie Speedy
     self.trajman.free()

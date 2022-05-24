@@ -64,6 +64,10 @@ class Robot(Service):
     set_elevator_config = Service.action(robot_actuators.set_elevator_config)
     get_pattern = Service.action(robot_actuators.get_pattern)
 
+    reverse_pattern = Service.action(robot_actions.reverse_pattern)
+    indiana_jones = Service.action(robot_actions.indiana_jones)
+    statuette = Service.action(robot_actions.statuette)
+
     def __init__(self):
 
         super().__init__(ROBOT)
