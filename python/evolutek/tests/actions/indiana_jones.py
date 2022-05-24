@@ -17,7 +17,7 @@ from time import sleep
 # ExcavationSquares...4
 # StoreStatuette......5
 
-BotName = "pal"
+BotName = "pmi"
 default_x = 1550
 default_y = 450
 default_angle = (5 * pi) / 4
