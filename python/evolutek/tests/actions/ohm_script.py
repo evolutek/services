@@ -37,7 +37,7 @@ def test():
     cs.robot[ROBOT].goto(1800, 1130)
 
 def action2():
-    cs.robot[ROBOT].goth(theta = pi/2)
+    cs.robot[ROBOT].goth(theta = -pi/2)
     sleep(0.5)
     if(cs.robot[ROBOT].pattern == 1 or cs.robot[ROBOT].pattern == 4):
         cs.robot[ROBOT].goto(1800, 1850)
