@@ -54,7 +54,7 @@ def indiana_jones(self):
         self.pumps_drop(ids="3", async_task=False)
         self.pumps_drop(ids="4", async_task=False)
         self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.Default, async_task=False)
-        self.snowplow_close(async_task=False)    
+        self.snowplow_close(async_task=False)
     default_x = 1550
     default_y = 450
     default_angle = (5 * pi) / 4
@@ -63,18 +63,12 @@ def indiana_jones(self):
     """
 
     TODO:
-    Valeur dans FrontArmsEnum.Center.Galery faire en sorte que
-    ça rentre plus dans la galerie
+    Compter les points correctement
 
     """
 
     self.bumper_open(async_task=False)
-    has_point_dropping = drop_carrying(self)  # Drop the carry statuette
-    if (has_point_dropping):
-        print("SUCCESS : Point earned by dropping idol")
-        #score += 20
-    else:
-        print("FAILURE : Point has not been earned")
+    drop_carrying(self)  # Drop the carry statuette
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)  # Elevator to store statuette
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)  # Head to mid
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
@@ -126,4 +120,4 @@ def indiana_jones(self):
     self.snowplow_close(async_task=False)
     self.bumper_close(async_task=False)
 
-    return RobotStatus.return_status(RobotStatus.Done, score = 17)
+    return RobotStatus.return_status(RobotStatus.Done, score = 15)
