@@ -83,14 +83,14 @@
     {
       "name": "galery_starting_samples",
       "position": {
-        "x": 700,
+        "x": 675,
         "y": 600
       },
       "actions": [
         {
           "fct": "collect_middle",
           "handler": "robot",
-	  "score": 9
+          "score": 9
         }
       ]
     },
