@@ -12,7 +12,7 @@ def init_bot():
     """Initialize the bot and return the proxy object"""
 
     cs.trajman[ROBOT].free()
-    cs.robot[ROBOT].set_pos(x=x, y=y, theta=pi)
+    cs.robot[ROBOT].set_pos(x=x, y=y, theta=pi/2)
     cs.trajman[ROBOT].unfree()
     print("\n\nReseting positions...\n\n")
     sleep(1)
@@ -35,7 +35,9 @@ def test():
     init_bot()
 
     cs.robot[ROBOT].goto(x, y+300)
+    input()
     cs.robot[ROBOT].goto(x, y-300)
+    input()
 
 
 if __name__ == '__main__':
