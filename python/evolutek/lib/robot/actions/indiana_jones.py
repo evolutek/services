@@ -3,7 +3,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 
 def drop_carrying(self):
     """Drop the carrying statuette"""
-    pickup_statuette(self)
+    has_dropped = pickup_statuette(self)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Down, async_task=False)  # Head Down
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Mid, async_task=False)  # Elevator to mid
     sleep(0.5)
@@ -14,6 +14,7 @@ def drop_carrying(self):
     sleep(0.5)
     self.set_elevator_speed(arm=FrontArmsEnum.Center, speed=ElevatorSpeed.Default, async_task=False)
     self.stop_evs(ids="2", async_task=False)
+    return has_dropped
 
 def move_side_arms(status, self):
     """Move the side arms to the right position
@@ -56,6 +57,7 @@ def indiana_jones(self):
     default_x = 1550
     default_y = 450
     default_angle = (5 * pi) / 4
+    score = 0
 
     """
 
@@ -66,7 +68,12 @@ def indiana_jones(self):
     """
 
     self.bumper_open(async_task=False)
-    drop_carrying(self)  # Drop the carry statuette
+    has_point_dropping = drop_carrying(self)  # Drop the carry statuette
+    if (has_point_dropping):
+        print("SUCCESS : Point earned by dropping idol")
+        score += 20
+    else:
+        print("FAILURE : Point has not been earned")
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)  # Elevator to store statuette
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)  # Head to mid
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
@@ -118,4 +125,4 @@ def indiana_jones(self):
     self.snowplow_close(async_task=False)
     self.bumper_close(async_task=False)
 
-    return RobotStatus.return_status(RobotStatus.Done, score=17)
+    return RobotStatus.return_status(RobotStatus.Done, score = score + 17)

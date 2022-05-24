@@ -21,3 +21,4 @@ def pickup_statuette(self):
     sleep(0.2)
     self.pumps_drop(ids="4", async_task=False)
     sleep(1)
+    return (self.actuators.proximity_sensor_read(id = 2))

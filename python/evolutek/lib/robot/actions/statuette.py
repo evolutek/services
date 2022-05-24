@@ -7,7 +7,13 @@ def statuette(self):
     def cleanup():
         self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)    
-    pickup_statuette(self)
+    has_dropped = pickup_statuette(self)
+    score = 0
+    if (has_dropped):
+        print("SUCCESS : Statuette dropped")
+        score += 20
+    else:
+        print("FAILURE : Statuette not dropped")
     # Places it
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Mid, async_task=False)
@@ -26,4 +32,4 @@ def statuette(self):
     sleep(0.3)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)
-    return RobotStatus.return_status(RobotStatus.Done, score=20)
+    return RobotStatus.return_status(RobotStatus.Done, score=score)
