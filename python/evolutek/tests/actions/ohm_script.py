@@ -32,7 +32,7 @@ def test():
     input()
     cs.robot[ROBOT].set_elevator_config(arm=3, config=0)
     input()
-    cs.trajman[ROBOT].move_trsl(10, 150, 150, 000, 0)
+    cs.trajman[ROBOT].move_trsl(10, 150, 150, 100, 0)
     input()
     cs.robot[ROBOT].goto(1800, 1130)
 
@@ -41,8 +41,12 @@ def action2():
     input()
     if(cs.robot[ROBOT].pattern == 1 or cs.robot[ROBOT].pattern == 4):
         cs.robot[ROBOT].goto(1800, 1670)
+        sleep(1)
+        cs.robot[ROBOT].goto(1800, 1670)
         print("purple")
     else:
+        cs.robot[ROBOT].goto(1800, 1777.5)
+        sleep(1)
         cs.robot[ROBOT].goto(1800, 1777.5)
         print("yellow")
     sleep(1)
