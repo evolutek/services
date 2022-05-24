@@ -78,7 +78,6 @@ def move_side_arms(status, self):
         self.robot.set_elevator_config(arm=3, config=0)  # Head up
     else:
         print("Error: wrong status")
-        exit(84)
     print(f"Done action : {status}")
 
 
@@ -149,3 +148,68 @@ def indiana_jones(self):
     self.robot.bumper_close()
     sleep(0.5)
     print("Finished !")
+
+def reverse_pattern(self):
+    # Partie Speedy
+    self.trajman.free()
+    self.robot.set_pos(x=1800, y=1130, theta=0)
+    self.trajman.unfree()
+
+    self.robot.set_elevator_config(arm=1, config=0)
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=3, config=0)
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=2, config=0)
+    sleep(0.5)
+    self.robot.goto(1910, 1130)
+    sleep(0.5)
+    self.trajman.move_trsl(10, 150, 150, 100, 1)
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=1, config=4)
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=3, config=4)
+    sleep(0.5)
+    Pattern = self.robot.get_pattern()
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=1, config=0)
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=3, config=0)
+    sleep(0.5)
+    self.trajman.move_trsl(10, 150, 150, 100, 0)
+    sleep(0.5)
+    self.robot.goto(1800, 1130)
+
+    # Partie Jaro
+    sleep(5)
+    y = 1777.5
+
+    if(Pattern == 1 or Pattern == 4):
+        y = 1592.5
+    self.robot.goto(1830, y)
+    sleep(0.5)
+
+    # Partie reza
+    pattern = Pattern - 1
+    patterns = [
+            [True, True, False, False, True, True, False],
+            [False, True, True, True, False, False, True],
+            [True, True, False, True, False, False, True],
+            [False, True, True, False, True, True, False]
+            ]
+    if pattern in [0, 3]:
+        plot = 5
+    else:
+        plot = 6
+    while self.trajman.get_position()['y'] > 680:
+        if patterns[pattern][plot]:
+            self.robot.left_arm_open()
+            sleep(0.5)
+            self.robot.left_arm_close()
+            sleep(0.5)
+        plot -= 1
+        self.robot.goto(1830, self.trajman.get_position()['y']-185)
+        sleep(0.5)
+    if patterns[pattern][plot]:
+        self.robot.left_arm_open()
+        sleep(0.5)
+        self.robot.left_arm_close()
