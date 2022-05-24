@@ -22,7 +22,6 @@ def collect_middle(self):
     self.trajman.set_trsl_max_speed(300)
     self.goto_avoid(675,900, async_task=False, timeout=10)
     self.trajman.set_trsl_max_speed(speed)
-    self.goto_avoid(675,900, async_task=False, timeout=10)
     sleep(0.2)
         #set elevator to down
     self.set_elevator_config(arm=1, config=ElevatorConfig.Down, async_task=False)
