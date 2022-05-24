@@ -213,3 +213,14 @@ def reverse_pattern(self):
         self.robot.left_arm_open()
         sleep(0.5)
         self.robot.left_arm_close()
+
+def lift_sample(self):
+    self.robot.goto(340, 1975)
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=2, config=2)
+    sleep(0.5)
+    self.robot.set_elevator_config(arm=2, config=0)
+    sleep(0.5)
+    self.robot.goto(340, 1620)
+    sleep(0.5)
+    # self.actuators.pumps_drop(ids='2')
