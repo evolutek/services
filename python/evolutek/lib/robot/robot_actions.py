@@ -110,11 +110,6 @@ def indiana_jones(self):
 @if_enabled
 def reverse_pattern(self):
     # Partie Speedy
-    self.trajman.free()
-    sleep(0.5)
-    self.set_pos(x=1800, y=1130, theta=0)
-    self.trajman.unfree()
-    sleep(0.5)
     self.set_elevator_config(arm=1, config=0)
     self.set_elevator_config(arm=3, config=0)
     self.set_elevator_config(arm=2, config=0)
