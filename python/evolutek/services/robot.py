@@ -94,7 +94,7 @@ class Robot(Service):
         self.recal = event_waiter(self.trajman.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
         self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
-
+        self.pattern = None
         self.disabled = Event()
         self.need_to_abort = Event()
 
