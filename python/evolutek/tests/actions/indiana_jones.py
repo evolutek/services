@@ -121,6 +121,8 @@ def run_movement():
     sleep(2)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 0) # Elevator to closed
     sleep(2)
+    cs.robot[BotName].snowplow_open()
+    sleep(2)
     cs.trajman[BotName].move_trsl(acc = 200, dec = 200, dest = 90, maxspeed = 400, sens = 1) # Advance to 90
     sleep(2)
     cs.robot[BotName].pumps_drop(ids = "2") # Drop the pump 2
