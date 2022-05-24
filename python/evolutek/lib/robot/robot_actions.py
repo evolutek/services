@@ -214,6 +214,7 @@ def reverse_pattern(self):
         sleep(0.5)
         self.robot.left_arm_close()
 
+@if_enabled
 def lift_sample(self):
     self.robot.goto(340, 1975)
     sleep(0.5)
