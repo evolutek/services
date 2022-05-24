@@ -42,7 +42,7 @@ def action2():
     if(cs.robot[ROBOT].pattern == 1 or cs.robot[ROBOT].pattern == 4):
         cs.robot[ROBOT].goto(1800, 1670)
     else:
-        cs.robot[ROBOT].goto(1800, 1850)
+        cs.robot[ROBOT].goto(1800, 1777.5)
 if __name__ == '__main__':
     test()
     action2()
