@@ -84,7 +84,7 @@ def run_movement():
     cs = init_bot()
 
     cs.robot[BotName].bumper_open()
-    input("")
+    sleep(2)
     drop_carrying(cs) # Drop the carry statuette
     sleep(2)
     cs.robot[BotName].set_elevator_config(arm = 2, config = 5) # Elevator to store statuette
@@ -126,14 +126,19 @@ def run_movement():
     cs.trajman[BotName].move_trsl(acc = 200, dec = 200, dest = 90, maxspeed = 400, sens = 1) # Advance to 90
     sleep(2)
     cs.robot[BotName].pumps_drop(ids = "2") # Drop the pump 2
-    input("")
+    sleep(2)
     move_side_arms("head", cs)
-    input("")
+    sleep(2)
     move_side_arms("elevator_down", cs) # Activate arm movement func down
-    input("")
+    sleep(2)
     move_side_arms("elevator_up", cs) # Activate arm movement func up
-    input("")
+    sleep(2)
     cs.robot[BotName].goto(x = default_x, y = default_y)
+    sleep(2)
+    cs.robot[BotName].snowplow_close()
+    sleep(2)
+    cs.robot[BotName].bumper_close()
+    sleep(2)
     input("Finished !")
 
 if __name__ == "__main__":
