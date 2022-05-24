@@ -4,7 +4,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 @if_enabled
 @async_task
 def collect_middle(self):
-
+    print("ahhhhhhhhhhhhhh")
     #grab palets
     self.set_elevator_config(arm=1, config=ElevatorConfig.Mid, async_task=False)
     self.set_elevator_config(arm=2, config=ElevatorConfig.Mid, async_task=False)
