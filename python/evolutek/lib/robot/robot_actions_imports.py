@@ -5,6 +5,7 @@ from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.task import async_task
 from evolutek.lib.utils.wrappers import if_enabled
 from evolutek.lib.robot.robot_actuators import ElevatorConfig, HeadConfig, FrontArmsEnum, HeadSpeed, ElevatorSpeed
+from evolutek.lib.utils.boolean import get_boolean
 
 from time import sleep
 from math import pi
@@ -21,4 +22,4 @@ def pickup_statuette(self):
     sleep(0.2)
     self.pumps_drop(ids="4", async_task=False)
     sleep(1)
-    return (self.actuators.proximity_sensor_read(id = 2))
+    return get_boolean(self.actuators.proximity_sensor_read(id = 2))

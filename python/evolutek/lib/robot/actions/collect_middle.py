@@ -1,5 +1,5 @@
 from evolutek.lib.robot.robot_actions_imports import *
-
+from evoluket.lib.utils.boolean import get_boolean
 
 @if_enabled
 @async_task
@@ -46,13 +46,10 @@ def collect_middle(self):
     self.goth(theta=pi, async_task=False)
     self.goto_avoid(190, 810, async_task=False, timeout=10)
         #score
-    score = 0
-    for e in self.actuators.proximity_sensor_read():
-        score += e*flip*3
-        #drop into
-    self.pumps_drop(ids="1", async_task=False)
-    self.pumps_drop(ids="2", async_task=False)
-    self.pumps_drop(ids="3", async_task=False)
+    score = (1 if get_boolean(self.actuators.proximity_sensor_read(id = 1)) else 0) * flip * 3
+    score += (1 if get_boolean(self.actuators.proximity_sensor_read(id = 2)) else 0) * flip * 3
+    score += (1 if get_boolean(self.actuators.proximity_sensor_read(id = 3)) else 0) * flip * 3
+    self.pumps_drop(ids="1,2,3", async_task=False)
         #go back
     self.goto_avoid(320, 810, async_task=False, timeout=10)
 
