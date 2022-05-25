@@ -56,7 +56,7 @@ class Robot(Service):
     roam_zones = Service.action(robot_actions.roam_zones)
     go_grab_one = Service.action(robot_actions.go_grab_one)
     go_grab_some = Service.action(robot_actions.go_grab_some)
-    go_grab_one_and_come_back = Service.action(robot_actions.go_grab_one_and_come_back)
+    go_drop_one = Service.action(robot_actions.go_drop_one)
 
     def __init__(self):
 
