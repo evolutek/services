@@ -97,7 +97,7 @@ class Point(PointShape):
     
     def compute_offset_point(self, point, offset):
 
-        if point.x = self.x:
+        if point.x == self.x:
             return Point(point.x, point.y + offset * (-1 if self.y > point.y else 1))
         
         a = (point.y - self.y) / (point.x - self.x)
