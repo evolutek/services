@@ -96,7 +96,7 @@ class Rplidar:
         with self.lock:
             lidar_position = self.position
 
-        return self.lidar_position.compute_offset_point(mean_point, self.mean_beacon_radius)
+        return lidar_position.compute_offset_point(mean_point, self.mean_beacon_radius)
 
     def start_scanning(self):
         Thread(target=self.loop_scan).start()
