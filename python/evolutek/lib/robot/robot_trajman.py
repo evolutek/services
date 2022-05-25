@@ -306,6 +306,7 @@ def homemade_recal(self, decal=0):
 
 # Recalibration with sensors
 # Set axis_x to True to recal on x axis
+# Set side to true to recal on far wall (2000 or 3000 instead of 0)
 # Set left to True to use the left sensor
 # TODO : rework
 def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
@@ -324,7 +325,7 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     pos = self.actuators.recal_sensor_read(id) + self.dist_to_center
     print(f'[ROBOT] Measured distance: {pos}mm')
 
-    if not axis_x and (side ^ (sensor == RecalSensor.Left)):
+    if not axis_x and (side ^ (sensor == RecalSensor.Left) ^ (not self.side)):
         pos = 3000 - pos
     if axis_x and ((not side) ^ (sensor == RecalSensor.Left)):
         pos = 2000 - pos
@@ -399,10 +400,6 @@ def recalibration(self,
         if y_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=False, side=side_x, sensor=y_sensor, mirror=mirror, init=init)
 
-        status = RobotStatus.get_status(self.move_trsl(dest=2*(self.dist - self.size_x), acc=200, dec=200, maxspeed=200, sens=1))
-        if status != RobotStatus.Reached:
-            return RobotStatus.return_status(status)
-
     if y:
         print('[ROBOT] Recalibration Y')
         theta = -pi/2 if side_y else pi/2
@@ -420,10 +417,6 @@ def recalibration(self,
 
         if x_sensor != RecalSensor.No:
             self.recalibration_sensors(axis_x=True, side=side_y, sensor=x_sensor, mirror=mirror, init=init)
-
-        status = RobotStatus.get_status(self.move_trsl(dest=100, acc=200, dec=200, maxspeed=200, sens=1))
-        if status != RobotStatus.Reached:
-            return RobotStatus.return_status(status)
 
     self.trajman.set_trsl_max_speed(speeds['trmax'])
     self.trajman.set_trsl_acc(speeds['tracc'])
