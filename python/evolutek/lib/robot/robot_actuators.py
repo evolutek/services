@@ -332,33 +332,33 @@ def set_elevator_config(self, arm, config):
 def get_pattern(self):
     #all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
     masurement= self.actuators.read_sensors_pattern()
-    result = [ Color[r] for r in result ]
-    list_of_pattern = [None] * 7
+    result = [ Color[r] for r in masurement ]
+    list_of_pattern = []
 
     color = Color.Yellow if self.side else Color.Purple
     if not self.side:
        result[0] , result[1] = result[1], result[0]
     
     if result[0] == Color.Red:
-        list_of_pattern[0] = True
-        list_of_pattern[1] = True
-        list_of_pattern[2] = False
+        list_of_pattern.append(667.5)
+        list_of_pattern.append(852.5)
+        #list_of_pattern[2] = False
     elif result[0] == color:
-        list_of_pattern[0] = False
-        list_of_pattern[1] = True
-        list_of_pattern[2] = True
+        #list_of_pattern[0] = False
+        list_of_pattern.append(852.5)
+        list_of_pattern.append(1037.5)
 
     if result[1] != Color.Unknown:
         if result[1] == color:
-            list_of_pattern[3] = True
-            list_of_pattern[4] = False
-            list_of_pattern[5] = False
-            list_of_pattern[6] = True
+            list_of_pattern.append(1222.5)
+            #list_of_pattern[4] = False
+            #list_of_pattern[5] = False
+            list_of_pattern.append(1777.5)
         else:
-            list_of_pattern[3] = False
-            list_of_pattern[4] = True
-            list_of_pattern[5] = True
-            list_of_pattern[6] = False
+            #list_of_pattern[3] = False
+            list_of_pattern.append(1407.5)
+            list_of_pattern.append(1592.5)
+            #list_of_pattern[6] = False
     
     return list_of_pattern
 
