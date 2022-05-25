@@ -8,11 +8,9 @@ from evolutek.lib.utils.wrappers import if_enabled
 from time import sleep
 from math import pi
 
-
 @if_enabled
+@async_task
 def statuette(self):
-    # self.free()
-    # self.unfree()
     self.actuators.pumps_get(ids='4', async_task=False)
     self.set_head_config(arm=2, config=0, async_task=False)
     self.set_elevator_config(arm=2, config=2, async_task=False)
@@ -77,6 +75,7 @@ def move_side_arms(status, self):
 
 
 @if_enabled
+@async_task
 def indiana_jones(self):
     default_x = 1550
     default_y = 450
@@ -124,6 +123,7 @@ def indiana_jones(self):
     print("Finished !")
 
 @if_enabled
+@async_task
 def reverse_pattern(self):
     # Partie Speedy
     self.set_elevator_config(arm=1, config=0, async_task=False)
@@ -207,6 +207,7 @@ def reverse_pattern(self):
         arm_close(async_task=False)
 
 @if_enabled
+@async_task
 def lift_sample(self):
     self.goto_avoid(340, 1975, async_task=False)
     self.set_elevator_config(arm=2, config=2, async_task=False)
