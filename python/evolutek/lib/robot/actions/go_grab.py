@@ -31,29 +31,29 @@ def roam_stacks(self):
 @if_enabled
 @async_task
 def go_grab_one(self):
-    cake = random.choice(CAKES)
+    cake = choice(CAKES)
     
     # Points d'intérêt
     robot_point = Point(dict=self.trajman.get_position())
     dest_point = Point(x=cake[0][0], y=cake[0][1])
     
     # Aller devant le point
-    go_to_point = robot_point.compute_offset_point(dest_point, -50)
+    go_to_point = robot_point.compute_offset_point(dest_point, -250)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
-    sleep(0.5)
+    sleep(5)
     
     # Se préparer
-    self.elevator_up()
+    self.elevator_up(async_task=False)
     sleep(1)
     
     # Aller sur le point
-    go_to_point = robot_point.compute_offset_point(dest_point, 0)
+    go_to_point = robot_point.compute_offset_point(dest_point, -90)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
-    sleep(0.5)
+    sleep(5)
     
     # Attraper
     self.grab_stack(async_task=False)
@@ -66,7 +66,7 @@ def go_grab_one(self):
 @async_task
 def go_grab_some(self):
     for x in range(randint(len(CAKES))):
-        status = self.go_grab_one()
+        status = self.go_grab_one(async_task=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.get_status(status))
     return RobotStatus.return_status(RobotStatus.Done, score=0)
