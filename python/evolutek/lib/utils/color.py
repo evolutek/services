@@ -10,7 +10,7 @@ class RGBColor:
 
     @staticmethod
     def from_tupple(t):
-        return RGBColor(r, g, b)
+        return RGBColor(t[0], t[1], t[2])
 
     def to_tupple(self):
         return (self.r, self.g, self.b)
@@ -57,7 +57,7 @@ class RGBColor:
         result = RGBColor(0, 0, 0)
         for color in colors:
             result += color
-        return result / len(colors)
+        return result.__div__(len(colors))
     
     def compute_dist(self, color):
         tmp = self.__sub__(color)
@@ -86,15 +86,15 @@ class Color(Enum):
         
     @staticmethod
     def get_by_rgb(rgb_color):
-        for color in Color.__members__:
+        for color in Color.__members__.values():
             if rgb_color == color.value:
                 return color
         return Color.Unknown
     
     @staticmethod
     def get_closest_color(rgb_color, colors):
-        closest = Color.Unknow
-        min_dist = rgb_color.compute_dist(Color.Unknow.value)
+        closest = Color.Unknown
+        min_dist = rgb_color.compute_dist(Color.Unknown.value)
         for color in colors:
             dist = rgb_color.compute_dist(color.value)
             if dist < min_dist:

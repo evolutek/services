@@ -44,7 +44,7 @@ class TCS34725(Component):
     def read(self):
         rgb = RGBColor.from_tupple(self.sensor.color_rgb_bytes)
         rgb -= self.calibration
-        color = Color.get_closest_color(rgb, self.color_to_detect if self.color_to_detect is not None else Color.__members__)
+        color = Color.get_closest_color(rgb, self.color_to_detect if self.color_to_detect is not None else Color.__members__.values())
 
         if color == Color.Unknown:
             print(f"[{self.name}] Sensor {self.id} didn't see any color")

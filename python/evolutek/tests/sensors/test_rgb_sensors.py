@@ -3,7 +3,6 @@ from time import sleep
 from evolutek.lib.sensors.rgb_sensors import RGBSensors
 
 rgb_sensors = RGBSensors([1])
-print(rgb_sensors.is_initialized())
 print(rgb_sensors)
 
 for sensor in rgb_sensors:
