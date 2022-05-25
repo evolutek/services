@@ -5,8 +5,6 @@ from cellaserv.service import Event as CellaservEvent, Service
 
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
-import evolutek.lib.robot.robot_actions as robot_actions
-import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
@@ -41,40 +39,6 @@ class Robot(Service):
     recalibration = Service.action(robot_trajman.recalibration)
     recalibration_sensors = robot_trajman.recalibration_sensors
     homemade_recal = Service.action(robot_trajman.homemade_recal)
-
-    # Imported from robot_actuators
-    mirror_pump_id = robot_actuators.mirror_pump_id
-    pumps_get = Service.action(robot_actuators.pumps_get)
-    pumps_drop = Service.action(robot_actuators.pumps_drop)
-    stop_evs = Service.action(robot_actuators.stop_evs)
-    left_arm_close = Service.action(robot_actuators.left_arm_close)
-    bumper_open = Service.action(robot_actuators.bumper_open)
-    bumper_close = Service.action(robot_actuators.bumper_close)
-    left_arm_open = Service.action(robot_actuators.left_arm_open)
-    right_arm_close = Service.action(robot_actuators.right_arm_close)
-    right_arm_open = Service.action(robot_actuators.right_arm_open)
-    snowplow_open = Service.action(robot_actuators.snowplow_open)
-    snowplow_open_left = Service.action(robot_actuators.snowplow_open_left)
-    snowplow_open_right = Service.action(robot_actuators.snowplow_open_right)
-    snowplow_close = Service.action(robot_actuators.snowplow_close)
-    snowplow_close_left = Service.action(robot_actuators.snowplow_close_left)
-    snowplow_close_right = Service.action(robot_actuators.snowplow_close_right)
-    set_head_speed = Service.action(robot_actuators.set_head_speed)
-    set_head_config = Service.action(robot_actuators.set_head_config)
-    set_elevator_speed = Service.action(robot_actuators.set_elevator_speed)
-    set_elevator_config = Service.action(robot_actuators.set_elevator_config)
-    get_pattern = Service.action(robot_actuators.get_pattern)
-
-    reverse_pattern = Service.action(robot_actions.reverse_pattern)
-    indiana_jones = Service.action(robot_actions.indiana_jones)
-    statuette = Service.action(robot_actions.statuette)
-    lift_sample = Service.action(robot_actions.lift_sample)
-    collect_search_site = Service.action(robot_actions.collect_search_site)
-    collect_middle = Service.action(robot_actions.collect_middle)
-    collect_distributor = Service.action(robot_actions.collect_distributor)
-    drop_start = Service.action(robot_actions.drop_start)
-    drop_galery = Service.action(robot_actions.drop_galery)
-    broom_square = Service.action(robot_actions.broom_square)
 
     def __init__(self):
 
@@ -230,40 +194,6 @@ class Robot(Service):
             return
 
         self.enable()
-
-        self.set_head_speed(robot_actuators.FrontArmsEnum.Right, robot_actuators.HeadSpeed.Default, async_task=False)
-        self.set_head_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.HeadConfig.Mid, async_task=False)
-        self.set_head_speed(robot_actuators.FrontArmsEnum.Center, robot_actuators.HeadSpeed.Default, async_task=False)
-        self.set_head_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.HeadConfig.Mid, async_task=False)
-        self.set_head_speed(robot_actuators.FrontArmsEnum.Left, robot_actuators.HeadSpeed.Default, async_task=False)
-        self.set_head_config(robot_actuators.FrontArmsEnum.Left, robot_actuators.HeadConfig.Mid, async_task=False)
-
-        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorSpeed.Default, async_task=False)
-        self.set_elevator_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorConfig.Mid, async_task=False)
-        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorSpeed.Default, async_task=False)
-        self.set_elevator_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorConfig.Mid, async_task=False)
-        self.set_elevator_speed(robot_actuators.FrontArmsEnum.Left, robot_actuators.ElevatorSpeed.Default, async_task=False)
-        self.set_elevator_config(robot_actuators.FrontArmsEnum.Left, robot_actuators.ElevatorConfig.Mid, async_task=False)
-
-        self.left_arm_open(async_task=False)
-        self.right_arm_open(async_task=False)
-        self.snowplow_open(async_task=False)
-        self.bumper_open(async_task=False)
-        sleep(1.5)
-
-        self.set_elevator_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.ElevatorConfig.Closed, async_task=False)
-        self.set_elevator_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.ElevatorConfig.StoreStatuette, async_task=False)
-        self.set_elevator_config(robot_actuators.FrontArmsEnum.Left, robot_actuators.ElevatorConfig.Closed, async_task=False)
-
-        self.set_head_config(robot_actuators.FrontArmsEnum.Right, robot_actuators.HeadConfig.Closed, async_task=False)
-        self.set_head_config(robot_actuators.FrontArmsEnum.Center, robot_actuators.HeadConfig.Closed, async_task=False)
-        self.set_head_config(robot_actuators.FrontArmsEnum.Left, robot_actuators.HeadConfig.Closed, async_task=False)
-
-        self.left_arm_close(async_task=False)
-        self.right_arm_close(async_task=False)
-        self.snowplow_close(async_task=False)
-        self.bumper_close(async_task=False)
-        sleep(1.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

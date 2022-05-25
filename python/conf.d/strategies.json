@@ -1,271 +1,16 @@
 {
   "goals": [
     {
-      "name": "reverse_pattern",
+      "name": "pal_starting_sleep",
       "position": {
-        "x": 1100,
-        "y": 1350
-      },
-      "actions": [
-        {
-          "fct": "goto",
-          "args": {
-            "x": 1830,
-            "y": 1350
-          }
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 1830,
-            "y": 1130
-          }
-        },
-        {
-          "fct": "recalibration",
-          "handler": "robot",
-          "args": {
-            "x": "True",
-            "y": "False",
-            "y_sensor": "left",
-            "side_x": "True"
-          }
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 1830,
-            "y": 1130
-          }
-        },
-        {
-          "fct": "goth",
-          "args": {
-            "theta": "0"
-          }
-        },
-        {
-          "fct": "reverse_pattern",
-          "handler": "robot",
-          "score": 25
-        }
-      ]
-    },
-    {
-      "name": "pmi_starting_sleep",
-      "position": {
-        "x": 550,
-        "y": 250
+        "x": 450,
+        "y": 1175
       },
       "actions": [
         {
           "fct": "sleep",
           "args": {
-            "time": 1
-          }
-        }
-      ]
-    },
-    {
-      "name": "galery_starting_samples",
-      "position": {
-        "x": 675,
-        "y": 600
-      },
-      "actions": [
-        {
-          "fct": "collect_middle",
-          "handler": "robot",
-          "score": 9
-        }
-      ]
-    },
-    {
-      "name": "push_starting_samples",
-      "position": {
-        "x": 300,
-        "y": 810
-      },
-      "actions": [
-        {
-          "fct": "goto",
-          "args": {
-            "x": 300,
-            "y": 1170
-          }
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 675,
-            "y": 1170
-          }
-        },
-        {
-          "fct": "goth",
-          "args": {
-            "theta": "-pi/2"
-          }
-        },
-        {
-          "fct": "snowplow_open",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 675,
-            "y": 215
-          },
-          "score": 3
-        },
-        {
-          "fct": "snowplow_close",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 675,
-            "y": 400
-          }
-        }
-      ]
-    },
-    {
-      "name": "indiana_jones",
-      "position": {
-        "x": 1550,
-        "y": 450
-      },
-      "theta": "-pi/4",
-      "actions": [
-        {
-          "fct": "indiana_jones",
-          "handler": "robot",
-          "score": 15
-        }
-      ]
-    },
-    {
-      "name": "statuette",
-      "position": {
-        "x": 250,
-        "y": 225
-      },
-      "actions": [
-        {
-          "fct": "recalibration",
-          "handler": "robot",
-          "args": {
-            "x": "False",
-            "y": "True"
-          }
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 250,
-            "y": 225
-          }
-        },
-        {
-          "fct": "goth",
-          "args": {
-            "theta": "pi"
-          }
-        },
-        {
-          "fct": "statuette",
-          "handler": "robot",
-          "score": 20
-        }
-      ]
-    },
-    {
-      "name": "drop_start",
-      "position": {
-        "x": 350,
-        "y": 550
-      },
-      "actions": [
-        {
-          "fct": "drop_start",
-          "handler": "robot",
-          "score": 2
-        }
-      ]
-    },
-    {
-      "name": "drop_galery",
-      "position": {
-        "x": 300,
-        "y": 920
-      },
-      "actions": [
-        {
-          "fct": "drop_galery",
-          "handler": "robot",
-          "score": 6
-        }
-      ]
-    },
-    {
-      "name": "lift_sample",
-      "position": {
-        "x": 300,
-        "y": 200
-      },
-      "actions": [
-        {
-          "fct": "lift_sample",
-          "handler": "robot",
-          "score": 4
-        }
-      ]
-    },
-    {
-      "name": "collect_search_site",
-      "position": {
-        "x": 1360,
-        "y": 1340
-      },
-      "theta": "-pi/2",
-      "actions": [
-        {
-          "fct": "collect_search_site",
-          "handler": "robot",
-          "score": 5
-        }
-      ]
-    },
-    {
-      "name": "end_pos_pal",
-      "position": {
-        "x": 350,
-        "y": 550
-      },
-      "actions": [
-        {
-          "fct": "goto",
-          "args": {
-            "x": 1175,
-            "y": 1000
-          }
-        }
-      ]
-    },
-    {
-      "name": "end_pos_pmi",
-      "position": {
-        "x": 1550,
-        "y": 1200
-      },
-      "actions": [
-        {
-          "fct": "sleep",
-          "args": {
-            "time": 1
+            "time": 5
           }
         }
       ]
@@ -273,43 +18,9 @@
   ],
   "strategies": [
     {
-      "name": "normal_pmi",
+      "name": "pal",
       "goals": [
-        "pmi_starting_sleep",
-        "galery_starting_samples",
-        "reverse_pattern",
-        "end_pos_pmi"
-      ],
-      "available": ["pmi"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "normal_pal",
-      "goals": [
-        "indiana_jones",
-        "drop_galery",
-        "statuette",
-        "lift_sample",
-        "end_pos_pal"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "homologation_pmi",
-      "goals": [
-        "pmi_starting_sleep",
-        "push_starting_samples"
-      ],
-      "available": ["pmi"],
-      "use_pathfinding": false
-    },
-    {
-
-      "name": "homologation_pal",
-      "goals": [
-        "indiana_jones",
-        "drop_start"
+        "pal_starting_sleep"
       ],
       "available": ["pal"],
       "use_pathfinding": false
@@ -317,14 +28,9 @@
   ],
   "starting_pos": {
     "pal": {
-      "x": 850,
-      "y": 250,
-      "theta": "pi/2"
-    },
-    "pmi": {
-      "x": 550,
-      "y": 250,
-      "theta": "pi/2"
+      "x": 225,
+      "y": 1175,
+      "theta": "0"
     }
   }
 }

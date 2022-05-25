@@ -215,12 +215,12 @@ class AI(Service):
             self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
 
-            self.robot.set_theta(pi/2)
-            self.recalibration(x=False, y=True, x_sensor='left', init=True)
+            self.robot.set_theta(0)
+            self.recalibration(x=True, y=False, y_sensor='right', init=True)
             with self.lock:
-                x = self.trajman.get_position()['x']
-                self.goto(x=x, y=600, avoid=False, async_task=False)
-                self.goto(x=self.goals.starting_position.x, y=600, avoid=False, async_task=False)
+                y = self.trajman.get_position()['y']
+                self.goto(x=600, y=y, avoid=False, async_task=False)
+                self.goto(x=600, y=self.goals.starting_position.y, avoid=False, async_task=False)
                 self.goth(theta=self.goals.starting_theta, async_task=False)
                 self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False, async_task=False)
         else:
@@ -233,10 +233,6 @@ class AI(Service):
                     theta=self.goals.starting_theta
                 )
             self.trajman.unfree()
-
-        if ROBOT == 'pal':
-            self.robot.pumps_get(ids='4', async_task=False)
-            self.robot.set_elevator_config(arm=2, config=2, async_task=False)
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)

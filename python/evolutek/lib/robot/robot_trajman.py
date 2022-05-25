@@ -377,7 +377,7 @@ def recalibration(self,
 
     # Init pos if necessary
     if init:
-        self.set_theta(pi/2)
+        self.set_theta(0)
         self.trajman.set_x(1000)
         self.trajman.set_y(1000)
         sleep(0.1)
