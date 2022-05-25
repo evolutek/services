@@ -103,7 +103,7 @@ def indiana_jones(self):
     sleep(0.5)
     status = self.goto_avoid(x=default_x, y=default_y, async_task=False)
     #if RobotStatus.get_status(status) != RobotStatus.Reached:
-     #   return RobotStatus.return_status(RobotStatus.get_status(status))
+    #   return RobotStatus.return_status(RobotStatus.get_status(status))
     self.set_elevator_config(arm=2, config=5, async_task=False)  # Elevator to store statuette
     self.pumps_get(ids="4", async_task=False)  # Pump the pump 4
     self.set_elevator_config(arm=2, config=5, async_task=False)
@@ -116,11 +116,10 @@ def indiana_jones(self):
     self.set_head_config(arm=2, config=1, async_task=False)  # Head down
     sleep(1)
     self.set_elevator_config(arm=2, config=0, async_task=False)  # Elevator to closed
-    sleep(1)
-    self.move_trsl(acc=240, dec=200, dest=100, maxspeed=500, sens=1)  # Advance to 120
-    sleep(1)
+    sleep(0.2)
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
-    sleep(1)
+    self.move_trsl(acc=240, dec=200, dest=100, maxspeed=500, sens=1)  # Advance to 120
+    sleep(0.5)
     self.set_elevator_config(arm=2, config=3, async_task=False)  # Elevator to gallery
     sleep(0.5)
     self.set_elevator_config(arm=2, config=0, async_task=False)  # Elevator to closed
@@ -138,7 +137,7 @@ def indiana_jones(self):
     sleep(0.2)
     status = self.goto_avoid(x=1400, y=600, async_task=False)
     #if RobotStatus.get_status(status) != RobotStatus.Reached:
-     #   return RobotStatus.return_status(RobotStatus.get_status(status))
+    #   return RobotStatus.return_status(RobotStatus.get_status(status))
     self.snowplow_close(async_task=False)
     self.bumper_close(async_task=False)
 
