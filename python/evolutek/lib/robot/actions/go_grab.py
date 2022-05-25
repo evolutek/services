@@ -38,7 +38,7 @@ def go_grab_one(self):
     dest_point = Point(x=cake[0][0], y=cake[0][1])
     
     # Aller devant le point
-    status = self.goth(robot_point.compute_angle(dest_point), async_task=False, timeout=10)
+    status = self.goth(robot_point.compute_angle(dest_point), async_task=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
         
