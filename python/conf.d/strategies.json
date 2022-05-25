@@ -58,9 +58,9 @@
       "name": "pal_go_back",
       "position": {
         "x": 225,
-        "y": 1175,
-        "theta": 0
-      }
+        "y": 1175
+      },
+      "theta": 0
     }
   ],
   "strategies": [
@@ -88,8 +88,10 @@
       "theta": "0"
     }
   },
-  "critical_goal": {
-    "goal": "go_back",
-    "timeout": 42
+  "critical_goals": {
+    "pal": {
+      "goal": "pal_go_back",
+      "timeout": 42
+    }
   }
 }

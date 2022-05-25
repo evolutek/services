@@ -139,6 +139,7 @@ class AI(Service):
         while True:
             if self.check_abort() != RobotStatus.Ok:
                 print('[AI] Stopping wait until')
+                return RobotStatus.return_status(RobotStatus.Aborted)
             sleep(0.5)
             print('[AI] Waiting until')
 
