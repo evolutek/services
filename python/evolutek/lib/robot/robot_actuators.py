@@ -328,27 +328,35 @@ def set_elevator_config(self, arm, config):
     return self.actuators.ax_move(arm.get_elevator_id(), ELEVATORS[arm][config])
 
 def get_pattern(self):
-    all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
-    result = self.actuators.read_sensors_pattern()
+    #all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
+    masurement= self.actuators.read_sensors_pattern()
     result = [ Color[r] for r in result ]
+    list_of_pattern = [None] * 7
 
-    #result =[]
+    color = Color.Yellow if self.side else Color.Purple
+    if not self.side:
+       result[0] , result[1] = result[1], result[0]
+    
+    if result[0] == Color.Red:
+        list_of_pattern[0] = True
+        list_of_pattern[1] = True
+        list_of_pattern[2] = False
+    elif result[0] == color:
+        list_of_pattern[0] = False
+        list_of_pattern[1] = True
+        list_of_pattern[2] = True
 
-    #for sensor in self.actuators.sensor_calc:
-        #result.append(self.actuators.sensor_calc[sensor])
-        #print(self.actuators.sensor_calc[sensor])
+    if result[1] != Color.Unknown:
+        if result[1] == color:
+            list_of_pattern[3] = True
+            list_of_pattern[4] = False
+            list_of_pattern[5] = False
+            list_of_pattern[6] = True
+        else:
+            list_of_pattern[3] = False
+            list_of_pattern[4] = True
+            list_of_pattern[5] = True
+            list_of_pattern[6] = False
+    
+    return list_of_pattern
 
-    if (result[0], result[1]) == (Color.Red, Color.Purple) or (Color.Purple, Color.Red) == (result[0], result[1]):
-        return 1
-    elif (result[0], result[1]) == (Color.Yellow, Color.Yellow) or (Color.Yellow, Color.Purple) == (result[0], result[1]):
-        return 2
-    elif (result[0], result[1]) == (Color.Red, Color.Yellow) or (Color.Yellow, Color.Red) == (result[0], result[1]):
-        return 3
-    elif (result[0], result[1]) == (Color.Yellow, Color.Purple) or (Color.Purple, Color.Purple) == (result[0], result[1]):
-        return 4
-    elif (result[0], result[1]) == (Color.Red, Color.Unknown):
-        return 5
-    elif (result[0], result[1]) == (Color.Yellow, Color.Unknown):
-        return 6
-    else:
-        return 7
