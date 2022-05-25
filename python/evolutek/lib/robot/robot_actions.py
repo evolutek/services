@@ -235,10 +235,11 @@ def reverse_pattern(self):
     self.set_elevator_config(arm=1, config = 0, async_task=False)
     self.set_elevator_config(arm=3, config = 0, async_task=False)
     sleep(0.5)
-    self.goto_avoid(1650, coords[0] - 180, async_task = False)
+    self.goto_avoid(1650, self.trajman.get_position()['y'], async_task = False)
     sleep(1)
     while(len(coords) != 0):
         self.goto_avoid(1830, coords[0], async_task=False)
+        self.goth(1.57, async_task=False)
         my_y = self.trajman.get_position()['y']
         if (my_y >= (coords[0] - 5) and my_y <= (coords[0] + 5)):
             open_arm(self.side, self)
