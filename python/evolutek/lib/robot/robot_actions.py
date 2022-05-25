@@ -39,9 +39,10 @@ def drop_carrying(self):
     self.set_elevator_config(arm=2, config=2, async_task=False)  # Elevator to mid
     self.set_head_config(arm=2, config=0, async_task=False)   # Head Closed
     self.pumps_get(ids="2", async_task=False)   # Pump the pump 2
-    self.pumps_drop(ids="4", async_task=False)  # Drop the pumps
     sleep(0.5)
     self.set_elevator_config(arm=2, config=5, async_task=False)  # Elevator to store statuette
+    sleep(0.1)
+    self.pumps_drop(ids="4", async_task=False)  # Drop the pumps
     sleep(1)
     self.set_head_config(arm=2, config=1, async_task=False)  # Head Down
     self.set_elevator_config(arm=2, config=2, async_task=False)  # Elevator to mid
