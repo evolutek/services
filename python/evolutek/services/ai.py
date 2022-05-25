@@ -337,7 +337,7 @@ class AI(Service):
             use_pathfinding = self.use_pathfinding
 
             if self.color != self.color1:
-                destination = Point(destination.x, 3000 - destination.y)
+                destination = Point(destination.x, 2000 - destination.y)
 
         if Point(dict=self.trajman.get_position()).dist(destination) <= DELTA_POS:
             print('[AI] Already on goal position')

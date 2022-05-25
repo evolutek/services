@@ -16,18 +16,18 @@ class Stack:
         return ("Stack %d at pos (%d, %d) with color %s" % (self.id, self.pos.x, self.pos.y, self.color.name))
 
 STACKS = [
-    Stack(2, 225, 450 + 125, Color.Pink),
-    Stack(2, 225, 450 + 125 + 200, Color.Yellow),
-    Stack(1, 225, 3000 - 450 - 125 - 200, Color.Yellow),
-    Stack(1, 225, 3000 - 450 - 125, Color.Pink),
-    Stack(2, 1000 - 275, 1125, Color.Brown),
-    Stack(1, 1000 - 275, 3000 - 1125, Color.Brown),
-    Stack(3, 1000 + 275, 1125, Color.Brown),
-    Stack(4, 1000 + 275, 3000 - 1125, Color.Brown),
-    Stack(3, 2000 - 225, 450 + 125, Color.Pink),
-    Stack(3, 2000 - 225, 450 + 125 + 200, Color.Yellow),
-    Stack(4, 2000 - 225, 3000 - 450 - 125 - 200, Color.Yellow),
-    Stack(4, 2000 - 225, 3000 - 450 - 125, Color.Pink)
+    Stack(1, 575, 225, Color.Pink),
+    Stack(1, 775, 225, Color.Yellow),
+    Stack(1, 1125, 725, Color.Brown),
+    Stack(2, 2425, 225, Color.Pink),
+    Stack(2, 2225, 225, Color.Yellow),
+    Stack(2, 1875, 725, Color.Brown),
+    Stack(3, 2425, 1775, Color.Pink),
+    Stack(3, 2225, 1775, Color.Yellow),
+    Stack(3, 1875, 1275, Color.Brown),
+    Stack(4, 575, 1775, Color.Pink),
+    Stack(4, 775, 1775, Color.Yellow),
+    Stack(4, 1125, 1275, Color.Brown)
 ]
 
 class Zone:
@@ -41,11 +41,11 @@ class Zone:
         return ("Zone %s with center (%d, %d)" % (self.id, self.center.x, self.center.y))
 
 ZONES = [
-    # Zone('B', 0, 450, 450+125+200+125, 450+125+200+125+450),
-    Zone('A', 0, 450, 3000-450, 3000),
-    Zone('C', 450+50, 450+50+450, 0, 450),
-    Zone('E', 2000-450, 2000, 1500+150, 1500+150+450),
-    Zone('D', 2000-450, 2000, 0, 450)
+    Zone('A', 0, 450, 0, 450),
+    Zone('B', 1650, 2100, 0, 450),
+    Zone('C', 2550, 3000, 500, 950),
+    Zone('D', 2550, 3000, 1550, 2000),
+    Zone('E', 900, 1350, 1550, 2000)
 ]
 
 def check_status(*args):
