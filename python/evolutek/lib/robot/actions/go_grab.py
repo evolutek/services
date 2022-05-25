@@ -14,7 +14,9 @@ class Stack:
 
     def __str__(self):
         return ("Stack %d at pos (%d, %d) with color %s" % (self.id, self.pos.x, self.pos.y, self.color.name))
-
+    
+    def to_dict(self):
+        return {'x':self.pos.x, 'y':self.pos.y}
 STACKS = [
     Stack(1, 575, 225, Color.Pink),
     Stack(1, 775, 225, Color.Yellow),
@@ -44,8 +46,8 @@ ZONES = [
     Zone('A', 0, 450, 0, 450),
     Zone('B', 1650, 2100, 0, 450),
     Zone('C', 2550, 3000, 500, 950),
-    Zone('D', 2550, 3000, 1550, 2000),
-    Zone('E', 900, 1350, 1550, 2000)
+    Zone('E', 900, 1350, 1550, 2000),
+    Zone('D', 2550, 3000, 1550, 2000)
 ]
 
 def check_status(*args):

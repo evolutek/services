@@ -76,7 +76,7 @@ class Actuators(Service):
             [1, 2]
         )
 
-        self.servos = ServoHandler({
+        """self.servos = ServoHandler({
             0: [
                 50,
                 180
@@ -85,12 +85,12 @@ class Actuators(Service):
                 50,
                 180
             ]
-        })
+        })"""
 
         self.all_actuators = [
             self.recal_sensors,
             self.axs,
-            self.servos
+            #self.servos
         ]
 
         self.is_initialized = True
