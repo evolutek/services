@@ -68,7 +68,8 @@ class Robot(Service):
     reverse_pattern = Service.action(robot_actions.reverse_pattern)
     indiana_jones = Service.action(robot_actions.indiana_jones)
     statuette = Service.action(robot_actions.statuette)
-    lif_sample = Service.action(robot_actions.lift_sample)
+    lift_sample = Service.action(robot_actions.lift_sample)
+    place_under = Service.action(robot_actions.place_under)
 
     def __init__(self):
 
