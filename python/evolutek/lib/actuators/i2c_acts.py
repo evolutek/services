@@ -34,7 +34,7 @@ class I2CAct(Component):
 
         self.min_duty = int((self.min_pulse * self.channel.frequency) / 1000000 * 0xFFFF)
         max_duty = (self.max_pulse * self.channel.frequency) / 1000000 * 0xFFFF
-        self.duty_range = int(max_duty - self._min_duty)
+        self.duty_range = int(max_duty - self.min_duty)
 
         if self.type == I2CActType.ESC:
 
@@ -45,7 +45,7 @@ class I2CAct(Component):
 
             # Initialize ESC properly
             self.set_speed(self.esc_variation.value)
-            sleep(1)    # CONF TIME to check
+            sleep(5)    # CONF TIME to check
             self.set_speed(0.0)
 
         return True
@@ -53,18 +53,18 @@ class I2CAct(Component):
     def __str__(self):
         s = "----------\n"
         s += "%s: %d\n" % (self.name, self.id)
-        s += "Min/Max pulse: (%d, %d)" % (self.min_pulse, self.max_pulse)
-        s += "Max range: %f" % self.max_range
-        if self.type == I2CActType.Servo:
-            s += "Angle: %f" % self.get_angle()
-        elif self.type == I2CAct.ESC:
-            s += "ESC variation: %s" % self.esc_variation.name
-            s += "Speed: %f%" % self.get_speed * 100.0
+        s += "Min/Max pulse: (%d, %d)\n" % (self.min_pulse, self.max_pulse)
+        s += "Max range: %f\n" % self.max_range
+        #if self.type == I2CActType.Servo:
+            #s += "Angle: %f\n" % self.get_angle()
+        if self.type == I2CActType.ESC:
+            s += "ESC variation: %s\n" % self.esc_variation.name
+            #s += "Speed: %f\n" % self.get_speed() * 100.0
         s += "----------"
         return s
 
     def free(self):
-        self.channel.duty_cycle = 0.0
+        self.channel.duty_cycle = 0
 
     @property
     def fraction(self) -> Optional[float]:
@@ -141,3 +141,9 @@ class I2CActsHandler(ComponentsHolder):
             print('[%s] Failed to init PCA9685' % self.name)
             return False
         return True
+
+    def free_all(self):
+        for id in self.components:
+            if self.components[id] is None:
+                continue
+            self.components[id].free()
