@@ -16,10 +16,22 @@
           "handler": "robot"
         },
         {
+          "fct": "goto_random",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto_random",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto_random",
+          "handler": "robot"
+        },
+        {
           "fct": "goto",
           "args": {
             "x": 225,
-            "y": 1175
+            "y": 1125
           }
         },
         {
@@ -72,7 +84,7 @@
   "starting_pos": {
     "pal": {
       "x": 225,
-      "y": 1175,
+      "y": 1125,
       "theta": "0"
     }
   },

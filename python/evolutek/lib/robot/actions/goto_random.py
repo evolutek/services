@@ -2,7 +2,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 from random import randint
 
 MIN_X = 600
-MAX_X = 2400
+MAX_X = 1400
 MIN_Y = 600
 MAX_Y = 2400
 
