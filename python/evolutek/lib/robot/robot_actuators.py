@@ -330,15 +330,11 @@ def set_elevator_config(self, arm, config):
     return self.actuators.ax_move(arm.get_elevator_id(), ELEVATORS[arm][config])
 
 def get_pattern(self):
-    #all_combi = [(Color.Red, Color.Purple), (Color.Yellow, Color.Yellow), (Color.Red, Color.Yellow), (Color.Yellow, Color.Purple)]
-    masurement= self.actuators.read_sensors_pattern()
-    result = [ Color[r] for r in masurement ]
+    measurement= self.actuators.read_sensors_pattern()
+    result = [ Color[r] for r in measurement ]
     list_of_pattern = []
-
     color = Color.Yellow if self.side else Color.Purple
-    if not self.side:
-       result[0] , result[1] = result[1], result[0]
-    
+
     if result[0] == Color.Red:
         list_of_pattern.append(667.5)
         list_of_pattern.append(852.5)
@@ -359,6 +355,12 @@ def get_pattern(self):
             list_of_pattern.append(1407.5)
             list_of_pattern.append(1592.5)
             #list_of_pattern[6] = False
-    
+    else:
+        # First is already down
+        list_of_pattern.append(1407.5)
+        list_of_pattern.append(1592.5)
+        list_of_pattern.append(1777.5)
+
+
     return list_of_pattern
 

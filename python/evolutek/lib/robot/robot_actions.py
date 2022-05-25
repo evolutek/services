@@ -170,7 +170,6 @@ def reverse_pattern(self):
     self.move_trsl(10, 150, 150, 100, 1)
     sleep(0.5)
     self.set_elevator_config(arm=1, config=4, async_task=False)
-    sleep(1)
     self.set_elevator_config(arm=3, config=4, async_task=False)
     sleep(1)
     """
@@ -225,7 +224,7 @@ def reverse_pattern(self):
         sleep(1)
         arm_close(async_task=False)
         sleep(1)
-        
+
         #plot -= 1
         pos = self.trajman.get_position()["y"] - 185
         self.goto_avoid(1830, pos, async_task=False)
@@ -235,16 +234,18 @@ def reverse_pattern(self):
     self.set_elevator_config(arm=1, config = 0, async_task=False)
     self.set_elevator_config(arm=3, config = 0, async_task=False)
     sleep(0.5)
-    self.goto_avoid(1650, self.trajman.get_position()['y'], async_task = False)
+    my_y = self.trajman.get_position()['y']
+    if not self.side: my_y = 3000 - my_y
+    self.goto_avoid(1650, my_y, async_task = False)
     sleep(1)
+
     while(len(coords) != 0):
         self.goto_avoid(1830, coords[0], async_task=False)
         self.goth(1.57, async_task=False)
-        my_y = self.trajman.get_position()['y']
-        if (my_y >= (coords[0] - 5) and my_y <= (coords[0] + 5)):
-            open_arm(self.side, self)
-            coords.pop(0)
-    #if patterns[pattern][plot]:
+        open_arm(self.side, self)
+        coords.pop(0)
+
+    # #if patterns[pattern][plot]:
     #    sleep(1)
     #    arm_open(async_task=False)
     #    sleep(1)
