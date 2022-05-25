@@ -13,16 +13,16 @@ from time import sleep
 """
 
 # Distance between the glass of the sensor and the side of the robot
-DIST_SIDE = 14
+DIST_SIDE = 15
 
 # The minimum measurable distance for the sensor is 100mm
-DIST_MIN = 86 + DIST_SIDE
+DIST_MIN = 85 + DIST_SIDE
 # The maximum measurable distance for the sensor is 2500mm
-DIST_MAX = 1236 + DIST_SIDE
+DIST_MAX = 1150 + DIST_SIDE
 
 DIST_1 = 100 + DIST_SIDE
-DIST_2 = (1250 + 100)/2  + DIST_SIDE
-DIST_3 = 1250 + DIST_SIDE
+DIST_2 = 500 + DIST_SIDE
+DIST_3 = 1100 + DIST_SIDE
 def wait():
     input("Press enter to continue\n")
 
