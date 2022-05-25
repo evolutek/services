@@ -16,7 +16,7 @@ from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.sensors.try_ohm_sensors import TryOhmSensors
-from evolutek.lib.actuators.i2c_acts.py import I2CActsHandler, I2CActType, ESCVariation
+from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 
 # Other imports
 from evolutek.lib.settings import ROBOT
@@ -76,17 +76,17 @@ class Actuators(Service):
             [1, 2]
         )
 
-        servos = {
-            0: [180],
-            15: [180]
-        }
+        #servos = {
+        #    0: [180],
+        #    15: [180]
+        #}
 
-        self.i2c_acts = I2CActsHandler(servos, frequency=50)
+        #self.i2c_acts = I2CActsHandler(servos, frequency=50)
 
         self.all_actuators = [
             self.recal_sensors,
             self.axs,
-            self.i2c_acts
+            #self.i2c_acts
         ]
 
         self.is_initialized = True

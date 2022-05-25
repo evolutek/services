@@ -19,6 +19,7 @@ class ESCVariation(Enum):
 
 class I2CAct(Component):
     def __init__(self, id_channel: int, type: I2CActType, max_range: float = 180.0, min_pulse: int = 750, max_pulse: int = 2250, esc_variation=None):
+        print(type)
         self.type = type
         self.min_pulse = min_pulse
         self.max_pulse = max_pulse

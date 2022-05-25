@@ -33,8 +33,10 @@ def adjust_gains(w1, w2, avg):
     side = measure1 > measure2
     if sensor == 1: side = not side
     print(f"### {'Right' if side else 'Left'} drift")
+    print(f"Diff: {measure1-measure2}")
 
     adjust = float(input("Scale of the adjustment: "))/1000
+    print("Received: ", adjust*1000)
     if not side: adjust *= -1
     gain = w1/avg + adjust
     print(f"New gain: {gain}")
@@ -44,7 +46,7 @@ def adjust_gains(w1, w2, avg):
     sleep(dist/SPEED + SPEED/ACC + 0.5)
 
     w1, w2 = avg*gain, avg*(2-gain)
-    print(f"w1={w1} w2={w2}")
+    print(f"w1={w1} w2={w2}\n\n")
 
     cs.trajman[robot].set_wheels_diameter(w1=w1, w2=w2)
     return w1, w2
