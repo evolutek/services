@@ -15,18 +15,18 @@ class Stack:
         return ("Stack %d at pos (%d, %d) with color %s" % (self.id, self.pos.x, self.pos.y, self.color.name))
 
 STACKS = [
-    Stack(2, Point(225, 450 + 125), Color.Pink),
-    Stack(2, Point(225, 450 + 125 + 200), Color.Yellow),
-    Stack(1, Point(225, 3000 - 450 - 125 - 200), Color.Yellow),
-    Stack(1, Point(225, 3000 - 450 - 125), Color.Pink),
-    Stack(2, Point(1000 - 275, 1125), Color.Marron),
-    Stack(1, Point(1000 - 275, 3000 - 1125), Color.Marron),
-    Stack(3, Point(1000 + 275, 1125), Color.Marron),
-    Stack(4, Point(1000 + 275, 3000 - 1125), Color.Marron),
-    Stack(3, Point(2000 - 225, 450 + 125), Color.Pink),
-    Stack(3, Point(2000 - 225, 450 + 125 + 200), Color.Yellow),
-    Stack(4, Point(2000 - 225, 3000 - 450 - 125 - 200), Color.Yellow),
-    Stack(4, Point(2000 - 225, 3000 - 450 - 125), Color.Pink)
+    Stack(2, 225, 450 + 125, Color.Pink),
+    Stack(2, 225, 450 + 125 + 200, Color.Yellow),
+    Stack(1, 225, 3000 - 450 - 125 - 200, Color.Yellow),
+    Stack(1, 225, 3000 - 450 - 125, Color.Pink),
+    Stack(2, 1000 - 275, 1125, Color.Brown),
+    Stack(1, 1000 - 275, 3000 - 1125, Color.Brown),
+    Stack(3, 1000 + 275, 1125, Color.Brown),
+    Stack(4, 1000 + 275, 3000 - 1125, Color.Brown),
+    Stack(3, 2000 - 225, 450 + 125, Color.Pink),
+    Stack(3, 2000 - 225, 450 + 125 + 200, Color.Yellow),
+    Stack(4, 2000 - 225, 3000 - 450 - 125 - 200, Color.Yellow),
+    Stack(4, 2000 - 225, 3000 - 450 - 125, Color.Pink)
 ]
 
 class Zone:
@@ -40,11 +40,11 @@ class Zone:
         return ("Zone %s with center (%d, %d)" % (self.id, self.center.x, self.center.y))
 
 ZONES = [
-    Zone('B', (0, 450), (450+125+200+125, 450+125+200+125+450)),
-    Zone('A', (0, 450), (3000-450, 3000)),
-    Zone('C', (450+50, 450+50+450), (0, 450)),
-    Zone('E', (2000-450, 2000), (1500+150, 1500+150+450)),
-    Zone('D', (2000-450, 2000), (0, 450))
+    Zone('B', 0, 450, 450+125+200+125, 450+125+200+125+450),
+    Zone('A', 0, 450, 3000-450, 3000),
+    Zone('C', 450+50, 450+50+450, 0, 450),
+    Zone('E', 2000-450, 2000, 1500+150, 1500+150+450),
+    Zone('D', 2000-450, 2000, 0, 450)
 ]
 
 
@@ -53,7 +53,7 @@ ZONES = [
 def roam_stacks(self):
     for stack in STACKS:
         print('[ROBOT] Going on stack: %s' % str(stack))
-        status = self.goto_avoid(**stack.to_dict() async_task=False, timeout=10)
+        status = self.goto_avoid(**stack.to_dict(), async_task=False, timeout=10)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.get_status(status))
         sleep(5)
@@ -112,7 +112,7 @@ def go_grab_one_stack(self):
 
 @if_enabled
 @async_task
-def go_grab_some_stack(self):
+def go_grab_some_stacks(self):
     for x in range(randint(len(STACKS))):
         status = self.go_grab_one(async_task=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
@@ -133,7 +133,7 @@ def go_drop_all(self):
         return RobotStatus.return_status(RobotStatus.get_status(status))
     
     # On va en zone
-    status = self.goto_avoid(x=dest_point.x, y=dest_point.y async_task=False, timeout=10)
+    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))    
     
