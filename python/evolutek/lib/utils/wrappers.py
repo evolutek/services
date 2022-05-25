@@ -53,24 +53,17 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
 
         global timeout_event
         timeout_event.clear()
-        r = method(*args, **kwargs)
+        method(*args, **kwargs)
 
         if RobotStatus.get_status(r) == RobotStatus.Disabled:
             return RobotStatus.return_status(RobotStatus.Disabled)
-
-        id = None
-        if r != None:
-            id = int(r)
 
         watchdog.reset()
 
         while True:
             if start_event.is_set():
-                if id is not None and ('id' not in start_event.data or id != int(start_event.data['id'])):
-                    start_event.clear()
-                else:
-                    watchdog.stop()
-                    break
+                watchdog.stop()
+                break
 
             if timeout_event.is_set():
                 return RobotStatus.return_status(RobotStatus.NotStarted)
@@ -80,10 +73,7 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
         status = None
         while True:
             if stop_event.is_set():
-                if id is not None and ('id' not in stop_event.data or id != int(stop_event.data['id'])):
-                    stop_event.clear()
-                else:
-                    break
+                break
 
             if callback is not None:
                 status =  callback()
