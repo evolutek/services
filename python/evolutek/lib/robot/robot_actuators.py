@@ -3,6 +3,7 @@ from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.task import async_task
 from evolutek.lib.utils.wrappers import if_enabled
+from time import sleep
 
 def check_status(*args):
     for stat in args:
@@ -41,10 +42,10 @@ def elevator_down(self):
 @if_enabled
 @async_task
 def grab_stack(self):
-    status1 = RobotStatus.get_status(clamp_open())
+    status1 = RobotStatus.get_status(self.clamp_open(async_task=False))
     sleep(0.5)
-    status2 = RobotStatus.get_status(elevator_down())
+    status2 = RobotStatus.get_status(self.elevator_down(async_task=False))
     sleep(0.5)
-    status3 = RobotStatus.get_status(clamp_close())
+    status3 = RobotStatus.get_status(self.clamp_close(async_task=False))
     sleep(0.5)
     return check_status(status1, status2, status3)
