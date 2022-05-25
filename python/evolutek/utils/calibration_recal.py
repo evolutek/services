@@ -2,6 +2,7 @@
 
 from evolutek.lib.gpio.gpio_factory import create_adc, AdcType
 from evolutek.lib.sensors.recal_sensors import RecalSensor
+from time import sleep
 
 """
  WARNING
@@ -84,7 +85,11 @@ def main():
     print(f"{side}_slope2 = {slope2}")
     print(f"{side}_intercept2 = {intercept2}")
 
-    print("Done!")
+    sensor.calibrate(slope1, intercept1, slope2, intercept2)
+    while True:
+        print(f"Measurement: {sensor.read(repetitions=10)}")
+        sleep(0.5)
+
 
 if __name__ == "__main__":
     main()
