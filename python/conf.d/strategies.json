@@ -6,15 +6,56 @@
         "x": 995,
         "y": 1360
       },
-      "theta": "pi/2"
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "place_under",
+          "handler": "robot"
+        }
+      ]
     },
     {
       "name": "reverse_pattern",
       "position": {
-        "x": 1830,
-        "y": 1130
+        "x": 1100,
+        "y": 1250
       },
-      "theta": 0
+      "actions": [
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1800,
+            "y": 1250
+          }
+        },
+        {
+          "fct": "recalibration",
+          "handler": "robot",
+          "args": {
+            "x": "True",
+            "y": "False",
+            "y_sensor": "left",
+            "side_x": "True"
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1830,
+            "y": 1130
+          }
+        },
+        {
+          "fct": "goth",
+          "args": {
+            "theta": 0
+          }
+        },
+        {
+          "fct": "reverse_pattern",
+          "handler": "robot"
+        }
+      ]
     },
     {
       "name": "pmi_starting_sleep",
@@ -26,7 +67,7 @@
         {
           "fct": "sleep",
           "args": {
-            "time": 2
+            "time": 1
           }
         }
       ]
@@ -66,9 +107,20 @@
           "fct": "goto",
           "args": {
             "x": 675,
-            "y": 400
+            "y": 215
           },
           "score": 3
+        },
+        {
+          "fct": "snowplow_close",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 675,
+            "y": 400
+          }
         }
       ]
     },
@@ -147,6 +199,13 @@
           }
         }
       ]
+    },
+    {
+      "name": "end_pos_pmi",
+      "position": {
+        "x": 1250,
+        "y": 850
+      }
     }
   ],
   "strategies": [
@@ -154,8 +213,10 @@
       "name": "normal_pmi",
       "goals": [
         "pmi_starting_sleep",
+        "push_starting_samples",
         "reverse_pattern",
-        "place_under"
+        "place_under",
+        "end_pos_pmi"
       ],
       "available": ["pmi"],
       "use_pathfinding": false

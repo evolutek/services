@@ -231,11 +231,7 @@ class AI(Service):
                 )
             self.trajman.unfree()
 
-        """
-        TODO: Remove or True
-        """
-
-        if ROBOT == 'pal'              or True:
+        if ROBOT == 'pal':
             self.robot.pumps_get(ids='4', async_task=False)
             self.robot.set_elevator_config(arm=2, config=2, async_task=False)
 
