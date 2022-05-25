@@ -53,7 +53,7 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
 
         global timeout_event
         timeout_event.clear()
-        method(*args, **kwargs)
+        r = method(*args, **kwargs)
 
         if RobotStatus.get_status(r) == RobotStatus.Disabled:
             return RobotStatus.return_status(RobotStatus.Disabled)
