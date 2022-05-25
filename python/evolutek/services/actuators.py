@@ -216,9 +216,9 @@ class Actuators(Service):
     ##########
     @Service.action
     def servo_set_angle(self, ids, angle):
-        if self.servo[int(ids)] == None:
+        if self.servos[int(ids)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        self.servo[int(ids)].set_angle(angle)
+        self.servos[int(ids)].set_angle(angle)
         return RobotStatus.return_status(RobotStatus.Done)
 
 def main():

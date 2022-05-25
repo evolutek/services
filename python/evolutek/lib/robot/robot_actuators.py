@@ -14,20 +14,20 @@ def clamp_open(self):
 @if_enabled
 @async_task
 def clamp_close(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 19))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 161))
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 25))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 155))
     return RobotStatus.return_status(RobotStatus.Done if status1 == RobotStatus.Done and status2 == RobotStatus.Done else RobotStatus.Failed)
 
 @if_enabled
 @async_task
 def elevator_up(self):
-    status1 = RobotStatus.get_status(self.actuators.ax_move(1, 777))
-    status2 = RobotStatus.get_status(self.actuators.ax_move(2, 511))
+    status1 = RobotStatus.get_status(self.actuators.ax_move(1, 512))
+    status2 = RobotStatus.get_status(self.actuators.ax_move(2, 512))
     return RobotStatus.return_status(RobotStatus.Done if status1 == RobotStatus.Done and status2 == RobotStatus.Done else RobotStatus.Failed)
 
 @if_enabled
 @async_task
 def elevator_down(self):
-    status1 = RobotStatus.get_status(self.actuators.ax_move(1, 512))
-    status2 = RobotStatus.get_status(self.actuators.ax_move(2, 246))
+    status1 = RobotStatus.get_status(self.actuators.ax_move(1, 775))
+    status2 = RobotStatus.get_status(self.actuators.ax_move(2, 180))
     return RobotStatus.return_status(RobotStatus.Done if status1 == RobotStatus.Done and status2 == RobotStatus.Done else RobotStatus.Failed)

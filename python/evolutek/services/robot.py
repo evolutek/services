@@ -6,6 +6,7 @@ from cellaserv.service import Event as CellaservEvent, Service
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
+import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
@@ -192,6 +193,7 @@ class Robot(Service):
 
     @Service.action
     def disable(self):
+        self.clamp_open(async_task=False)
         self.disabled.set()
         self.need_to_abort.set()
 
@@ -201,6 +203,10 @@ class Robot(Service):
             return
 
         self.enable()
+        self.clamp_open(async_task=False)
+        sleep(0.5)
+        self.elevator_down(async_task=False)
+        sleep(1)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
