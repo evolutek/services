@@ -205,20 +205,14 @@ def reverse_pattern(self):
 
     while self.trajman.get_position()['y'] > 680:
         if patterns[pattern][plot]:
-
-
-
-
-
-
-
             sleep(1)
             arm_open(async_task=False)
             sleep(1)
             arm_close(async_task=False)
             sleep(1)
         plot -= 1
-        self.goto_avoid(1830, self.trajman.get_position()['y']-185, async_task=False)
+        pos = self.trajman.get_position()["y"] - 185
+        self.goto_avoid(1830, pos, async_task=False)
 
 
     if patterns[pattern][plot]:
