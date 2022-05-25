@@ -46,7 +46,7 @@ class TCS34725(Component):
         rgb -= self.calibration
         color = Color.get_closest_color(rgb, self.color_to_detect if self.color_to_detect is not None else Color.__members__.values())
 
-        print(f"[{self.name}] Sensor {self.id} detect color with {color.value} with dist {dist}")
+        print(f"[{self.name}] Sensor {self.id} detect color {color.name} with {color.value}")
         return color
 
     def __str__(self):

@@ -54,6 +54,8 @@ class RGBColor:
 
     def get_rgb_percentages(self):
         sum = self.r + self.g + self.b
+        if sum == 0:
+            return (0, 0, 0)
         return (self.r / sum, self.g / sum, self.b / sum)
 
     @staticmethod
@@ -104,12 +106,10 @@ class Color(Enum):
     def get_closest_color(rgb_color, colors):
         closest = None
         min_dist = None
-
         for color in colors:
-            dist = RGBColor.compute_dist(rgb_color, colors)
+            dist = RGBColor.compute_dist(rgb_color, color.value)
             if min_dist is None or dist < min_dist:
                 min_dist = dist
                 closest = color
-
-        return color
+        return closest
 
