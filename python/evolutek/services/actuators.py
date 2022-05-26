@@ -162,7 +162,7 @@ class Actuators(Service):
     @Service.action
     def read_sensors_pattern(self):
         values = self.sensors_calc.read_all_sensors()
-        return [ value.name for value in values.values() ] 
+        return [ value.name for value in values.values() ]
 
     @Service.action
     def print_status(self):
@@ -202,7 +202,7 @@ class Actuators(Service):
     # PUMPS #
     #########
     @Service.action
-    def pumps_drop(self, ids):
+    def pumps_drop(self, ids, use_ev=True):
         if isinstance(ids, str):
             ids = ids.split(",")
 
@@ -215,7 +215,7 @@ class Actuators(Service):
         if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.pumps.drops(_ids)
+        self.pumps.drops(_ids, use_ev)
         return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action

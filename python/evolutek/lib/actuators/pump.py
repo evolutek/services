@@ -11,9 +11,9 @@ class Pump(Component):
         self.pump_gpio.write(True)
         self.ev_gpio.write(False)
 
-    def drop(self):
+    def drop(self, use_ev=True):
         self.pump_gpio.write(False)
-        self.ev_gpio.write(True)
+        if use_ev: self.ev_gpio.write(True)
 
     def stop_ev(self):
         self.ev_gpio.write(False)
@@ -45,11 +45,11 @@ class PumpController(ComponentsHolder):
                 continue
             self.components[id].get()
 
-    def drops(self, ids):
+    def drops(self, ids, use_ev=True):
         for id in ids:
             if self.components[id] is None:
                 continue
-            self.components[id].drop()
+            self.components[id].drop(use_ev)
 
     def stop_evs(self, ids):
         for id in ids:
