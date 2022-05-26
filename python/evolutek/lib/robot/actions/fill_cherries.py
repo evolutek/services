@@ -8,13 +8,15 @@ def fill_n_cherries(self, n):
     except:
         return RobotStatus.return_status(RobotStatusFailed)
     print('[ROBOT] Turning arm out on !')
+    if RobotStatus.get_status(self.push_drop(async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
     if RobotStatus.get_status(self.extend_right_vacuum(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
     while n > 0:
         print('[ROBOT] Vacuuming a cherry !')
         if RobotStatus.get_status(self.turbine_on(async_task=False)) != RobotStatus.Done:
             return RobotStatus.return_status(RobotStatus.Failed)
-        sleep(2)
+        sleep(1)
         if RobotStatus.get_status(self.turbine_off(async_task=False)) != RobotStatus.Done:
             return RobotStatus.return_status(RobotStatus.Failed)
         sleep(2)
@@ -28,4 +30,4 @@ def fill_n_cherries(self, n):
 @if_enabled
 @async_task
 def fill_all_cherries(self):
-    return self.fill_n_cherries(10)
+    return self.fill_n_cherries(10, async_task=False)

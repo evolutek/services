@@ -1,11 +1,5 @@
 from evolutek.lib.robot.robot_actions_imports import *
 
-def check_status(*args):
-    for stat in args:
-        if stat != RobotStatus.Done:
-            return RobotStatus.return_status(RobotStatus.Failed)
-    return RobotStatus.return_status(RobotStatus.Done)
-
 @if_enabled
 @async_task
 def empty_n_cherries(self, n):
@@ -34,4 +28,4 @@ def empty_n_cherries(self, n):
 @if_enabled
 @async_task
 def empty_all_cherries(self):
-    return self.empty_n_cherries(self.cherry_count)
+    return self.empty_n_cherries(self.cherry_count, async_task=False)

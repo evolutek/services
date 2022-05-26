@@ -16,8 +16,8 @@ def check_status(*args):
 @if_enabled
 @async_task
 def canon_on(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0.4))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0.4))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0.25))
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0.25))
     return check_status(status1, status2)
 
 @if_enabled
@@ -105,7 +105,7 @@ def push_tank(self):
 @if_enabled
 @async_task
 def push_drop(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 150)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 172)))
 
 @if_enabled
 @async_task
