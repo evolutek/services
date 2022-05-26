@@ -81,15 +81,15 @@ def clamp_open(self):
 @if_enabled
 @async_task
 def clamp_open_half(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 9.6))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 170.3))
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 12))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 168))
     return check_status(status1, status2)
 
 @if_enabled
 @async_task
 def clamp_close(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 19.3))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 160.7))
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 30))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 150))
     return check_status(status1, status2)
 
 @if_enabled
