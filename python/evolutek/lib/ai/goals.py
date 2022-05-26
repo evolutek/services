@@ -198,9 +198,7 @@ class StartingPosition:
             print('[GOALS] No existing recal sensor %s' % recal_sensor)
             return None
 
-        new = StartingPosition(starting_point["name"], position, theta, recal_side, recal_sensor)
-
-        return new
+        return StartingPosition(starting_point["name"], position, theta, recal_side, recal_sensor)
 
 
 # Strategy Class
@@ -295,19 +293,15 @@ class Goals:
         goals = json.loads(data)
 
         # Parse starting positions
-        for starting_position in goals['starting_positions']:
-
+        for starting_position in goals['starting_position']:
             try:
                 new = StartingPosition.parse(starting_position)
+                if new is None:
+                    return False
+                self.starting_positions[new.name] = new
             except Exception as e:
                 print('[GOALS] Failed to parse starting position: %s' % str(e))
                 return False
-
-            if new is None:
-                return False
-
-            self.starting_positions[new.name] = new
-
 
         # Parse goals
         for goal in goals['goals']:
