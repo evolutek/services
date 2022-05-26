@@ -1,5 +1,5 @@
 from evolutek.lib.robot.robot_actions_imports import *
-from evoluket.lib.utils.boolean import get_boolean
+from evolutek.lib.utils.boolean import get_boolean
 
 @if_enabled
 @async_task
@@ -57,9 +57,9 @@ def collect_middle(self):
     self.set_elevator_config(arm=1, config=ElevatorConfig.Mid, async_task=False)
     self.set_elevator_config(arm=2, config=ElevatorConfig.Mid, async_task=False)
     self.set_elevator_config(arm=3, config=ElevatorConfig.Mid, async_task=False)
-    self.set_head_config(arm=1, config=HeadConfig.Down, async_task=False)
-    self.set_head_config(arm=2, config=HeadConfig.Down, async_task=False)
-    self.set_head_config(arm=3, config=HeadConfig.Down, async_task=False)
+    self.set_head_config(arm=1, config=HeadConfig.Closed, async_task=False)
+    self.set_head_config(arm=2, config=HeadConfig.Closed, async_task=False)
+    self.set_head_config(arm=3, config=HeadConfig.Closed, async_task=False)
 
     return RobotStatus.return_status(RobotStatus.Done,score=score)
 

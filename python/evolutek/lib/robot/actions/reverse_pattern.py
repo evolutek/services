@@ -16,16 +16,20 @@ def open_arm(side, score, self):
 @if_enabled
 @async_task
 def reverse_pattern(self):
+
     def cleanup():
         print("\n\n\n\n\nCLEANUP\n\n\n\n\n")
         self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Closed, async_task=False)
         self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
+
     self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Closed, async_task=False)
-    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
+    self.set_head_config(arm=FrontArmsEnum.Right, config=HeadConfig.Closed, async_task=False)
+    self.set_head_config(arm=FrontArmsEnum.Left, config=HeadConfig.Closed, async_task=False)
+    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
     sleep(1)
     status = self.goto_avoid(1910, 1130, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
