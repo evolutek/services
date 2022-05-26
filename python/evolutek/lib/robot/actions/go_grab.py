@@ -9,7 +9,7 @@ MAX_Y = 2400
 class Stack:
     def __init__(self, id, x, y, color):
         self.id = id
-        self.pos = Point(y, x)
+        self.pos = Point(x, y)
         self.color = color
 
     def __str__(self):
