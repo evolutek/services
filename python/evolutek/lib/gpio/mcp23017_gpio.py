@@ -45,8 +45,7 @@ def wasInitialized():
 # Initialize gpios
 def initialize():
     global WAS_INITIALIZED
-    global mcp1
-    global mcp2
+    global mcp
     try:
         i2c = busio.I2C(board.SCL, board.SDA)
         mcp = MCP23017(i2c, address=0x20)

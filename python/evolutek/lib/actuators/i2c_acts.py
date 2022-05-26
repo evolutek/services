@@ -120,8 +120,8 @@ class I2CAct(Component):
         if speed < 0.0 or speed > self.max_range:
             raise ValueError(f"[{self.name}] Bad speed {speed} for esc {self.id}")
  
-        print(f"[{self.name}] Moving {self.id} at {speed}")
         self.fraction = (speed + self.esc_variation.value)
+        print(f"[{self.name}] Moving {self.id} at {self.fraction}")
         return True
 
 
