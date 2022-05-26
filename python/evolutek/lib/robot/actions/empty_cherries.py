@@ -23,7 +23,8 @@ def empty_n_cherries(self, n):
     print('[ROBOT] Turning canon off !')
     if RobotStatus.get_status(self.canon_off(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
-    return RobotStatus.return_status(RobotStatus.Done, score=n+5)
+    score = 0 if n < 1 else (n + 5)
+    return RobotStatus.return_status(RobotStatus.Done, score=score)
 
 @if_enabled
 @async_task

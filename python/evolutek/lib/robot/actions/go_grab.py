@@ -125,7 +125,7 @@ def go_grab_one_stack(self, id, color_name):
     status2 = RobotStatus.get_status(self.clamp_open(async_task=False))
     sleep(0.5)
 
-    go_to_point = robot_point.compute_offset_point(stack_pos, -85)
+    go_to_point = robot_point.compute_offset_point(stack_pos, -90)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
