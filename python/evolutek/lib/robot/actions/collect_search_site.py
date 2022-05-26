@@ -63,7 +63,7 @@ def collect_search_site(self):
 
     # Got to back pos
     self.goto_avoid(*back_pos, async_task=False)
-    
+
     # Push the middle sample
     self.goto_avoid(*front_pos, async_task=False) # Forward
     self.goto_avoid(*back_pos, async_task=False) # Backward
@@ -105,3 +105,5 @@ def collect_search_site(self):
     # Up bumpers
     self.bumper_close(async_task=False)
     sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done)
