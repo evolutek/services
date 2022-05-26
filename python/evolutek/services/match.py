@@ -86,6 +86,7 @@ class Match(Service):
         match_timer = Timer(self.match_duration, self.match_end)
         match_timer.start()
         self.match_status = MatchStatus.started
+        self.score += 4
         print('[MATCH] Match start')
 
     """ WeatherCock """
