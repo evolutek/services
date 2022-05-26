@@ -20,15 +20,16 @@ def empty_n_cherries(self, n):
         print('[ROBOT] Shooting a cherry !')
         if RobotStatus.get_status(self.push_tank(async_task=False)) != RobotStatus.Done:
             return RobotStatus.return_status(RobotStatus.Failed)
-        sleep(0.5)
+        sleep(2)
         if RobotStatus.get_status(self.push_canon(async_task=False)) != RobotStatus.Done:
             return RobotStatus.return_status(RobotStatus.Failed)
-        sleep(0.5)
+        sleep(1)
         n -= 1
         self.cherry_count -= 1
     print('[ROBOT] Turning canon off !')
     if RobotStatus.get_status(self.canon_off(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
+    return RobotStatus.return_status(RobotStatus.Done)
 
 @if_enabled
 @async_task

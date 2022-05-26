@@ -71,6 +71,8 @@ class Robot(Service):
     go_drop_all = Service.action(robot_actions.go_drop_all)
     empty_n_cherries = Service.action(robot_actions.empty_n_cherries)
     empty_all_cherries = Service.action(robot_actions.empty_all_cherries)
+    fill_n_cherries = Service.action(robot_actions.fill_n_cherries)
+    fill_all_cherries = Service.action(robot_actions.fill_all_cherries)
 
     def __init__(self):
 
@@ -79,7 +81,7 @@ class Robot(Service):
         self.cs = CellaservProxy()
         self.lock = Lock()
 
-        self.cherry_count = 10
+        self.cherry_count = 0
 
         self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')
