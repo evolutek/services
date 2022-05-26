@@ -166,7 +166,7 @@ def open_arm(side, score, self):
 def reverse_pattern(self):
     # Partie Speedy
     self.set_elevator_config(arm=1, config=0, async_task=False)
-    self.set_elevator_config(arm=3, config=0, async_task=False) 
+    self.set_elevator_config(arm=3, config=0, async_task=False)
     self.set_head_config(arm=2, config=2, async_task=False)
     self.set_elevator_config(arm=2, config=0, async_task=False)
     sleep(1)
