@@ -70,6 +70,8 @@ class Robot(Service):
     empty_all_cherries = Service.action(robot_actions.empty_all_cherries)
     fill_n_cherries = Service.action(robot_actions.fill_n_cherries)
     fill_all_cherries = Service.action(robot_actions.fill_all_cherries)
+    vacuum_10_cherry_right = Service.action(robot_actions.vacuum_10_cherry_right)
+    vacuum_10_cherry_left = Service.action(robot_actions.vacuum_10_cherry_left)
 
     def __init__(self):
 
