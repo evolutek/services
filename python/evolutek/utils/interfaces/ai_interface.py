@@ -113,11 +113,26 @@ class StatusFrame(IFRAME):
 		except Exception as e:
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 
+	def slurp(self):
+		print("Bonjour slurping")
+		self.cs.robot[ROBOT].fill_all_cherries()
+
+	def slurp_less(self):
+		print("Bonjour slurping un peu moins")
+		self.cs.robot[ROBOT].fill_n_cherries(2)
+
+        def slurp_set(self):
+		print("Bonjour slurping le set")
+		self.cs.robot[ROBOT].set_cherry_count()
+
 	def create_button(self):
 		Button(self, text="Recalibration", command=self.recalibration).grid(row=2, column=1)
 		Button(self, text="set position", command=self.reset_position).grid(row=3, column=1)
 		Button(self, text="Reset Match", command=self.reset_match).grid(row=4, column=1)
-		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=5)
+		Button(self, text="Fill 10 cherries", command=self.slurp).grid(row=5, column=1)
+		Button(self, text="Fill 2 more cherries", command=self.slurp_less).grid(row=6, column=1)
+		Button(self, text="Set cherry count", command=self.slurp_set).grid(row=7, column=1)
+		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=8)
 
 	def __init_interface(self):
 		#self.create_color()
