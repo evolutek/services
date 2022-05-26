@@ -90,13 +90,14 @@ def get_stack_pos(id, color_name):
 @if_enabled
 @async_task
 def go_grab_one_stack(self, id, color_name):
-    stack_pos = self.mirror_pos(*get_stack_pos(id, color_name))
+    stack_pos = get_stack_pos(id, color_name)
+    stack_pos = Point(dict=self.mirror_pos(stack_pos.x, stack_pos.y))
 
     # Points d'intérêt
     robot_point = Point(dict=self.trajman.get_position())
 
     # Aller devant le point
-    status = self.goth(robot_point.compute_angle(stack_pos), async_task=False)
+    status = self.goth(robot_point.compute_angle(stack_pos), async_task=False, mirror=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
@@ -145,16 +146,16 @@ def go_grab_one_stack(self, id, color_name):
 @if_enabled
 @async_task
 def go_drop_all(self):
-    zone_pos = Point(225, 225)
+    zone_pos = Point(dict=self.mirror_pos(225, 225))
 
     robot_point = Point(dict=self.trajman.get_position())
     dest_point = robot_point.compute_offset_point(zone_pos, -110)
-    status = self.goth(robot_point.compute_angle(dest_point), async_task=False)
+    status = self.goth(robot_point.compute_angle(dest_point), async_task=False, mirror=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
     # On va en zone
-    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, imeout=10)
+    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))    
 
