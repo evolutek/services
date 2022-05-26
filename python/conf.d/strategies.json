@@ -150,6 +150,7 @@
       "actions": [
         {
           "fct": "goto_avoid",
+	  "handler": "robot",
            "args": {
 	    "x": 225,
 	    "y": 1875
@@ -157,6 +158,7 @@
         },
         {
           "fct": "goto_avoid",
+	  "handler": "robot",
            "args": {
 	    "x": 725,
 	    "y": 2425
@@ -216,9 +218,9 @@
       "name": "fire",
       "position": {
 	      "x": 225,
-	      "y": 2400,
-	      "theta": "pi/2"
+	      "y": 2400
       },
+      "theta": "pi/2",
       "actions": [
         {
           "fct": "empty_all_cherries",

@@ -88,7 +88,7 @@ class AI(Service):
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
         if not self.goals.parsed:
-            print('[AI] Failed to parsed goals')
+            print('[AI] Failed to parse goals')
             Thread(target=self.fsm.run_error).start()
 
         else:
