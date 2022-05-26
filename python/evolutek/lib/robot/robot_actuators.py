@@ -117,4 +117,4 @@ def elevator_move(self, positon):
     position = ElevatorPosition.get_position(positon)
     status1 = RobotStatus.get_status(self.actuators.ax_move(1, position[0]))
     status2 = RobotStatus.get_status(self.actuators.ax_move(2, position[1]))
-        return check_status(status1, status2) 
+    return check_status(status1, status2) 

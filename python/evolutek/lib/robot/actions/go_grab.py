@@ -32,13 +32,6 @@ STACKS = [
     Stack(4, 1125, 1275, Color.Brown)
 ]
 
-def get_stack_pos(id, color_name):
-    color = Color.get_by_name(color_name)
-    for stack in STACKS:
-        if stack.id == int(id) and stack.color == color:
-            return stack.pos
-    return None
-
 class Zone:
     def __init__(self, id, x1, x2, y1, y2):
         self.id = id
@@ -87,32 +80,40 @@ def roam_zones(self):
     return RobotStatus.return_status(RobotStatus.Done, score=0)
 
 
+def get_stack_pos(id, color_name):
+    color = Color.get_by_name(color_name)
+    for stack in STACKS:
+        if stack.id == int(id) and stack.color == color:
+            return stack.pos
+    return None
+
 @if_enabled
 @async_task
-def go_grab_one_stack(self):
-    stack = choice(STACKS)
+def go_grab_one_stack(self, id, color_name):
+    stack_pos = get_stack_pos(id, color_name)
     print('[ROBOT] Going to grab stack: %s' % str(stack))
 
     # Points d'intérêt
     robot_point = Point(dict=self.trajman.get_position())
 
     # Aller devant le point
-    status = self.goth(robot_point.compute_angle(stack.pos), async_task=False)
+    status = self.goth(robot_point.compute_angle(stack_pos), async_task=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
-    go_to_point = robot_point.compute_offset_point(stack.pos, -250)
+    go_to_point = robot_point.compute_offset_point(stack_pos, -250)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
     #sleep(5)
 
     # Se préparer
-    self.elevator_up(async_task=False)
+    if RobotStatus.get_status(self.elevator_move(ElevatorPosition.GetFourth, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
     sleep(1)
 
     # Aller sur le point
-    go_to_point = robot_point.compute_offset_point(stack.pos, -80)
+    go_to_point = robot_point.compute_offset_point(stack_pos, -80)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -124,15 +125,15 @@ def go_grab_one_stack(self):
     status2 = RobotStatus.get_status(self.clamp_open(async_task=False))
     sleep(0.5)
 
-    go_to_point = robot_point.compute_offset_point(stack.pos, -85)
+    go_to_point = robot_point.compute_offset_point(stack_pos, -85)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
-    status3 = RobotStatus.get_status(self.elevator_down(async_task=False))
+    status3 = RobotStatus.get_status(self.elevator_move(ElevatorPosition.Low, async_task=False))
     sleep(1)
 
-    go_to_point = robot_point.compute_offset_point(stack.pos, -75)
+    go_to_point = robot_point.compute_offset_point(stack_pos, -75)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -144,16 +145,6 @@ def go_grab_one_stack(self):
     #sleep(1)
     
     #return RobotStatus.return_status(RobotStatus.Done, score=0)
-
-
-@if_enabled
-@async_task
-def go_grab_some_stacks(self):
-    for x in range(randint(len(STACKS))):
-        status = self.go_grab_one(async_task=False)
-        if RobotStatus.get_status(status) != RobotStatus.Reached:
-            return RobotStatus.return_status(RobotStatus.get_status(status))
-    return RobotStatus.return_status(RobotStatus.Done, score=0)
 
 
 @if_enabled

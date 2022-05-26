@@ -57,8 +57,7 @@ class Robot(Service):
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)
     push_drop = Service.action(robot_actuators.push_drop)
-    elevator_up = Service.action(robot_actuators.elevator_up)
-    elevator_down = Service.action(robot_actuators.elevator_down)
+    elevator_move = Service.action(robot_actuators.elevator_move)
 
     # Imported from robot_actions
     goto_random = Service.action(robot_actions.goto_random)
