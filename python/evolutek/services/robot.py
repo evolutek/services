@@ -69,7 +69,9 @@ class Robot(Service):
     indiana_jones = Service.action(robot_actions.indiana_jones)
     statuette = Service.action(robot_actions.statuette)
     lift_sample = Service.action(robot_actions.lift_sample)
-    place_under = Service.action(robot_actions.place_under)
+    collect_search_site = Service.action(robot_actions.collect_search_site)
+    #collect_middle = Service.action(robot_actions.collect_middle)
+    #collect_distributor = Service.action(robot_actions.collect_distributor)
 
     def __init__(self):
 
