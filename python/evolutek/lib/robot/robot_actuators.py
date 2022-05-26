@@ -191,6 +191,7 @@ class HeadConfig(Enum):
     Mid = 2
     Galery = 3
     Pickup = 4
+    StoreStatuette = 5
 
     @staticmethod
     def get_config(config):
