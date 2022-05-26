@@ -93,7 +93,7 @@
         {
           "fct": "empty_all_cherries",
 	  "handler": "robot",
-	  "score": 10
+	  "score": 15
         }
       ]
     }
