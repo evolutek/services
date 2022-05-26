@@ -8,3 +8,16 @@ from evolutek.lib.robot.robot_actuators import ElevatorConfig, HeadConfig, Front
 
 from time import sleep
 from math import pi
+
+
+def pickup_statuette(self):
+    # Mid and prepare to pickup
+    self.set_elevator_config(arm=2, config=ElevatorConfig.Mid, async_task=False)
+    self.set_head_config(arm=2, config=HeadConfig.Pickup, async_task=False)
+    self.pumps_get(ids="2", async_task=False)   # Pump the central arm pump
+    sleep(0.5)
+    # Pickup
+    self.set_elevator_config(arm=2, config=ElevatorConfig.StoreStatuette, async_task=False)
+    sleep(0.2)
+    self.pumps_drop(ids="4", async_task=False)
+    sleep(1)
