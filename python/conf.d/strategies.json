@@ -61,7 +61,7 @@
         {
           "fct": "reverse_pattern",
           "handler": "robot",
-          "score": 20
+          "score": 25
         }
       ]
     },
