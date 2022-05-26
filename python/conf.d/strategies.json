@@ -120,10 +120,20 @@
       ]
     }
   ],
+
   "strategies": [
     {
+      "name": "D1",
+      "starting_position": "A",
+      "goals": [
+
+      ],
+	    "available": ["pal", "pmi"],
+	    "use_pathfinding": false
+    },
+    {
 	    "name": "BELGIUM",
-        "starting_position": "A",
+      "starting_position": "A",
 	    "goals": [
         "grab_first",
         "grab_second",
@@ -137,28 +147,40 @@
     {
 	    "name": "RECAL_225_225_X",
         "starting_position": "A",
-	    "goals": [
-	    ],
+	    "goals": [],
 	    "available": ["pal", "pmi"],
 	    "use_pathfinding": false
     },
     {
 	    "name": "RECAL_225_225_Y",
-        "starting_position": "B",
-	    "goals": [
-	    ],
+      "starting_position": "B",
+	    "goals": [],
 	    "available": ["pal", "pmi"],
 	    "use_pathfinding": false
     },
     {
 	    "name": "RECAL_1875_225_Y",
-        "starting_position": "C",
-	    "goals": [
-	    ],
+      "starting_position": "C",
+	    "goals": [],
+	    "available": ["pal", "pmi"],
+	    "use_pathfinding": false
+    },
+    {
+	    "name": "RECAL_2775_1775_X",
+      "starting_position": "D",
+	    "goals": [],
+	    "available": ["pal", "pmi"],
+	    "use_pathfinding": false
+    },
+    {
+	    "name": "RECAL_2775_1775_Y",
+      "starting_position": "E",
+	    "goals": [],
 	    "available": ["pal", "pmi"],
 	    "use_pathfinding": false
     }
   ],
+
   "starting_positions": [
     {
       "name": "A",
@@ -189,8 +211,29 @@
       "theta": "pi/2",
       "recal_side": "y",
       "recal_sensor": "right"
+    },
+    {
+      "name": "D",
+      "position": {
+        "x": 2775,
+        "y": 1775
+      },
+      "theta": "pi",
+      "recal_side": "x",
+      "recal_sensor": "right"
+    },
+    {
+      "name": "E",
+      "position": {
+        "x": 2775,
+        "y": 1775
+      },
+      "theta": "-pi/2",
+      "recal_side": "y",
+      "recal_sensor": "left"
     }
   ],
+
   "critical_goals": {
     "pal": {
       "goal": "pal_go_back",
