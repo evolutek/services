@@ -70,7 +70,7 @@ class Robot(Service):
     statuette = Service.action(robot_actions.statuette)
     lift_sample = Service.action(robot_actions.lift_sample)
     collect_search_site = Service.action(robot_actions.collect_search_site)
-    #collect_middle = Service.action(robot_actions.collect_middle)
+    collect_middle = Service.action(robot_actions.collect_middle)
     #collect_distributor = Service.action(robot_actions.collect_distributor)
 
     def __init__(self):
