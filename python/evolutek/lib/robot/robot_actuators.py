@@ -185,7 +185,7 @@ class HeadSpeed(Enum):
         except:
             return None
 
-class set_head_speed(Enum):
+class HeadConfig(Enum):
     Closed = 0
     Down = 1
     Mid = 2
@@ -215,7 +215,8 @@ HEADS = {
         HeadConfig.Down : 768,
         HeadConfig.Mid : 460,
         HeadConfig.Galery : 574,
-        HeadConfig.Pickup : 170
+        HeadConfig.Pickup : 170,
+        HeadConfig.StoreStatuette : 125
     },
     FrontArmsEnum.Left : {
         HeadConfig.Closed : 150,
