@@ -60,7 +60,8 @@
         },
         {
           "fct": "reverse_pattern",
-          "handler": "robot"
+          "handler": "robot",
+          "score": 20
         }
       ]
     },
@@ -142,7 +143,7 @@
         {
           "fct": "indiana_jones",
           "handler": "robot",
-          "score": 15
+          "score": 17
         }
       ]
     },
@@ -157,7 +158,7 @@
         {
           "fct": "statuette",
           "handler": "robot",
-          "score": 15
+          "score": 20
         }
       ]
     },
@@ -212,7 +213,16 @@
       "position": {
         "x": 1550,
         "y": 1200
-      }
+      },
+      "actions": [
+        {
+          "fct": "sleep",
+          "args": {
+            "time": 1
+          },
+          "score" : 20
+        }
+      ]
     }
   ],
   "strategies": [
