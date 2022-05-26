@@ -18,6 +18,10 @@ def collect_middle(self):
     self.goto_avoid(675,600, async_task=False, timeout=10)
     self.goth(theta=pi/2, async_task=False)
     self.snowplow_open(async_task=False)
+    speed = self.trajman.get_speeds()['trmax']
+    self.trajman.set_trsl_max_speed(300)
+    self.goto_avoid(675,900, async_task=False, timeout=10)
+    self.trajman.set_trsl_max_speed(speed)
     self.goto_avoid(675,900, async_task=False, timeout=10)
     sleep(0.2)
         #set elevator to down
