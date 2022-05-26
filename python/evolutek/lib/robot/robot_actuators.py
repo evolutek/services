@@ -172,6 +172,7 @@ class HeadSpeed(Enum):
     Default = 1023
     WithStatuette = 512
     WithSample = 255
+    VeryLow = 127
 
     @staticmethod
     def get_speed(speed):
@@ -184,7 +185,7 @@ class HeadSpeed(Enum):
         except:
             return None
 
-class HeadConfig(Enum):
+class set_head_speed(Enum):
     Closed = 0
     Down = 1
     Mid = 2

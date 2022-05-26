@@ -9,6 +9,8 @@ from evolutek.lib.robot.robot_actuators import ElevatorConfig, HeadConfig, Front
 from time import sleep
 from math import pi
 
+from python.evolutek.lib.robot.robot_actuators import FrontArmsEnum, HeadSpeed
+
 
 def pickup_statuette(self):
     # Mid and prepare to pickup
@@ -98,9 +100,9 @@ def indiana_jones(self):
 
     self.bumper_open(async_task=False)
     drop_carrying(self)  # Drop the carry statuette
-    self.set_elevator_config(arm=2, config=5, async_task=False)  # Elevator to store statuette
-    self.set_head_config(arm=2, config=2, async_task=False)  # Head to mid
-    self.set_elevator_config(arm=2, config=3, async_task=False)  # Elevator to mid
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)  # Elevator to store statuette
+    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)  # Head to mid
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
     sleep(1)
     self.goth(theta=-pi/4, async_task=False)
@@ -109,25 +111,26 @@ def indiana_jones(self):
     status = self.goto_avoid(x=default_x, y=default_y, async_task=False)
     #if RobotStatus.get_status(status) != RobotStatus.Reached:
     #   return RobotStatus.return_status(RobotStatus.get_status(status))
-    self.set_elevator_config(arm=2, config=5, async_task=False)  # Elevator to store statuette
+    self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.VeryLow, async_task=False) # Reduce speed
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)  # Elevator to store statuette
     self.pumps_get(ids="4", async_task=False)  # Pump the pump 4
-    self.set_elevator_config(arm=2, config=5, async_task=False)
-    self.set_head_config(arm=2, config=0, async_task=False)  # Head up
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)
+    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)  # Head up
     sleep(1)
     self.pumps_drop(ids="2", async_task=False)
     sleep(0.1)
-    self.set_elevator_config(arm=2, config=3, async_task=False)  # Elevator to mid
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
     sleep(0.2)
-    self.set_head_config(arm=2, config=1, async_task=False)  # Head down
+    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Down, async_task=False)  # Head down
     sleep(1)
-    self.set_elevator_config(arm=2, config=0, async_task=False)  # Elevator to closed
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)  # Elevator to closed
     sleep(0.2)
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
     self.move_trsl(acc=240, dec=200, dest=100, maxspeed=500, sens=1)  # Advance to 120
     sleep(0.5)
-    self.set_elevator_config(arm=2, config=3, async_task=False)  # Elevator to gallery
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to gallery
     sleep(0.5)
-    self.set_elevator_config(arm=2, config=0, async_task=False)  # Elevator to closed
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)  # Elevator to closed
     self.snowplow_open(async_task=False)
     sleep(1)
     self.move_trsl(acc=200, dec=200, dest=100, maxspeed=400, sens=1)  # Advance to 100
