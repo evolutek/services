@@ -30,3 +30,11 @@ class RobotStatus(Enum):
     def return_status(status, **kwargs):
         kwargs['status'] = status.value
         return kwargs
+
+    @staticmethod
+    def check(*args, score=0):
+        for stat in args:
+            stat = RobotStatus.get_status(stat)
+            if stat != RobotStatus.Done and stat != RobotStatus.Reached:
+                return RobotStatus.return_status(RobotStatus.Failed)
+        return RobotStatus.return_status(RobotStatus.Done, score=score)

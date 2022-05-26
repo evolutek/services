@@ -21,7 +21,7 @@ def shoot_n_cherries(self, n):
         self.cherry_count -= 1
     print('[ROBOT] Turning canon off !')
     status.append(self.canon_off(async_task=False))
-    return check_status(*status, score=0)
+    return RobotStatus.check(*status, score=0)
 
 @if_enabled
 @async_task

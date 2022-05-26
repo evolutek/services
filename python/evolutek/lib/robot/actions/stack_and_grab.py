@@ -105,7 +105,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 
     print("******************* HOLDING :", self.HOLDING)
     print("******************* Status :", status)
-    r = check_status(*status, score=3)
+    r = RobotStatus.check(*status, score=3)
     print("******************* Check :", r)
     return r
 

@@ -59,6 +59,8 @@ class Robot(Service):
     push_tank = Service.action(robot_actuators.push_tank)
     push_isol = Service.action(robot_actuators.push_isol)
     elevator_move = Service.action(robot_actuators.elevator_move)
+    disguise_on = Service.action(robot_actuators.disguise_on)
+    disguise_off = Service.action(robot_actuators.disguise_off)
 
     # Imported from robot_actions
     stack_and_grab = Service.action(robot_actions.stack_and_grab)             # DONE
@@ -71,6 +73,7 @@ class Robot(Service):
     drop_and_cherry = Service.action(robot_actions.drop_and_cherry)           # TODO
     fill_n_cherries = Service.action(robot_actions.fill_n_cherries)           # DONE
     set_cherry_count = Service.action(robot_actions.set_cherry_count)         # DONE
+    disguise = Service.action(robot_actions.disguise)
 
     def __init__(self):
 

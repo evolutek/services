@@ -36,5 +36,5 @@ def drop_and_cherry(self, n):
     sleep(1.2)
 
     if (self.proximity_sensor_read(id = 2)):
-        return check_status(*status, score = 3)
-    return check_status(*status, score = 0)
+        return RobotStatus.check(*status, score = 3)
+    return RobotStatus.check(*status, score = 0)

@@ -27,4 +27,4 @@ def suck_rack(self, left=True, forward=True):
     else:
         self.retract_right_vacuum()
 
-    return check_status(*status, score=0)
+    return RobotStatus.check(*status, score=0)

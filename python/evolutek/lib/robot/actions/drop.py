@@ -54,5 +54,5 @@ def drop_all(self):
     sleep(0.5)
     status.append(self.forward(-140, async_task=False))
     print("******************* Status :", status)
-    return check_status(*status, score=3)
+    return RobotStatus.check(*status, score=3)
     
