@@ -233,7 +233,7 @@ class Robot(Service):
         self.canon_off(async_task=False)
         self.clamp_open(async_task=False)
         sleep(0.5)
-        self.push_drop(async_task=False)
+        self.push_isol(async_task=False)
         sleep(0.5)
         self.retract_left_vacuum(async_task=False)
         sleep(0.5)
