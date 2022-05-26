@@ -209,13 +209,13 @@ HEADS = {
         HeadConfig.Closed : 870,
         HeadConfig.Down : 250,
         HeadConfig.Mid : 565,
-        HeadConfig.Galery : 441
+        HeadConfig.Galery : 512
     },
     FrontArmsEnum.Center : {
         HeadConfig.Closed : 150,
         HeadConfig.Down : 768,
         HeadConfig.Mid : 460,
-        HeadConfig.Galery : 574,
+        HeadConfig.Galery : 512,
         HeadConfig.Pickup : 170,
         HeadConfig.StoreStatuette : 125
     },
@@ -223,7 +223,7 @@ HEADS = {
         HeadConfig.Closed : 150,
         HeadConfig.Down : 768,
         HeadConfig.Mid : 460,
-        HeadConfig.Galery : 574
+        HeadConfig.Galery : 512
     }
 }
 
@@ -269,7 +269,7 @@ ELEVATORS = {
         ElevatorConfig.Down : 768,
         ElevatorConfig.Mid : 537,
         ElevatorConfig.GaleryLow : 581,
-        ElevatorConfig.ExcavationSquares : 440
+        ElevatorConfig.ExcavationSquares : 440,
     },
     FrontArmsEnum.Center : {
         ElevatorConfig.Closed : 405,
@@ -277,14 +277,14 @@ ELEVATORS = {
         ElevatorConfig.Mid : 639,
         ElevatorConfig.LowMid: 680,
         ElevatorConfig.GaleryLow : 750,
-        ElevatorConfig.StoreStatuette : 509
+        ElevatorConfig.StoreStatuette : 509,
     },
     FrontArmsEnum.Left : {
         ElevatorConfig.Closed : 835,
         ElevatorConfig.Down : 220,
         ElevatorConfig.Mid : 486,
         ElevatorConfig.GaleryLow : 361,
-        ElevatorConfig.ExcavationSquares : 600
+        ElevatorConfig.ExcavationSquares : 600,
     }
 }
 
