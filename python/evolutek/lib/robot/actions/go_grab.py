@@ -110,7 +110,7 @@ def go_grab_one_stack(self, id, color_name):
     # Se préparer
     if RobotStatus.get_status(self.elevator_move("GetFourth", async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
-    sleep(2)
+    sleep(1)
 
     # Aller sur le point
     go_to_point = robot_point.compute_offset_point(stack_pos, -80)
@@ -130,8 +130,8 @@ def go_grab_one_stack(self, id, color_name):
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
-    status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
-    sleep(2)
+    status3 = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
+    sleep(1)
 
     go_to_point = robot_point.compute_offset_point(stack_pos, -75)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
@@ -160,7 +160,7 @@ def go_drop_all(self):
         return RobotStatus.return_status(RobotStatus.get_status(status))    
 
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
-    sleep(2)
+    sleep(1)
 
     # On drop la pile
     self.clamp_open(async_task=False)
