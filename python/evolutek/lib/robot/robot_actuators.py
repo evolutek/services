@@ -337,6 +337,7 @@ def get_pattern(self):
     result = [ Color[r] for r in measurement ]
     list_of_pattern = []
     color = Color.Yellow if self.side else Color.Purple
+    if not self.side: result = result[::-1]
 
     if result[0] == Color.Red:
         list_of_pattern.append(667.5)
