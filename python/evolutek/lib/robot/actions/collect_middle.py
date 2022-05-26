@@ -15,19 +15,21 @@ def collect_middle(self):
 
         #move to palets with snowplow
     self.goth(theta=pi/2, async_task=False)
-    self.goto_avoid(675,600, async_task=False, timeout=10)
+    self.goto_avoid(675,640, async_task=False, timeout=10)
     self.goth(theta=pi/2, async_task=False)
     self.snowplow_open(async_task=False)
     speed = self.trajman.get_speeds()['trmax']
-    self.trajman.set_trsl_max_speed(300)
-    self.goto_avoid(675,900, async_task=False, timeout=10)
+    self.trajman.set_trsl_max_speed(80)
+    self.goto_avoid(675,820, async_task=False, timeout=10)
     self.trajman.set_trsl_max_speed(speed)
     sleep(0.2)
+
         #set elevator to down
     self.set_elevator_config(arm=1, config=ElevatorConfig.Down, async_task=False)
     self.set_elevator_config(arm=2, config=ElevatorConfig.Down, async_task=False)
     self.set_elevator_config(arm=3, config=ElevatorConfig.Down, async_task=False)
     sleep(0.2)
+    
         #activated pump
     self.pumps_get(ids="1", async_task=False)
     self.pumps_get(ids="2", async_task=False)
@@ -46,11 +48,11 @@ def collect_middle(self):
     score = (1 if get_boolean(self.actuators.proximity_sensor_read(id = 1)) else 0) * flip * 3
     score += (1 if get_boolean(self.actuators.proximity_sensor_read(id = 2)) else 0) * flip * 3
     score += (1 if get_boolean(self.actuators.proximity_sensor_read(id = 3)) else 0) * flip * 3
+    
         #go to galery
-    self.goto_avoid(320, 810, async_task=False, timeout=10)
     self.snowplow_close(async_task=False)
+    self.goth(pi, async_task=False)
 
-    self.goth(theta=pi, async_task=False)
     self.goto_avoid(190, 810, async_task=False, timeout=10)
         #score
     self.pumps_drop(ids="1,2,3", async_task=False)

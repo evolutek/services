@@ -209,13 +209,13 @@ HEADS = {
         HeadConfig.Closed : 870,
         HeadConfig.Down : 250,
         HeadConfig.Mid : 565,
-        HeadConfig.Galery : 512
+        HeadConfig.Galery : 492
     },
     FrontArmsEnum.Center : {
         HeadConfig.Closed : 150,
         HeadConfig.Down : 768,
         HeadConfig.Mid : 460,
-        HeadConfig.Galery : 512,
+        HeadConfig.Galery : 532,
         HeadConfig.Pickup : 170,
         HeadConfig.StoreStatuette : 125
     },
@@ -223,7 +223,7 @@ HEADS = {
         HeadConfig.Closed : 150,
         HeadConfig.Down : 768,
         HeadConfig.Mid : 460,
-        HeadConfig.Galery : 512
+        HeadConfig.Galery : 532
     }
 }
 
