@@ -14,7 +14,7 @@
         "x": 1000,
         "y": 1500
       },
-      "theta": 0
+      "theta": "pi/2"
     },
     {
       "name": "grab_three",
@@ -58,7 +58,8 @@
       "actions": [
         {
           "fct": "go_drop_all",
-	  "handler": "robot"
+	  "handler": "robot",
+	  "score": 3
         }
       ]
     },
@@ -72,7 +73,8 @@
       "actions": [
         {
           "fct": "empty_all_cherries",
-	  "handler": "robot"
+	  "handler": "robot",
+	  "score": 10
         }
       ]
     }
