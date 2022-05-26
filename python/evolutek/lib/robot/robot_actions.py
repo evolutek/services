@@ -116,7 +116,7 @@ def indiana_jones(self):
     self.pumps_get(ids="4", async_task=False)  # Pump the pump 4
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)  # Head up
-    sleep(1)
+    sleep(1.5)
     self.pumps_drop(ids="2", async_task=False)
     sleep(0.1)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
