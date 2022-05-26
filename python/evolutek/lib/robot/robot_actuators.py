@@ -16,8 +16,8 @@ def check_status(*args):
 @if_enabled
 @async_task
 def canon_on(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0.2))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0.2))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0.4))
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0.4))
     return check_status(status1, status2)
 
 @if_enabled
@@ -30,37 +30,46 @@ def canon_off(self):
 @if_enabled
 @async_task
 def turbine_on(self):
-    return RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.3))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.1)))
 
 @if_enabled
 @async_task
 def turbine_low_power(self):
-    return RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.05))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.1))
+    sleep(1.5)
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.07))
+    sleep(1.5)
+    status3 = RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.06))
+    sleep(1.5)
+    status4 = RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.07))
+    sleep(1.5)
+    status5 = RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.1))
+    return check_status(status1, status2, status3, status4, status5)
 
 @if_enabled
 @async_task
 def turbine_off(self):
-    return RobotStatus.get_status(self.actuators.esc_set_speed(8, 0))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.esc_set_speed(8, 0)))
 
 @if_enabled
 @async_task
 def extend_left_vacuum(self):
-    return RobotStatus.get_status(self.actuators.servo_set_angle(10, 83.6))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(10, 83.6)))
 
 @if_enabled
 @async_task
 def retract_left_vacuum(self):
-    return RobotStatus.get_status(self.actuators.servo_set_angle(10, 19.3))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(10, 19.3)))
 
 @if_enabled
 @async_task
 def extend_right_vacuum(self):
-    return RobotStatus.get_status(self.actuators.servo_set_angle(11, 160.7))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(11, 96.4)))
 
 @if_enabled
 @async_task
 def retract_right_vacuum(self):
-    return RobotStatus.get_status(self.actuators.servo_set_angle(11, 96.4))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(11, 160.7)))
 
 @if_enabled
 @async_task
@@ -86,17 +95,17 @@ def clamp_close(self):
 @if_enabled
 @async_task
 def push_canon(self):
-    return RobotStatus.get_status(self.actuators.servo_set_angle(12, 180))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 180)))
 
 @if_enabled
 @async_task
 def push_tank(self):
-    return RobotStatus.get_status(self.actuators.servo_set_angle(12, 51.4))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 51.4)))
 
 @if_enabled
 @async_task
 def push_drop(self):
-    return RobotStatus.get_status(self.actuators.servo_set_angle(12, 173.6))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 150)))
 
 @if_enabled
 @async_task
