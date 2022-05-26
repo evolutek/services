@@ -330,7 +330,7 @@ def set_elevator_config(self, arm, config):
     return self.actuators.ax_move(arm.get_elevator_id(), ELEVATORS[arm][config])
 
 def get_pattern(self):
-    measurement= self.actuators.read_sensors_pattern()
+    measurement = self.actuators.read_sensors_pattern()
     result = [ Color[r] for r in measurement ]
     list_of_pattern = []
     color = Color.Yellow if self.side else Color.Purple

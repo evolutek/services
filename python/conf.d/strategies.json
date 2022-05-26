@@ -18,14 +18,21 @@
       "name": "reverse_pattern",
       "position": {
         "x": 1100,
-        "y": 1250
+        "y": 1350
       },
       "actions": [
         {
           "fct": "goto",
           "args": {
-            "x": 1800,
-            "y": 1250
+            "x": 1830,
+            "y": 1350
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1830,
+            "y": 1130
           }
         },
         {
@@ -48,7 +55,7 @@
         {
           "fct": "goth",
           "args": {
-            "theta": 0
+            "theta": "0"
           }
         },
         {
@@ -203,8 +210,8 @@
     {
       "name": "end_pos_pmi",
       "position": {
-        "x": 1250,
-        "y": 850
+        "x": 1550,
+        "y": 1200
       }
     }
   ],
@@ -215,7 +222,6 @@
         "pmi_starting_sleep",
         "push_starting_samples",
         "reverse_pattern",
-        "place_under",
         "end_pos_pmi"
       ],
       "available": ["pmi"],

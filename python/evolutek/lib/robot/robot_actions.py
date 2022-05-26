@@ -4,7 +4,7 @@ from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.task import async_task
 from evolutek.lib.utils.wrappers import if_enabled
-from evolutek.lib.robot.robot_actuators import ElevatorConfig, HeadConfig
+from evolutek.lib.robot.robot_actuators import ElevatorConfig, HeadConfig, FrontArmsEnum
 
 from time import sleep
 from math import pi
@@ -245,6 +245,8 @@ def reverse_pattern(self):
         open_arm(self.side, self)
         coords.pop(0)
 
+    return RobotStatus.return_status(RobotStatus.Done)
+
     # #if patterns[pattern][plot]:
     #    sleep(1)
     #    arm_open(async_task=False)
@@ -366,3 +368,6 @@ def place_under(self):
     # Up bumpers
     self.bumper_close(async_task=False)
     sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
