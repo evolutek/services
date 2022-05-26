@@ -6,3 +6,4 @@ from evolutek.lib.robot.actions.collect_search_site import *
 from evolutek.lib.robot.actions.collect_middle import *
 from evolutek.lib.robot.actions.collect_distributor import *
 from evolutek.lib.robot.actions.drop_start import *
+from evolutek.lib.robot.actions.carres_fouille import *
