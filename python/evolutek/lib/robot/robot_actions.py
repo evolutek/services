@@ -162,7 +162,7 @@ def open_arm(side, self):
 def reverse_pattern(self):
     # Partie Speedy
     self.set_elevator_config(arm=1, config=0, async_task=False)
-    self.set_elevator_config(arm=3, config=0, async_task=False)
+    self.set_elevator_config(arm=3, config=0, async_task=False) 
     self.set_head_config(arm=2, config=2, async_task=False)
     self.set_elevator_config(arm=2, config=0, async_task=False)
     sleep(1)
@@ -230,13 +230,15 @@ def reverse_pattern(self):
         self.goto_avoid(1830, pos, async_task=False)
     """
     coords = self.get_pattern()
-    print(coords)
+
     self.set_elevator_config(arm=1, config = 0, async_task=False)
     self.set_elevator_config(arm=3, config = 0, async_task=False)
-    sleep(0.5)
     my_y = self.trajman.get_position()['y']
+    sleep(0.5)
     if not self.side: my_y = 3000 - my_y
     self.goto_avoid(1650, my_y, async_task = False)
+    self.set_elevator_config(arm=2, config = 2, async_task=False)
+    self.set_head_config(arm=2, config=0, async_task=False)
     sleep(1)
 
     while(len(coords) != 0):
