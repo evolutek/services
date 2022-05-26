@@ -4,15 +4,15 @@ from evolutek.lib.robot.robot_actions_imports import *
 def drop_carrying(self):
     """Drop the carrying statuette"""
     pickup_statuette(self)
-    self.set_head_config(arm=2, config=1, async_task=False)  # Head Down
-    self.set_elevator_config(arm=2, config=2, async_task=False)  # Elevator to mid
+    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Down, async_task=False)  # Head Down
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Mid, async_task=False)  # Elevator to mid
     sleep(0.5)
     self.pumps_drop(ids="2", async_task=False)  # Drop the pumps
     sleep(0.5)
-    self.set_elevator_speed(arm=2, speed=20, async_task=False)
-    self.set_elevator_config(arm=2, config=5, async_task=False)  # Elevator to mid
+    self.set_elevator_speed(arm=FrontArmsEnum.Center, speed=20, async_task=False)
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)  # Elevator to mid
     sleep(0.5)
-    self.set_elevator_speed(arm=2, speed=1023, async_task=False)
+    self.set_elevator_speed(arm=FrontArmsEnum.Center, speed=ElevatorSpeed.Default, async_task=False)
     self.stop_evs(ids="2", async_task=False)
 
 def move_side_arms(status, self):
@@ -23,14 +23,14 @@ def move_side_arms(status, self):
     if (status == "head"):
         self.pumps_get(ids="1", async_task=False)  # Pump the pump 1
         self.pumps_get(ids="3", async_task=False)  # Pump the pump 3
-        self.set_head_config(arm=1, config=1, async_task=False)  # Head down
-        self.set_head_config(arm=3, config=1, async_task=False)  # Head down
+        self.set_head_config(arm=FrontArmsEnum.Right, config=HeadConfig.Down, async_task=False)  # Head down
+        self.set_head_config(arm=FrontArmsEnum.Left, config=HeadConfig.Down, async_task=False)  # Head down
     elif (status == "elevator_down"):
-        self.set_elevator_config(arm=1, config=2, async_task=False)  # Head mid
-        self.set_elevator_config(arm=3, config=2, async_task=False)  # Head mid
+        self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Mid, async_task=False)  # Head mid
+        self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Mid, async_task=False)  # Head mid
     elif (status == "elevator_up"):
-        self.set_elevator_config(arm=1, config=0, async_task=False)  # Head up
-        self.set_elevator_config(arm=3, config=0, async_task=False)  # Head up
+        self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)  # Head up
+        self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Closed, async_task=False)  # Head up
     else:
         print("Error: wrong status")
     print(f"Done action : {status}")
@@ -39,6 +39,20 @@ def move_side_arms(status, self):
 @if_enabled
 @async_task
 def indiana_jones(self):
+    def cleanup():
+        self.bumper_close()
+        self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
+        self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
+        self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
+        self.set_head_config(arm=FrontArmsEnum.Right, config=HeadConfig.Closed, async_task=False)
+        self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Closed, async_task=False)
+        self.set_head_config(arm=FrontArmsEnum.Left, config=HeadConfig.Closed, async_task=False)
+        self.pumps_drop(ids="1", async_task=False)
+        self.pumps_drop(ids="2", async_task=False)
+        self.pumps_drop(ids="3", async_task=False)
+        self.pumps_drop(ids="4", async_task=False)
+        self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.Default, async_task=False)
+        self.snowplow_close(async_task=False)    
     default_x = 1550
     default_y = 450
     default_angle = (5 * pi) / 4
@@ -58,11 +72,15 @@ def indiana_jones(self):
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
     sleep(1)
-    self.goto(x=1620, y=380, async_task=False)
+    status = self.goto_avoid(x=1620, y=380, async_task=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        cleanup()
+        return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(0.5)
     status = self.goto_avoid(x=default_x, y=default_y, async_task=False)
-    #if RobotStatus.get_status(status) != RobotStatus.Reached:
-    #   return RobotStatus.return_status(RobotStatus.get_status(status))
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        cleanup()
+        return RobotStatus.return_status(RobotStatus.get_status(status))
     self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.VeryLow, async_task=False) # Reduce speed
     self.pumps_get(ids="4", async_task=False)  # Pump the pump 4
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)
@@ -94,9 +112,10 @@ def indiana_jones(self):
     move_side_arms("elevator_up", self)  # Activate arm movement func up
     sleep(0.2)
     status = self.goto_avoid(x=1400, y=600, async_task=False)
-    #if RobotStatus.get_status(status) != RobotStatus.Reached:
-    #   return RobotStatus.return_status(RobotStatus.get_status(status))
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        cleanup()
+        return RobotStatus.return_status(RobotStatus.get_status(status))
     self.snowplow_close(async_task=False)
     self.bumper_close(async_task=False)
 
-    return RobotStatus.return_status(RobotStatus.Done)
+    return RobotStatus.return_status(RobotStatus.Done, score=17)

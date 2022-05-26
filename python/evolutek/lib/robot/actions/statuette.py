@@ -4,12 +4,16 @@ from evolutek.lib.robot.robot_actions_imports import *
 @if_enabled
 @async_task
 def statuette(self):
+    def cleanup():
+        self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
+        self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)    
     pickup_statuette(self)
     # Places it
-    self.set_head_config(arm=2, config=2, async_task=False)
-    self.set_elevator_config(arm=2, config=2, async_task=False)
+    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Mid, async_task=False)
     status = self.goto_avoid(140, 225, async_task=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
+        cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(0.2)
     self.pumps_drop(ids='2', async_task=False)
@@ -17,8 +21,9 @@ def statuette(self):
     # Moves back
     status = self.goto_avoid(x=250, y=225, async_task=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
+        cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(0.3)
-    self.set_head_config(arm=2, config=0, async_task=False)
-    self.set_elevator_config(arm=2, config=5, async_task=False)
-    return RobotStatus.return_status(RobotStatus.Done)
+    self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.StoreStatuette, async_task=False)
+    return RobotStatus.return_status(RobotStatus.Done, score=20)
