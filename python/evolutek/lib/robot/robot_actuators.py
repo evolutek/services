@@ -16,15 +16,15 @@ def check_status(*args):
 @if_enabled
 @async_task
 def canon_on(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0.35))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0.35))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(9, 0.35))
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(10, 0.35))
     return check_status(status1, status2)
 
 @if_enabled
 @async_task
 def canon_off(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(9, 0))
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(10, 0))
     return check_status(status1, status2)
 
 @if_enabled
@@ -40,58 +40,61 @@ def turbine_off(self):
 @if_enabled
 @async_task
 def extend_left_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(10, 83.6)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 83.6)))
 
 @if_enabled
 @async_task
 def retract_left_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(10, 19.3)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 19.3)))
 
 @if_enabled
 @async_task
 def extend_right_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(11, 96.4)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 96.4)))
 
 @if_enabled
 @async_task
 def retract_right_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(11, 160.7)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 160.7)))
 
 @if_enabled
 @async_task
 def clamp_open(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 0))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 180))
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 15))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 165))
     return check_status(status1, status2)
 
 @if_enabled
 @async_task
 def clamp_open_half(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 12))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 168))
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 30))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 150))
     return check_status(status1, status2)
 
 @if_enabled
 @async_task
 def clamp_close(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 30))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 150))
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 40))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 140))
     return check_status(status1, status2)
 
+# VALEURS A TESTER
 @if_enabled
 @async_task
 def push_canon(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 180)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 180)))
 
+# VALEURS A TESTER
 @if_enabled
 @async_task
 def push_tank(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 51.4)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 51.4)))
 
+# VALEURS A TESTER
 @if_enabled
 @async_task
 def push_drop(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 172)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 172)))
 
 '''class ElevatorPosition(Enum):
     Low = (750, 180)
@@ -112,13 +115,13 @@ def push_drop(self):
             return None'''
 
 ElevatorPosition = {
-    "Low" : (750, 180),
-    "GetSecond" : (655, 305),
-    "DropSecond" : (635, 325),
-    "GetThird" : (605, 355),
-    "DropThird" : (585, 375),
-    "GetFourth" : (555, 405),
-    "High" : (520, 450)
+    "Low" : (717, 246),
+    "GetSecond" : (632, 330),
+    "DropSecond" : (572, 387),
+    "GetThird" : (537, 423),
+    "DropThird" : (479, 478),
+    "GetFourth" : (427, 531),
+    "High" : (193, 773)
 }
 
 
