@@ -31,7 +31,7 @@ def pumps_get(self, ids, mirror=True):
 
 @if_enabled
 @async_task
-def pumps_drop(self, ids, mirror=True):
+def pumps_drop(self, ids, use_ev=True, mirror=True):
     if isinstance(ids, str):
         ids = ids.split(",")
 
@@ -42,7 +42,7 @@ def pumps_drop(self, ids, mirror=True):
     for id in ids:
         _ids.append(self.mirror_pump_id(int(id)) if mirror else int(id))
 
-    return self.actuators.pumps_drop(_ids)
+    return self.actuators.pumps_drop(_ids, use_ev)
 
 @if_enabled
 @async_task
