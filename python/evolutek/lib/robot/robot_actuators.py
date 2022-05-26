@@ -93,7 +93,7 @@ def push_tank(self):
 def push_drop(self):
     return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 172)))
 
-class ElevatorPosition(Enum):
+'''class ElevatorPosition(Enum):
     Low = (750, 180)
     GetSecond = (655, 305)
     DropSecond = (635, 325)
@@ -109,12 +109,23 @@ class ElevatorPosition(Enum):
         try:
             return ElevatorPosition.__members__[positon]
         except:
-            return None
+            return None'''
+
+ElevatorPosition = {
+    "Low" : (750, 180),
+    "GetSecond" : (655, 305),
+    "DropSecond" : (635, 325),
+    "GetThird" : (605, 355),
+    "DropThird" : (585, 375),
+    "GetFourth" : (555, 405),
+    "High" : (520, 450)
+}
+
 
 @if_enabled
 @async_task
 def elevator_move(self, positon):
-    position = ElevatorPosition.get_position(positon)
+    position = ElevatorPosition[positon]
     status1 = RobotStatus.get_status(self.actuators.ax_move(1, position[0]))
     status2 = RobotStatus.get_status(self.actuators.ax_move(2, position[1]))
     return check_status(status1, status2) 

@@ -9,7 +9,7 @@ MAX_Y = 2400
 class Stack:
     def __init__(self, id, x, y, color):
         self.id = id
-        self.pos = Point(x, y)
+        self.pos = Point(y, x)
         self.color = color
 
     def __str__(self):
@@ -91,7 +91,6 @@ def get_stack_pos(id, color_name):
 @async_task
 def go_grab_one_stack(self, id, color_name):
     stack_pos = get_stack_pos(id, color_name)
-    print('[ROBOT] Going to grab stack: %s' % str(stack))
 
     # Points d'intérêt
     robot_point = Point(dict=self.trajman.get_position())
@@ -108,7 +107,7 @@ def go_grab_one_stack(self, id, color_name):
     #sleep(5)
 
     # Se préparer
-    if RobotStatus.get_status(self.elevator_move(ElevatorPosition.GetFourth, async_task=False)) != RobotStatus.Done:
+    if RobotStatus.get_status(self.elevator_move("GetFourth", async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
     sleep(1)
 
@@ -130,7 +129,7 @@ def go_grab_one_stack(self, id, color_name):
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
-    status3 = RobotStatus.get_status(self.elevator_move(ElevatorPosition.Low, async_task=False))
+    status3 = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     sleep(1)
 
     go_to_point = robot_point.compute_offset_point(stack_pos, -75)
@@ -150,11 +149,10 @@ def go_grab_one_stack(self, id, color_name):
 @if_enabled
 @async_task
 def go_drop_all(self):
-    zone = choice(ZONES)
-    print('[ROBOT] Going to drop on zone: %s' % str(zone))
+    zone_pos = Point(225, 225)
 
     robot_point = Point(dict=self.trajman.get_position())
-    dest_point = robot_point.compute_offset_point(zone.center, -110)
+    dest_point = robot_point.compute_offset_point(zone_pos, -110)
     status = self.goth(robot_point.compute_angle(dest_point), async_task=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -169,7 +167,7 @@ def go_drop_all(self):
     sleep(0.5)
 
     # On recule pour manoeuvrer 
-    go_to_point = robot_point.compute_offset_point(zone.center, -250)
+    go_to_point = robot_point.compute_offset_point(zone_pos, -250)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))

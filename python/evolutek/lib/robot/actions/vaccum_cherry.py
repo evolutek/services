@@ -13,7 +13,7 @@ def vacuum_10_cherry_left(self):
         return RobotStatus.return_status(RobotStatus.Failed)
 
     init_pos = self.trajman.get_position()
-    float theta = init_pos["theta"]
+    theta = float(init_pos["theta"])
     pos_to_go = Point(dict=init_pos)
 
     for i in range(10):
@@ -26,7 +26,7 @@ def vacuum_10_cherry_left(self):
             return RobotStatus.return_status(RobotStatus.Failed)
         sleep(2)
 
-        self.cherry_count++;
+        self.cherry_count += 1
 
         # Move 30 mm forward
         pos_to_go = current_pos.compute_delta(float(theta), 30)
@@ -35,7 +35,7 @@ def vacuum_10_cherry_left(self):
             return RobotStatus.return_status(RobotStatus.get_status(status_going))
 
     # Close
-    if RobotStatus.get_status(self.retract_left_vacuum(async_task=False)) != RobotStatus.Done
+    if RobotStatus.get_status(self.retract_left_vacuum(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
@@ -54,7 +54,7 @@ def vacuum_10_cherry_right(self):
         return RobotStatus.return_status(RobotStatus.Failed)
 
     init_pos = self.trajman.get_position()
-    float theta = init_pos["theta"]
+    theta = float(init_pos["theta"])
     pos_to_go = Point(dict=init_pos)
 
     for i in range(10):
@@ -67,7 +67,7 @@ def vacuum_10_cherry_right(self):
             return RobotStatus.return_status(RobotStatus.Failed)
         sleep(2)
 
-        self.cherry_count++;
+        self.cherry_count += 1
 
         # Move 30 mm forward
         pos_to_go = current_pos.compute_delta(float(theta), 30)
@@ -76,7 +76,7 @@ def vacuum_10_cherry_right(self):
             return RobotStatus.return_status(RobotStatus.get_status(status_going))
 
     # Close
-    if RobotStatus.get_status(self.retract_right_vacuum(async_task=False)) != RobotStatus.Done
+    if RobotStatus.get_status(self.retract_right_vacuum(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)

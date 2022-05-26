@@ -64,7 +64,6 @@ class Robot(Service):
     roam_stacks = Service.action(robot_actions.roam_stacks)
     roam_zones = Service.action(robot_actions.roam_zones)
     go_grab_one_stack = Service.action(robot_actions.go_grab_one_stack)
-    go_grab_some_stacks = Service.action(robot_actions.go_grab_some_stacks)
     go_drop_all = Service.action(robot_actions.go_drop_all)
     empty_n_cherries = Service.action(robot_actions.empty_n_cherries)
     empty_all_cherries = Service.action(robot_actions.empty_all_cherries)
@@ -229,9 +228,17 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
-        #self.clamp_open(async_task=False)
+        self.turbine_off(async_task=False)
+        self.canon_off(async_task=False)
+        self.clamp_open(async_task=False)
         sleep(0.5)
-        self.elevator_down(async_task=False)
+        self.push_drop(async_task=False)
+        sleep(0.5)
+        self.retract_left_vacuum(async_task=False)
+        sleep(0.5)
+        self.retract_right_vacuum(async_task=False)
+        sleep(0.5)
+        self.elevator_move("Low", async_task=False)
         sleep(1)
 
     @Service.event('%s-bau' % ROBOT)

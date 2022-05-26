@@ -140,7 +140,94 @@
         "y": 1500
       },
       "theta": 0
+    },
+    {
+      "name": "go_in_place",
+      "position": {
+        "x": 225,
+        "y": 1125
+      },
+      "actions": [
+        {
+          "fct": "goto_avoid",
+           "args": {
+	    "x": 225,
+	    "y": 1875
+	  }
+        },
+        {
+          "fct": "goto_avoid",
+           "args": {
+	    "x": 725,
+	    "y": 2425
+	  }
+        }
+      ]
+    },
+    {
+      "name": "grab_pink",
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+	  "handler": "robot",
+           "args": {
+	    "id": 2,
+	    "color_name": "Pink"
+	  }
+        }
+      ]
+    },
+    {
+      "name": "grab_yellow",
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+	  "handler": "robot",
+           "args": {
+	    "id": 2,
+	    "color_name": "Yellow"
+	  }
+        }
+      ]
+    },
+    {
+      "name": "grab_brown",
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+	  "handler": "robot",
+           "args": {
+	    "id": 2,
+	    "color_name": "Brown"
+	  }
+        }
+      ]
+    },
+    {
+      "name": "place",
+      "actions": [
+        {
+          "fct": "go_drop_all",
+	  "handler": "robot"
+        }
+      ]
+    },
+    {
+      "name": "fire",
+      "position": {
+	      "x": 225,
+	      "y": 2400,
+	      "theta": "pi/2"
+      },
+      "actions": [
+        {
+          "fct": "empty_all_cherries",
+	  "handler": "robot"
+        }
+      ]
     }
+
+
   ],
   "strategies": [
     {
@@ -162,32 +249,26 @@
       "use_pathfinding": false
     },
     {
-      "name": "pal_grab_and_drop_two",
-      "goals": [
-        "pal_grab_and_drop_two",
-	"pal_go_center",
-	"pal_go_back"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "pal_grab_and_drop_three",
-      "goals": [
-        "pal_grab_and_drop_three",
-	"pal_go_center",
-	"pal_go_back"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
       "name": "pal_wait_until",
       "goals": [
         "pal_wait_until"
       ],
       "available": ["pal"],
       "use_pathfinding": false
+    },
+    {
+	    "name": "BELGIUM",
+	    "goals": [
+		    "go_in_place",
+		    "grab_pink",
+		    "grab_yellow",
+		    "grab_brown",
+		    "place",
+		    "fire",
+		    "pal_go_back"
+	    ],
+	    "available": ["pal"],
+	    "use_pathfinding": false
     }
   ],
   "starting_pos": {
@@ -200,7 +281,7 @@
   "critical_goals": {
     "pal": {
       "goal": "pal_go_back",
-      "timeout": 42
+      "timeout": 94
     }
   }
 }
