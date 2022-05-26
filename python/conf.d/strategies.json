@@ -81,6 +81,19 @@
       ]
     },
     {
+      "name": "galery_starting_samples",
+      "position": {
+        "x": 700,
+        "y": 600
+      },
+      "actions": [
+        {
+          "fct": "collect_middle",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
       "name": "push_starting_samples",
       "position": {
         "x": 300,
@@ -250,7 +263,7 @@
       "name": "normal_pmi",
       "goals": [
         "pmi_starting_sleep",
-        "push_starting_samples",
+        "galery_starting_samples",
         "reverse_pattern",
         "end_pos_pmi"
       ],

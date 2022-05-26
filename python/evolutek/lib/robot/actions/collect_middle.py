@@ -44,11 +44,20 @@ def collect_middle(self):
     self.goth(theta=pi, async_task=False)
     self.goto_avoid(190, 810, async_task=False)
         #drop into
+    input()
     self.pumps_drop(ids="1", async_task=False)
     self.pumps_drop(ids="2", async_task=False)
     self.pumps_drop(ids="3", async_task=False)
         #go back
     self.goto_avoid(320, 810, async_task=False)
+
+        #reset arms
+    self.set_elevator_config(arm=1, config=ElevatorConfig.Mid, async_task=False)
+    self.set_elevator_config(arm=2, config=ElevatorConfig.Mid, async_task=False)
+    self.set_elevator_config(arm=3, config=ElevatorConfig.Mid, async_task=False)
+    self.set_head_config(arm=1, config=HeadConfig.Down, async_task=False)
+    self.set_head_config(arm=2, config=HeadConfig.Down, async_task=False)
+    self.set_head_config(arm=3, config=HeadConfig.Down, async_task=False)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
