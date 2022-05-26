@@ -211,6 +211,19 @@
       ]
     },
     {
+      "name": "drop_galery",
+      "position": {
+        "x": 220,
+        "y": 800
+      },
+      "actions": [
+        {
+          "fct": "drop_galery",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
       "name": "end_pos_pal",
       "position": {
         "x": 350,
@@ -259,7 +272,7 @@
       "name": "normal_pal",
       "goals": [
         "indiana_jones",
-        "drop_start",
+        "drop_galery",
         "statuette",
         "end_pos_pal"
       ],

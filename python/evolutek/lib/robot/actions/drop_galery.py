@@ -7,13 +7,13 @@ def cleanup(self):
     self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Left,  config=HeadConfig.Closed, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Right, config=HeadConfig.Closed, async_task=False)
-    self.pump_drop(ids="1,3", async_task=False)
+    self.pumps_drop(ids="1,3", async_task=False)
     sleep(0.5)
 
 
 @if_enabled
 @async_task
-def drop_start(self):
+def drop_galery(self):
     score = 0
 
     # Reset middle arm position
@@ -40,13 +40,13 @@ def drop_start(self):
     score += 3 if get_boolean(self.actuators.proximity_sensor_read(id = 3)) else 0
 
     # Forward
-    status = RobotStatus.get_status(self.goto_avoid(170, 800, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(150, 800, async_task=False))
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
     # Place sample
-    self.pump_drop(ids="1,3", async_task=False)
+    self.pumps_drop(ids="1,3", async_task=False)
     sleep(0.5)
 
     status = RobotStatus.get_status(self.goto_avoid(220, 800, async_task=False))
