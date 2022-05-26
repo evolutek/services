@@ -90,7 +90,7 @@ def get_stack_pos(id, color_name):
 @if_enabled
 @async_task
 def go_grab_one_stack(self, id, color_name):
-    stack_pos = get_stack_pos(id, color_name)
+    stack_pos = self.mirror_pos(*get_stack_pos(id, color_name))
 
     # Points d'intérêt
     robot_point = Point(dict=self.trajman.get_position())
@@ -101,7 +101,7 @@ def go_grab_one_stack(self, id, color_name):
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
     go_to_point = robot_point.compute_offset_point(stack_pos, -250)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
     #sleep(5)
@@ -113,7 +113,7 @@ def go_grab_one_stack(self, id, color_name):
 
     # Aller sur le point
     go_to_point = robot_point.compute_offset_point(stack_pos, -80)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
     #sleep(5)
@@ -125,7 +125,7 @@ def go_grab_one_stack(self, id, color_name):
     sleep(0.5)
 
     go_to_point = robot_point.compute_offset_point(stack_pos, -85)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
@@ -133,17 +133,13 @@ def go_grab_one_stack(self, id, color_name):
     sleep(1)
 
     go_to_point = robot_point.compute_offset_point(stack_pos, -75)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
     status4 = RobotStatus.get_status(self.clamp_close(async_task=False))
     sleep(0.5)
     return check_status(status1, status2, status3, status4)
-    #self.grab_stack(async_task=False)
-    #sleep(1)
-    
-    #return RobotStatus.return_status(RobotStatus.Done, score=0)
 
 
 @if_enabled
@@ -158,7 +154,7 @@ def go_drop_all(self):
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
     # On va en zone
-    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, timeout=10)
+    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, imeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))    
 
@@ -168,7 +164,7 @@ def go_drop_all(self):
 
     # On recule pour manoeuvrer 
     go_to_point = robot_point.compute_offset_point(zone_pos, -250)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
     #sleep(5)
