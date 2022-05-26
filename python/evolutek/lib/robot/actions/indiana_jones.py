@@ -79,12 +79,12 @@ def indiana_jones(self):
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
     sleep(1)
-    status = self.goto_avoid(x=1620, y=380, async_task=False)
+    status = RobotStatus.get_status(self.goto_avoid(x=1620, y=380, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(0.5)
-    status = self.goto_avoid(x=default_x, y=default_y, async_task=False)
+    status = RobotStatus.get_status(self.goto_avoid(x=default_x, y=default_y, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -118,7 +118,7 @@ def indiana_jones(self):
     sleep(0.6)
     move_side_arms("elevator_up", self)  # Activate arm movement func up
     sleep(0.2)
-    status = self.goto_avoid(x=1400, y=600, async_task=False)
+    status = RobotStatus.get_status(self.goto_avoid(x=1400, y=600, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))

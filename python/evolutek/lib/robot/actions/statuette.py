@@ -17,7 +17,7 @@ def statuette(self):
     # Places it
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Mid, async_task=False)
-    status = self.goto_avoid(140, 225, async_task=False)
+    status = RobotStatus.get_status(self.goto_avoid(140, 225, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -25,7 +25,7 @@ def statuette(self):
     self.pumps_drop(ids='2', async_task=False)
     sleep(0.1)
     # Moves back
-    status = self.goto_avoid(x=250, y=225, async_task=False)
+    status = RobotStatus.get_status(self.goto_avoid(x=250, y=225, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))

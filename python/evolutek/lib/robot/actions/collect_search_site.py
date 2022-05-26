@@ -24,7 +24,7 @@ def play_path(rbt, path, score):
     for i in range(len(path)):
         point = path[i]
         if point[0] == "goto":
-            status = rbt.goto_avoid(*point[1:], async_task=False)
+            status = rbt.goto_avoid(*point[1:], async_task=False, timeout=10)
         elif point[0] == "turn":
             status = rbt.goth(to_radians(point[1]), async_task=False)
         else:
@@ -90,16 +90,16 @@ def collect_search_site(self):
     self.pumps_get(ids="3", async_task=False)
 
     # Got to back pos
-    status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False, timeout=10))
     if status != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(status, score=score)
 
     # Push the middle sample
-    status = RobotStatus.get_status(self.goto_avoid(*front_pos, async_task=False)) # Forward
+    status = RobotStatus.get_status(self.goto_avoid(*front_pos, async_task=False, timeout=10)) # Forward
     if status == RobotStatus.Reached:
         score += 5
-        status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False)) # Backward
+        status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False, timeout=10)) # Backward
 
     if status != RobotStatus.Reached:
         cleanup()
@@ -132,7 +132,7 @@ def collect_search_site(self):
         return RobotStatus.return_status(status, score=score)
 
     # Down bumpers
-    status = RobotStatus.get_status(self.goto_avoid(1450, 550, async_task=False))
+    status = RobotStatus.get_status(self.goto_avoid(1450, 550, async_task=False, timeout=10))
     if status != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(status, score=score)
@@ -141,10 +141,10 @@ def collect_search_site(self):
     sleep(0.5)
 
     # Push remaining samples
-    status = RobotStatus.get_status(self.goto_avoid(*front_pos, async_task=False)) # Forward
+    status = RobotStatus.get_status(self.goto_avoid(*front_pos, async_task=False, timeout=10)) # Forward
     if status == RobotStatus.Reached:
         score += 5 * 2
-        status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False)) # Backward
+        status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False, timeout=10)) # Backward
     
     if status != RobotStatus.Reached:
         cleanup()

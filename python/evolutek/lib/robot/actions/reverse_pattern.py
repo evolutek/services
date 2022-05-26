@@ -27,7 +27,7 @@ def reverse_pattern(self):
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
     sleep(1)
-    self.goto_avoid(1910, 1130, async_task=False)
+    status = RobotStatus.get_status(self.goto_avoid(1910, 1130, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -45,7 +45,7 @@ def reverse_pattern(self):
     my_y = self.trajman.get_position()['y']
     sleep(0.5)
     my_y = my_y if self.side else 3000 - my_y
-    self.goto_avoid(1650, my_y, async_task = False)
+    status = RobotStatus.get_status(self.goto_avoid(1650, my_y, async_task = False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
@@ -54,7 +54,7 @@ def reverse_pattern(self):
     sleep(1)
 
     while(len(coords) != 0):
-        self.goto_avoid(1830, coords[0], async_task=False)        
+        status = RobotStatus.get_status(self.goto_avoid(1830, coords[0], async_task=False, timeout=10))
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             cleanup()
             return RobotStatus.return_status(RobotStatus.get_status(status))
