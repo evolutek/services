@@ -278,7 +278,6 @@
         "pmi_starting_sleep",
         "galery_starting_samples",
         "reverse_pattern",
-        "collect_search_site",
         "end_pos_pmi"
       ],
       "available": ["pmi"],
