@@ -27,7 +27,7 @@ def lift_sample(self):
         return RobotStatus.return_status(status, score=score)
 
     self.pumps_get(ids="2", async_task=False)
-    
+
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Mid, async_task=False)
     sleep(1)
 
@@ -40,17 +40,17 @@ def lift_sample(self):
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
-    
+
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Galery, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)
 
     status = RobotStatus.get_status(self.goth(pi, async_task=False))
     if status == RobotStatus.Reached:
-        status = RobotStatus.get_status(self.goto_avoid(190, 500, async_task=False))
+        status = RobotStatus.get_status(self.goto_avoid(195, 500, async_task=False))
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
-    
+
     self.pumps_drop(ids="2", async_task=False)
     sleep(0.5)
 
