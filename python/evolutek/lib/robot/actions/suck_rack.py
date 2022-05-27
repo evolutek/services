@@ -26,35 +26,45 @@ def suck_rack(self, rack, recal_sensor, quantity=7):
     quantity = int(quantity)
 
     # Recalibrate
-    self.trajman.recalibration(x=rack.axe, y=(not rack.axe),
-                               init=True,
-                               x_sensor=(recal_sensor if not rack.axe else "no"),
-                               y_sensor=(recal_sensor if rack.axe else "no"),
-                               side_x = rack.side,
-                               side_y = rack.side)
+    self.recalibration(
+        x = rack.axe == 'x', y = rack.axe == 'y',
+        init=True,
+        x_sensor=(recal_sensor if not rack.axe else "no"),
+        y_sensor=(recal_sensor if rack.axe else "no"),
+        side_x = rack.side,side_y = rack.side
+    )
+    sleep(5)
 
     status = []
+    print("recalibration done")
 
     forward_value = 30
 
     position = self.trajman.get_position()
 
     if rack.axe == 'x':
-        self.forward(-30*10, async_task=False)
-        theta = pi/2 if position['y'] < 1500 else -pi/2
-        self.goth(theta, async_task=False)
-        self.goto_avoid(y=position['y'], x=rack.pos - OFFSET if position['y'] < 1000 else rack.pos + OFFSET, async_task=False)
-        self.goth(pi if rack.side else 0, async_task=False)
-        vacuum_left_left = not rack.side
+        GAP = 200
+        LENGTH = 30*10-15 + GAP
+        x = LENGTH if rack.side else 3000 - LENGTH
+        self.goto_avoid(x=x, y=position['y'], async_task=False, mirror=False)
+        print("goto_avoid done")
+        y = rack.pos - OFFSET if position['y'] < 1000 else rack.pos + OFFSET
+        self.goto_avoid(x=x, y=y, async_task=False, mirror=False)
+        print("goto_avoid done")
+        self.goth(pi if rack.side else 0, async_task=False, mirror=False)
+        print("goth done")
+        self.goto_avoid(x=x-GAP if rack.side else x+GAP, y=y, async_task=False, mirror=False)
+        print("goto_avoid done")
+        left_vacuum = not rack.side
     else:
         y = OFFSET if rack.side else 2000 - OFFSET
         self.goto_avoid(x=position['x'], y=y, async_task=False)
         theta = pi if position['x'] < 1500 else 0
         self.goth(theta, async_task=False)
         self.goto_avoid(x=rack.pos - 30 * 5 + 15, y=y, async_task=False)
-        vacuum_left_left = rack.side
+        left_vacuum = rack.side
 
-    if vacuum_left_left:
+    if left_vacuum:
         status.append(self.extend_left_vacuum(async_task=False))
     else:
         status.append(self.extend_right_vacuum(async_task=False))
@@ -67,7 +77,7 @@ def suck_rack(self, rack, recal_sensor, quantity=7):
         self.cherry_count += 1
         sleep(1)
 
-    if vacuum_left_left:
+    if left_vacuum:
         status.append(self.retract_left_vacuum(async_task=False))
     else:
         status.append(self.retract_right_vacuum(async_task=False))

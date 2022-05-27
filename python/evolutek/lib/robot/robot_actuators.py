@@ -24,7 +24,7 @@ def canon_off(self):
 @if_enabled
 @async_task
 def turbine_on(self):
-    return RobotStatus.check(self.actuators.esc_set_speed(8, 0.16 if self.service_name == "pal" else 0.25))
+    return RobotStatus.check(self.actuators.esc_set_speed(8, 0.16 if self.service_name == "pal" else 0.19))
 
 @if_enabled
 @async_task
