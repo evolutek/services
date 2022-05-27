@@ -10,16 +10,21 @@ LEVELS = [
 
 @if_enabled
 @async_task
-def drop_until(self, level):
+def drop_until(self, level = 1):
+    level = int(level)
     if level <= 0: return RobotStatus.return_status(RobotStatus.Done)
     status = []
     status.append(self.elevator_move("Low", async_task=False))
     sleep(0.8)
     status.append(self.clamp_open(async_task=False))
     sleep(0.5)
-    status.append(self.elevator_move(LEVELS[level], async_task=False))
+    status.append(self.elevator_move(LEVELS[level - 1], async_task=False))
     sleep(0.8)
     status.append(self.clamp_close(async_task=False))
+    sleep(0.5)
+    status.append(self.elevator_move("High", async_task=False))
+    sleep(0.4)
+    status.append(self.forward(-125, async_task=False))
     sleep(0.5)
     self.cakes_stack = self.cakes_stack[level:]
     return RobotStatus.check(*status, score=3)
