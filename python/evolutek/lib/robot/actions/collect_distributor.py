@@ -119,6 +119,7 @@ def collect_distributor(yORx,self):
     grab_palets(3)
 
     """
+    return RobotStatus.return_status(RobotStatus.Done,score=9)
 
 
 

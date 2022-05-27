@@ -4,6 +4,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 @if_enabled
 @async_task
 def collect_middle(self):
+    flipdo = 1 ; #put 2 if flip else 1
     #grab palets
     self.set_elevator_config(arm=1, config=ElevatorConfig.Mid, async_task=False)
     self.set_elevator_config(arm=2, config=ElevatorConfig.Mid, async_task=False)
@@ -44,6 +45,10 @@ def collect_middle(self):
 
     self.goth(theta=pi, async_task=False)
     self.goto_avoid(190, 810, async_task=False, timeout=10)
+        #score
+    scor = 0
+    for e in self.actuators.proximity_sensor_read():
+        scor += e*flip*3
         #drop into
     self.pumps_drop(ids="1", async_task=False)
     self.pumps_drop(ids="2", async_task=False)
@@ -59,6 +64,6 @@ def collect_middle(self):
     self.set_head_config(arm=2, config=HeadConfig.Down, async_task=False)
     self.set_head_config(arm=3, config=HeadConfig.Down, async_task=False)
 
-    return RobotStatus.return_status(RobotStatus.Done)
+    return RobotStatus.return_status(RobotStatus.Done,score=scor)
 
 
