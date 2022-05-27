@@ -17,11 +17,11 @@ def open_arm(side, score, self):
 @async_task
 def reverse_pattern(self):
     def cleanup():
+        print("\n\n\n\n\nCLEANUP\n\n\n\n\n")
         self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Closed, async_task=False)
         self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
-
     self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Closed, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)

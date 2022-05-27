@@ -41,6 +41,7 @@ def move_side_arms(status, self):
 @async_task
 def indiana_jones(self):
     def cleanup():
+        print("\n\n\n\n\nCLEANUP\n\n\n\n\n")
         self.bumper_close(async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
         self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
@@ -81,7 +82,6 @@ def indiana_jones(self):
     sleep(1)
     status = self.goto_avoid(x=1620, y=380, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
-        
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(0.5)
@@ -119,7 +119,7 @@ def indiana_jones(self):
     sleep(0.6)
     move_side_arms("elevator_up", self)  # Activate arm movement func up
     sleep(0.2)
-    status = RobotStatus.get_status(self.goto_avoid(x=1400, y=600, async_task=False, timeout=10))
+    status = self.goto_avoid(x=1400, y=600, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
