@@ -224,6 +224,19 @@
       ]
     },
     {
+      "name": "lift_sample",
+      "position": {
+        "x": 300,
+        "y": 200
+      },
+      "actions": [
+        {
+          "fct": "lift_sample",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
       "name": "end_pos_pal",
       "position": {
         "x": 350,
@@ -274,6 +287,7 @@
         "indiana_jones",
         "drop_galery",
         "statuette",
+        "lift_sample",
         "end_pos_pal"
       ],
       "available": ["pal"],
