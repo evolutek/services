@@ -3,15 +3,15 @@
     {
       "name": "go_center_near_beacon",
       "position": {
-        "x": 1500,
-        "y": 750
+        "x": 775,
+        "y": 1000
       }
     },
     {
       "name": "go_center_far_beacon",
       "position": {
-        "x": 1500,
-        "y": 1250
+        "x": 2250,
+        "y": 1000
       }
     },
     {
@@ -265,6 +265,7 @@
         "zone_a_grab_yellow",
         "zone_a_grab_brown",
         "zone_a_build_cakes",
+        "fire",
 		    "go_center_near_beacon",
         "pal_go_back"
 		],
