@@ -100,7 +100,7 @@ class Point(PointShape):
         if point.x == self.x:
             return Point(point.x, point.y + offset * (-1 if self.y > point.y else 1))
         
-        a = (point.y - self.y) / (point.x - self.x)
+        a = (point.y - self.y) / (point.x - self.x) # TODO: Fix potential division by zero
         b = point.y - a * point.x
         offset *= (-1 if self.x > point.x else 1)
 
