@@ -10,8 +10,8 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 @if_enabled
 @async_task
 def canon_on(self):
-    status1 = self.actuators.esc_set_speed(9, 0.4)
-    status2 = self.actuators.esc_set_speed(10, 0.4)
+    status1 = self.actuators.esc_set_speed(9, 0.3)
+    status2 = self.actuators.esc_set_speed(10, 0.3)
     return RobotStatus.check(status1, status2)
 
 @if_enabled
@@ -80,7 +80,7 @@ def push_canon(self):
 @if_enabled
 @async_task
 def push_tank(self):
-    return RobotStatus.check(self.actuators.servo_set_angle(4, 55))
+    return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
 
 @if_enabled
 @async_task
