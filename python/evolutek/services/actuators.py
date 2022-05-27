@@ -112,13 +112,14 @@ class Actuators(Service):
         if self.is_initialized:
             self.rgb_led_strip.start()
             self.orange_led_strip_set(True)
-            sleep(1)
+            sleep(0.5)
             self.orange_led_strip_set(False)
-            sleep(1)
+            sleep(0.5)
             self.orange_led_strip_set(True)
-            sleep(1)
+            sleep(0.5)
             self.orange_led_strip_set(False)
-            sleep(1)
+            sleep(0.5)
+            self.enable()
             print("[ACTUATORS] Fully initialized")
 
     def stop(self):
@@ -157,6 +158,7 @@ class Actuators(Service):
     def enable(self):
         if self.bau.read():
             self.disabled.clear()
+            self.i2c_acts.init_escs()
 
     #####################
     # PROXIMITY SENSORS #
