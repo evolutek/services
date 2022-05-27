@@ -37,18 +37,20 @@ def build_cakes_raw(self, center, positions):
         r = RobotStatus.get_status(r)
         if r != RobotStatus.Done and r != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.Failed, score=score)
-        score += 2 if edge else 1
+    
+        score += 2 if edge and current_drop_level < 2 else 1
+        
+        if current_drop_level == 2:
+            score += 4
 
         # Return back to center
         r = RobotStatus.get_status(self.goto_avoid(x=center.x, y=center.y, async_task=False))
         if r != RobotStatus.Done and r != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.Failed, score=score)
-        
+
         if edge:
             current_drop_level += 1
         current_position_index += 1 if current_drop_level % 2 == 0 else -1
-
-    score += 4
 
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
