@@ -14,13 +14,6 @@ def build_cakes_raw(self, center, positions, angles=None):
     nb_positions = len(positions)
     score = 0
 
-    if angles is not None: 
-        heading = angles[0]
-    else:
-        heading = atan2(destination.y - center.y, destination.x - center.x)
-
-    self.goth(theta = heading, async_task=False, mirror=False)
-
     while current_drop_level < 3 and 0 <= current_position_index < nb_positions:
         # Compute real destination coordinates for each cake positions
         pos = positions[current_position_index]
@@ -29,11 +22,21 @@ def build_cakes_raw(self, center, positions, angles=None):
         direction = Point(delta.x / length, delta.y / length)
         destination = Point.substract(pos, Point(direction.x * cake_bot_dist, direction.y * cake_bot_dist))
 
+        # Head toward destination
+        if angles is not None: 
+            heading = angles[current_position_index]
+        else:
+            heading = atan2(destination.y - center.y, destination.x - center.x)
+        print("Bake : heading = %f" % heading)
+        self.goth(theta = heading, async_task=False, mirror=False)
+        #sleep(2)
+        
         # Goto cake position
-        r = self.goto_avoid(x=destination.x, y=destination.y, async_task=False, mirror=False)
-        #if r != RobotStatus.Done and r != RobotStatus.Reached:
-        #    return RobotStatus.return_status(RobotStatus.Failed, score=score)
-        #sleep(destination.dist(center) / 200)
+        print("Bake : Goto (%f, %f)" % (destination.x, destination.y))
+        r = RobotStatus.get_status(self.goto_avoid(x=destination.x, y=destination.y, async_task=False, mirror=False))
+        #sleep(2)
+        if r != RobotStatus.Done and r != RobotStatus.Reached:
+            return RobotStatus.return_status(RobotStatus.Failed, score=score)
 
         # Is the cake position is on the edge of the positions list ?
         edge = (current_position_index == 0 and current_drop_level > 0) or current_position_index == nb_positions - 1
@@ -43,6 +46,7 @@ def build_cakes_raw(self, center, positions, angles=None):
             r = self.drop_until(amount = 2, drop_level = current_drop_level, async_task=False)
         else:
             r = self.drop_until(amount = 1, drop_level = current_drop_level, async_task=False)
+    
         r = RobotStatus.get_status(r)
         if r != RobotStatus.Done and r != RobotStatus.Reached:
             self.trajman.set_rot_max_speed(speeds['rtmax'])
