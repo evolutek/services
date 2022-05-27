@@ -1,5 +1,5 @@
 from evolutek.lib.robot.robot_actions_imports import *
-from math import pi
+from math import pi, atan2
 
 
 @if_enabled
@@ -20,7 +20,8 @@ def build_cakes_raw(self, center, positions):
         destination = Point.substract(pos, Point(direction.x * cake_bot_dist, direction.y * cake_bot_dist))
 
         # Goto cake position
-        self.goth(theta = center.compute_angle(destination), async_task=False, mirror=False)
+        heading = atan2(destination.y - center.y, destination.x - center.x)
+        self.goth(theta = heading, async_task=False, mirror=False)
         r = self.goto_avoid(x=destination.x, y=destination.y, async_task=False, mirror=False)
         #if r != RobotStatus.Done and r != RobotStatus.Reached:
         #    return RobotStatus.return_status(RobotStatus.Failed, score=score)
@@ -40,7 +41,7 @@ def build_cakes_raw(self, center, positions):
     
         score += 2 if edge and current_drop_level < 2 else 1
         
-        if current_drop_level == 2:
+        if current_drop_level == 2 or (edge and current_drop_level == 1):
             score += 4
 
         # Return back to center
