@@ -50,16 +50,12 @@ ZONES = [
     Zone('D', 2550, 3000, 1550, 2000)
 ]
 
-HOLDING = []
-
-
 def get_stack_pos(id, color_name):
     color = Color.get_by_name(color_name)
     for stack in STACKS:
         if stack.id == int(id) and stack.color == color:
             return stack.pos
     return None
-
 
 @if_enabled
 @async_task
@@ -107,7 +103,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     status = self.clamp_close(async_task=False)
     sleep(0.5)
     for i in range (3):
-        HOLDING.append(color_name)
+        self.HOLDING.append(color_name)
 
     print(f"HOLDING : {HOLDING}")
     return RobotStatus.return_status(RobotStatus.Done, score=3)
