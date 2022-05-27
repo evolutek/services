@@ -5,7 +5,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 def drop_and_cherry(self, n):
     status = []
 
-    if (len(self.HOLDING) == 0):
+    if (len(self.cakes_stack) == 0):
         return RobotStatus.return_status(RobotStatus.Done)
 
     status.append(self.elevator_move("Low", async_task=False))

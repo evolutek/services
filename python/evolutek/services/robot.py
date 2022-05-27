@@ -64,7 +64,8 @@ class Robot(Service):
 
     # Imported from robot_actions
     stack_and_grab = Service.action(robot_actions.stack_and_grab)             # DONE
-    drop_n = Service.action(robot_actions.drop_n)                             # REFACTO
+    drop_until = Service.action(robot_actions.drop_until)                     # DONE
+    drop_stacks = Service.action(robot_actions.drop_stacks)                   # DONE
     drop_all = Service.action(robot_actions.drop_all)                         # DONE
     suck_rack = Service.action(robot_actions.suck_rack)                       # DONE
     build_cakes = Service.action(robot_actions.build_cakes)                   # TODO
@@ -83,7 +84,7 @@ class Robot(Service):
         self.lock = Lock()
 
         self.cherry_count = 0
-        self.HOLDING = []
+        self.cakes_stack = []
 
         self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')
