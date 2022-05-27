@@ -125,5 +125,9 @@ def indiana_jones(self):
         return RobotStatus.return_status(RobotStatus.get_status(status))
     self.snowplow_close(async_task=False)
     self.bumper_close(async_task=False)
+    
+    # REPLACING DROPSTART
+    self.pumps_drop(ids="1", async_task=False)
+    self.pumps_drop(ids="3", async_task=False)
 
     return RobotStatus.return_status(RobotStatus.Done, score = score + 17)
