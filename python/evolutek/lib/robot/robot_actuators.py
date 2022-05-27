@@ -16,8 +16,8 @@ def check_status(*args):
 @if_enabled
 @async_task
 def canon_on(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(9, 0.35))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(10, 0.35))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(9, 0.45))
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(10, 0.45))
     return check_status(status1, status2)
 
 @if_enabled
