@@ -37,6 +37,7 @@ class Robot(Service):
     forward = Service.action(robot_trajman.forward)
     goth = Service.action(robot_trajman.goth)
     goto_avoid = Service.action(robot_trajman.goto_avoid)
+    goto_avoid_extend = Service.action(robot_trajman.goto_avoid_extend)
     goto_with_path = Service.action(robot_trajman.goto_with_path)
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
