@@ -4,7 +4,6 @@ from evolutek.lib.robot.robot_actions_imports import *
 @if_enabled
 @async_task
 def collect_middle(self):
-    print("ahhhhhhhhhhhhhh")
     #grab palets
     self.set_elevator_config(arm=1, config=ElevatorConfig.Mid, async_task=False)
     self.set_elevator_config(arm=2, config=ElevatorConfig.Mid, async_task=False)
@@ -14,10 +13,10 @@ def collect_middle(self):
     self.set_head_config(arm=3, config=HeadConfig.Down, async_task=False)
 
         #move to palets with snowplow
-    self.goto_avoid(700,600, async_task=False, timeout=10)
+    self.goto_avoid(675,600, async_task=False, timeout=10)
     self.goth(theta=pi/2, async_task=False)
     self.snowplow_open(async_task=False)
-    self.goto_avoid(700,850, async_task=False, timeout=10)
+    self.goto_avoid(675,850, async_task=False, timeout=10)
     sleep(0.2)
         #set elevator to down
     self.set_elevator_config(arm=1, config=ElevatorConfig.Down, async_task=False)
