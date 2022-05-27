@@ -50,10 +50,12 @@ ZONES = [
     Zone('D', 2550, 3000, 1550, 2000)
 ]
 
-def get_stack_pos(id, color_name):
+def get_stack_pos(self, id, color_name):
     color = Color.get_by_name(color_name)
     for stack in STACKS:
         if stack.id == int(id) and stack.color == color:
+            if not self.side:
+                return self.mirror_pos(stack.pos.x, stack.pos.y)
             return stack.pos
     return None
 
