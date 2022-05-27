@@ -87,7 +87,7 @@ def push_tank(self):
 def push_isol(self):
     self.push_canon(async_task=False)
     sleep(0.4)
-    return RobotStatus.check(self.actuators.servo_set_angle(4, 150))
+    return RobotStatus.check(self.actuators.servo_set_angle(4, 150 if self.service_name == "pmi" else 168))
 
 @if_enabled
 @async_task
