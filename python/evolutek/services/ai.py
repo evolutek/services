@@ -218,8 +218,11 @@ class AI(Service):
             self.robot.set_theta(pi/2)
             self.recalibration(x=False, y=True, x_sensor='left', init=True)
             with self.lock:
-                self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False, async_task=False)
+                x = self.trajman.get_position()['x']
+                self.goto(x=x, y=600, avoid=False, async_task=False)
+                self.goto(x=self.goals.starting_position.x, y=600, avoid=False, async_task=False)
                 self.goth(theta=self.goals.starting_theta, async_task=False)
+                self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False, async_task=False)
         else:
             print('[AI] Setting robot position')
             self.trajman.free()
