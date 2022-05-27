@@ -40,10 +40,10 @@ def collect_middle(self):
         #go to galery
     self.goto_avoid(320, 810, async_task=False, timeout=10)
     self.snowplow_close(async_task=False)
+
     self.goth(theta=pi, async_task=False)
     self.goto_avoid(190, 810, async_task=False, timeout=10)
         #drop into
-    input()
     self.pumps_drop(ids="1", async_task=False)
     self.pumps_drop(ids="2", async_task=False)
     self.pumps_drop(ids="3", async_task=False)
