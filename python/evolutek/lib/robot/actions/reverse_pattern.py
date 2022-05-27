@@ -37,7 +37,7 @@ def reverse_pattern(self):
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
     self.goth(0, async_task=False)
-    self.goto_avoid(1920, 1130, async_task=False, timeout=10)
+    self.goto_avoid(1915, 1130, async_task=False, timeout=10)
     sleep(0.5)
     self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.ExcavationSquares, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.ExcavationSquares, async_task=False)
