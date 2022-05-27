@@ -203,25 +203,8 @@
       },
       "actions": [
         {
-          "fct": "goto",
-          "args": {
-            "x": 380,
-            "y": 225
-          }
-        },
-        {
-          "fct": "goth",
-          "args": {
-            "theta": "0"
-          }
-        },
-        {
-          "fct": "pumps_drop",
-          "handler": "robot",
-          "score": 2,
-          "args": {
-            "ids": "1,3"
-          }
+          "fct": "drop_start",
+          "handler": "robot"
         }
       ]
     },

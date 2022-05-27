@@ -72,6 +72,7 @@ class Robot(Service):
     collect_search_site = Service.action(robot_actions.collect_search_site)
     collect_middle = Service.action(robot_actions.collect_middle)
     collect_distributor = Service.action(robot_actions.collect_distributor)
+    drop_start = Service.action(robot_actions.drop_start)
 
     def __init__(self):
 
