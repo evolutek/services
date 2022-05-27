@@ -4,8 +4,9 @@ from evolutek.lib.utils.boolean import get_boolean
 @if_enabled
 @async_task
 def broom_square(self):
+    ids_pump_drop = "2"
     #Go next to the square
-    self.goto_avoid(x = 1000, y = 1340, async_task = False)
+    #self.goto_avoid(x = 1000, y = 1340, async_task = False)
     self.goth(theta = 0, async_task = False)
     #Go in front of the square
     self.goto_avoid(x = 1360, y = 1340, async_task = False)
@@ -16,10 +17,16 @@ def broom_square(self):
     self.trajman.set_trsl_max_speed(200)
     #Advance to push the samples
     self.goto_avoid(x = 1360, y = 510, async_task = False)
+    
+    self.pumps_get(ids = "1,2,3", async_task=False)
+    
     #Set middle head to down
+    self.set_head_config(arm = 1, config = HeadConfig.Down, async_task = False)
+    self.set_elevator_config(arm = 1, config = ElevatorConfig.Down, async_task = False)
     self.set_head_config(arm = 2, config = HeadConfig.Down, async_task = False)
-    #Set elevator to down
-    self.set_elevator_config(arm = 2, config = ElevatorConfig.Mid, async_task = False)
+    self.set_elevator_config(arm = 2, config = ElevatorConfig.Down, async_task = False)
+    self.set_head_config(arm = 3, config = HeadConfig.Down, async_task = False)
+    self.set_elevator_config(arm = 3, config = ElevatorConfig.Down, async_task = False)
     sleep(1)
     #Check proximity sensor -> if good continue
     #                       -> if not : fuck
@@ -27,15 +34,41 @@ def broom_square(self):
     #     self.pumps_get(ids = "2", async_task = False)
     # else:
     #     return
-    self.pumps_get(ids = "2", async_task = False)
+    
     # Set elevator to close
-    self.set_elevator_config(arm = 2, config = 0, async_task = False)
-    # Set head to pickup
-    self.set_head_config(arm = 2, config = 4, async_task = False)
-    # Go to indiana pos
-    self.goto_avoid(x = 1550, y = 450, asyn_task = False)
-    self.goth(theta = -pi / 4, async_task = False)
+    self.set_elevator_config(arm = 1, config = ElevatorConfig.Closed, async_task = False)
+    self.set_head_config(arm = 1, config = HeadConfig.Mid, async_task = False)
+    self.set_elevator_config(arm = 2, config = ElevatorConfig.Closed, async_task = False)
+    self.set_head_config(arm = 2, config = HeadConfig.Mid, async_task = False)
+    self.set_elevator_config(arm = 3, config = ElevatorConfig.Closed, async_task = False)
+    self.set_head_config(arm = 3, config = HeadConfig.Mid, async_task = False)
 
+    pumps_ids = None
+    score = 5
+    if get_boolean(self.actuators.proximity_sensor_read(id = 2)):
+        pumps_ids = "2"
+    elif get_boolean(self.actuators.proximity_sensor_read(id = 1)):
+        pumps_ids = "1"
+    elif get_boolean(self.actuators.proximity_sensor_read(id = 3)):
+        pumps_ids = "3"
+    else:
+        score = 0
 
-    #Set speed back to normal
-    self.trajman.set_trsl_max_speed(600)
+    #input()
+    if pumps_ids is not None:
+        # Go to indiana pos
+        self.goto_avoid(1550, 450, async_task = False)
+        self.goto_avoid(1700, 300, async_task = False)
+        #self.goth(-pi / 4, async_task = False)
+        #input()
+        #Set speed back to normal
+        self.trajman.set_trsl_max_speed(600)
+    
+        self.pumps_drop(ids = pumps_ids, async_task=False)
+
+        self.goto_avoid(1550, 450)
+    #input()
+    self.goto_avoid(1200, 400, async_task=False)
+    self.pumps_drop(ids="1,2,3", async_task=False)
+
+    return RobotStatus.return_status(RobotStatus.Done, score=score)

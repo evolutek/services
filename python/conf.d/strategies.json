@@ -225,6 +225,21 @@
       ]
     },
     {
+      "name": "collect_search_site",
+      "position": {
+        "x": 1360,
+        "y": 1340
+      },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "collect_search_site",
+          "handler": "robot",
+          "score": 5
+        }
+      ]
+    },
+    {
       "name": "end_pos_pal",
       "position": {
         "x": 350,
@@ -263,6 +278,7 @@
         "pmi_starting_sleep",
         "galery_starting_samples",
         "reverse_pattern",
+        "collect_search_site",
         "end_pos_pmi"
       ],
       "available": ["pmi"],
