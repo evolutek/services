@@ -1,22 +1,27 @@
 from evolutek.lib.robot.robot_actions_imports import *
 
+ArmToPomb = {
+    FrontArmsEnum.Right : "1",
+    FrontArmsEnum.Center : "2",
+    FrontArmsEnum.Left : "3"
+}
 
-def get_sample(self, x, y, pos, index): #pos = string : x or y, axe distributor; index : index of palets and of arm(the 1st palets = blue = right arm,...)
+def reverse_sample(self, x, y, pos, arm): #pos = string : x or y, axe distributor
     ##if sheat happend replace [index] by .Center
     # Step 1
-    self.actuators.ax_move(FrontArmsEnum[index].get_head_id(), 550)
-    self.actuators.ax_move(FrontArmsEnum[index].get_elevator_id(), 730)
+    self.actuators.ax_move(arm.get_head_id(), 550)
+    self.actuators.ax_move(arm.get_elevator_id(), 730)
     sleep(1)
 
     # Grap sample
-    self.pumps_get(ids=index+"", async_task=False)
+    self.pumps_get(ids=ArmToPomb[arm], async_task=False)
 
     # Forward
     self.goto_avoid(x, y, async_task=False)
 
     # Step 2
-    self.actuators.ax_move(FrontArmsEnum[index].get_head_id(), 515)
-    self.actuators.ax_move(FrontArmsEnum[index].get_elevator_id(), 815)
+    self.actuators.ax_move(arm.get_head_id(), 515)
+    self.actuators.ax_move(arm.get_elevator_id(), 815)
 
     # Backward simultanously with step 2
     speed = self.trajman.get_speeds()['trmax']
@@ -25,24 +30,24 @@ def get_sample(self, x, y, pos, index): #pos = string : x or y, axe distributor;
     self.trajman.set_trsl_max_speed(speed)
 
     # Disable pump
-    self.pumps_drop(ids=index+"", use_ev=False, async_task=False)
+    self.pumps_drop(ids=ArmToPomb[arm], use_ev=False, async_task=False)
 
     # Continue to backward
-    self.set_head_config(arm=FrontArmsEnum[index].get_head_id(), config=HeadConfig.Down, async_task=False)
+    self.set_head_config(arm=arm.get_head_id(), config=HeadConfig.Down, async_task=False)
     sleep(0.2)
     self.goto_avoid((x+125 if pos == "y" else x), (x+125 if pos == "y" else x), async_task=False)
 
 
-def grab_palets(index):
+def grab_sample(arm):
     #set elevator to down
-    self.set_elevator_config(arm=index, config=ElevatorConfig.Down, async_task=False)
+    self.set_elevator_config(arm=arm, config=ElevatorConfig.Down, async_task=False)
     sleep(0.2)
         #activated pump
-    self.pumps_get(ids=index+"", async_task=False)
+    self.pumps_get(ids=ArmToPomb[arm], async_task=False)
     sleep(1)
 
-    self.set_elevator_config(arm=index, config=ElevatorConfig.Closed, async_task=False)
-    self.set_head_config(arm=index, config=HeadConfig.Galery, async_task=False)
+    self.set_elevator_config(arm=arm, config=ElevatorConfig.Closed, async_task=False)
+    self.set_head_config(arm=ArmToPomb[arm], config=HeadConfig.Galery, async_task=False)
 
 
 def go_galery(onY):
@@ -74,9 +79,8 @@ def go_galery(onY):
 
 @if_enabled
 @async_task
-def collect_distributor(self,yORx):
-    x = 0
-    y = 0
+def collect_distributor(yORx,self):
+    x, y = 0, 0
     if (yORx == "y"):
         x = 1250#-15 ##test 16
         y = 270
@@ -88,8 +92,9 @@ def collect_distributor(self,yORx):
 
     self.goto_avoid(x, y, async_task=False)
     self.goth(-pi/2, async_task=False)
-    get_sample(self, x, y, yORx, 1)
-    grab_palets(1)
+    reverse_sample(self, x, y, yORx, FrontArmsEnum.Right)
+    ##offset
+    grab_sample(1)
     ##if up ok , test down
     """
     if (yORx == "y"):
