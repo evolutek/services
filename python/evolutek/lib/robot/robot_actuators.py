@@ -10,7 +10,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 @if_enabled
 @async_task
 def canon_on(self):
-    status1 = self.actuators.esc_set_speed(9, 0.3)#0.276)
+    status1 = self.actuators.esc_set_speed(9, 0.3) #0.276)
     status2 = self.actuators.esc_set_speed(10, 0.3) #0.276)
     return RobotStatus.check(status1, status2)
 
