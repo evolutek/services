@@ -149,8 +149,8 @@ class Match(Service):
         return True
 
     def check_end_positions(self):
-        if self.around('pal', 1375, 975, 175, 175) and \
-            self.around('pmi', 1375, 975, 175, 175):
+        if self.around('pal', 1375, 975, 300, 300) and \
+            self.around('pmi', 1375, 975, 300, 300):
             self.publish('score', value=20)
     
     """ End match """
