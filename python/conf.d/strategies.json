@@ -115,10 +115,6 @@
         "y": 450
       },
       "actions": [
-	      {
-          "fct": "disguise",
-          "handler": "robot"
-        }
       ]
     },
     {
