@@ -359,12 +359,6 @@ def get_pattern(self):
             list_of_pattern.append(1407.5)
             list_of_pattern.append(1592.5)
             #list_of_pattern[6] = False
-    else:
-        # First is already down
-        list_of_pattern.append(1407.5)
-        list_of_pattern.append(1592.5)
-        list_of_pattern.append(1777.5)
-
 
     return list_of_pattern
 
