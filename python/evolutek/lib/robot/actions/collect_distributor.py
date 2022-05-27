@@ -41,19 +41,19 @@ def grab_palets(index):
     self.pumps_get(ids=index+"", async_task=False)
     sleep(1)
 
-    self.set_elevator_config(arm=index, config=ElevatorConfig.Mid, async_task=False)
+    self.set_elevator_config(arm=index, config=ElevatorConfig.Closed, async_task=False)
     self.set_head_config(arm=index, config=HeadConfig.Galery, async_task=False)
 
 
 def go_galery(onY):
     if(onY): #dodge galery
-        my_y = self.get_position()['y']
+        my_y = self.get_position()["y"]
         self.goto_avoid(320, my_y, async_task=False, timeout=10)
         self.goth(theta=pi, async_task=False)
     else:
-        my_x = self.get_position()['x']
-
-
+        my_x = self.get_position()["x"]
+        self.goto_avoid(my_x, 320, async_task=False, timeout=10)
+        self.goth(theta=-pi/2, async_task=False)
         #go to galery
     self.goto_avoid(320, 810, async_task=False, timeout=10)
     self.goth(theta=pi, async_task=False)
@@ -78,11 +78,11 @@ def collect_distributor(self,yORx):
     x = 0
     y = 0
     if (yORx == "y"):
-        x = 1250-10
+        x = 1250#-15 ##test 16
         y = 270
     elif (yORx == "x"):
         x = 270
-        y = 1350+10
+        y = 1350#+15 ##test 16
     else:
         print("Mistake in parametre: choose 'x' or 'y' ")
 
@@ -91,12 +91,13 @@ def collect_distributor(self,yORx):
     get_sample(self, x, y, yORx, 1)
     grab_palets(1)
     ##if up ok , test down
+    """
     if (yORx == "y"):
-        x += 10
+        x += 5
         y -= 2 ##or 1.5 if can
     else:
         x -= 2 ##or 1.5
-        y -= 10
+        y -= 5
     self.goto_avoid(x, y, async_task=False)
     self.goth(-pi/2, async_task=False)
     get_sample(self, x, y, yORx, 2)
@@ -111,6 +112,8 @@ def collect_distributor(self,yORx):
     self.goth(-pi/2, async_task=False)
     get_sample(self, x, y, yORx, 3)
     grab_palets(3)
+
+    """
 
 
 
