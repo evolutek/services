@@ -76,7 +76,7 @@ def indiana_jones(self):
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
     sleep(1)
-    status = self.goto_avoid(x=1620, y=380, async_task=False, timeout=10)
+    status = self.goto(x=1620, y=380, theta=0.9, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
