@@ -55,7 +55,7 @@ def get_stack_pos(robot, id, color_name):
     for stack in STACKS:
         if stack.id == int(id) and stack.color == color:
             if not robot.side:
-                return robot.mirror_pos(stack.pos.x, stack.pos.y)
+                return robot.mirror_pos(stack.pos['x'], stack.pos['y'])
             return stack.pos
     return None
 
