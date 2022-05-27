@@ -90,7 +90,7 @@ def collect_search_site(self):
     self.pumps_get(ids="3", async_task=False)
 
     # Got to back pos
-    status = RobotStatus.get_status(self.goto_avoid(*back_pos, async_task=False, timeout=10))
+    status = self.goto_avoid(*back_pos, async_task=False, timeout=10)
     if status != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(status, score=score)

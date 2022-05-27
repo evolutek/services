@@ -41,7 +41,7 @@ def move_side_arms(status, self):
 @async_task
 def indiana_jones(self):
     def cleanup():
-        self.bumper_close()
+        self.bumper_close(async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
         self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
         self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
@@ -79,12 +79,13 @@ def indiana_jones(self):
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)  # Elevator to mid
     self.pumps_get(ids="2", async_task=False)  # Pump the pump 2
     sleep(1)
-    status = RobotStatus.get_status(self.goto_avoid(x=1620, y=380, async_task=False, timeout=10))
+    status = self.goto_avoid(x=1620, y=380, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
+        
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(0.5)
-    status = RobotStatus.get_status(self.goto_avoid(x=default_x, y=default_y, async_task=False, timeout=10))
+    status = self.goto_avoid(x=default_x, y=default_y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         cleanup()
         return RobotStatus.return_status(RobotStatus.get_status(status))
