@@ -34,6 +34,7 @@ class Robot(Service):
     set_theta = Service.action(robot_trajman.set_theta)
     set_pos = Service.action(robot_trajman.set_pos)
     goto = Service.action(robot_trajman.goto)
+    forward = Service.action(robot_trajman.forward)
     goth = Service.action(robot_trajman.goth)
     goto_avoid = Service.action(robot_trajman.goto_avoid)
     goto_with_path = Service.action(robot_trajman.goto_with_path)

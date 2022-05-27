@@ -98,6 +98,26 @@ def goto(self, x, y, avoid=True, mirror=True):
 
 @if_enabled
 @async_task
+def forward(self, distance, avoid=True):
+    distance = float(distance)
+
+    traj_pos = self.trajman.get_position()
+    origin = Point(dict=traj_pos)
+
+    x = cos(traj_pos['theta']) * distance + traj_pos['x']
+    y = sin(traj_pos['theta']) * distance + traj_pos['y']
+
+    target = Point(x, y)
+
+    if target.dist(origin) < DELTA_POS:
+        print('[ROBOT] Already reached position')
+        return RobotStatus.return_status(RobotStatus.Reached)
+
+    return self.goto_avoid(x, y, async_task=False, avoid=avoid)
+
+
+@if_enabled
+@async_task
 def goth(self, theta, mirror=True):
     mirror = get_boolean(mirror)
     theta = float(theta)
