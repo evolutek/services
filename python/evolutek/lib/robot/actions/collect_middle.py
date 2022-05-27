@@ -13,6 +13,7 @@ def collect_middle(self):
     self.set_head_config(arm=3, config=HeadConfig.Down, async_task=False)
 
         #move to palets with snowplow
+    self.goth(theta=pi/2, async_task=False)
     self.goto_avoid(675,600, async_task=False, timeout=10)
     self.goth(theta=pi/2, async_task=False)
     self.snowplow_open(async_task=False)
