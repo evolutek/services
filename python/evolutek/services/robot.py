@@ -66,7 +66,7 @@ class Robot(Service):
     stack_and_grab = Service.action(robot_actions.stack_and_grab)             # DONE
     drop_n = Service.action(robot_actions.drop_n)                             # REFACTO
     drop_all = Service.action(robot_actions.drop_all)                         # DONE
-    suck_rack = Service.action(robot_actions.suck_rack)                       # TODO
+    suck_rack = Service.action(robot_actions.suck_rack)                       # DONE
     build_cakes = Service.action(robot_actions.build_cakes)                   # TODO
     shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # DONE
     shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # DONE
