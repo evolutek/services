@@ -1,20 +1,6 @@
 {
   "goals": [
     {
-      "name": "place_under",
-      "position": {
-        "x": 995,
-        "y": 1360
-      },
-      "theta": "pi/2",
-      "actions": [
-        {
-          "fct": "place_under",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
       "name": "reverse_pattern",
       "position": {
         "x": 1100,
@@ -157,7 +143,7 @@
         {
           "fct": "indiana_jones",
           "handler": "robot",
-          "score": 17
+          "score": 15
         }
       ]
     },
@@ -219,7 +205,8 @@
       "actions": [
         {
           "fct": "drop_galery",
-          "handler": "robot"
+          "handler": "robot",
+          "score": 6
         }
       ]
     },
@@ -232,7 +219,8 @@
       "actions": [
         {
           "fct": "lift_sample",
-          "handler": "robot"
+          "handler": "robot",
+          "score": 4
         }
       ]
     },
