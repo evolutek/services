@@ -30,7 +30,7 @@ def canon_off(self):
 @if_enabled
 @async_task
 def turbine_on(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.1)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.2)))
 
 @if_enabled
 @async_task
@@ -40,7 +40,7 @@ def turbine_off(self):
 @if_enabled
 @async_task
 def extend_left_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 100)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 80)))
 
 @if_enabled
 @async_task
@@ -50,7 +50,7 @@ def retract_left_vacuum(self):
 @if_enabled
 @async_task
 def extend_right_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 100)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 120)))
 
 @if_enabled
 @async_task
