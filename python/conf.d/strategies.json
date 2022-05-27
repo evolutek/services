@@ -111,25 +111,11 @@
     {
       "name": "pmi_go_back",
       "position": {
-        "x": 1500,
-        "y": 1000
+        "x": 2100,
+        "y": 450
       },
       "actions": [
-        {
-          "fct": "goto",
-          "args": {
-            "x": 2100,
-            "y": 1000
-          }
-        },
-        {
-          "fct": "goto",
-          "args": {
-            "x": 2100,
-            "y": 225
-          }
-        },
-	{
+	      {
           "fct": "disguise",
           "handler": "robot"
         }
@@ -146,7 +132,7 @@
           "fct": "stack_and_grab",
           "handler": "robot",
           "args": {
-            "id": 3,
+            "id": 2,
             "color_name": "Brown"
           }
         }
@@ -159,6 +145,13 @@
         "y": 725
       },
       "actions": [
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "args": {
+            "theta": "0"
+          }
+        },
         {
           "fct": "drop_all",
           "handler": "robot"
@@ -194,7 +187,7 @@
     },
     {
       "name": "Homologation PMI",
-      "starting_position": "D",
+      "starting_position": "F",
       "goals": [
         "pmi_grab_first",
         "pmi_drop",
@@ -285,7 +278,7 @@
       },
       "theta": "pi/2",
       "recal_side": "y",
-      "recal_sensor": "right"
+      "recal_sensor": "left"
     },
     {
       "name": "D",
@@ -305,6 +298,16 @@
       },
       "theta": "-pi/2",
       "recal_side": "y",
+      "recal_sensor": "left"
+    },
+    {
+      "name": "F",
+      "position": {
+        "x": 2775,
+        "y": 725
+      },
+      "theta": "pi",
+      "recal_side": "x",
       "recal_sensor": "left"
     }
   ],
