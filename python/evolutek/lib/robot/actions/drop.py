@@ -49,36 +49,10 @@ def drop_n(self):
 @if_enabled
 @async_task
 def drop_all(self):
-    zone_pos = Point(dict=self.mirror_pos(275, 225))
-
-    robot_point = Point(dict=self.trajman.get_position())
-    dest_point = robot_point.compute_offset_point(zone_pos, -160)
-    status = self.goth(robot_point.compute_angle(dest_point), async_task=False, mirror=False)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
-
-    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, timeout=10)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
-
-    # On va en zone
-    dest_point = robot_point.compute_offset_point(zone_pos, -110)
-    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, timeout=10)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
-
-    status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
-    sleep(1)
-
-    # On drop la pile
-    self.clamp_open(async_task=False)
+    status = []
+    status.append(self.clamp_open(async_task=False))
     sleep(0.5)
-
-    # On recule pour manoeuvrer
-    go_to_point = robot_point.compute_offset_point(zone_pos, -225)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
-    #sleep(5)
-
-    return RobotStatus.return_status(RobotStatus.Done, score=3)
+    status.append(self.forward(-140, async_task=False))
+    print("******************* Status :", status)
+    return check_status(*status, score=3)
+    

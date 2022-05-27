@@ -104,6 +104,8 @@ def forward(self, distance, avoid=True):
     traj_pos = self.trajman.get_position()
     origin = Point(dict=traj_pos)
 
+    sleep(0.1)
+
     x = cos(traj_pos['theta']) * distance + traj_pos['x']
     y = sin(traj_pos['theta']) * distance + traj_pos['y']
 
@@ -113,7 +115,9 @@ def forward(self, distance, avoid=True):
         print('[ROBOT] Already reached position')
         return RobotStatus.return_status(RobotStatus.Reached)
 
-    return self.goto_avoid(x, y, async_task=False, avoid=avoid)
+    r = self.goto_avoid(x, y, async_task=False, avoid=avoid)
+    print("----------------- Status :", r)
+    return r
 
 
 @if_enabled

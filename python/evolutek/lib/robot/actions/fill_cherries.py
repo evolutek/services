@@ -6,7 +6,7 @@ def fill_n_cherries(self, n):
     try:
         n = int(n)
     except:
-        return RobotStatus.return_status(RobotStatusFailed)
+        return RobotStatus.return_status(RobotStatus.Failed)
     print('[ROBOT] Turning arm out on !')
     if RobotStatus.get_status(self.push_drop(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
