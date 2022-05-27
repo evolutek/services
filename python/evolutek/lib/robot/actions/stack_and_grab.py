@@ -50,12 +50,12 @@ ZONES = [
     Zone('D', 2550, 3000, 1550, 2000)
 ]
 
-def get_stack_pos(self, id, color_name):
+def get_stack_pos(robot, id, color_name):
     color = Color.get_by_name(color_name)
     for stack in STACKS:
         if stack.id == int(id) and stack.color == color:
-            if not self.side:
-                return self.mirror_pos(stack.pos.x, stack.pos.y)
+            if not robot.side:
+                return robot.mirror_pos(stack.pos.x, stack.pos.y)
             return stack.pos
     return None
 
@@ -63,7 +63,7 @@ def get_stack_pos(self, id, color_name):
 @async_task
 def stack_and_grab(self, id = 1, color_name = "Pink"):
     #print("******************* DBG 1")
-    stack_pos = get_stack_pos(id, color_name)
+    stack_pos = get_stack_pos(self, id, color_name)
     #print("******************* DBG 2")
     robot_pos = Point(dict=self.trajman.get_position())
     status = []
