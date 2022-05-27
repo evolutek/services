@@ -101,11 +101,11 @@ def disguise_off(self):
 
 ElevatorPosition = {
     "Low" : (717, 246),
-    "GetSecond" : (632, 330),
+    "GetSecond" : (624, 338),
     "DropSecond" : (572, 387),
-    "GetThird" : (537, 423),
+    "GetThird" : (530, 430),
     "DropThird" : (479, 478),
-    "GetFourth" : (427, 531),
+    "GetFourth" : (420, 538),
     "High" : (193, 773)
 }
 
