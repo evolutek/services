@@ -9,6 +9,12 @@ def cleanup(self):
     self.set_head_config(arm=FrontArmsEnum.Left,   config=HeadConfig.Closed, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Closed, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Right,  config=HeadConfig.Closed, async_task=False)
+    self.set_elevator_speed(arm=FrontArmsEnum.Left, speed=ElevatorSpeed.Default, async_task=False)
+    self.set_elevator_speed(arm=FrontArmsEnum.Center, speed=ElevatorSpeed.Default, async_task=False)
+    self.set_elevator_speed(arm=FrontArmsEnum.Right, speed=ElevatorSpeed.Default, async_task=False)
+    self.set_head_speed(arm=FrontArmsEnum.Left, speed=HeadSpeed.Default, async_task=False)
+    self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.Default, async_task=False)
+    self.set_head_speed(arm=FrontArmsEnum.Right, speed=HeadSpeed.Default, async_task=False)
     sleep(0.5)
 
 
@@ -29,14 +35,16 @@ def collect_middle(self):
     # Move to palets with snowplow
     status = RobotStatus.get_status(self.goth(theta=pi/2, async_task=False))
     if status == RobotStatus.Reached:
-        status = RobotStatus.get_status(self.goto_avoid(675 ,640, async_task=False, timeout=10))
+        status = RobotStatus.get_status(self.goto_avoid(675, 640, async_task=False, timeout=10))
         if status == RobotStatus.Reached:
             status = RobotStatus.get_status(self.goth(theta=pi/2, async_task=False))
             if status == RobotStatus.Reached:
                 self.snowplow_open(async_task=False)
                 speed = self.trajman.get_speeds()['trmax']
                 self.trajman.set_trsl_max_speed(80)
-                status = RobotStatus.get_status(self.goto_avoid(675,820, async_task=False, timeout=10))
+                status = RobotStatus.get_status(self.goto_avoid(675, 820, async_task=False, timeout=10))
+                if status == RobotStatus.Reached:
+                    self.goto_avoid(675, 815, async_task=False)
                 self.trajman.set_trsl_max_speed(speed)
                 sleep(0.2)
     
@@ -54,13 +62,26 @@ def collect_middle(self):
     self.pumps_get(ids="1,2,3", async_task=False)
     sleep(1)
 
+    # Change speed of elevator and head
+    self.set_elevator_speed(arm=FrontArmsEnum.Left, speed=ElevatorSpeed.WithSample, async_task=False)
+    self.set_elevator_speed(arm=FrontArmsEnum.Center, speed=ElevatorSpeed.WithSample, async_task=False)
+    self.set_elevator_speed(arm=FrontArmsEnum.Right, speed=ElevatorSpeed.WithSample, async_task=False)
+    self.set_head_speed(arm=FrontArmsEnum.Left, speed=HeadSpeed.WithSample, async_task=False)
+    self.set_head_speed(arm=FrontArmsEnum.Center, speed=HeadSpeed.WithSample, async_task=False)
+    self.set_head_speed(arm=FrontArmsEnum.Right, speed=HeadSpeed.WithSample, async_task=False)
+
     # Set arms in the correct position for placing
+    self.set_elevator_config(arm=FrontArmsEnum.Left,   config=ElevatorConfig.GaleryLow, async_task=False)
+    self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)
+    self.set_elevator_config(arm=FrontArmsEnum.Right,  config=ElevatorConfig.GaleryLow, async_task=False)
+    sleep(0.5)
     self.set_elevator_config(arm=FrontArmsEnum.Left,   config=ElevatorConfig.Mid, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Mid, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Right,  config=ElevatorConfig.Mid, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Left,   config=HeadConfig.Galery, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Galery, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Right,  config=HeadConfig.Galery, async_task=False)
+    sleep(1)
 
     # Check score
     score += (3 if get_boolean(self.actuators.proximity_sensor_read(id = 1)) else 0) * flip
@@ -71,8 +92,9 @@ def collect_middle(self):
     self.snowplow_close(async_task=False)
 
     # Go to galery
+    self.goto_avoid(250, 920, async_task=False)
     self.goth(pi, async_task=False)
-    self.goto_avoid(190, 810, async_task=False, timeout=10)
+    self.goto_avoid(190, 920, async_task=False, timeout=10)
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
@@ -81,7 +103,7 @@ def collect_middle(self):
     self.pumps_drop(ids="1,2,3", async_task=False)
 
     # Go back
-    self.goto_avoid(320, 810, async_task=False, timeout=10)
+    self.goto_avoid(320, 920, async_task=False, timeout=10)
     if status != RobotStatus.Reached:
         cleanup(self)
         return RobotStatus.return_status(status, score=score)

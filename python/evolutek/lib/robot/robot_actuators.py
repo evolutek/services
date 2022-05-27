@@ -266,7 +266,7 @@ class ElevatorConfig(Enum):
 ELEVATORS = {
     FrontArmsEnum.Right : {
         ElevatorConfig.Closed : 187,
-        ElevatorConfig.Down : 768,
+        ElevatorConfig.Down : 728,
         ElevatorConfig.Mid : 537,
         ElevatorConfig.GaleryLow : 581,
         ElevatorConfig.ExcavationSquares : 440,
