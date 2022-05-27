@@ -18,10 +18,10 @@ class Match(Service):
     def __init__(self):
 
         super().__init__()
-        cs = CellaservProxy()
+        self.cs = CellaservProxy()
 
         # Get the config of the match
-        match_config = cs.config.get_section('match')
+        match_config = self.cs.config.get_section('match')
         self.color1 = match_config['color1']
         self.color2 = match_config['color2']
         self.stop_delay = int(match_config['stop_delay'])
@@ -152,7 +152,7 @@ class Match(Service):
         if self.around('pal', 1375, 975, 175, 175) and \
             self.around('pmi', 1375, 975, 175, 175):
             self.publish('score', value=20)
-
+    
     """ End match """
     @Service.action
     def match_end(self):
