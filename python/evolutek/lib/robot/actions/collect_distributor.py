@@ -38,7 +38,7 @@ def reverse_sample(self, x, y, pos, arm): #pos = string : x or y, axe distributo
     self.goto_avoid((x+125 if pos == "y" else x), (x+125 if pos == "y" else x), async_task=False)
 
 
-def grab_sample(arm):
+def grab_sample(self, arm):
     #set elevator to down
     self.set_elevator_config(arm=arm, config=ElevatorConfig.Down, async_task=False)
     sleep(0.2)
@@ -50,13 +50,13 @@ def grab_sample(arm):
     self.set_head_config(arm=ArmToPomb[arm], config=HeadConfig.Galery, async_task=False)
 
 
-def go_galery(onY):
+def go_galery(self, onY):
     if(onY): #dodge galery
-        my_y = self.get_position()["y"]
+        my_y = self.get_position()["y"] # NOT MIRRORED /!\
         self.goto_avoid(320, my_y, async_task=False, timeout=10)
         self.goth(theta=pi, async_task=False)
     else:
-        my_x = self.get_position()["x"]
+        my_x = self.get_position()["x"] # NOT MIRRORED /!\
         self.goto_avoid(my_x, 320, async_task=False, timeout=10)
         self.goth(theta=-pi/2, async_task=False)
         #go to galery
@@ -79,7 +79,7 @@ def go_galery(onY):
 
 @if_enabled
 @async_task
-def collect_distributor(yORx,self):
+def collect_distributor(self, yORx="y"):
     x, y = 0, 0
     if (yORx == "y"):
         x = 1250#-15 ##test 16
@@ -94,7 +94,7 @@ def collect_distributor(yORx,self):
     self.goth(-pi/2, async_task=False)
     reverse_sample(self, x, y, yORx, FrontArmsEnum.Right)
     ##offset
-    grab_sample(1)
+    grab_sample(self, FrontArmsEnum.Right)
     ##if up ok , test down
     """
     if (yORx == "y"):
