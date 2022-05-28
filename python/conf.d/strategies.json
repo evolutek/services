@@ -175,11 +175,11 @@
         "x": 2250,
         "y": 700
       },
-      "theta": "-2.95",
+      "theta": "-3.02",
       "actions": [
         {
           "fct": "shoot_all_cherries",
-          "power": 92,
+          "power": 20,
           "handler": "robot"
         }
       ]
