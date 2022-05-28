@@ -27,6 +27,7 @@ def reverse_pattern(self):
     self.set_elevator_config(arm=FrontArmsEnum.Right, config=ElevatorConfig.Closed, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Left, config=ElevatorConfig.Closed, async_task=False)
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.Closed, async_task=False)
+    sleep(0.1)
     self.set_head_config(arm=FrontArmsEnum.Right, config=HeadConfig.Closed, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Left, config=HeadConfig.Closed, async_task=False)
     self.set_head_config(arm=FrontArmsEnum.Center, config=HeadConfig.Mid, async_task=False)
