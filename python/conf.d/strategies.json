@@ -305,7 +305,6 @@
         "pal_go_back"
 		],
       "available": [
-        "pmi",
         "pal"
       ],
       "use_pathfinding": false
@@ -322,8 +321,7 @@
         "pmi_go_back"
 		],
       "available": [
-        "pal",
-        "pmi"
+        "pal"
       ],
       "use_pathfinding": false
     },
@@ -340,8 +338,7 @@
         "pmi_go_back"
       ],
       "available": [
-        "pal",
-        "pmi"
+        "pal"
       ],
       "use_pathfinding": false
     },
@@ -357,8 +354,7 @@
         "pal_go_back"
 		],
       "available": [
-        "pmi",
-        "pal"
+        "pmi"
       ],
       "use_pathfinding": false
     },
@@ -373,7 +369,6 @@
         "pmi_go_back"
 		],
       "available": [
-        "pal",
         "pmi"
       ],
       "use_pathfinding": false
@@ -390,7 +385,6 @@
         "pmi_go_back"
       ],
       "available": [
-        "pal",
         "pmi"
       ],
       "use_pathfinding": false
