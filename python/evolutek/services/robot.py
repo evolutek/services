@@ -55,6 +55,7 @@ class Robot(Service):
     retract_right_vacuum = Service.action(robot_actuators.retract_right_vacuum)
     clamp_open = Service.action(robot_actuators.clamp_open)
     clamp_open_half = Service.action(robot_actuators.clamp_open_half)
+    clamp_untight = Service.action(robot_actuators.clamp_untight)
     clamp_close = Service.action(robot_actuators.clamp_close)
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)

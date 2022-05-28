@@ -9,9 +9,11 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 @if_enabled
 @async_task
-def canon_on(self):
-    status1 = self.actuators.esc_set_speed(9, 0.3) #0.276)
-    status2 = self.actuators.esc_set_speed(10, 0.3) #0.276)
+def canon_on(self, power=100):
+    power = float(power)
+    speed = min(0.6, max(0.1, 0.3 * power / 100))
+    status1 = self.actuators.esc_set_speed(9, speed)
+    status2 = self.actuators.esc_set_speed(10, speed)
     return RobotStatus.check(status1, status2)
 
 @if_enabled
@@ -63,6 +65,13 @@ def clamp_open(self):
 def clamp_open_half(self):
     status1 = self.actuators.servo_set_angle(0, 30)
     status2 = self.actuators.servo_set_angle(1, 150)
+    return RobotStatus.check(status1, status2)
+
+@if_enabled
+@async_task
+def clamp_untight(self):
+    status1 = self.actuators.servo_set_angle(0, 34)
+    status2 = self.actuators.servo_set_angle(1, 146)
     return RobotStatus.check(status1, status2)
 
 @if_enabled

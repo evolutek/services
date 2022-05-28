@@ -68,8 +68,8 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     robot_pos = Point(dict=self.trajman.get_position())
     status = []
 
-    search_offset = -110
-    offset = -70
+    search_offset = -120
+    offset = -50
 
     if (len(self.cakes_stack) <= 0):
         status.append(self.clamp_open(async_task=False))
@@ -85,14 +85,13 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     status.append(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
 
     go_to_point = robot_pos.compute_offset_point(stack_pos, search_offset)
-    status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
-    sleep(0.3)
-    print(f"Has stack is in front : {self.actuators.proximity_sensor_read(id=1)}")
+    status.append(self.goto_avoid_extend(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, dec=400))
+    print(f"Has stack in front : {self.actuators.proximity_sensor_read(id=1)}")
     if (not self.actuators.proximity_sensor_read(id=1)):
         return RobotStatus.check(*status)
     go_to_point = robot_pos.compute_offset_point(stack_pos, offset)
-    status.append(self.goto_avoid_extend(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, dec=DEC))
-    sleep(0.5)
+    status.append(self.goto_avoid_extend(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, dec=200, acc=200))
+    #sleep(0.5)
 
     if (len(self.cakes_stack) > 0):
         # Recule
@@ -103,11 +102,19 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
         status.append(self.elevator_move("Low", async_task=False))
         sleep(0.5)
         go_to_point = robot_pos.compute_offset_point(stack_pos, offset)
-        status.append(self.goto_avoid_extend(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, dec=DEC))
+        status.append(self.goto_avoid_extend(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, dec=200, acc=200))
         sleep(0.5)
 
     status.append(self.clamp_close(async_task=False))
     sleep(0.5)
+
+    status.append(self.clamp_open_half(async_task=False))
+    sleep(0.2)
+
+    status.append(self.move_trsl(15, 200, 200, 300, 1))
+    
+    status.append(self.clamp_close(async_task=False))
+    sleep(0.2)
 
     for _ in range(3):
         self.cakes_stack.append(color_name)

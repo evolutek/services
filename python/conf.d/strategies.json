@@ -112,7 +112,7 @@
       "name": "zone_c_grab_yellow",
       "position": {
         "x": 2500,
-        "y": 225
+        "y": 400
       },
       "actions": [
         {
@@ -128,8 +128,8 @@
     {
       "name": "zone_c_grab_pink",
       "position": {
-        "x": 2775,
-        "y":  725
+        "x": 2500,
+        "y":  500
       },
       "actions": [
         {
@@ -143,7 +143,7 @@
       ]
     },
     {
-      "name": "fire",
+      "name": "zone_a_fire",
       "position": {
         "x": 700,
         "y": 700
@@ -152,6 +152,38 @@
       "actions": [
         {
           "fct": "shoot_all_cherries",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
+      "name": "zone_c_fire",
+      "position": {
+        "x": 2389.476,
+        "y": 485.636
+      },
+      "theta": "-3.059",
+      "actions": [
+        {
+          "fct": "shoot_all_cherries",
+          "power": 92,
+          "handler": "robot"
+        }
+      ]
+    },
+    {
+      "name": "zone_d_fire",
+      "position": {
+        "x": 2367.548,
+        "y": 1550.798
+      },
+      "theta": "-2.664",
+      "actions": [
+        {
+          "fct": "shoot_all_cherries",
+          "args": {
+            "power": 105
+          },
           "handler": "robot"
         }
       ]
@@ -217,7 +249,7 @@
         {
           "fct": "build_cakes",
 		  "args": {
-			"theta": "-3*pi/4"
+			  "theta": "-3*pi/4"
 		  },
           "handler": "robot",
           "score": 21
@@ -233,9 +265,9 @@
       "actions": [
         {
           "fct": "build_cakes",
-		  "args": {
-			"theta": "-pi/4"
-		  },
+		      "args": {
+			      "theta": "pi/4"
+		      },
           "handler": "robot",
           "score": 21
         }
@@ -250,9 +282,9 @@
       "actions": [
         {
           "fct": "build_cakes",
-		  "args": {
-			"theta": "pi/4"
-		  },
+          "args": {
+            "theta": "pi/4"
+          },
           "handler": "robot",
           "score": 21
         }
@@ -268,7 +300,7 @@
         "zone_a_grab_yellow",
         "zone_a_grab_brown",
         "zone_a_build_cakes",
-        "fire",
+        "zone_a_fire",
         "go_center_near_beacon",
         "pal_go_back"
 		],
@@ -286,7 +318,7 @@
         "zone_c_grab_yellow",
         "zone_c_grab_brown",
         "zone_c_build_cakes",
-		    "go_center_far_beacon",
+        "zone_c_fire",
         "pmi_go_back"
 		],
       "available": [
@@ -303,7 +335,8 @@
         "zone_d_grab_yellow",
         "zone_d_grab_brown",
         "zone_d_build_cakes",
-		"go_center_far_beacon",
+        "zone_d_fire",
+		    "go_center_far_beacon",
         "pmi_go_back"
       ],
       "available": [
@@ -363,15 +396,5 @@
       "recal_side": "y",
       "recal_sensor": "right"
     }
-  ],
-  "critical_goals": {
-    "pal": {
-      "goal": "pal_go_back",
-      "timeout": 90
-    },
-    "pmi": {
-      "goal": "pmi_go_back",
-      "timeout": 90
-    }
-  }
+  ]
 }
