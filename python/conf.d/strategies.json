@@ -179,7 +179,7 @@
       "actions": [
         {
           "fct": "shoot_all_cherries",
-          "power": 20,
+          "power": 10,
           "handler": "robot"
         }
       ]
