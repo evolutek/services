@@ -251,8 +251,7 @@
           "fct": "sleep",
           "args": {
             "time": 1
-          },
-          "score" : 20
+          }
         }
       ]
     }

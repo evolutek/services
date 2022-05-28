@@ -40,9 +40,7 @@ class Match(Service):
 
     """ Update score """
     @Service.event('score')
-    def set_score(self, value=0):
-        if self.match_status != MatchStatus.started:
-            return
+    def add_score(self, value=0):
         self.score += int(value)
         print('[MATCH] score is now: %d' % self.score)
 
@@ -88,16 +86,6 @@ class Match(Service):
         self.match_status = MatchStatus.started
         self.score += 4
         print('[MATCH] Match start')
-
-    """ WeatherCock """
-    @Service.action
-    def read_weathercock(self):
-        print('[MATCH] reading weathercock position')
-        white = create_gpio(WEATHERCOCK_GPIO, 'weathercock', dir=False, type=GpioType.RPI).read()
-        side = 'north' if not white else 'south'
-        self.publish('anchorage', side=side)
-        self.anchorage = side
-        return side
 
     """ ACTION """
 
@@ -153,10 +141,23 @@ class Match(Service):
         self.match_status = MatchStatus.ended
         print('[MATCH] Match End')
 
+    def around(self, robot, x, y, rx, ry):
+        if self.color == self.color2: y = 3000 - y
+        pos = self.cs.trajman[robot].get_position()
+        if pos['x'] > x+rx or pos['x'] < x-rx: return False
+        if pos['y'] > y+ry or pos['y'] < y-ry: return False
+        return True
+
+    def check_end_positions(self):
+        if self.around('pal', 1375, 975, 175, 175) and \
+            self.around('pmi', 1375, 975, 175, 175):
+            self.publish('score', value=20)
+
     """ End match """
     @Service.action
     def match_end(self):
         print('[MATCH] Call for match end')
+        self.check_end_positions()
         self.publish('match_end')
         Timer(self.stop_delay, self._set_match_end).start()
 
