@@ -318,7 +318,7 @@
         "zone_c_grab_brown",
         "zone_c_build_cakes",
         "zone_c_fire",
-        "pmi_go_back"
+        "pal_go_back"
 		],
       "available": [
         "pal"
@@ -335,7 +335,7 @@
         "zone_d_build_cakes",
         "zone_d_fire",
 		    "go_center_far_beacon",
-        "pmi_go_back"
+        "pal_go_back"
       ],
       "available": [
         "pal"
@@ -351,7 +351,7 @@
         "zone_a_grab_brown",
         "zone_a_build_cakes",
         "go_center_near_beacon",
-        "pal_go_back"
+        "pmi_go_back"
 		],
       "available": [
         "pmi"
