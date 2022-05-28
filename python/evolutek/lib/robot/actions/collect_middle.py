@@ -99,7 +99,7 @@ def collect_middle(self):
         cleanup(self)
         return RobotStatus.return_status(status, score=score)
 
-    # Drop palets to galery
+    # Drop samples to galery
     self.pumps_drop(ids="1,2,3", async_task=False)
 
     # Go back

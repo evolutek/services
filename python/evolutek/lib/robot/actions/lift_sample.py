@@ -31,11 +31,12 @@ def lift_sample(self):
     self.set_elevator_config(arm=FrontArmsEnum.Center, config=ElevatorConfig.GaleryLow, async_task=False)
 
     self.goth(pi, async_task=False)
-    #self.goto_avoid(170, 600, async_task=False)
+    self.goto_avoid(190, 600, async_task=False)
     
-    score += 3
     self.pumps_drop(ids="2", async_task=False)
     sleep(0.5)
+
+    score += 3
 
     self.goto_avoid(300, 600, async_task=False)
 
