@@ -84,7 +84,7 @@ class Match(Service):
         match_timer = Timer(self.match_duration, self.match_end)
         match_timer.start()
         self.match_status = MatchStatus.started
-        self.score += 4
+        self.score += 5
         print('[MATCH] Match start')
 
     """ ACTION """
@@ -150,7 +150,7 @@ class Match(Service):
         return True
 
     def check_end_positions(self):
-        if self.around('pal', 1125, 225, 225, 225): #and \
+        if self.around('pal', 1875, 225, 225, 225): #and \
             #self.around('pmi', 1375, 975, 300, 300):
             self.publish('score', value=15)
     
