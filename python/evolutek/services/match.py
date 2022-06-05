@@ -160,11 +160,11 @@ class Match(Service):
 
         # Go back action
         if pal_around and pmi_around:
-            self.publish('score', value=15)
+            self.score += 15
 
         # Disguise action
         if pal_around or pmi_around:
-            self.publish('score', value=5)
+            self.score += 5
     
     """ End match """
     @Service.action
