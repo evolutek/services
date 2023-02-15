@@ -5,6 +5,7 @@ from cellaserv.service import Event as CellaservEvent, Service
 
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
+import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
@@ -39,6 +40,9 @@ class Robot(Service):
     recalibration = Service.action(robot_trajman.recalibration)
     recalibration_sensors = robot_trajman.recalibration_sensors
     homemade_recal = Service.action(robot_trajman.homemade_recal)
+
+    # Imported from robot_actuators
+    goto_random = Service.action(robot_actions.goto_random)
 
     def __init__(self):
 

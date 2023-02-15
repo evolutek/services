@@ -1,16 +1,31 @@
 {
   "goals": [
     {
-      "name": "pal_starting_sleep",
+      "name": "pal_test_move",
       "position": {
         "x": 450,
         "y": 1175
       },
       "actions": [
         {
-          "fct": "sleep",
+          "fct": "goto_random",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto_random",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto",
           "args": {
-            "time": 5
+            "x": 225,
+            "y": 1175
+          }
+        },
+        {
+          "fct": "goth",
+          "args": {
+            "theta": 0
           }
         }
       ]
@@ -18,9 +33,9 @@
   ],
   "strategies": [
     {
-      "name": "pal",
+      "name": "pal_test_move",
       "goals": [
-        "pal_starting_sleep"
+        "pal_test_move"
       ],
       "available": ["pal"],
       "use_pathfinding": false
