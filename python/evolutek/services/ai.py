@@ -134,6 +134,14 @@ class AI(Service):
         sleep(float(time))
         return RobotStatus.return_status(RobotStatus.Done)
 
+    @Service.action
+    def wait_until(self):
+        while True:
+            if self.check_abort() != RobotStatus.Ok:
+                print('[AI] Stopping wait until')
+            sleep(0.5)
+            print('[AI] Waiting until')
+
     def check_abort(self):
         if self.match_end.is_set() or self.critical_timeout.is_set():
             print('[AI] Aborting')
