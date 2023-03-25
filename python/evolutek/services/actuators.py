@@ -85,7 +85,7 @@ class Actuators(Service):
                 50,
                 180
             ]
-        }, 180)
+        })
 
         self.all_actuators = [
             self.recal_sensors,

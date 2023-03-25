@@ -23,8 +23,7 @@ class I2CServo(Component):
         KIT.servo[self.channel].angle = angle
 
 class ServoHandler(ComponentsHolder):
-    def __init__(self, sensors, frequency):
-        self.frequency = frequency
+    def __init__(self, sensors):
         super().__init__('ServoHandler', sensors, I2CServo)
 
     def _initialize(self):
