@@ -72,8 +72,25 @@ class Actuators(Service):
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
+        self.axs = AX12Controller(
+            [1, 2]
+        )
+
+        self.servos = ServoHandler({
+            0: [
+                50,
+                180
+            ],
+            15: [
+                50,
+                180
+            ]
+        }, 180)
+
         self.all_actuators = [
             self.recal_sensors,
+            self.axs,
+            self.servos
         ]
 
         self.is_initialized = True
@@ -164,6 +181,45 @@ class Actuators(Service):
         except Exception as e:
             print('[ACTUATORS] Faile to set loading mode: %s' % str(e))
 
+    #######
+    # AXS #
+    #######
+    @if_enabled
+    @Service.action
+    def ax_move(self, id, pos):
+        if self.axs[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        self.axs[int(id)].move(int(pos))
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @Service.action
+    def axs_free(self, ids):
+        if isinstance(ids, str):
+            ids = ids.split(",")
+
+        for i in ids:
+            if self.axs[int(i)] == None:
+                continue
+            self.axs[int(i)].free()
+
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @Service.action
+    def ax_set_speed(self, id, speed):
+        if self.axs[int(id)] == None:
+            return None
+        self.axs[int(id)].moving_speed(int(speed))
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    ##########
+    # SERVOS #
+    ##########
+    @Service.action
+    def servo_set_angle(self, ids, angle):
+        if self.servo[int(ids)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        self.servo[int(ids)].set_angle(angle)
+        return RobotStatus.return_status(RobotStatus.Done)
 
 def main():
     actuators = Actuators()
