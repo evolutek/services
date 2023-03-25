@@ -42,7 +42,10 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    goto_random = Service.action(robot_actions.goto_random)
+    clamp_open = Service.action(robot_actuators.clamp_open)
+    clamp_close = Service.action(robot_actuators.clamp_close)
+    elevator_up = Service.action(robot_actuators.elevator_up)
+    elevator_down = Service.action(robot_actuators.elevator_down)
 
     def __init__(self):
 
