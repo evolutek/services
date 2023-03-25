@@ -47,6 +47,7 @@ class Robot(Service):
     clamp_close = Service.action(robot_actuators.clamp_close)
     elevator_up = Service.action(robot_actuators.elevator_up)
     elevator_down = Service.action(robot_actuators.elevator_down)
+    grab_stack = Service.action(robot_actuators.grab_stack)
 
     def __init__(self):
 
