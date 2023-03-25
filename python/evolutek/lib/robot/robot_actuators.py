@@ -42,6 +42,9 @@ def elevator_down(self):
 @async_task
 def grab_stack(self):
     status1 = RobotStatus.get_status(clamp_open())
+    sleep(0.5)
     status2 = RobotStatus.get_status(elevator_down())
+    sleep(0.5)
     status3 = RobotStatus.get_status(clamp_close())
+    sleep(0.5)
     return check_status(status1, status2, status3)
