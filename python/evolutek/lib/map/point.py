@@ -94,3 +94,17 @@ class Point(PointShape):
     @staticmethod
     def substract(p1, p2):
         return Point(p1.x - p2.x, p1.y - p2.y)
+    
+    def compute_offset_point(self, point, offset):
+
+        if point.x = self.x:
+            return Point(point.x, point.y + offset * (-1 if self.y > point.y else 1))
+        
+        a = (point.y - self.y) / (point.x - self.x)
+        b = point.y - a * point.x
+        offset *= (-1 if self.x > point.x else 1)
+
+        x = point.x + (offset / sqrt(1 + a ** 2))
+        y = a * x + b
+
+        return Point(x, y)

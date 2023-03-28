@@ -92,39 +92,11 @@ class Rplidar:
     def compute_center(self, shape):
         mean_point = Point.mean(shape)
 
-        # Equation parameter
-        a = 0
-        b = 0
-        dy = False
-
         lidar_position = None
         with self.lock:
             lidar_position = self.position
 
-        # Compute equation parameters
-        if self.position.x != mean_point.x:
-            a = (mean_point.y - lidar_position.y) / (mean_point.x - lidar_position.x)
-            b = mean_point.y - a * mean_point.x
-        else:
-            dy = True
-            a = (mean_point.x - lidar_position.x) / (mean_point.y - lidar_position.y)
-            b = mean_point.x - a * mean_point.y
-
-        # Compute radius
-        radius = self.mean_beacon_radius * (-1 if lidar_position.x > mean_point.x else 1)
-
-        x = None
-        y = None
-
-        # Compute center
-        if not dy:
-            x = mean_point.x + (radius / sqrt(1 + a ** 2))
-            y = a * x + b
-        else:
-            y = mean_point.y + (radius / sqrt(1 + a ** 2))
-            x = a * y + b
-
-        return Point(x,y)
+        return self.lidar_position.compute_offset_point(mean_point, self.mean_beacon_radius)
 
     def start_scanning(self):
         Thread(target=self.loop_scan).start()
