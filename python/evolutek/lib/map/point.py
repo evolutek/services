@@ -1,4 +1,4 @@
-from math import sqrt, sin, cos
+from math import atan2, sqrt, sin, cos
 from shapely.geometry import Point as PointShape
 
 # Point class
