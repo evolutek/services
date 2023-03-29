@@ -110,4 +110,4 @@ class Point(PointShape):
         return Point(x, y)
 
     def compute_angle(self, point):
-       return atan2(point.y- self.pos.y, point.x- self.x) - atan2(0, 1)
+       return atan2(point.y- self.y, point.x- self.x) - atan2(0, 1)
