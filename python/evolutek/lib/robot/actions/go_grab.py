@@ -16,12 +16,28 @@ CAKES = [((225, 450 + 125), ROSE), ((225, 450 + 125 + 200), JAUNE), ((225, 3000 
         ((1000 + 275, 1125), MARRON), ((1000 + 275, 3000 - 1125), MARRON),  # x moyens +
         ((2000 - 225, 450 + 125), ROSE), ((2000 - 225, 450 + 125 + 200), JAUNE), ((2000 - 225, 3000 - 450 - 125 - 200), JAUNE), ((2000 - 225, 3000 - 450 - 125), ROSE)]  # x grands
 
+# Format: ((xmin, xmax), (ymin, ymax))
+ZONES = [((0, 450), (450+125+200+125, 450+125+200+125+450)), ((0, 450), (3000-450, 3000)), 
+        ((450+50, 450+50+450), (0, 450))
+        ((2000-450, 2000), (0, 450)), ((1500+150), (, 1500+150+450))]
+
 
 @if_enabled
 @async_task
-def roam_stacks(self):
+def roam_cakes(self):
     for cake in CAKES:
         status = self.goto_avoid(x=cake[0][0], y=cake[0][1], async_task=False, timeout=10)
+        if RobotStatus.get_status(status) != RobotStatus.Reached:
+            return RobotStatus.return_status(RobotStatus.get_status(status))
+        sleep(5)
+    return RobotStatus.return_status(RobotStatus.Done, score=0)
+
+
+@if_enabled
+@async_task
+def roam_zones(self):
+    for zone in ZONES:
+        status = self.goto_avoid(x=(zone[0][0] + zone[0][1]) // 2, y=(zone[1][0] + zone[1][1]) // 2, async_task=False, timeout=10)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.get_status(status))
         sleep(5)
@@ -73,4 +89,19 @@ def go_grab_some(self):
         status = self.go_grab_one(async_task=False)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.get_status(status))
+    return RobotStatus.return_status(RobotStatus.Done, score=0)
+
+
+@if_enabled
+@async_task
+def go_grab_one_and_come_back(self):
+    status = self.go_grab_one(async_task=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.get_status(status))
+        
+    zone = choice(ZONES)
+    status = self.goto_avoid(x=(zone[0][0] + zone[0][1]) // 2, y=(zone[1][0] + zone[1][1]) // 2, async_task=False, timeout=10)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.get_status(status))    
+
     return RobotStatus.return_status(RobotStatus.Done, score=0)
