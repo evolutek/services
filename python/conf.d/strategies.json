@@ -50,7 +50,7 @@
       },
       "actions": [
         {
-          "fct": "go_grab_one",
+          "fct": "go_grab_one_stack",
           "handler": "robot"
         },
         {
@@ -80,11 +80,11 @@
       },
       "actions": [
         {
-          "fct": "go_grab_one",
+          "fct": "go_grab_one_stack",
           "handler": "robot"
         },
         {
-          "fct": "go_grab_one",
+          "fct": "go_grab_one_stack",
           "handler": "robot"
         },
         {
@@ -114,15 +114,15 @@
       },
       "actions": [
         {
-          "fct": "go_grab_one",
+          "fct": "go_grab_one_stack",
           "handler": "robot"
         },
         {
-          "fct": "go_grab_one",
+          "fct": "go_grab_one_stack",
           "handler": "robot"
         },
         {
-          "fct": "go_grab_one",
+          "fct": "go_grab_one_stack",
           "handler": "robot"
         },
         {

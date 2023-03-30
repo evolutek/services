@@ -52,10 +52,10 @@ class Robot(Service):
 
     # Imported from robot_actions
     goto_random = Service.action(robot_actions.goto_random)
-    roam_cakes = Service.action(robot_actions.roam_cakes)
+    roam_stacks = Service.action(robot_actions.roam_stacks)
     roam_zones = Service.action(robot_actions.roam_zones)
-    go_grab_one = Service.action(robot_actions.go_grab_one)
-    go_grab_some = Service.action(robot_actions.go_grab_some)
+    go_grab_one_stack = Service.action(robot_actions.go_grab_one_stack)
+    go_grab_some_stacks = Service.action(robot_actions.go_grab_some_stacks)
     go_drop_one = Service.action(robot_actions.go_drop_one)
 
     def __init__(self):
