@@ -73,7 +73,7 @@ def go_grab_one(self):
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
-    sleep(5)
+    #sleep(5)
     
     # Se préparer
     self.elevator_up(async_task=False)
@@ -84,11 +84,11 @@ def go_grab_one(self):
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
-    sleep(5)
+    #sleep(5)
     
     # Attraper
     self.grab_stack(async_task=False)
-    sleep(1)
+    #sleep(1)
     
     return RobotStatus.return_status(RobotStatus.Done, score=0)
 
@@ -108,23 +108,24 @@ def go_grab_some(self):
 def go_drop_one(self):
     zone = choice(ZONES)
     robot_point = Point(dict=self.trajman.get_position())
-    dest_point = Point(x=(zone[0][0] + zone[0][1]) // 2, y=(zone[1][0] + zone[1][1]) // 2)
+    drop_zone = Point(x=(zone[0][0] + zone[0][1]) // 2, y=(zone[1][0] + zone[1][1]) // 2)
+    dest_point = robot_point.compute_offset_point(drop_zone, -110)
     status = self.goth(robot_point.compute_angle(dest_point), async_task=False)
     
     # On va en zone
-    status = self.goto_avoid(x=(zone[0][0] + zone[0][1]) // 2, y=(zone[1][0] + zone[1][1]) // 2, async_task=False, timeout=10)
+    status = self.goto_avoid(x=dest_point.x, y=dest_point.y async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))    
     
     # On drop la pile
     self.clamp_open(async_task=False)
-    sleep(1)
+    sleep(0.5)
 
     # On recule pour manoeuvrer 
-    go_to_point = robot_point.compute_offset_point(dest_point, -90)
+    go_to_point = robot_point.compute_offset_point(drop_zone, -250)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
-    sleep(5)
+    #sleep(5)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
