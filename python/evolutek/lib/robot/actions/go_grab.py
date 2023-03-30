@@ -7,37 +7,44 @@ MIN_Y = 600
 MAX_Y = 2400
 
 class Stack:
-
-    def __init__(self, x, y, color):
+    def __init__(self, id, x, y, color):
         self.pos = Point(x, y)
         self.color = color
 
     def __str__(self):
-        return ("Stack at pos (%d, %d) with color %s" % (self.pos.x, self.pos.y, self.color.name))
+        return ("Stack %d at pos (%d, %d) with color %s" % (self.id, self.pos.x, self.pos.y, self.color.name))
 
-# Format: ((x, y), couleur)
 STACKS = [
-    Stack(Point(225, 450 + 125), Color.Pink),                         # 2
-    Stack(Point(225, 450 + 125 + 200), Color.Yellow),                 # 2
-    Stack(Point(225, 3000 - 450 - 125 - 200), Color.Yellow),          # 1
-    Stack(Point(225, 3000 - 450 - 125), Color.Pink),                  # 1
-    Stack(Point(1000 - 275, 1125), Color.Marron),                     # 2
-    Stack(Point(1000 - 275, 3000 - 1125), Color.Marron),              # 1
-    Stack(Point(1000 + 275, 1125), Color.Marron),                     # 3
-    Stack(Point(1000 + 275, 3000 - 1125), Color.Marron),              # 4
-    Stack(Point(2000 - 225, 450 + 125), Color.Pink),                  # 3
-    Stack(Point(2000 - 225, 450 + 125 + 200), Color.Yellow),          # 3
-    Stack(Point(2000 - 225, 3000 - 450 - 125 - 200), Color.Yellow),   # 4
-    Stack(Point(2000 - 225, 3000 - 450 - 125), Color.Pink)            # 4
-]  # x grands
+    Stack(2, Point(225, 450 + 125), Color.Pink),
+    Stack(2, Point(225, 450 + 125 + 200), Color.Yellow),
+    Stack(1, Point(225, 3000 - 450 - 125 - 200), Color.Yellow),
+    Stack(1, Point(225, 3000 - 450 - 125), Color.Pink),
+    Stack(2, Point(1000 - 275, 1125), Color.Marron),
+    Stack(1, Point(1000 - 275, 3000 - 1125), Color.Marron),
+    Stack(3, Point(1000 + 275, 1125), Color.Marron),
+    Stack(4, Point(1000 + 275, 3000 - 1125), Color.Marron),
+    Stack(3, Point(2000 - 225, 450 + 125), Color.Pink),
+    Stack(3, Point(2000 - 225, 450 + 125 + 200), Color.Yellow),
+    Stack(4, Point(2000 - 225, 3000 - 450 - 125 - 200), Color.Yellow),
+    Stack(4, Point(2000 - 225, 3000 - 450 - 125), Color.Pink)
+]
 
-# Format: ((xmin, xmax), (ymin, ymax))
+class Zone:
+    def __init__(self, id, x1, x2, y1, y2):
+        self.id = id
+        self.p1 = Point(x1, y1)
+        self.p2 = Point(x2, y2)
+        self.center = self.p1.average(self.p2)
+
+    def __str__(self):
+        return ("Zone %s with center (%d, %d)" % (self.id, self.center.x, self.center.y))
+
 ZONES = [
-    ((0, 450), (450+125+200+125, 450+125+200+125+450)),
-    ((0, 450), (3000-450, 3000)),
-    ((450+50, 450+50+450), (0, 450)),
-    ((2000-450, 2000), (1500+150, 1500+150+450)),
-    ((2000-450, 2000), (0, 450))
+    Zone('B', (0, 450), (450+125+200+125, 450+125+200+125+450)),
+    Zone('A', (0, 450), (3000-450, 3000)),
+    Zone('C', (450+50, 450+50+450), (0, 450)),
+    Zone('E', (2000-450, 2000), (1500+150, 1500+150+450)),
+    Zone('D', (2000-450, 2000), (0, 450))
 ]
 
 
@@ -46,7 +53,7 @@ ZONES = [
 def roam_stacks(self):
     for stack in STACKS:
         print('[ROBOT] Going on stack: %s' % str(stack))
-        status = self.goto_avoid(**stack.pos, async_task=False, timeout=10)
+        status = self.goto_avoid(**stack.to_dict() async_task=False, timeout=10)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.get_status(status))
         sleep(5)
@@ -57,7 +64,8 @@ def roam_stacks(self):
 @async_task
 def roam_zones(self):
     for zone in ZONES:
-        status = self.goto_avoid(x=(zone[0][0] + zone[0][1]) // 2, y=(zone[1][0] + zone[1][1]) // 2, async_task=False, timeout=10)
+        print('[ROBOT] Going on zone: %s' % str(zone))
+        status = self.goto_avoid(**zone.center.to_dict(), async_task=False, timeout=10)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.get_status(status))
         sleep(5)
@@ -114,12 +122,15 @@ def go_grab_some_stack(self):
 
 @if_enabled
 @async_task
-def go_drop_one(self):
+def go_drop_all(self):
     zone = choice(ZONES)
+    print('[ROBOT] Going to drop on zone: %s' % str(zone))
+
     robot_point = Point(dict=self.trajman.get_position())
-    drop_zone = Point(x=(zone[0][0] + zone[0][1]) // 2, y=(zone[1][0] + zone[1][1]) // 2)
-    dest_point = robot_point.compute_offset_point(drop_zone, -110)
+    dest_point = robot_point.compute_offset_point(zone.center, -110)
     status = self.goth(robot_point.compute_angle(dest_point), async_task=False)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.get_status(status))
     
     # On va en zone
     status = self.goto_avoid(x=dest_point.x, y=dest_point.y async_task=False, timeout=10)
@@ -131,7 +142,7 @@ def go_drop_one(self):
     sleep(0.5)
 
     # On recule pour manoeuvrer 
-    go_to_point = robot_point.compute_offset_point(drop_zone, -250)
+    go_to_point = robot_point.compute_offset_point(zone.center, -250)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))

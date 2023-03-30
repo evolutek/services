@@ -54,7 +54,7 @@
           "handler": "robot"
         },
         {
-          "fct": "go_drop_one",
+          "fct": "go_drop_all",
           "handler": "robot"
         },
         {
@@ -88,7 +88,7 @@
           "handler": "robot"
         },
         {
-          "fct": "go_drop_one",
+          "fct": "go_drop_all",
           "handler": "robot"
         },
         {
@@ -126,7 +126,7 @@
           "handler": "robot"
         },
         {
-          "fct": "go_drop_one",
+          "fct": "go_drop_all",
           "handler": "robot"
         },
         {
