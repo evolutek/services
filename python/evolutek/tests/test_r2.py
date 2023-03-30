@@ -20,9 +20,9 @@ def test():
         print('Resetting match')
         cs.match.reset_match()
 
-        strat = randin(1, 4)
-        print('Going with startegy %d' % start)
-        cs.ai[ROBOT].set_strategy(index=start)
+        strat = randinr(1, 3)
+        print('Going with startegy %d' % strat)
+        cs.ai[ROBOT].set_strategy(index=strat)
 
         print('Recalibrating robot')
         cs.ai[ROBOT].reset(recalibrate_itself=True)
