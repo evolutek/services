@@ -1,10 +1,10 @@
 from evolutek.lib.geometry.point import Point
+from evolutek.lib.geometry import Polygon
 from evolutek.lib.map.utils import *
 
 from collections import deque
 from copy import deepcopy
-from planar import Polygon as PolygonPlanar
-from shapely.geometry import Polygon, MultiPolygon
+
 
 from time import time
 # TODO: tmp obstacles
@@ -46,29 +46,23 @@ class Map:
 
     # Merge all obstacles
     def merge_obstacles(self):
-        result = MultiPolygon()
-        for obstacle in self.obstacles:
-            result = result.union(obstacle)
-        for tag in self.color_obstacles:
-            result = result.union(self.color_obstacles[tag])
-        for tag in self.robots:
-            result = result.union(self.robots[tag])
-        self.merged_obstacles = result
+        self.merge_obstacles = Polygon.merge_polygons([
+            *self.obstacles,
+            *self.color_obstacles.values(),
+            *self.robots.values()
+        ])
 
     # Remove obstacles to the polygon of the borders
     # Return a Polygon or a MultiPolygon
     def merge_map(self):
-        result = self.borders
-        merged_obstacles = self.merged_obstacles
-        if isinstance(merged_obstacles, Polygon):
-            merged_obstacles = [merged_obstacles]
-        for poly in merged_obstacles:
-            result = merge_polygons(result, poly)
-        self.merged_map = result
+        self.merged_map = Polygon.remove_polygons(
+            self.borders,
+            self.merged_obstacles
+        )
 
     # Check if a point is inside the map
     def is_inside(self, p):
-        return 0 <= p.x <= self.height and 0 <= p.y <= self.width
+        return self.borders.contains(p)
 
     # Add an obstacle to the map
     # poly : polygon of the obstalce
@@ -116,26 +110,7 @@ class Map:
         if not self.is_inside(p1) or not self.is_inside(p2):
             return False
 
-        x1 = min(p1.x, p2.x)
-        x2 = max(p1.x, p2.x)
-        y1 = min(p1.y, p2.y)
-        y2 = max(p1.y, p2.y)
-
-        l = [
-            (x1 - self.robot_radius, y1 - self.robot_radius),
-            (x1 - self.robot_radius, y2 + self.robot_radius),
-            (x2 + self.robot_radius, y2 + self.robot_radius),
-            (x2 + self.robot_radius, y1 - self.robot_radius)
-        ]
-
-        return self.add_obstacle(Polygon(l), tag=tag, type=type)
-
-    def build_octogon(self, center, radius):
-        poly = PolygonPlanar.regular(8, radius=radius, angle=22.5, center=center.to_tuple())
-        l = []
-        for point in poly:
-            l.append((point.x, point.y))
-        return Polygon(l)
+        return self.add_obstacle(Polygon.create_rectangle(p1, p2), tag=tag, type=type)
 
     # Add an octogonal obstacle
     # center : center of the octogon
@@ -143,7 +118,7 @@ class Map:
     def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
         if not self.is_inside(center):
             return False
-        octogon = self.build_octogon(center, radius+self.robot_radius)
+        octogon = Polygon.create_octogon(center, radius + self.robot_radius)
         return self.add_obstacle(octogon, tag=tag, type=type)
 
     # Add the obstacles from the JSON config file
@@ -206,7 +181,7 @@ class Map:
                 inside = False if currentobs is None else \
                     currentobs.contains(start.average(end))
                 collides = True if inside else \
-                        is_colliding_with_polygons(start, end, obstacles)
+                        is_colliding_with_polygons(obstacles, start, end)
                 # If the jump is possible (no obstacle)
                 if not collides:
                     # Removes the points
@@ -228,7 +203,7 @@ class Map:
         if firstpoint is None: return None # Blocked by border
         escapingpoint = firstpoint
         path += [escapingpoint]
-        while is_colliding_with_polygon(escapingpoint, end, polygon):
+        while polygon.is_colliding_with(escapingpoint, end):
             escapingpoint = get_next_point(polygon, escapingpoint, self.borders, order)
             if escapingpoint is None: return None # Blocked by border
             if escapingpoint == firstpoint: return None # Went around the poly
@@ -240,7 +215,7 @@ class Map:
         # Finds the first accessible point (from start)
         # TODO: Opti: mettre polygon en premier dans la liste vu que ça va souvent collide avec lui
         firstaccessible = len(path)-1
-        while firstaccessible > 0 and is_colliding_with_polygons(start, path[firstaccessible], obstacles):
+        while firstaccessible > 0 and is_colliding_with_polygons(obstacles, start, path[firstaccessible]):
             firstaccessible -= 1
 
         # Removes all the points before the first accessible

@@ -19,19 +19,6 @@ def parse_obstacle_file(file):
         data = json.loads(data)
         return data['fixed_obstacles'], data['color_obstacles']
 
-# Check if a line is colling with a polygon
-def is_colliding_with_polygon(p1, p2, poly):
-    line = LineString([p1, p2])
-    return line.crosses(poly)
-
-# Runs is_colliding_with_polygon on multiple polygons
-def is_colliding_with_polygons(p1, p2, polys):
-    line = LineString([p1, p2])
-    for poly in polys:
-        if line.crosses(poly):
-            return True
-    return False
-
 # Returns the nearest collision if there is one else None
 # The returned tuple is the collision point, the line containing
 # that point and the polygon containing that line
