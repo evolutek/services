@@ -57,7 +57,7 @@ class Interface:
     def print_robots(self, robots, color):
         for i in range(len(robots)):
             if not isinstance(robots[i], Point):
-                p = Point(dict=robots[i])
+                p = Point.from_dict(robots[i])
             else:
                 p = robots[i]
             self.canvas.create_rectangle(p.y * self.unit, p.x * self.unit, p.y * self.unit + 10, p.x * self.unit + 10, fill=color)
@@ -65,14 +65,14 @@ class Interface:
     def print_polygon(self, points, color):
 
         for i in range(1, len(points)):
-            p1 = Point(tuple=points[i - 1])
-            p2 = Point(tuple=points[i])
+            p1 = Point.from_tuple(points[i - 1])
+            p2 = Point.from_tuple(points[i])
 
             self.canvas.create_line(p1.y * self.unit, p1.x * self.unit,
                 p2.y * self.unit, p2.x * self.unit, width=5, fill=color)
 
         for p in points:
-            point = Point(tuple=p)
+            point = Point.from_tuple(p)
             x1 = (point.y - 10) * self.unit
             x2 = (point.y + 10) * self.unit
             y1 = (point.x - 10) * self.unit

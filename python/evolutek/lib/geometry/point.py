@@ -16,7 +16,7 @@ class Point(PointShape):
             print('Failed to create point : %s' % str(e))
 
     @staticmethod
-    def from_tuple(dict):
+    def from_tuple(tuple):
         try:
             return Point(tuple[0], tuple[1])
         except Exception as e:

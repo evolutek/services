@@ -46,8 +46,8 @@ class RobotCloud:
   def from_dict(self, dict):
       for ip in dict["points"]:
         self.points[ip] = utils.convert_path_to_points(dict["points"])
-        self.pos[ip]= Point(dict=dict["pos"])
-      self.merged_pos = Point(dict=dict["merged_pos"])
+        self.pos[ip]= Point.from_dict(dict["pos"])
+      self.merged_pos = Point.from_dict(dict["merged_pos"])
       self.tag = dict["tag"]
 
   # Export to dict
@@ -88,7 +88,7 @@ class RobotCloud:
 
   # Add a telemtry
   def add_telemetry(self, pos):
-    self.pos["telemetry"] = Point(dict=pos)
+    self.pos["telemetry"] = Point.from_dict(pos)
     self.points["telemetry"] = []
     self.merged_pos = Point(dict = pos)
 

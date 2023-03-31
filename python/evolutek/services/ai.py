@@ -339,7 +339,7 @@ class AI(Service):
             if self.color != self.color1:
                 destination = Point(destination.x, 3000 - destination.y)
 
-        if Point(dict=self.trajman.get_position()).dist(destination) <= DELTA_POS:
+        if Point.from_dict(self.trajman.get_position()).dist(destination) <= DELTA_POS:
             print('[AI] Already on goal position')
 
         else:

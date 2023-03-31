@@ -18,11 +18,11 @@ def start_interface():
 
 def update_position(telemetry, **kwargs):
     global robot_position
-    robot_position = Point(dict=telemetry)
+    robot_position = Point.from_dict(telemetry)
     global robot_theta
     robot_theta = float(telemetry['theta'])
     #global lidar
-    #lidar.set_position(Point(dict=telemetry), float(telemetry['theta']))
+    #lidar.set_position(Point.from_dict(telemetry), float(telemetry['theta']))
 
 def test_lidar():
     global lidar

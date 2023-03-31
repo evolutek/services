@@ -88,7 +88,7 @@ def goto(self, x, y, avoid=True, mirror=True):
     if mirror:
         y = self.mirror_pos(y=y)['y']
 
-    position = Point(dict=self.trajman.get_position())
+    position = Point.from_dict(self.trajman.get_position())
     if position.dist(Point(x=x, y=y)) < DELTA_POS:
         print('[ROBOT] Already reached position')
         return RobotStatus.return_status(RobotStatus.Reached)
@@ -123,7 +123,7 @@ def move_back(self, side):
         dist = self.dist
 
     _pos = self.trajman.get_position()
-    position = Point(dict=_pos)
+    position = Point.from_dict(_pos)
     angle = float(_pos['theta']) + (0 if side else pi)
 
     x = position.x + dist * cos(angle)
@@ -185,7 +185,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
             #if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
             #    return RobotStatus.return_status(_status)
 
-            pos = Point(dict=self.trajman.get_position())
+            pos = Point.from_dict(self.trajman.get_position())
             dist = pos.dist(destination)
 
             global timeout_event

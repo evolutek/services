@@ -68,14 +68,14 @@ class TimDebugInterface(Interface):
     def print_polygon(self, points, color):
 
         for i in range(1, len(points)):
-            p1 = Point(dict=points[i - 1])
-            p2 = Point(dict=points[i])
+            p1 = Point.from_dict(points[i - 1])
+            p2 = Point.from_dict(points[i])
 
             self.canvas.create_line(p1.y * self.interface_ratio, p1.x * self.interface_ratio,
                 p2.y * self.interface_ratio, p2.x * self.interface_ratio, width=5, fill=color)
 
         for p in points:
-            point = Point(dict=p)
+            point = Point.from_dict(p)
             x1 = (point.y - 10) * self.interface_ratio
             x2 = (point.y + 10) * self.interface_ratio
             y1 = (point.x - 10) * self.interface_ratio

@@ -47,7 +47,7 @@ def collision(p1, p2, obstacles):
         # For every side of the polygon that collides with line
         for side in collision_with_polygon(line, poly):
             # Calculates the distance to the intersection point
-            hit = Point(tuple=line.intersection(side))
+            hit = Point.from_tuple(line.intersection(side))
             distsqr = p1.sqrdist(hit)
             # If this hit is closer, saves it
             if collpoint is None or distsqr < colldistsqr:
@@ -99,7 +99,7 @@ def get_first_point(poly, hit, line, borders, reverseorder):
     if poly.exterior.coords[nextindex] == line.coords[1]:
         res = line.coords[1]
     # Checks that the point is inside the bounds before returning
-    respoint = Point(tuple=res)
+    respoint = Point.from_tuple(res)
     if not borders.contains(respoint): return None
     return respoint
 
@@ -112,7 +112,7 @@ def get_next_point(poly, point, borders, reverseorder):
     # Calculates the next index and loops back if necessary
     nextindex = (index + (-1 if reverseorder else 1)) % nbpoints
     # Returns the next point if possible
-    point = Point(tuple=poly.exterior.coords[nextindex])
+    point = Point.from_tuple(poly.exterior.coords[nextindex])
     if not borders.contains(point): return None
     return point
 
@@ -150,5 +150,5 @@ def convert_path_to_dict(path):
 def convert_path_to_point(path):
     new = []
     for p in path:
-        new.append(Point(dict=p))
+        new.append(Point.from_dict(p))
     return new

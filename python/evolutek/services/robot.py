@@ -153,8 +153,8 @@ class Robot(Service):
     def get_path(self, destination):
 
         robots = self.trajman.get_robots()
-        detected_robots = [ Point(dict=robot) for robot in robots ]
-        origin = Point(dict=self.trajman.get_position())
+        detected_robots = [ Point.from_dict(robot) for robot in robots ]
+        origin = Point.from_dict(self.trajman.get_position())
 
         # TODO : useful ?
         with self.lock:

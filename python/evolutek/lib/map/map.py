@@ -168,8 +168,8 @@ class Map:
                 if not 'p1' in obstacle or not 'p2' in obstacle:
                     print('[MAP] Bad rectangle obstacle in parsing')
                     continue
-                p1 = Point(dict=obstacle['p1'])
-                p2 = Point(dict=obstacle['p2'])
+                p1 = Point.from_dict(obstacle['p1'])
+                p2 = Point.from_dict(obstacle['p2'])
                 if mirror:
                     p1 = Point(x=p1.x, y=(3000 - p1.y))
                     p2 = Point(x=p2.x, y=(3000 - p2.y))
@@ -180,7 +180,7 @@ class Map:
                 if not 'center' in obstacle:
                     print('[MAP] Bad circle obstacle in parsing')
                     continue
-                center = Point(dict=obstacle['center'])
+                center = Point.from_dict(obstacle['center'])
                 if mirror:
                     center = Point(x=center.x, y=(3000 - center.y))
                 obstacle['center'] = center
@@ -326,7 +326,7 @@ class Map:
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
-        nodes = self.get_path_rec(Point(tuple=start), Point(tuple=end), obstacles, [])
+        nodes = self.get_path_rec(Point.from_tuple(start), Point.from_tuple(end), obstacles, [])
 
         if nodes is None:
             print("[MAP] No path found")
@@ -360,8 +360,8 @@ class Map:
                 for i in range(len(poly.exterior.coords) - 1):
                     p1 = poly.exterior.coords[i]
                     side = LineString([
-                        Point(tuple=poly.exterior.coords[i]).round(),
-                        Point(tuple=poly.exterior.coords[i + 1]).round()
+                        Point.from_tuple(poly.exterior.coords[i]).round(),
+                        Point.from_tuple(poly.exterior.coords[i + 1]).round()
                     ])
                     if line.crosses(side):
                         print("[MAP] Validity check: %s collides with %s" % (line, side))
