@@ -1,7 +1,7 @@
 from os import _exit
 from tkinter import *
 from tkinter import Tk
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 
 
 class Interface:

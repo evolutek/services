@@ -1,5 +1,5 @@
 from evolutek.lib.interface import Interface
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from threading import Thread, Lock
 from evolutek.lib.map.utils import convert_path_to_point
 from tkinter import Button, Canvas, Label

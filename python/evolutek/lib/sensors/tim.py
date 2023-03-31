@@ -2,7 +2,7 @@ from enum import Enum
 from math import cos, sin, radians, sqrt
 from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from threading import Thread, Lock
 import evolutek.lib.map.utils as utils
 # Debug Modes of a TIM :

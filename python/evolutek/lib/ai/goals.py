@@ -2,7 +2,7 @@ from enum import Enum
 import json
 from math import pi
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.utils.wrappers import event_waiter
 
 

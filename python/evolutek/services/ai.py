@@ -8,7 +8,7 @@ from evolutek.lib.ai.goals import Goals, AvoidStrategy
 from evolutek.lib.gpio.gpio import Edge
 from evolutek.lib.gpio.gpio_factory import GpioType, create_gpio
 from evolutek.lib.indicators.lightning_mode import LightningMode
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean

@@ -1,4 +1,4 @@
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.utils.task import async_task

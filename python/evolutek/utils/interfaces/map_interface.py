@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from evolutek.lib.interface import Interface
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.map.tim import DebugMode
 from evolutek.lib.watchdog import Watchdog
 from evolutek.lib.map.utils import convert_path_to_point

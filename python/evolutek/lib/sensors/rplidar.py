@@ -3,7 +3,7 @@ from rplidar import RPLidar, RPLidarException
 from time import sleep, time
 from threading import Event, Thread, Lock
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 import evolutek.lib.map.utils as utils
 
 LIDAR_PATH="/dev/RPLIDAR"

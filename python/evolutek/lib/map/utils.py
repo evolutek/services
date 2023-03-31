@@ -4,7 +4,7 @@ import json
 from math import inf
 from shapely.geometry import Polygon, MultiPolygon, LineString, Point as ShapelyPoint
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 
 # Possible types of obstacle
 class ObstacleType(Enum):

@@ -1,4 +1,4 @@
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.map.utils import *
 
 from collections import deque

@@ -1,5 +1,5 @@
 from evolutek.lib.ai.goals import AvoidStrategy, Goals
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 
 from math import pi
 

@@ -18,7 +18,7 @@ make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.sensors.rplidar import Rplidar
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus

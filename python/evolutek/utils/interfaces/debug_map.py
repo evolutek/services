@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from evolutek.lib.map.map import ObstacleType
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 
 from tkinter import *
 from PIL import Image

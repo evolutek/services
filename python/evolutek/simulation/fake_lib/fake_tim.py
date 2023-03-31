@@ -1,7 +1,7 @@
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
 
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from evolutek.lib.map.tim import DebugMode, Tim as _Tim
 from evolutek.simulation.simulator import read_config
 from evolutek.lib.watchdog import Watchdog

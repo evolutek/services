@@ -1,6 +1,6 @@
 from evolutek.utils.interfaces.rplidar_interface import RplidarInterface
 from evolutek.lib.sensors.rplidar import Rplidar
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 from math import pi
 from time import sleep
 from threading import Thread

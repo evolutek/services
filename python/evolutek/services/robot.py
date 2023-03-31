@@ -4,7 +4,7 @@ from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
 from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
-from evolutek.lib.map.point import Point
+from evolutek.lib.geometry.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
