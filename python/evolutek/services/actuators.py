@@ -16,7 +16,7 @@ from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.sensors.try_ohm_sensors import TryOhmSensors
-from evolutek.lib.actuators.servo import ServoHandler
+from evolutek.lib.actuators.i2c_acts.py import I2CActsHandler, I2CActType, ESCVariation
 
 # Other imports
 from evolutek.lib.settings import ROBOT
@@ -76,21 +76,17 @@ class Actuators(Service):
             [1, 2]
         )
 
-        self.servos = ServoHandler({
-            0: [
-                50,
-                180
-            ],
-            15: [
-                50,
-                180
-            ]
-        })
+        servos = {
+            0: [180],
+            15: [180]
+        }
+
+        self.i2c_acts = I2CActsHandler(servos, frequency=50)
 
         self.all_actuators = [
             self.recal_sensors,
             self.axs,
-            self.servos
+            self.i2c_acts
         ]
 
         self.is_initialized = True
@@ -125,6 +121,7 @@ class Actuators(Service):
     # Free all actuators
     @Service.action
     def free(self):
+        # TODO
         pass
 
     # Disable Actuators
@@ -215,10 +212,10 @@ class Actuators(Service):
     # SERVOS #
     ##########
     @Service.action
-    def servo_set_angle(self, ids, angle):
-        if self.servos[int(ids)] == None:
+    def servo_set_angle(self, id, angle):
+        if self.i2c_acts[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        self.servos[int(ids)].set_angle(angle)
+        self.i2c_acts[int(id)].set_angle(angle)
         return RobotStatus.return_status(RobotStatus.Done)
 
 def main():
