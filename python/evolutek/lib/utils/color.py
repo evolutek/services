@@ -52,18 +52,27 @@ class RGBColor:
 
         return RGBColor(self.r * coef, self.g * coef, self.b * coef)
 
+    def get_rgb_percentages(self):
+        sum = self.r + self.g + self.b
+        return (self.r / sum, self.g / sum, self.b / sum)
+
     @staticmethod
     def mean(colors):
         result = RGBColor(0, 0, 0)
         for color in colors:
             result += color
         return result.__div__(len(colors))
-    
-    def compute_dist(self, color):
-        tmp = self.__sub__(color)
-        return sqrt(
-            tmp.r ** 2 + tmp.g **2 + tmp.b **2
-        )
+
+    @staticmethod
+    def compute_dist(a, b):
+        percentages_a = a.get_rgb_percentages()
+        percentages_b = b.get_rgb_percentages()
+
+        return ((
+            abs(percentages_a[0] - percentages_b[0]) +
+            abs(percentages_a[1] - percentages_b[1]) +
+            abs(percentages_a[2] - percentages_b[2])
+        ) / 3)
 
 class Color(Enum):
     Black =     RGBColor(0, 0, 0)
@@ -93,11 +102,14 @@ class Color(Enum):
     
     @staticmethod
     def get_closest_color(rgb_color, colors):
-        closest = Color.Unknown
-        min_dist = rgb_color.compute_dist(Color.Unknown.value)
+        closest = None
+        min_dist = None
+
         for color in colors:
-            dist = rgb_color.compute_dist(color.value)
-            if dist < min_dist:
+            dist = RGBColor.compute_dist(rgb_color, colors)
+            if min_dist is None or dist < min_dist:
                 min_dist = dist
                 closest = color
-        return closest
+
+        return color
+
