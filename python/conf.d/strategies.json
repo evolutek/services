@@ -4,7 +4,7 @@
       "name": "pal_test_move",
       "position": {
         "x": 450,
-        "y": 1175
+        "y": 1125
       },
       "actions": [
         {
@@ -26,19 +26,90 @@
         {
           "fct": "goto_random",
           "handler": "robot"
+        }
+      ]
+    },
+    {
+      "name": "pal_grab_and_drop_one",
+      "position": {
+        "x": 225,
+        "y": 1125
+      },
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+          "handler": "robot"
         },
         {
           "fct": "goto",
-          "args": {
-            "x": 225,
-            "y": 1125
-          }
+	  "args": {
+	    "x": 1000,
+	    "y": 1500
+	  }
         },
         {
-          "fct": "goth",
-          "args": {
-            "theta": 0
-          }
+          "fct": "go_drop_all",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
+      "name": "pal_grab_and_drop_two",
+      "position": {
+        "x": 225,
+        "y": 1125
+      },
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+          "handler": "robot"
+        },
+        {
+          "fct": "go_grab_one_stack",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto",
+	  "args": {
+	    "x": 1000,
+	    "y": 1500
+	  }
+        },
+        {
+          "fct": "go_drop_all",
+          "handler": "robot"
+        }
+      ]
+    },
+    {
+      "name": "pal_grab_and_drop_three",
+      "position": {
+        "x": 225,
+        "y": 1125
+      },
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+          "handler": "robot"
+        },
+        {
+          "fct": "go_grab_one_stack",
+          "handler": "robot"
+        },
+        {
+          "fct": "go_grab_one_stack",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto",
+	  "args": {
+	    "x": 1000,
+	    "y": 1500
+	  }
+        },
+        {
+          "fct": "go_drop_all",
+          "handler": "robot"
         }
       ]
     },
@@ -58,7 +129,15 @@
       "name": "pal_go_back",
       "position": {
         "x": 225,
-        "y": 1175
+        "y": 1125
+      },
+      "theta": 0
+    },
+    {
+      "name": "pal_go_center",
+      "position": {
+        "x": 1000,
+        "y": 1500
       },
       "theta": 0
     }
@@ -68,6 +147,36 @@
       "name": "pal_test_move",
       "goals": [
         "pal_test_move"
+      ],
+      "available": ["pal"],
+      "use_pathfinding": false
+    },
+    {
+      "name": "pal_grab_and_drop_one",
+      "goals": [
+        "pal_grab_and_drop_one",
+	"pal_go_center",
+	"pal_go_back"
+      ],
+      "available": ["pal"],
+      "use_pathfinding": false
+    },
+    {
+      "name": "pal_grab_and_drop_two",
+      "goals": [
+        "pal_grab_and_drop_two",
+	"pal_go_center",
+	"pal_go_back"
+      ],
+      "available": ["pal"],
+      "use_pathfinding": false
+    },
+    {
+      "name": "pal_grab_and_drop_three",
+      "goals": [
+        "pal_grab_and_drop_three",
+	"pal_go_center",
+	"pal_go_back"
       ],
       "available": ["pal"],
       "use_pathfinding": false
