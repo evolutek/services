@@ -2,27 +2,23 @@ import adafruit_tca9548a
 import adafruit_tcs34725
 import board
 import busio
-import time
-
 from enum import Enum
 from time import sleep
 
 from evolutek.lib.component import Component, ComponentsHolder
-from evolutek.lib.utils.color import Color
+from evolutek.lib.utils.color import RGBColor, Color
 
 TCA = None
-CALIBRATE = 10
-
-# Up -> More perturbations (more false positives)
-# Down -> Better detection (more false negatives)
-SENSITIVITY = 1.25
+CALIBRATION_NB_VALUES = 10
+DELTA_FOR_COLOR = 50
 
 class TCS34725(Component):
 
-    def __init__(self, id, channel):
-        self.calibration = [0, 0, 0]
+    def __init__(self, id, channel, color_to_detect=None):
+        self.calibration = RGBColor(0, 0, 0)
         self.sensor = None
         self.channel = channel
+        self.color_to_detect = color_to_detect
         super().__init__('TCS34725', id)
 
     def _initialize(self):
@@ -38,32 +34,28 @@ class TCS34725(Component):
         return True
 
     def calibrate(self):
-        for i in range(CALIBRATE):
-            rgb = self.sensor.color_rgb_bytes
-            self.calibration[0] += rgb[0]
-            self.calibration[1] += rgb[1]
-            self.calibration[2] += rgb[2]
+        calibration = []
+        for i in range(CALIBRATION_NB_VALUES):
+            calibration.append(RGBColor.from_tupple(self.sensor.color_rgb_bytes))
             sleep(0.1)
-        self.calibration[0] /= CALIBRATE
-        self.calibration[1] /= CALIBRATE
-        self.calibration[2] /= CALIBRATE
-        # print('Setup: R = %i - G = %i - B = %i' % (self.calibration[0],self.calibration[1],self.calibration[2]))
+        self.calibration = RGBColor.mean(calibration)
+        print(f"[{self.name}] Sensor {self.id} calibrated with {self.calibration}")
 
     def read(self):
-        if not self.is_initialized:
-            print('[%s] %s %d not initialized' % (self.name, self.name, self.id))
-            return None
+        rgb = RGBColor.from_tupple(self.sensor.color_rgb_bytes)
+        rgb -= self.calibration
+        color = Color.get_closest_color(rgb, self.color_to_detect if self.color_to_detect is not None else Color.__members__)
 
-        rgb = self.sensor.color_rgb_bytes
-        values = [rgb[0] - self.calibration[0], rgb[1] - self.calibration[1], rgb[2] - self.calibration[2]]
-        index = values.index(max(values))
+        if color == Color.Unknown:
+            print(f"[{self.name}] Sensor {self.id} didn't see any color")
 
-        if rgb[index] < self.calibration[index] * SENSITIVITY:
-            return Color.Unknown
+        dist = rgb.compute_dist(color.value)
+        if dist >= DELTA_FOR_COLOR:
+            print(f"[{self.name}] Sensor {self.id} detect a bad color (dist={dist})")
+    
 
-        res = [Color.Red, Color.Green, Color.Blue][index]
-        if res == Color.Blue: return Color.Green
-        return res
+        print(f"[{self.name}] Sensor {self.id} detect color with {color.value} with dist {dist}")
+        return color
 
     def __str__(self):
         s = "----------\n"
