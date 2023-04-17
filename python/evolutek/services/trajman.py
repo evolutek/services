@@ -239,7 +239,7 @@ class TrajMan(Service):
                     global_pos = robot.change_referencial(self.robot_position, self.robot_orientation)
 
                     # Check if it is located on the map
-                    if 0 < global_pos.x and global_pos.x < 2000 and 0 < global_pos.y and global_pos.y < 3000:
+                    if 0 < global_pos.x and global_pos.x < 3000 and 0 < global_pos.y and global_pos.y < 2000:
                         print('[ROBOT] Need to avoid robot at dist: %f' % Point(x=0, y=0).dist(robot))
                         return True
 
