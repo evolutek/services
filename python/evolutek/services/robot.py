@@ -203,7 +203,7 @@ class Robot(Service):
 
     @Service.action
     def disable(self):
-        self.clamp_open(async_task=False)
+        #self.clamp_open(async_task=False)
         self.disabled.set()
         self.need_to_abort.set()
 
@@ -211,9 +211,8 @@ class Robot(Service):
     def reset(self):
         if not self.bau_state:
             return
-
         self.enable()
-        self.clamp_open(async_task=False)
+        #self.clamp_open(async_task=False)
         sleep(0.5)
         self.elevator_down(async_task=False)
         sleep(1)
