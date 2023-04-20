@@ -3,7 +3,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
-from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
+#from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
@@ -94,9 +94,9 @@ class Robot(Service):
 
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
-        fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
+        '''fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map = Map(width, height, self.size)
-        self.map.add_obstacles(fixed_obstacles)
+        self.map.add_obstacles(fixed_obstacles)'''
         self.path = []
         self.robots = []
         self.robots_tags = []
@@ -154,10 +154,10 @@ class Robot(Service):
         with self.lock:
             self.side = color == self.color1
 
-            for obstacle in self.color_obstacles:
+            '''for obstacle in self.color_obstacles:
                 if 'tag' in obstacle:
                     self.map.remove_obstacle(obstacle['tag'])
-            self.map.add_obstacles(self.color_obstacles, not self.side, type=ObstacleType.color)
+            self.map.add_obstacles(self.color_obstacles, not self.side, type=ObstacleType.color)'''
 
     def get_path(self, destination):
 
@@ -167,7 +167,7 @@ class Robot(Service):
 
         # TODO : useful ?
         with self.lock:
-            # Remove robots
+            '''# Remove robots
             for tag in self.robots_tags:
                 self.map.remove_obstacle(tag)
             self.robots_tags.clear()
@@ -184,17 +184,17 @@ class Robot(Service):
             #for tag in robots_tags:
             #    self.map.remove_obstacle(tag)
 
-            self.path = path
+            self.path = path'''
             self.robots = robots
-            return path
+            return destination  # path
 
-    def clean_map(self):
+    '''def clean_map(self):
          with self.lock:
             # Remove robots
             for tag in self.robots_tags:
                 self.map.remove_obstacle(tag)
             self.robots_tags.clear()
-            self.path.clear()
+            self.path.clear()'''
 
     @Service.action
     def enable(self):
