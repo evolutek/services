@@ -11,7 +11,7 @@ def check_status(*args):
             return RobotStatus.return_status(RobotStatus.Failed)
     return RobotStatus.return_status(RobotStatus.Done)
 
-@if_enabled
+'''@if_enabled
 @async_task
 def clamp_open(self):
     status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 0))
@@ -30,7 +30,7 @@ def clamp_open_half(self):
 def clamp_close(self):
     status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 25))
     status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 155))
-    return check_status(status1, status2)
+    return check_status(status1, status2)'''
 
 @if_enabled
 @async_task
@@ -46,7 +46,7 @@ def elevator_down(self):
     status2 = RobotStatus.get_status(self.actuators.ax_move(2, 180))
     return check_status(status1, status2)
 
-@if_enabled
+'''@if_enabled
 @async_task
 def grab_stack(self):
     status1 = RobotStatus.get_status(self.clamp_open_half(async_task=False))
@@ -58,3 +58,4 @@ def grab_stack(self):
     status4 = RobotStatus.get_status(self.clamp_close(async_task=False))
     sleep(0.5)
     return check_status(status1, status2, status3, status4)
+'''

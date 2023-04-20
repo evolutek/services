@@ -43,12 +43,12 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    clamp_open = Service.action(robot_actuators.clamp_open)
+    '''clamp_open = Service.action(robot_actuators.clamp_open)
     clamp_open_half = Service.action(robot_actuators.clamp_open_half)
-    clamp_close = Service.action(robot_actuators.clamp_close)
+    clamp_close = Service.action(robot_actuators.clamp_close)'''
     elevator_up = Service.action(robot_actuators.elevator_up)
     elevator_down = Service.action(robot_actuators.elevator_down)
-    grab_stack = Service.action(robot_actuators.grab_stack)
+    '''grab_stack = Service.action(robot_actuators.grab_stack)'''
 
     # Imported from robot_actions
     goto_random = Service.action(robot_actions.goto_random)
