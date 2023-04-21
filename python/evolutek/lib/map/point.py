@@ -109,5 +109,11 @@ class Point(PointShape):
 
         return Point(x, y)
 
+    def compute_delta_point(self, theta, delta):
+        return Point(
+            self.x + (delta * cos(theta)),
+            self.y + (delta * sin(theta))
+        )
+
     def compute_angle(self, point):
        return atan2(point.y- self.y, point.x- self.x) - atan2(0, 1)
