@@ -34,6 +34,11 @@ def turbine_on(self):
 
 @if_enabled
 @async_task
+def turbine_low_power(self):
+    return RobotStatus.get_status(self.actuators.esc_set_value(8, 0.05))
+
+@if_enabled
+@async_task
 def turbine_off(self):
     return RobotStatus.get_status(self.actuators.esc_set_value(8, 0))
 

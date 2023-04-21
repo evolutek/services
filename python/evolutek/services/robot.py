@@ -46,6 +46,7 @@ class Robot(Service):
     canon_on = Service.action(robot_actuators.canon_on)
     canon_off = Service.action(robot_actuators.canon_off)
     turbine_on = Service.action(robot_actuators.turbine_on)
+    turbine_low_power = Service.action(robot_actuators.turbine_low_power)
     turbine_off = Service.action(robot_actuators.turbine_off)
     extend_left_vacuum = Service.action(robot_actuators.extend_left_vacuum)
     retract_left_vacuum = Service.action(robot_actuators.retract_left_vacuum)

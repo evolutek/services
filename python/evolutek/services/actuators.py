@@ -222,8 +222,9 @@ class Actuators(Service):
     def servo_set_angle(self, id, angle):
         if self.i2c_acts[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        self.i2c_acts[int(id)].set_angle(angle)
-        return RobotStatus.return_status(RobotStatus.Done)
+        if self.i2c_acts[int(id)].set_angle(angle):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     #########
     #  ESC  #
@@ -232,8 +233,9 @@ class Actuators(Service):
     def esc_set_value(self, id, value):
         if self.i2c_acts[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        self.i2c_acts[int(id)].set_speed(value)
-        return RobotStatus.return_status(RobotStatus.Done)
+        if self.i2c_acts[int(id)].set_speed(value):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
 
 def main():
     actuators = Actuators()
