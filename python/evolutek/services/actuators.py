@@ -76,17 +76,23 @@ class Actuators(Service):
             [1, 2]
         )
 
-        #servos = {
-        #    0: [180],
-        #    15: [180]
-        #}
+        acts = {
+            9: [I2CActType.Servo, 180],
+            10: [I2CActType.Servo, 180],
+            11: [I2CActType.Servo, 180],
+            12: [I2CActType.Servo, 180],
+            15: [I2CActType.Servo, 180],
+            8: [I2CActType.ESC, 0.3],
+            13: [I2CActType.ESC, 0.3],
+            14: [I2CActType.ESC, 0.3],
+        }
 
-        #self.i2c_acts = I2CActsHandler(servos, frequency=50)
+        self.i2c_acts = I2CActsHandler(acts, frequency=50)
 
         self.all_actuators = [
             self.recal_sensors,
             self.axs,
-            #self.i2c_acts
+            self.i2c_acts
         ]
 
         self.is_initialized = True
@@ -217,6 +223,16 @@ class Actuators(Service):
         if self.i2c_acts[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
         self.i2c_acts[int(id)].set_angle(angle)
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    #########
+    #  ESC  #
+    #########
+    @Service.action
+    def esc_set_value(self, id, value):
+        if self.i2c_acts[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        self.i2c_acts[int(id)].set_speed(value)
         return RobotStatus.return_status(RobotStatus.Done)
 
 def main():

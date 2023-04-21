@@ -43,9 +43,20 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    '''clamp_open = Service.action(robot_actuators.clamp_open)
+    canon_on = Service.action(robot_actuators.canon_on)
+    canon_off = Service.action(robot_actuators.canon_off)
+    turbine_on = Service.action(robot_actuators.turbine_on)
+    turbine_off = Service.action(robot_actuators.turbine_off)
+    extend_left_vacuum = Service.action(robot_actuators.extend_left_vacuum)
+    retract_left_vacuum = Service.action(robot_actuators.retract_left_vacuum)
+    extend_right_vacuum = Service.action(robot_actuators.extend_right_vacuum)
+    retract_right_vacuum = Service.action(robot_actuators.retract_right_vacuum)
+    clamp_open = Service.action(robot_actuators.clamp_open)
     clamp_open_half = Service.action(robot_actuators.clamp_open_half)
-    clamp_close = Service.action(robot_actuators.clamp_close)'''
+    clamp_close = Service.action(robot_actuators.clamp_close)
+    push_canon = Service.action(robot_actuators.push_canon)
+    push_tank = Service.action(robot_actuators.push_tank)
+    push_drop = Service.action(robot_actuators.push_drop)
     elevator_up = Service.action(robot_actuators.elevator_up)
     elevator_down = Service.action(robot_actuators.elevator_down)
     '''grab_stack = Service.action(robot_actuators.grab_stack)'''
