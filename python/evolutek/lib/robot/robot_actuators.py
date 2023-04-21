@@ -16,31 +16,31 @@ def check_status(*args):
 @if_enabled
 @async_task
 def canon_on(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_value(13, 0.2))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_value(14, 0.2))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0.2))
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0.2))
     return check_status(status1, status2)
 
 @if_enabled
 @async_task
 def canon_off(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_value(13, 0))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_value(14, 0))
+    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(13, 0))
+    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(14, 0))
     return check_status(status1, status2)
 
 @if_enabled
 @async_task
 def turbine_on(self):
-    return RobotStatus.get_status(self.actuators.esc_set_value(8, 0.3))
+    return RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.3))
 
 @if_enabled
 @async_task
 def turbine_low_power(self):
-    return RobotStatus.get_status(self.actuators.esc_set_value(8, 0.05))
+    return RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.05))
 
 @if_enabled
 @async_task
 def turbine_off(self):
-    return RobotStatus.get_status(self.actuators.esc_set_value(8, 0))
+    return RobotStatus.get_status(self.actuators.esc_set_speed(8, 0))
 
 @if_enabled
 @async_task

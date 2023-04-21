@@ -230,7 +230,7 @@ class Actuators(Service):
     #  ESC  #
     #########
     @Service.action
-    def esc_set_value(self, id, value):
+    def esc_set_speed(self, id, value):
         if self.i2c_acts[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
         if self.i2c_acts[int(id)].set_speed(float(value)):
