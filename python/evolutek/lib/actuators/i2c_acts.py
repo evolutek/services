@@ -46,7 +46,7 @@ class I2CAct(Component):
 
             # Initialize ESC properly
             self.set_speed(self.esc_variation.value)
-            sleep(5)    # CONF TIME to check
+            #sleep(5)    # CONF TIME to check
             self.set_speed(0.0)
 
         return True

@@ -1,137 +1,12 @@
 {
   "goals": [
     {
-      "name": "pal_test_move",
-      "position": {
-        "x": 450,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_grab_and_drop_one",
-      "position": {
-        "x": 225,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-	  "args": {
-	    "x": 1000,
-	    "y": 1500
-	  }
-        },
-        {
-          "fct": "go_drop_all",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_grab_and_drop_two",
-      "position": {
-        "x": 225,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-	  "args": {
-	    "x": 1000,
-	    "y": 1500
-	  }
-        },
-        {
-          "fct": "go_drop_all",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_grab_and_drop_three",
-      "position": {
-        "x": 225,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-	  "args": {
-	    "x": 1000,
-	    "y": 1500
-	  }
-        },
-        {
-          "fct": "go_drop_all",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_wait_until",
-      "position": {
-        "x": 1000,
-        "y": 1500
-      },
-      "actions": [
-        {
-          "fct": "wait_until"
-        }
-      ]
-    },
-    {
       "name": "pal_go_back",
       "position": {
-        "x": 225,
-        "y": 1125
+        "x": 1875,
+        "y": 225
       },
-      "theta": 0
+      "theta": "pi/2"
     },
     {
       "name": "pal_go_center",
@@ -139,77 +14,36 @@
         "x": 1000,
         "y": 1500
       },
-      "theta": 0
+      "theta": "pi/2"
     },
     {
-      "name": "go_in_place",
-      "position": {
-        "x": 225,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "goto",
-          "args": {
-		  "x": 225,
-	      "y": 1875
-	      }
-        },
-        {
-          "fct": "goto",
-          "args": {
-	        "x": 725,
-	        "y": 2425
-	      }
-        }
-      ]
-    },
-    {
-      "name": "grab_pink",
+      "name": "grab_three",
 	  "position": {
-	        "x": 725,
-	        "y": 2425
+	        "x": 225,
+	        "y": 225
 	  },
       "actions": [
         {
           "fct": "go_grab_one_stack",
 	  "handler": "robot",
            "args": {
-	    "id": 2,
+	    "id": 1,
 	    "color_name": "Pink"
 	  }
-        }
-      ]
-    },
-    {
-      "name": "grab_yellow",
-	  "position": {
-	        "x": 725,
-	        "y": 2425
-	  },
-      "actions": [
+        },
         {
           "fct": "go_grab_one_stack",
 	  "handler": "robot",
            "args": {
-	    "id": 2,
+	    "id": 1,
 	    "color_name": "Yellow"
 	  }
-        }
-      ]
-    },
-    {
-      "name": "grab_brown",
-	  "position": {
-	        "x": 725,
-	        "y": 2425
-	  },
-      "actions": [
+        },
         {
           "fct": "go_grab_one_stack",
 	  "handler": "robot",
            "args": {
-	    "id": 2,
+	    "id": 1,
 	    "color_name": "Brown"
 	  }
         }
@@ -218,67 +52,38 @@
     {
       "name": "place",
 	  "position": {
-	        "x": 1000,
-	        "y": 1500
+	        "x": 500,
+	        "y": 225
 	  },
       "actions": [
         {
           "fct": "go_drop_all",
-	  "handler": "robot"
+	  "handler": "robot",
+	  "score": 3
         }
       ]
     },
     {
       "name": "fire",
       "position": {
-	      "x": 225,
-	      "y": 2400
+	      "x": 660,
+	      "y": 225
       },
-      "theta": "pi/2",
+      "theta": "pi",
       "actions": [
         {
           "fct": "empty_all_cherries",
-	  "handler": "robot"
+	  "handler": "robot",
+	  "score": 10
         }
       ]
     }
-
-
   ],
   "strategies": [
     {
-      "name": "pal_test_move",
-      "goals": [
-        "pal_test_move"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "pal_grab_and_drop_one",
-      "goals": [
-        "pal_grab_and_drop_one",
-	"pal_go_center",
-	"pal_go_back"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "pal_wait_until",
-      "goals": [
-        "pal_wait_until"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
 	    "name": "BELGIUM",
 	    "goals": [
-		    "go_in_place",
-		    "grab_pink",
-		    "grab_yellow",
-		    "grab_brown",
+		    "grab_three",
 		    "place",
 		    "fire",
 		    "pal_go_back"
@@ -290,7 +95,7 @@
   "starting_pos": {
     "pal": {
       "x": 225,
-      "y": 1125,
+      "y": 225,
       "theta": "0"
     }
   },

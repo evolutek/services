@@ -228,7 +228,7 @@ class AI(Service):
             self.recalibration(x=True, y=False, y_sensor='right', init=True)
             with self.lock:
                 y = self.trajman.get_position()['y']
-                self.goto(x=400, y=y, avoid=False, async_task=False)
+                self.goto(x=400, y=y, avoid=False, mirror=False, async_task=False)
                 self.goto(x=400, y=self.goals.starting_position.y, avoid=False, async_task=False)
                 self.goth(theta=self.goals.starting_theta, async_task=False)
                 self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False, async_task=False)

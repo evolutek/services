@@ -410,7 +410,7 @@ class TrajMan(Service):
     @Service.action
     def disable(self):
         self.disabled.set()
-        self.free()
+        #self.free()
 
     @Service.action
     def enable(self):

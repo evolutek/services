@@ -238,8 +238,10 @@ class Robot(Service):
         sleep(0.5)
         self.retract_right_vacuum(async_task=False)
         sleep(0.5)
+        self.actuators.ax_set_speed(1, 512)
+        self.actuators.ax_set_speed(2, 512)
         self.elevator_move("Low", async_task=False)
-        sleep(1)
+        sleep(2)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
