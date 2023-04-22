@@ -17,49 +17,68 @@
       "theta": "pi/2"
     },
     {
-      "name": "grab_three",
-	  "position": {
+      "name": "grab_first",
+	    "position": {
 	        "x": 225,
 	        "y": 225
-	  },
+	    },
       "actions": [
         {
           "fct": "go_grab_one_stack",
-	  "handler": "robot",
-           "args": {
-	    "id": 1,
-	    "color_name": "Pink"
-	  }
+	        "handler": "robot",
+          "args": {
+	          "id": 1,
+	          "color_name": "Pink"
+	        }
         },
         {
-          "fct": "go_grab_one_stack",
-	  "handler": "robot",
-           "args": {
-	    "id": 1,
-	    "color_name": "Yellow"
-	  }
-        },
-        {
-          "fct": "go_grab_one_stack",
-	  "handler": "robot",
-           "args": {
-	    "id": 1,
-	    "color_name": "Brown"
-	  }
+          "fct": "go_drop_all",
+	        "handler": "robot",
+	        "score": 3
         }
       ]
     },
     {
-      "name": "place",
-	  "position": {
-	        "x": 500,
+      "name": "grab_second",
+	    "position": {
+	        "x": 225,
 	        "y": 225
-	  },
+	    },
       "actions": [
         {
+          "fct": "go_grab_one_stack",
+	        "handler": "robot",
+          "args": {
+	          "id": 1,
+	          "color_name": "Yellow"
+	        }
+        },
+        {
           "fct": "go_drop_all",
-	  "handler": "robot",
-	  "score": 3
+	        "handler": "robot",
+	        "score": 3
+        }
+      ]
+    },
+    {
+      "name": "grab_third",
+	    "position": {
+	        "x": 225,
+	        "y": 225
+	    },
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+	        "handler": "robot",
+          "args": {
+	          "id": 1,
+	          "color_name": "Brown"
+	        }
+        },
+        {
+          "fct": "go_drop_all",
+	        "handler": "robot",
+	        "score": 3
         }
       ]
     },
@@ -83,8 +102,9 @@
     {
 	    "name": "BELGIUM",
 	    "goals": [
-		    "grab_three",
-		    "place",
+		    "grab_first",
+        "grab_second",
+        "grab_third",
 		    "fire",
 		    "pal_go_back"
 	    ],
