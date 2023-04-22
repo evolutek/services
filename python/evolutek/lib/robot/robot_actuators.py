@@ -93,18 +93,28 @@ def push_tank(self):
 def push_drop(self):
     return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(12, 172)))
 
-@if_enabled
-@async_task
-def elevator_up(self):
-    status1 = RobotStatus.get_status(self.actuators.ax_move(1, 512))
-    status2 = RobotStatus.get_status(self.actuators.ax_move(2, 180))
-    return check_status(status1, status2)
+class ElevatorPosition(Enum):
+    Low = (750, 180)
+    GetSecond = (655, 305)
+    DropSecond = (635, 325)
+    GetThird = (605, 355)
+    DropThird = (585, 375)
+    GetFourth = (555, 405)
+    High = (520, 450)
+
+    @staticmethod
+    def get_position(position):
+        if isinstance(position, ElevatorPositions):
+            return position
+        try:
+            return ElevatorPosition.__members__[positon]
+        except:
+            return None
 
 @if_enabled
 @async_task
-def elevator_down(self):
-    status1 = RobotStatus.get_status(self.actuators.ax_move(1, 775))
-    status2 = RobotStatus.get_status(self.actuators.ax_move(2, 512))
-    return check_status(status1, status2)
-
- check_status(status1, status2, status3, status4)
+def elevator_move(self, positon):
+    position = ElevatorPosition.get_position(positon)
+    status1 = RobotStatus.get_status(self.actuators.ax_move(1, position[0]))
+    status2 = RobotStatus.get_status(self.actuators.ax_move(2, position[1]))
+        return check_status(status1, status2) 
