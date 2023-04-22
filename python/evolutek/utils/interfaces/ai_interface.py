@@ -121,7 +121,7 @@ class StatusFrame(IFRAME):
 		print("Bonjour slurping un peu moins")
 		self.cs.robot[ROBOT].fill_n_cherries(2)
 
-    def slurp_set(self):
+	def slurp_set(self):
 		print("Bonjour slurping le set")
 		self.cs.robot[ROBOT].set_cherry_count()
 
