@@ -6,7 +6,7 @@
         "x": 1875,
         "y": 225
       },
-      "theta": 0
+      "theta": "pi/2"
     },
     {
       "name": "pal_go_center",
