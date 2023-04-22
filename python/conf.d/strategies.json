@@ -149,25 +149,27 @@
       },
       "actions": [
         {
-          "fct": "goto_avoid",
-	  "handler": "robot",
-           "args": {
-	    "x": 225,
-	    "y": 1875
-	  }
+          "fct": "goto",
+          "args": {
+		  "x": 225,
+	      "y": 1875
+	      }
         },
         {
-          "fct": "goto_avoid",
-	  "handler": "robot",
-           "args": {
-	    "x": 725,
-	    "y": 2425
-	  }
+          "fct": "goto",
+          "args": {
+	        "x": 725,
+	        "y": 2425
+	      }
         }
       ]
     },
     {
       "name": "grab_pink",
+	  "position": {
+	        "x": 725,
+	        "y": 2425
+	  },
       "actions": [
         {
           "fct": "go_grab_one_stack",
@@ -181,6 +183,10 @@
     },
     {
       "name": "grab_yellow",
+	  "position": {
+	        "x": 725,
+	        "y": 2425
+	  },
       "actions": [
         {
           "fct": "go_grab_one_stack",
@@ -194,6 +200,10 @@
     },
     {
       "name": "grab_brown",
+	  "position": {
+	        "x": 725,
+	        "y": 2425
+	  },
       "actions": [
         {
           "fct": "go_grab_one_stack",
@@ -207,6 +217,10 @@
     },
     {
       "name": "place",
+	  "position": {
+	        "x": 1000,
+	        "y": 1500
+	  },
       "actions": [
         {
           "fct": "go_drop_all",
