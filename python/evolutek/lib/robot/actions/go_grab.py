@@ -50,11 +50,11 @@ ZONES = [
     Zone('D', 2550, 3000, 1550, 2000)
 ]
 
-def check_status(*args):
+def check_status(*args, score=0):
     for stat in args:
         if stat != RobotStatus.Done:
             return RobotStatus.return_status(RobotStatus.Failed)
-    return RobotStatus.return_status(RobotStatus.Done)
+    return RobotStatus.return_status(RobotStatus.Done, score=score)
 
 @if_enabled
 @async_task
@@ -173,4 +173,4 @@ def go_drop_all(self):
         return RobotStatus.return_status(RobotStatus.get_status(status))
     #sleep(5)
 
-    return RobotStatus.return_status(RobotStatus.Done, score=0)
+    return RobotStatus.return_status(RobotStatus.Done, score=3)
