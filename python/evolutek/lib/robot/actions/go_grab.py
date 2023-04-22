@@ -32,6 +32,13 @@ STACKS = [
     Stack(4, 1125, 1275, Color.Brown)
 ]
 
+def get_stack_pos(id, color_name):
+    color = Color.get_by_name(color_name)
+    for stack in STACKS:
+        if stack.id == int(id) and stack.color == color:
+            return stack.pos
+    return None
+
 class Zone:
     def __init__(self, id, x1, x2, y1, y2):
         self.id = id
