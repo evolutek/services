@@ -31,3 +31,10 @@ def fill_n_cherries(self, n):
 @async_task
 def fill_all_cherries(self):
     return self.fill_n_cherries(10, async_task=False)
+ 
+    
+@if_enabled
+@async_task
+def set_cherry_count(self):
+    self.cherry_count = 10
+    return RobotStatus.return_status(RobotStatus.Done)
