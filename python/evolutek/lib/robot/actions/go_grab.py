@@ -149,12 +149,17 @@ def go_drop_all(self):
     zone_pos = Point(dict=self.mirror_pos(275, 225))
 
     robot_point = Point(dict=self.trajman.get_position())
-    dest_point = robot_point.compute_offset_point(zone_pos, -110)
+    dest_point = robot_point.compute_offset_point(zone_pos, -140)
     status = self.goth(robot_point.compute_angle(dest_point), async_task=False, mirror=False)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
 
+    status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, timeout=10)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.get_status(status))
+
     # On va en zone
+    dest_point = robot_point.compute_offset_point(zone_pos, -110)
     status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))    
