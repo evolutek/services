@@ -146,7 +146,7 @@ def go_grab_one_stack(self, id, color_name):
 @if_enabled
 @async_task
 def go_drop_all(self):
-    zone_pos = Point(dict=self.mirror_pos(225, 225))
+    zone_pos = Point(dict=self.mirror_pos(325, 225))
 
     robot_point = Point(dict=self.trajman.get_position())
     dest_point = robot_point.compute_offset_point(zone_pos, -110)
