@@ -3,12 +3,39 @@
     {
       "name": "pal_go_back",
       "position": {
-        "x": 1875,
-        "y": 225
-      }
+	      "x": 660,
+	      "y": 225
+      },
+      "actions": [
+        {
+          "fct": "goto",
+          "args": {
+            "x": 660,
+            "y": 600
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1875,
+            "y": 600
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1875,
+            "y": 225
+          }
+        }
+      ]
     },
     {
       "name": "pal_go_center",
+      "position": {
+	      "x": 660,
+	      "y": 225
+      },
       "position": {
         "x": 1000,
         "y": 1500
