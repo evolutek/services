@@ -45,7 +45,7 @@
     {
       "name": "grab_first",
 	    "position": {
-	        "x": 325,
+	        "x": 300,
 	        "y": 225
 	    },
       "actions": [
@@ -67,7 +67,7 @@
     {
       "name": "grab_second",
 	    "position": {
-	        "x": 465,
+	        "x": 500,
 	        "y": 225
 	    },
       "actions": [
@@ -89,7 +89,7 @@
     {
       "name": "grab_third",
 	    "position": {
-	        "x": 585,
+	        "x": 500,
 	        "y": 225
 	    },
       "actions": [
