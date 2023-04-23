@@ -146,7 +146,7 @@ def go_grab_one_stack(self, id, color_name):
 @if_enabled
 @async_task
 def go_drop_all(self):
-    zone_pos = Point(dict=self.mirror_pos(300, 225))
+    zone_pos = Point(dict=self.mirror_pos(275, 225))
 
     robot_point = Point(dict=self.trajman.get_position())
     dest_point = robot_point.compute_offset_point(zone_pos, -110)
@@ -167,7 +167,7 @@ def go_drop_all(self):
     sleep(0.5)
 
     # On recule pour manoeuvrer 
-    go_to_point = robot_point.compute_offset_point(zone_pos, -200)
+    go_to_point = robot_point.compute_offset_point(zone_pos, -225)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
