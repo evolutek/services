@@ -16,7 +16,7 @@ from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.sensors.try_ohm_sensors import TryOhmSensors
-from evolutek.lib.actuators.servo import ServoHandler
+from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 
 # Other imports
 from evolutek.lib.settings import ROBOT
@@ -60,10 +60,10 @@ class Actuators(Service):
         self.recal_sensors[1].calibrate(left_slope1, left_intercept1, left_slope2, left_intercept2)
         self.recal_sensors[2].calibrate(right_slope1, right_intercept1, right_slope2, right_intercept2)
 
-        self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
-        self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
-        self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
-        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+        #self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
+        #self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
+        #self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
+        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
@@ -76,21 +76,23 @@ class Actuators(Service):
             [1, 2]
         )
 
-        self.servos = ServoHandler({
-            0: [
-                50,
-                180
-            ],
-            15: [
-                50,
-                180
-            ]
-        })
+        acts = {
+            9: [I2CActType.Servo, 180],
+            10: [I2CActType.Servo, 180],
+            11: [I2CActType.Servo, 180],
+            12: [I2CActType.Servo, 180],
+            15: [I2CActType.Servo, 180],
+            8: [I2CActType.ESC, 0.5],
+            13: [I2CActType.ESC, 0.5],
+            14: [I2CActType.ESC, 0.5],
+        }
+
+        self.i2c_acts = I2CActsHandler(acts, frequency=50)
 
         self.all_actuators = [
             self.recal_sensors,
             self.axs,
-            self.servos
+            self.i2c_acts
         ]
 
         self.is_initialized = True
@@ -125,6 +127,7 @@ class Actuators(Service):
     # Free all actuators
     @Service.action
     def free(self):
+        # TODO
         pass
 
     # Disable Actuators
@@ -136,8 +139,8 @@ class Actuators(Service):
     # Enable Actuators
     @Service.action
     def enable(self):
-        if self.bau.read():
-            self.disabled.clear()
+        #if self.bau.read():
+        self.disabled.clear()
 
     #################
     # RECAL SENSORS #
@@ -153,7 +156,8 @@ class Actuators(Service):
     #######
     @Service.action
     def bau_read(self):
-        return self.bau.read()
+        return True
+        #return self.bau.read()
 
     def bau_callback(self, event, value, **kwargs):
         self.bau_led.write(value)
@@ -215,11 +219,23 @@ class Actuators(Service):
     # SERVOS #
     ##########
     @Service.action
-    def servo_set_angle(self, ids, angle):
-        if self.servos[int(ids)] == None:
+    def servo_set_angle(self, id, angle):
+        if self.i2c_acts[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        self.servos[int(ids)].set_angle(angle)
-        return RobotStatus.return_status(RobotStatus.Done)
+        if self.i2c_acts[int(id)].set_angle(int(angle)):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    #########
+    #  ESC  #
+    #########
+    @Service.action
+    def esc_set_speed(self, id, value):
+        if self.i2c_acts[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_acts[int(id)].set_speed(float(value)):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
 
 def main():
     actuators = Actuators()

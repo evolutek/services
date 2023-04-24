@@ -88,7 +88,7 @@ class AI(Service):
 
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
         if not self.goals.parsed:
-            print('[AI] Failed to parsed goals')
+            print('[AI] Failed to parse goals')
             Thread(target=self.fsm.run_error).start()
 
         else:
@@ -228,7 +228,7 @@ class AI(Service):
             self.recalibration(x=True, y=False, y_sensor='right', init=True)
             with self.lock:
                 y = self.trajman.get_position()['y']
-                self.goto(x=400, y=y, avoid=False, async_task=False)
+                self.goto(x=400, y=y, avoid=False, mirror=False, async_task=False)
                 self.goto(x=400, y=self.goals.starting_position.y, avoid=False, async_task=False)
                 self.goth(theta=self.goals.starting_theta, async_task=False)
                 self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False, async_task=False)
@@ -337,7 +337,7 @@ class AI(Service):
             use_pathfinding = self.use_pathfinding
 
             if self.color != self.color1:
-                destination = Point(destination.x, 3000 - destination.y)
+                destination = Point(destination.x, 2000 - destination.y)
 
         if Point(dict=self.trajman.get_position()).dist(destination) <= DELTA_POS:
             print('[AI] Already on goal position')

@@ -17,12 +17,12 @@ def main():
     GPIO.setup(RESET_GPIO, GPIO.IN)
     triggered = False
     needRestart = False
-    lastVal = GPIO.HIGH
+    lastVal = GPIO.LOW
     while True:
         val = GPIO.input(RESET_GPIO)
-        if val == GPIO.LOW and lastVal == GPIO.HIGH:
+        if val == GPIO.HIGH and lastVal == GPIO.LOW:
             needRestart = True
-        elif val == GPIO.HIGH:
+        elif val == GPIO.LOW:
             needRestart = False
         if needRestart:
             restartAll()

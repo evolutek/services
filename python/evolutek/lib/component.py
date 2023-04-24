@@ -39,18 +39,18 @@ class Component:
 
 class ComponentsHolder:
 
-    def __init__(self, name, components, component_type, common_args=None):
+    def __init__(self, name, components, component_type, components_common_params=None):
 
         self.init = False
         self.name = name
         self.components = {}
 
-        self.initialize(components, component_type, common_args)
+        self.initialize(components, component_type, components_common_params)
 
     def _initialize(self):
         return True
 
-    def initialize(self, components, component_type, common_args):
+    def initialize(self, components, component_type, components_common_params):
         self.init = False
 
         print('[%s] Init %s holder' % (self.name, self.name))
@@ -61,16 +61,16 @@ class ComponentsHolder:
         else:
             print('[%s] %s holder initialized' % (self.name, self.name))
 
-        if common_args is None:
-            common_args = []
+        if components_common_params is None:
+            components_common_params = []
 
         self.init = True
 
         for component in components:
             if isinstance(components, list):
-                self.components[component] = component_type(component, *common_args)
+                self.components[component] = component_type(component, *components_common_params)
             else:
-                self.components[component] = component_type(component, *common_args, *(components[component]))
+                self.components[component] = component_type(component, *components_common_params, *(components[component]))
         return True
 
     def is_initialized(self):

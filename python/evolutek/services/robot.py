@@ -3,7 +3,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Event as CellaservEvent, Service
 
-from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
+#from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
@@ -43,20 +43,35 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
+    canon_on = Service.action(robot_actuators.canon_on)
+    canon_off = Service.action(robot_actuators.canon_off)
+    turbine_on = Service.action(robot_actuators.turbine_on)
+    turbine_off = Service.action(robot_actuators.turbine_off)
+    extend_left_vacuum = Service.action(robot_actuators.extend_left_vacuum)
+    retract_left_vacuum = Service.action(robot_actuators.retract_left_vacuum)
+    extend_right_vacuum = Service.action(robot_actuators.extend_right_vacuum)
+    retract_right_vacuum = Service.action(robot_actuators.retract_right_vacuum)
     clamp_open = Service.action(robot_actuators.clamp_open)
     clamp_open_half = Service.action(robot_actuators.clamp_open_half)
     clamp_close = Service.action(robot_actuators.clamp_close)
-    elevator_up = Service.action(robot_actuators.elevator_up)
-    elevator_down = Service.action(robot_actuators.elevator_down)
-    grab_stack = Service.action(robot_actuators.grab_stack)
+    push_canon = Service.action(robot_actuators.push_canon)
+    push_tank = Service.action(robot_actuators.push_tank)
+    push_drop = Service.action(robot_actuators.push_drop)
+    elevator_move = Service.action(robot_actuators.elevator_move)
 
     # Imported from robot_actions
     goto_random = Service.action(robot_actions.goto_random)
     roam_stacks = Service.action(robot_actions.roam_stacks)
     roam_zones = Service.action(robot_actions.roam_zones)
     go_grab_one_stack = Service.action(robot_actions.go_grab_one_stack)
-    go_grab_some_stacks = Service.action(robot_actions.go_grab_some_stacks)
     go_drop_all = Service.action(robot_actions.go_drop_all)
+    empty_n_cherries = Service.action(robot_actions.empty_n_cherries)
+    empty_all_cherries = Service.action(robot_actions.empty_all_cherries)
+    fill_n_cherries = Service.action(robot_actions.fill_n_cherries)
+    fill_all_cherries = Service.action(robot_actions.fill_all_cherries)
+    set_cherry_count = Service.action(robot_actions.set_cherry_count)
+    vacuum_10_cherry_right = Service.action(robot_actions.vacuum_10_cherry_right)
+    vacuum_10_cherry_left = Service.action(robot_actions.vacuum_10_cherry_left)
 
     def __init__(self):
 
@@ -64,6 +79,8 @@ class Robot(Service):
 
         self.cs = CellaservProxy()
         self.lock = Lock()
+
+        self.cherry_count = 0
 
         self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')
@@ -94,9 +111,9 @@ class Robot(Service):
 
         width = int(self.cs.config.get(section='map', option='width'))
         height = int(self.cs.config.get(section='map', option='height'))
-        fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
+        '''fixed_obstacles, self.color_obstacles = parse_obstacle_file('/etc/conf.d/obstacles.json')
         self.map = Map(width, height, self.size)
-        self.map.add_obstacles(fixed_obstacles)
+        self.map.add_obstacles(fixed_obstacles)'''
         self.path = []
         self.robots = []
         self.robots_tags = []
@@ -154,10 +171,10 @@ class Robot(Service):
         with self.lock:
             self.side = color == self.color1
 
-            for obstacle in self.color_obstacles:
+            '''for obstacle in self.color_obstacles:
                 if 'tag' in obstacle:
                     self.map.remove_obstacle(obstacle['tag'])
-            self.map.add_obstacles(self.color_obstacles, not self.side, type=ObstacleType.color)
+            self.map.add_obstacles(self.color_obstacles, not self.side, type=ObstacleType.color)'''
 
     def get_path(self, destination):
 
@@ -167,7 +184,7 @@ class Robot(Service):
 
         # TODO : useful ?
         with self.lock:
-            # Remove robots
+            '''# Remove robots
             for tag in self.robots_tags:
                 self.map.remove_obstacle(tag)
             self.robots_tags.clear()
@@ -184,17 +201,17 @@ class Robot(Service):
             #for tag in robots_tags:
             #    self.map.remove_obstacle(tag)
 
-            self.path = path
+            self.path = path'''
             self.robots = robots
-            return path
+            return destination  # path
 
-    def clean_map(self):
+    '''def clean_map(self):
          with self.lock:
             # Remove robots
             for tag in self.robots_tags:
                 self.map.remove_obstacle(tag)
             self.robots_tags.clear()
-            self.path.clear()
+            self.path.clear()'''
 
     @Service.action
     def enable(self):
@@ -203,7 +220,7 @@ class Robot(Service):
 
     @Service.action
     def disable(self):
-        self.clamp_open(async_task=False)
+        #self.clamp_open(async_task=False)
         self.disabled.set()
         self.need_to_abort.set()
 
@@ -211,12 +228,21 @@ class Robot(Service):
     def reset(self):
         if not self.bau_state:
             return
-
         self.enable()
+        self.turbine_off(async_task=False)
+        self.canon_off(async_task=False)
         self.clamp_open(async_task=False)
         sleep(0.5)
-        self.elevator_down(async_task=False)
-        sleep(1)
+        self.push_drop(async_task=False)
+        sleep(0.5)
+        self.retract_left_vacuum(async_task=False)
+        sleep(0.5)
+        self.retract_right_vacuum(async_task=False)
+        sleep(0.5)
+        self.actuators.ax_set_speed(1, 512)
+        self.actuators.ax_set_speed(2, 512)
+        self.elevator_move("Low", async_task=False)
+        sleep(2)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

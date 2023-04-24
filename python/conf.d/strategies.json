@@ -1,137 +1,34 @@
 {
   "goals": [
     {
-      "name": "pal_test_move",
-      "position": {
-        "x": 450,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_random",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_grab_and_drop_one",
-      "position": {
-        "x": 225,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-	  "args": {
-	    "x": 1000,
-	    "y": 1500
-	  }
-        },
-        {
-          "fct": "go_drop_all",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_grab_and_drop_two",
-      "position": {
-        "x": 225,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-	  "args": {
-	    "x": 1000,
-	    "y": 1500
-	  }
-        },
-        {
-          "fct": "go_drop_all",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_grab_and_drop_three",
-      "position": {
-        "x": 225,
-        "y": 1125
-      },
-      "actions": [
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "go_grab_one_stack",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto",
-	  "args": {
-	    "x": 1000,
-	    "y": 1500
-	  }
-        },
-        {
-          "fct": "go_drop_all",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "pal_wait_until",
-      "position": {
-        "x": 1000,
-        "y": 1500
-      },
-      "actions": [
-        {
-          "fct": "wait_until"
-        }
-      ]
-    },
-    {
       "name": "pal_go_back",
       "position": {
-        "x": 225,
-        "y": 1125
+	      "x": 660,
+	      "y": 225
       },
-      "theta": 0
+      "actions": [
+        {
+          "fct": "goto",
+          "args": {
+            "x": 660,
+            "y": 650
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1875,
+            "y": 650
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1875,
+            "y": 225
+          }
+        }
+      ]
     },
     {
       "name": "pal_go_center",
@@ -139,68 +36,115 @@
         "x": 1000,
         "y": 1500
       },
-      "theta": 0
+      "theta": "pi/2"
+    },
+    {
+      "name": "grab_first",
+	    "position": {
+	        "x": 300,
+	        "y": 225
+	    },
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+	        "handler": "robot",
+          "args": {
+	          "id": 1,
+	          "color_name": "Pink"
+	        }
+        },
+        {
+          "fct": "go_drop_all",
+	        "handler": "robot",
+	        "score": 3
+        }
+      ]
+    },
+    {
+      "name": "grab_second",
+	    "position": {
+	        "x": 500,
+	        "y": 225
+	    },
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+	        "handler": "robot",
+          "args": {
+	          "id": 1,
+	          "color_name": "Yellow"
+	        }
+        },
+        {
+          "fct": "go_drop_all",
+	        "handler": "robot",
+	        "score": 3
+        }
+      ]
+    },
+    {
+      "name": "grab_third",
+	    "position": {
+	        "x": 500,
+	        "y": 225
+	    },
+      "actions": [
+        {
+          "fct": "go_grab_one_stack",
+	        "handler": "robot",
+          "args": {
+	          "id": 1,
+	          "color_name": "Brown"
+	        }
+        },
+        {
+          "fct": "go_drop_all",
+	        "handler": "robot",
+	        "score": 3
+        }
+      ]
+    },
+    {
+      "name": "fire",
+      "position": {
+	      "x": 660,
+	      "y": 225
+      },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "empty_all_cherries",
+	  "handler": "robot",
+	  "score": 15
+        }
+      ]
     }
   ],
   "strategies": [
     {
-      "name": "pal_test_move",
-      "goals": [
-        "pal_test_move"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "pal_grab_and_drop_one",
-      "goals": [
-        "pal_grab_and_drop_one",
-	"pal_go_center",
-	"pal_go_back"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "pal_grab_and_drop_two",
-      "goals": [
-        "pal_grab_and_drop_two",
-	"pal_go_center",
-	"pal_go_back"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "pal_grab_and_drop_three",
-      "goals": [
-        "pal_grab_and_drop_three",
-	"pal_go_center",
-	"pal_go_back"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
-    },
-    {
-      "name": "pal_wait_until",
-      "goals": [
-        "pal_wait_until"
-      ],
-      "available": ["pal"],
-      "use_pathfinding": false
+	    "name": "BELGIUM",
+	    "goals": [
+		    "grab_first",
+			"grab_second",
+			"grab_third",
+		    "fire",
+		    "pal_go_back"
+	    ],
+	    "available": ["pal"],
+	    "use_pathfinding": false
     }
   ],
   "starting_pos": {
     "pal": {
       "x": 225,
-      "y": 1125,
+      "y": 225,
       "theta": "0"
     }
   },
   "critical_goals": {
     "pal": {
       "goal": "pal_go_back",
-      "timeout": 42
+      "timeout": 90
     }
   }
 }
