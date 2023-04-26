@@ -8,6 +8,7 @@ from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
+import evolutek.lib.robot.elevator as elevator
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
@@ -45,18 +46,38 @@ class Robot(Service):
     # Imported from robot_actuators
     canon_on = Service.action(robot_actuators.canon_on)
     canon_off = Service.action(robot_actuators.canon_off)
+
     turbine_on = Service.action(robot_actuators.turbine_on)
     turbine_off = Service.action(robot_actuators.turbine_off)
+
     extend_left_vacuum = Service.action(robot_actuators.extend_left_vacuum)
     retract_left_vacuum = Service.action(robot_actuators.retract_left_vacuum)
     extend_right_vacuum = Service.action(robot_actuators.extend_right_vacuum)
     retract_right_vacuum = Service.action(robot_actuators.retract_right_vacuum)
+
     clamp_open = Service.action(robot_actuators.clamp_open)
     clamp_open_half = Service.action(robot_actuators.clamp_open_half)
     clamp_close = Service.action(robot_actuators.clamp_close)
+
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)
     push_drop = Service.action(robot_actuators.push_drop)
+
+    class Elevator(self):
+        def __init__(self):
+            self.position = ElevatorPosition.Low
+            self.cakes = {"Brown": 0, "Yellow": 0, "Pink": 0}
+
+        def __str__(self):
+            return (f"""Elevator at position {self.position.name}
+            Cakes: {self.cakes["Brown"]} brown, {self.cakes["Yellow"]} yellow, {self.cakes["Pink"]} pink""")
+
+        def move(self, position):
+            elevator.elevator_move(position)
+
+
+    elevator = Elevator()
+
     elevator_move = Service.action(robot_actuators.elevator_move)
 
     # Imported from robot_actions

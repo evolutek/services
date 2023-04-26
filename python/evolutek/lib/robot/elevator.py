@@ -12,7 +12,7 @@ class ElevatorPosition(Enum):
 
     @staticmethod
     def get_position(position):
-        if isinstance(position, ElevatorPositions):
+        if isinstance(position, ElevatorPosition):
             return position
         try:
             return ElevatorPosition.__members__[position]
