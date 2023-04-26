@@ -8,7 +8,7 @@ from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
-import evolutek.lib.robot.elevator as elevator
+import evolutek.lib.robot.elevator as robot_elevator
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
@@ -62,21 +62,6 @@ class Robot(Service):
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)
     push_drop = Service.action(robot_actuators.push_drop)
-
-    class Elevator(self):
-        def __init__(self):
-            self.position = elevator.ElevatorPosition.Low
-            self.cakes = {"Brown": 0, "Yellow": 0, "Pink": 0}
-
-        def __str__(self):
-            return (f"""Elevator at position {self.position.name}
-            Cakes: {self.cakes["Brown"]} brown, {self.cakes["Yellow"]} yellow, {self.cakes["Pink"]} pink""")
-
-        def move(self, position):
-            elevator.elevator_move(position)
-
-
-    elevator = Elevator()
 
     elevator_move = Service.action(robot_actuators.elevator_move)
 
@@ -141,6 +126,20 @@ class Robot(Service):
 
         self.current_task = None
         Thread(target=self.run_tasks).start()
+
+        class Elevator(self):
+            def __init__(self):
+                self.position = robot_elevator.ElevatorPosition.Low
+                self.cakes = {"Brown": 0, "Yellow": 0, "Pink": 0}
+
+            def __str__(self):
+                return (f"""Elevator at position {self.position.name}
+                Cakes: {self.cakes["Brown"]} brown, {self.cakes["Yellow"]} yellow, {self.cakes["Pink"]} pink""")
+
+            def move(self, position):
+                robot_elevator.elevator_move(position)
+
+        self.elevator = Elevator()
 
         try:
             cs = CellaservProxy()
@@ -262,7 +261,7 @@ class Robot(Service):
         sleep(0.5)
         self.actuators.ax_set_speed(1, 512)
         self.actuators.ax_set_speed(2, 512)
-        self.elevator_move("Low", async_task=False)
+        self.elevator.move("Low", async_task=False)
         sleep(2)
 
     @Service.event('%s-bau' % ROBOT)
