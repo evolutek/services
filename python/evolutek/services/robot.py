@@ -6,9 +6,10 @@ from cellaserv.service import Event as CellaservEvent, Service
 #from evolutek.lib.map.map import parse_obstacle_file, ObstacleType, Map
 from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
-import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
 import evolutek.lib.robot.robot_elevator as robot_elevator
+import evolutek.lib.robot.robot_vacuum as robot_vacuum
+import evolutek.lib.robot.robot_canon as robot_canon
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
@@ -47,23 +48,9 @@ class Robot(Service):
     canon_on = Service.action(robot_actuators.canon_on)
     canon_off = Service.action(robot_actuators.canon_off)
 
-    turbine_on = Service.action(robot_actuators.turbine_on)
-    turbine_off = Service.action(robot_actuators.turbine_off)
-
-    extend_left_vacuum = Service.action(robot_actuators.extend_left_vacuum)
-    retract_left_vacuum = Service.action(robot_actuators.retract_left_vacuum)
-    extend_right_vacuum = Service.action(robot_actuators.extend_right_vacuum)
-    retract_right_vacuum = Service.action(robot_actuators.retract_right_vacuum)
-
-    clamp_open = Service.action(robot_actuators.clamp_open)
-    clamp_open_half = Service.action(robot_actuators.clamp_open_half)
-    clamp_close = Service.action(robot_actuators.clamp_close)
-
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)
     push_drop = Service.action(robot_actuators.push_drop)
-
-    elevator_move = Service.action(robot_actuators.elevator_move)
 
     # Imported from robot_actions
     goto_random = Service.action(robot_actions.goto_random)
@@ -139,7 +126,83 @@ class Robot(Service):
             def move(self, position):
                 robot_elevator.elevator_move(position)
 
+            def clamp_open(self):
+                robot_elevator.elevator_clamp_open()
+
+            def clamp_open_half(self):
+                robot_elevator.elevator_clamp_open_half()
+
+            def clamp_close(self):
+                robot_elevator.elevator_clamp_close()
+
+            def catch_cake(self, color):
+                self.cakes[color] += 1
+
+            def drop_cake(self, color):
+                self.cakes[color] -= 1
+
+            def drop_all_cakes(self):
+                for color in self.cakes.keys():
+                    self.cakes[color] = 0
+
         self.elevator = Elevator()
+
+        class Vaccum(self):
+            def __init__(self):
+                self.cherries = 0
+
+            def __str__(self):
+                return (f"""Robot holds {self.cherries} cherries""")
+
+            def suck_cherry(self):
+                self.cherries += 1
+
+            def drop_cherry(self):
+                self.cherries -= 1
+
+            def drop_all_cherries(self):
+                self.cherries = 0
+
+            def turbine_on(self):
+                robot_vacuum.turbine_on()
+
+            def turbine_off(self):
+                robot_vacuum.turbine_off()
+
+            def extend_left_vacuum(self):
+                robot_vacuum.extend_left_vacuum()
+
+            def retract_left_vacuum(self):
+                robot_vacuum.retract_left_vacuum()
+
+            def extend_right_vacuum(self):
+                robot_vacuum.extend_right_vacuum()
+
+            def retract_right_vacuum(self):
+                robot_vacuum.retract_right_vacuum()
+
+        self.vaccum = Vaccum()
+
+        class Canon(self):
+            def __init__(self):
+                pass
+
+            def canon_on(self):
+                robot_canon.canon_on()
+
+            def canon_off(self):
+                robot_canon.canon_off()
+
+            def push_canon(self):
+                robot_canon.push_canon()
+
+            def push_tank(self):
+                robot_canon.push_tank()
+
+            def push_drop(self):
+                robot_canon.push_drop()
+
+        self.canon = Canon()
 
         try:
             cs = CellaservProxy()
@@ -249,11 +312,11 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
-        self.turbine_off(async_task=False)
-        self.canon_off(async_task=False)
-        self.clamp_open(async_task=False)
+        self.vacuum.turbine_off(async_task=False)
+        self.canon.canon_off(async_task=False)
+        self.elevator.clamp_open(async_task=False)
         sleep(0.5)
-        self.push_drop(async_task=False)
+        self.canon.push_drop(async_task=False)
         sleep(0.5)
         self.retract_left_vacuum(async_task=False)
         sleep(0.5)

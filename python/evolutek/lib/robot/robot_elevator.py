@@ -21,6 +21,27 @@ class ElevatorPosition(Enum):
 
 @if_enabled
 @async_task
+def elevator_clamp_open(self):
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 0))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 180))
+    return check_status(status1, status2)
+
+@if_enabled
+@async_task
+def elevator_clamp_open_half(self):
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 12))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 168))
+    return check_status(status1, status2)
+
+@if_enabled
+@async_task
+def elevator_clamp_close(self):
+    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(9, 30))
+    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(15, 150))
+    return check_status(status1, status2)
+
+@if_enabled
+@async_task
 def elevator_move(self, positon):
     if ElevatorPosition.get_position(positon) is None:
         return RobotStatus.return_status(RobotStatus.Failed)
