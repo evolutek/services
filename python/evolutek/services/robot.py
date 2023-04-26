@@ -8,7 +8,7 @@ from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
 import evolutek.lib.robot.robot_trajman as robot_trajman
-import evolutek.lib.robot.elevator as robot_elevator
+import evolutek.lib.robot.robot_elevator as robot_elevator
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
