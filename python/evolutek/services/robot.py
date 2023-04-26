@@ -65,7 +65,7 @@ class Robot(Service):
 
     class Elevator(self):
         def __init__(self):
-            self.position = ElevatorPosition.Low
+            self.position = elevator.ElevatorPosition.Low
             self.cakes = {"Brown": 0, "Yellow": 0, "Pink": 0}
 
         def __str__(self):
