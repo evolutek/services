@@ -5,12 +5,7 @@ from evolutek.lib.utils.wrappers import if_enabled
 from time import sleep
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 from evolutek.lib.actuators.ax12 import AX12Controller
-
-def check_status(*args):
-    for stat in args:
-        if stat != RobotStatus.Done:
-            return RobotStatus.return_status(RobotStatus.Failed)
-    return RobotStatus.return_status(RobotStatus.Done)
+from status import check_status
 
 @if_enabled
 @async_task
