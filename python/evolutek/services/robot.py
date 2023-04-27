@@ -116,16 +116,16 @@ class Robot(Service):
                 Cakes: {self.cakes["Brown"]} brown, {self.cakes["Yellow"]} yellow, {self.cakes["Pink"]} pink""")
 
             def move(self, position):
-                robot_elevator.elevator_move(position)
+                Service.action(robot_elevator.elevator_move(position))
 
             def clamp_open(self):
-                robot_elevator.elevator_clamp_open()
+                Service.action(robot_elevator.elevator_clamp_open())
 
             def clamp_open_half(self):
-                robot_elevator.elevator_clamp_open_half()
+                Service.action(robot_elevator.elevator_clamp_open_half())
 
             def clamp_close(self):
-                robot_elevator.elevator_clamp_close()
+                Service.action(robot_elevator.elevator_clamp_close())
 
             def catch_cake(self, color):
                 self.cakes[color] += 1
@@ -156,22 +156,22 @@ class Robot(Service):
                 self.cherries = 0
 
             def turbine_on(self):
-                robot_vacuum.turbine_on()
+                Service.action(robot_vacuum.turbine_on())
 
             def turbine_off(self):
-                robot_vacuum.turbine_off()
+                Service.action(robot_vacuum.turbine_off())
 
             def extend_left_vacuum(self):
-                robot_vacuum.extend_left_vacuum()
+                Service.action(robot_vacuum.extend_left_vacuum())
 
             def retract_left_vacuum(self):
-                robot_vacuum.retract_left_vacuum()
+                Service.action(robot_vacuum.retract_left_vacuum())
 
             def extend_right_vacuum(self):
-                robot_vacuum.extend_right_vacuum()
+                Service.action(robot_vacuum.extend_right_vacuum())
 
             def retract_right_vacuum(self):
-                robot_vacuum.retract_right_vacuum()
+                Service.action(robot_vacuum.retract_right_vacuum())
 
         self.vaccum = Vaccum()
 
@@ -180,19 +180,19 @@ class Robot(Service):
                 pass
 
             def canon_on(self):
-                robot_canon.canon_on()
+                Service.action(robot_canon.canon_on())
 
             def canon_off(self):
-                robot_canon.canon_off()
+                Service.action(robot_canon.canon_off())
 
             def push_canon(self):
-                robot_canon.push_canon()
+                Service.action(robot_canon.push_canon())
 
             def push_tank(self):
-                robot_canon.push_tank()
+                Service.action(robot_canon.push_tank())
 
             def push_drop(self):
-                robot_canon.push_drop()
+                Service.action(robot_canon.push_drop())
 
         self.canon = Canon()
 
