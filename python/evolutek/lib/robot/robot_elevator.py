@@ -42,10 +42,10 @@ def elevator_clamp_close(self):
 
 @if_enabled
 @async_task
-def elevator_move(self, positon):
-    if ElevatorPosition.get_position(positon) is None:
+def elevator_move(self, position):
+    if ElevatorPosition.get_position(position) is None:
         return RobotStatus.return_status(RobotStatus.Failed)
-    position = ElevatorPosition.get_position(positon)
+    position = ElevatorPosition.get_position(position)
     status1 = RobotStatus.get_status(self.actuators.ax_move(1, position[0]))
     status2 = RobotStatus.get_status(self.actuators.ax_move(2, position[1]))
     return check_status(status1, status2)
