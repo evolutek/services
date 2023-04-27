@@ -44,14 +44,6 @@ class Robot(Service):
     recalibration_sensors = robot_trajman.recalibration_sensors
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
-    # Imported from robot_actuators
-    canon_on = Service.action(robot_actuators.canon_on)
-    canon_off = Service.action(robot_actuators.canon_off)
-
-    push_canon = Service.action(robot_actuators.push_canon)
-    push_tank = Service.action(robot_actuators.push_tank)
-    push_drop = Service.action(robot_actuators.push_drop)
-
     # Imported from robot_actions
     goto_random = Service.action(robot_actions.goto_random)
     roam_stacks = Service.action(robot_actions.roam_stacks)
