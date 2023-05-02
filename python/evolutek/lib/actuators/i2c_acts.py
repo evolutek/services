@@ -8,6 +8,7 @@ from typing import Optional
 from evolutek.lib.component import Component, ComponentsHolder
 
 PCA: PCA9685 = None
+HAS_ESC: bool = False
 
 class I2CActType(Enum):
     Servo = "Servo"
@@ -15,7 +16,7 @@ class I2CActType(Enum):
 
 class ESCVariation(Enum):
     Default = 0.0
-    Emax = 0.1
+    Emax = 0.15
 
 class I2CAct(Component):
     def __init__(self, id_channel: int, type: I2CActType, max_range: float = 180.0, min_pulse: int = 750, max_pulse: int = 2250, esc_variation=None):
@@ -39,15 +40,16 @@ class I2CAct(Component):
 
         if self.type == I2CActType.ESC:
 
-            self.max_range = min(self.max_range, 1.0)
+            global HAS_ESC
+            HAS_ESC = True
 
             if not isinstance(self.esc_variation, ESCVariation):
                 self.esc_variation = ESCVariation.Default
 
+            self.max_range = min(self.max_range, 1.0)
+
             # Initialize ESC properly
-            self.set_speed(self.esc_variation.value)
-            #sleep(5)    # CONF TIME to check
-            self.set_speed(0.0)
+            self.set_speed(0)
 
         return True
 
@@ -119,7 +121,7 @@ class I2CAct(Component):
             raise ValueError(f"[{self.name}] Bad speed {speed} for esc {self.id}")
  
         print(f"[{self.name}] Moving {self.id} at {speed}")
-        self.fraction = speed
+        self.fraction = (speed + self.esc_variation.value)
         return True
 
 
@@ -141,6 +143,11 @@ class I2CActsHandler(ComponentsHolder):
         except:
             print('[%s] Failed to init PCA9685' % self.name)
             return False
+        return True
+
+    def _post_initialize(self):
+        if HAS_ESC:
+            sleep(5)
         return True
 
     def free_all(self):

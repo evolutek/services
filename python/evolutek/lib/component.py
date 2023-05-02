@@ -50,6 +50,9 @@ class ComponentsHolder:
     def _initialize(self):
         return True
 
+    def _post_initialize(self):
+        return True
+
     def initialize(self, components, component_type, components_common_params):
         self.init = False
 
@@ -71,7 +74,8 @@ class ComponentsHolder:
                 self.components[component] = component_type(component, *components_common_params)
             else:
                 self.components[component] = component_type(component, *components_common_params, *(components[component]))
-        return True
+        
+        return self._post_initialize()
 
     def is_initialized(self):
         if not self.init:
