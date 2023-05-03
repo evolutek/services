@@ -31,6 +31,7 @@ setup(
             'match = evolutek.services.match:main',
             'robot = evolutek.services.robot:main',
             'ai = evolutek.services.ai:main',
+            'basket = evolutek.services.basket:main',
             # Utils
             'reset = evolutek.utils.service_reset:main',
         ],

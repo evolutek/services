@@ -1,0 +1,10 @@
+[Unit]
+Description=Basket service
+PartOf=evolutek.target
+
+[Service]
+ExecStart=basket
+CPUSchedulingPolicy=rr
+
+[Install]
+WantedBy=multi-user.target
