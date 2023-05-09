@@ -155,6 +155,54 @@ class Goal:
         return new
 
 
+# Starting pos Class
+# name: starting pos name
+# position: starting position
+# theta: starting theta
+# recal_side: recal side of the robot ("x" or "y")
+# recal_sensor: used sensor during recal ("right" or "left")
+class StartingPosition:
+
+    def __init__(self, name, position, theta, recal_side, recal_sensor):
+        self.name = name
+        self.position = position
+        self.theta = theta
+        self.recal_side = recal_side
+        self.recal_sensor = recal_sensor
+
+    def __str__(self):
+        s = "--- %s ---\n" % self.name
+        s += "posisiton: %s\n" % self.position
+        s += "theta: %s\n" % self.theta
+        s += "recal side: %s\n" % self.recal_side
+        s += "recal sensor: %s\n" % self.recal_sensor
+
+    # Static method
+    # Parse starting pos from JSON
+    @classmethod
+    def parse(cls, starting_point):
+
+        position = Point(dict=starting_point["position"])
+
+        theta = starting_point['theta']
+        if isinstance(theta, str):
+            theta = eval(theta)
+
+        recal_side = starting_point["recal_side"]
+        if not recal_side in ["x", "y"]:
+            print('[GOALS] No existing recal side %s' % recal_side)
+            return None
+
+        recal_sensor = starting_point["recal_sensor"]
+        if not recal_side in ["right", "left"]:
+            print('[GOALS] No existing recal sensor %s' % recal_sensor)
+            return None
+
+        new = StartingPosition(starting_point["name"], position, theta, recal_side, recal_sensor)
+
+        return new
+
+
 # Strategy Class
 # name: strategy name
 # goals: strategy goals
@@ -186,7 +234,7 @@ class Strategy:
         for goal in strategy['goals']:
 
             if not goal in goals:
-                print('[GOALS] No existing goal')
+                print('[GOALS] No existing goal %s' % goal)
                 return None
 
             _goals.append(goal)
@@ -203,7 +251,7 @@ class Goals:
 
     def __init__(self, file, ai, robot):
         # Starting position
-        self.starting_position = None
+        self.starting_positions = {}
         self.starting_theta = None
         self.strategies = []
 
@@ -238,18 +286,20 @@ class Goals:
 
         goals = json.loads(data)
 
-        # Parse starting position
-        try:
-            pos = goals['starting_pos'][robot]
-            self.starting_position = Point(x=pos['x'],
-                                           y=pos['y'])
-            self.starting_theta = pos['theta']
-            if isinstance(self.starting_theta, str):
-                self.starting_theta = eval(self.starting_theta)
+        # Parse starting positions
+        for starting_position in goals['starting_positions']:
 
-        except Exception as e:
-            print('[GOALS] Failed to parse start point: %s' % str(e))
-            return False
+            try:
+                new = StartingPosition.parse(starting_position)
+            except Exception as e:
+                print('[GOALS] Failed to parse starting position: %s' % str(e))
+                return False
+
+            if new is None:
+                return False
+
+            self.starting_positions[new.name] = new
+
 
         # Parse goals
         for goal in goals['goals']:

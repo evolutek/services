@@ -69,18 +69,24 @@
       ]
     }
   ],
-  "starting_pos": {
-    "pal": {
-      "x": 450,
-      "y": 225,
-      "theta": "pi"
+  "starting_positions": [
+    {
+      "name": "pal",
+      "x": 1000,
+      "y": 500,
+      "theta": "pi",
+      "recal_size": "x",
+      "recal_sensor": "right"
     },
-    "pmi": {
-      "x": 225,
-      "y": 450,
-      "theta": 0
+    {
+      "name": "pal",
+      "x": 1000,
+      "y": 1500,
+      "theta": "pi/2",
+      "recal_size": "y",
+      "recal_sensor": "left"
     }
-  },
+  ],
   "critical_goal": {
     "goal": "secondary",
     "timeout": 1024
