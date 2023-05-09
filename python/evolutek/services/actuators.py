@@ -60,10 +60,10 @@ class Actuators(Service):
         self.recal_sensors[1].calibrate(left_slope1, left_intercept1, left_slope2, left_intercept2)
         self.recal_sensors[2].calibrate(right_slope1, right_intercept1, right_slope2, right_intercept2)
 
-        #self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
-        #self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
-        #self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
-        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+        self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
+        self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
+        self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
+        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
@@ -139,8 +139,8 @@ class Actuators(Service):
     # Enable Actuators
     @Service.action
     def enable(self):
-        #if self.bau.read():
-        self.disabled.clear()
+        if self.bau.read():
+            self.disabled.clear()
 
     #################
     # RECAL SENSORS #
@@ -156,8 +156,7 @@ class Actuators(Service):
     #######
     @Service.action
     def bau_read(self):
-        return True
-        #return self.bau.read()
+        return self.bau.read()
 
     def bau_callback(self, event, value, **kwargs):
         self.bau_led.write(value)
