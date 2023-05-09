@@ -175,7 +175,7 @@ class StartingPosition:
         s += "posisiton: %s\n" % self.position
         s += "theta: %s\n" % self.theta
         s += "recal side: %s\n" % self.recal_side
-        s += "recal sensor: %s\n" % self.recal_sensor
+        s += "recal sensor: %s" % self.recal_sensor
 
     # Static method
     # Parse starting pos from JSON
@@ -209,14 +209,16 @@ class StartingPosition:
 # available: robot list fro which the strategy is available
 # use_pathfinding: tell if the strategy use the pathfinding
 class Strategy:
-    def __init__(self, name, goals=None, available=None, use_pathfinding=True):
+    def __init__(self, name, starting_position, goals=None, available=None, use_pathfinding=True):
         self.name = name
+        self.starting_position = starting_position
         self.goals = [] if goals is None else goals
         self.available = [] if available is None else available
         self.use_pathfinding = use_pathfinding
 
     def __str__(self):
         s = "--- %s ---" % self.name
+        s += '\n%s' % self.starting_position
         for goal in self.goals:
             s += '\n%s' % goal
         s += "\navailable for:"
@@ -228,7 +230,13 @@ class Strategy:
     # Static method
     # Parse strategy from JSON
     @classmethod
-    def parse(cls, strategy, goals):
+    def parse(cls, strategy, starting_positions, goals):
+
+        if not strategy['starting_position'] in starting_positions:
+            print('[GOALS] No existing starting position %s' % strategy['starting_position']):
+            return None
+
+        starting_position = starting_positions[strategy['starting_position']]
 
         _goals = []
         for goal in strategy['goals']:
@@ -241,7 +249,7 @@ class Strategy:
 
         use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else False
 
-        new = Strategy(strategy['name'], _goals, strategy['available'], use_pathfinding)
+        new = Strategy(strategy['name'], starting_position, _goals, strategy['available'], use_pathfinding)
 
         return new
 
@@ -329,7 +337,7 @@ class Goals:
         for strategy in goals['strategies']:
 
             try:
-                new = Strategy.parse(strategy, self.goals)
+                new = Strategy.parse(strategy, self.starting_positions, self.goals)
             except Exception as e:
                 print('[GOALS] Failed to parse strategy: %s' % str(e))
                 return False

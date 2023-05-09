@@ -48,6 +48,7 @@
   "strategies": [
     {
       "name": "A",
+      "starting_position": "pal",
       "goals": [
         "a",
         "b"
@@ -60,12 +61,13 @@
     },
     {
       "name": "B",
+      "starting_position": "pmi",
       "goals": [
         "b",
         "a"
       ],
       "available": [
-        "pal"
+        "pmi"
       ]
     }
   ],
