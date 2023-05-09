@@ -366,11 +366,6 @@ class Goals:
 
     def __str__(self):
         s = "[Goals manager]\n"
-        s += "-> Starting position\n"
-        s += "x: %d\n" % self.starting_position.x
-        s += "y: %d\n" % self.starting_position.y
-        s += "theta: %f\n" % self.starting_theta
-        s += "-> Goals\n"
         s += "Current Strategy: %s\n" % str(self.current_strategy.name)
         s += "Number Current Strategy: %d\n" % self.current
         s += "Critical goal: %s\n" % str(self.critical_goal)
