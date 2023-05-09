@@ -15,7 +15,6 @@ from evolutek.lib.actuators.pump import PumpController
 from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
-from evolutek.lib.sensors.try_ohm_sensors import TryOhmSensors
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 
 # Other imports
@@ -41,6 +40,13 @@ class Actuators(Service):
         self.cs = CellaservProxy()
         self.disabled = Event()
         atexit.register(self.stop)
+
+        self.proximity_sensors = ProximitySensors(
+            {
+                1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
+                2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)]
+            }
+        )
 
         left_slope1 = float(self.cs.config.get(ROBOT, "left_slope1"))
         left_intercept1 = float(self.cs.config.get(ROBOT, "left_intercept1"))
@@ -90,6 +96,7 @@ class Actuators(Service):
         self.i2c_acts = I2CActsHandler(acts, frequency=50)
 
         self.all_actuators = [
+            self.proximity_sensors,
             self.recal_sensors,
             self.axs,
             self.i2c_acts
@@ -141,6 +148,15 @@ class Actuators(Service):
     def enable(self):
         if self.bau.read():
             self.disabled.clear()
+
+    #####################
+    # PROXIMITY SENSORS #
+    #####################
+    @Service.action
+    def proximity_sensor_read(self, id):
+        if self.proximity_sensors[int(id)] == None:
+            return None
+        return self.proximity_sensors[int(id)].read()
 
     #################
     # RECAL SENSORS #
