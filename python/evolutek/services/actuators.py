@@ -71,6 +71,7 @@ class Actuators(Service):
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
         self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
+        self.orange_led_strip = create_gpio(12, 'orange led strip', dir=True, type=GpioType.MCP)
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
         try:
@@ -110,6 +111,14 @@ class Actuators(Service):
 
         if self.is_initialized:
             self.rgb_led_strip.start()
+            self.orange_led_strip_set(True)
+            sleep(1)
+            self.orange_led_strip_set(False)
+            sleep(1)
+            self.orange_led_strip_set(True)
+            sleep(1)
+            self.orange_led_strip_set(False)
+            sleep(1)
             print("[ACTUATORS] Fully initialized")
 
     def stop(self):
@@ -182,6 +191,13 @@ class Actuators(Service):
         else:
             self.free()
             self.disable()
+
+    ####################
+    # ORANGE LED STRIP #
+    ####################
+    @Service.action
+    def orange_led_strip_set(self, on):
+        self.orange_led_strip.write(get_boolean(on))
 
     #################
     # RGB LED STRIP #
