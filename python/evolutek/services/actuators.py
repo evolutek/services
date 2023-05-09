@@ -77,14 +77,14 @@ class Actuators(Service):
         )
 
         acts = {
-            9: [I2CActType.Servo, 180],
-            10: [I2CActType.Servo, 180],
-            11: [I2CActType.Servo, 180],
-            12: [I2CActType.Servo, 180],
-            15: [I2CActType.Servo, 180],
-            8: [I2CActType.ESC, 0.5],
-            13: [I2CActType.ESC, 0.5],
-            14: [I2CActType.ESC, 0.5],
+            0: [I2CActType.Servo, 180],
+            1: [I2CActType.Servo, 180],
+            2: [I2CActType.Servo, 180],
+            3: [I2CActType.Servo, 180],
+            4: [I2CActType.Servo, 180],
+            8: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax},
+            9: [I2CActType.ESC, 0.5],
+            10: [I2CActType.ESC, 0.5],
         }
 
         self.i2c_acts = I2CActsHandler(acts, frequency=50)

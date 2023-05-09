@@ -70,8 +70,14 @@ class ComponentsHolder:
             if isinstance(components, list):
                 self.components[component] = component_type(component, *components_common_params)
             else:
-                self.components[component] = component_type(component, *components_common_params, *(components[component]))
-        return True
+                if isinstance(components[component], dict):
+                    self.components[component] = component_type(component, *components_common_params, **(components[component]))
+                else:
+                    self.components[component] = component_type(component, *components_common_params, *(components[component]))
+
+            self.init &= self.components[component].is_initialized()
+
+        return self.init
 
     def is_initialized(self):
         if not self.init:
