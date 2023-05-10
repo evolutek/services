@@ -123,24 +123,30 @@
   "strategies": [
     {
 	    "name": "BELGIUM",
+      "starting_position": "A",
 	    "goals": [
-		    "grab_first",
-			"grab_second",
-			"grab_third",
-		    "fire",
-		    "pal_go_back"
+        "grab_first",
+        "grab_second",
+        "grab_third",
+        "fire",
+        "pal_go_back"
 	    ],
 	    "available": ["pal"],
 	    "use_pathfinding": false
     }
   ],
-  "starting_pos": {
-    "pal": {
-      "x": 225,
-      "y": 225,
-      "theta": "0"
+  "starting_pos": [
+    {
+      "name": "A",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "0",
+      "recal_side": "x",
+      "recal_sensor": "right"
     }
-  },
+  ],
   "critical_goals": {
     "pal": {
       "goal": "pal_go_back",

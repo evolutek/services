@@ -74,16 +74,20 @@
   "starting_positions": [
     {
       "name": "pal",
-      "x": 1000,
-      "y": 500,
+      "position": {
+        "x": 1000,
+        "y": 500
+      },
       "theta": "pi",
       "recal_size": "x",
       "recal_sensor": "right"
     },
     {
       "name": "pal",
-      "x": 1000,
-      "y": 1500,
+      "position": {
+        "x": 1500,
+        "y": 500
+      },
       "theta": "pi/2",
       "recal_size": "y",
       "recal_sensor": "left"
