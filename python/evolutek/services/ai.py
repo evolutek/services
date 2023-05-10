@@ -223,12 +223,17 @@ class AI(Service):
         with self.lock:
             starting_position = self.goals.current_strategy.starting_position
 
+        if self.color != self.color1:
+                starting_position.position = Point(starting_position.x, 2000 - starting_position.position.y)
+                starting_position.theta *= -1
+
         print('[AI] Setting robot position')
         self.trajman.free()
         self.robot.set_pos(
                 x=starting_position.position.x,
                 y=starting_position.position.y,
-                theta=starting_position.theta
+                theta=starting_position.theta,
+                mirror=False
             )
         self.trajman.unfree()
 
@@ -240,25 +245,22 @@ class AI(Service):
             side = starting_position.recal_side == 'x'
 
             self.recalibration(x=side, y=(not side),
-                               x_sensor=(starting_position.recal_sensor if not side else "no")
-                               y_sensor=(starting_position.recal_sensor if side else "no")
-            )
+                               x_sensor=(starting_position.recal_sensor if not side else "no"),
+                               y_sensor=(starting_position.recal_sensor if side else "no"))
 
             current_pos = self.trajman.get_position()
 
             self.goto(
                 x=(starting_position.position.x if side else current_pos['x']),
                 y=(starting_position.position.y if not side else current_pos['y']),
-                avoid=False, mirror=False, async_task=False
-            )
+                avoid=False, mirror=False)
 
             self.goto(
                 x=starting_position.position.x,
                 y=starting_position.position.y,
-                avoid=False, async_task=False
-            )
+                avoid=False, mirror=False)
 
-            self.goth(theta=starting_position.theta, async_task=False)
+            self.goth(theta=starting_position.theta, mirror=False)
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
