@@ -1,5 +1,6 @@
 from enum import Enum
-from threading import Lock
+from threading import Lock, Thread
+from time import sleep
 
 from cellaserv.service import Service
 
@@ -27,6 +28,8 @@ class Basket(Service):
 
         self.led = create_gpio(15, 'led', dir=True, default_value=False, type=GpioType.RPI)
 
+        super().__init__()
+
     @Service.event('match_start')
     @Service.action
     def start(self):
@@ -34,6 +37,7 @@ class Basket(Service):
             if self.state == State.unstarted:
                 self.state = State.started
                 print('[BASKET] Starting counting')
+                Thread(target=self.send_cherry_count).start()
     
     @Service.event('match_end')
     @Service.action
@@ -69,3 +73,24 @@ class Basket(Service):
             if self.state == State.started:
                 self.cherry_count += 1
                 print('[BASKET] Current count: %d' % self.cherry_count)
+
+    def send_cherry_count(self):
+        last_cherry_count = 0
+
+        while True:
+
+            current_cherry_count = 0
+            with self.lock:
+                if self.state != State.started:
+                    return
+                current_cherry_count = self.cherry_count
+
+            if current_cherry_count > last_cherry_count:
+                if last_cherry_count == 0:
+                    self.publish('score', value=5)
+
+                self.publish('score', value = current_cherry_count - last_cherry_count)
+
+                last_cherry_count = current_cherry_count
+
+            sleep(1)

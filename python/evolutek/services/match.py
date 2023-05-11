@@ -150,8 +150,7 @@ class Match(Service):
         return True
 
     def check_end_positions(self):
-        if self.around('pal', 1875, 225, 225, 225): #and \
-            #self.around('pmi', 1375, 975, 300, 300):
+        if self.around('pal', 1875, 225, 225, 225) and self.around('pmi', 1375, 975, 300, 300):
             self.publish('score', value=15)
     
     """ End match """
