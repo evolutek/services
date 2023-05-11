@@ -74,9 +74,6 @@ class Commands(Enum):
     SET_DEBUG          = 200
     ERROR              = 255
 
-# Emergency stop button
-BAU_GPIO = 21
-
 #################
 # The errors ID #
 #################
@@ -410,7 +407,7 @@ class TrajMan(Service):
     @Service.action
     def disable(self):
         self.disabled.set()
-        #self.free()
+        self.free()
 
     @Service.action
     def enable(self):

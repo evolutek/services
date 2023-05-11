@@ -15,7 +15,6 @@ from evolutek.lib.actuators.pump import PumpController
 from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
-from evolutek.lib.sensors.try_ohm_sensors import TryOhmSensors
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 
 # Other imports
@@ -42,6 +41,13 @@ class Actuators(Service):
         self.disabled = Event()
         atexit.register(self.stop)
 
+        self.proximity_sensors = ProximitySensors(
+            {
+                1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
+                2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)]
+            }
+        )
+
         left_slope1 = float(self.cs.config.get(ROBOT, "left_slope1"))
         left_intercept1 = float(self.cs.config.get(ROBOT, "left_intercept1"))
         left_slope2 = float(self.cs.config.get(ROBOT, "left_slope2"))
@@ -60,11 +66,12 @@ class Actuators(Service):
         self.recal_sensors[1].calibrate(left_slope1, left_intercept1, left_slope2, left_intercept2)
         self.recal_sensors[2].calibrate(right_slope1, right_intercept1, right_slope2, right_intercept2)
 
-        #self.bau = create_gpio(28, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
-        #self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
-        #self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
-        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+        self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
+        self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
+        self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
+        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
+        self.orange_led_strip = create_gpio(12, 'orange led strip', dir=True, type=GpioType.MCP)
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
         try:
@@ -77,19 +84,20 @@ class Actuators(Service):
         )
 
         acts = {
-            9: [I2CActType.Servo, 180],
-            10: [I2CActType.Servo, 180],
-            11: [I2CActType.Servo, 180],
-            12: [I2CActType.Servo, 180],
-            15: [I2CActType.Servo, 180],
-            8: [I2CActType.ESC, 0.5],
-            13: [I2CActType.ESC, 0.5],
-            14: [I2CActType.ESC, 0.5],
+            0: [I2CActType.Servo, 180],
+            1: [I2CActType.Servo, 180],
+            2: [I2CActType.Servo, 180],
+            3: [I2CActType.Servo, 180],
+            4: [I2CActType.Servo, 180],
+            8: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax},
+            9: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax},
+            10: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax}
         }
 
         self.i2c_acts = I2CActsHandler(acts, frequency=50)
 
         self.all_actuators = [
+            self.proximity_sensors,
             self.recal_sensors,
             self.axs,
             self.i2c_acts
@@ -103,6 +111,14 @@ class Actuators(Service):
 
         if self.is_initialized:
             self.rgb_led_strip.start()
+            self.orange_led_strip_set(True)
+            sleep(1)
+            self.orange_led_strip_set(False)
+            sleep(1)
+            self.orange_led_strip_set(True)
+            sleep(1)
+            self.orange_led_strip_set(False)
+            sleep(1)
             print("[ACTUATORS] Fully initialized")
 
     def stop(self):
@@ -139,8 +155,17 @@ class Actuators(Service):
     # Enable Actuators
     @Service.action
     def enable(self):
-        #if self.bau.read():
-        self.disabled.clear()
+        if self.bau.read():
+            self.disabled.clear()
+
+    #####################
+    # PROXIMITY SENSORS #
+    #####################
+    @Service.action
+    def proximity_sensor_read(self, id):
+        if self.proximity_sensors[int(id)] == None:
+            return None
+        return self.proximity_sensors[int(id)].read()
 
     #################
     # RECAL SENSORS #
@@ -156,8 +181,7 @@ class Actuators(Service):
     #######
     @Service.action
     def bau_read(self):
-        return True
-        #return self.bau.read()
+        return self.bau.read()
 
     def bau_callback(self, event, value, **kwargs):
         self.bau_led.write(value)
@@ -167,6 +191,13 @@ class Actuators(Service):
         else:
             self.free()
             self.disable()
+
+    ####################
+    # ORANGE LED STRIP #
+    ####################
+    @Service.action
+    def orange_led_strip_set(self, on):
+        self.orange_led_strip.write(get_boolean(on))
 
     #################
     # RGB LED STRIP #

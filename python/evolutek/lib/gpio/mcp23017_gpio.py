@@ -12,10 +12,10 @@ class Gpio(BaseGpio):
 
         super().__init__(id, name, dir, event, edge, default_value)
 
-        if id < 0 or id > 31:
+        if id < 0 or id > 15:
             raise Exception('[GPIO] Invalid pin ID for mcp')
 
-        self.pin = mcp1.get_pin(id) if id < 16 else mcp2.get_pin(id - 16)
+        self.pin = mcp.get_pin(id)
         if dir:
             self.pin.direction = Direction.OUTPUT
             self.pin.value = default_value
@@ -36,8 +36,7 @@ class Gpio(BaseGpio):
 
 
 WAS_INITIALIZED = False
-mcp1 = None
-mcp2 = None
+mcp = None
 
 # Return if the gpios was initialized
 def wasInitialized():
@@ -46,12 +45,10 @@ def wasInitialized():
 # Initialize gpios
 def initialize():
     global WAS_INITIALIZED
-    global mcp1
-    global mcp2
+    global mcp
     try:
         i2c = busio.I2C(board.SCL, board.SDA)
-        mcp1 = MCP23017(i2c, address=0x20)
-        mcp2 = MCP23017(i2c, address=0x21)
+        mcp = MCP23017(i2c, address=0x20)
         WAS_INITIALIZED = True
     except Exception as e:
         print('[GPIO] Failed to init mcp: %s' % str(e))
