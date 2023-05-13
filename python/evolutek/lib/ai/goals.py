@@ -194,7 +194,7 @@ class StartingPosition:
             return None
 
         recal_sensor = starting_point["recal_sensor"]
-        if not recal_side in ["right", "left"]:
+        if not recal_sensor in ["right", "left"]:
             print('[GOALS] No existing recal sensor %s' % recal_sensor)
             return None
 
