@@ -176,7 +176,7 @@
         "x": 225,
         "y": 225
       },
-      "theta": "0",
+      "theta": "pi/2",
       "recal_side": "y",
       "recal_sensor": "left"
     },
@@ -186,7 +186,7 @@
         "x": 1875,
         "y": 225
       },
-      "theta": "0",
+      "theta": "pi/2",
       "recal_side": "y",
       "recal_sensor": "right"
     }
