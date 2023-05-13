@@ -244,7 +244,7 @@ class AI(Service):
 
             side = starting_position.recal_side == 'x'
 
-            self.recalibration(x=side, y=(not side),
+            self.recalibration(x=side, y=(not side), init=True,
                                x_sensor=(starting_position.recal_sensor if not side else "no"),
                                y_sensor=(starting_position.recal_sensor if side else "no"))
 
