@@ -176,6 +176,7 @@ class StartingPosition:
         s += "theta: %s\n" % self.theta
         s += "recal side: %s\n" % self.recal_side
         s += "recal sensor: %s" % self.recal_sensor
+        return s
 
     # Static method
     # Parse starting pos from JSON
