@@ -135,7 +135,7 @@
 	    "use_pathfinding": false
     }
   ],
-  "starting_pos": [
+  "starting_positions": [
     {
       "name": "A",
       "position": {
