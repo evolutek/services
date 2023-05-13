@@ -231,7 +231,7 @@ class Strategy:
     def parse(cls, strategy, starting_positions, goals):
 
         if not strategy['starting_position'] in starting_positions:
-            print('[GOALS] No existing starting position %s' % strategy['starting_position']):
+            print('[GOALS] No existing starting position %s' % strategy['starting_position'])
             return None
 
         starting_position = starting_positions[strategy['starting_position']]
