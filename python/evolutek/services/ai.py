@@ -224,7 +224,7 @@ class AI(Service):
             starting_position = self.goals.current_strategy.starting_position
 
         if self.color != self.color1:
-                starting_position.position = Point(starting_position.x, 2000 - starting_position.position.y)
+                starting_position.position = Point(starting_position.position.x, 2000 - starting_position.position.y)
                 starting_position.theta *= -1
 
         print('[AI] Setting robot position')
