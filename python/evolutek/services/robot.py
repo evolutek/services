@@ -56,7 +56,7 @@ class Robot(Service):
     clamp_close = Service.action(robot_actuators.clamp_close)
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)
-    push_drop = Service.action(robot_actuators.push_drop)
+    push_isol = Service.action(robot_actuators.push_isol)
     elevator_move = Service.action(robot_actuators.elevator_move)
 
     # Imported from robot_actions

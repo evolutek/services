@@ -40,22 +40,22 @@ def turbine_off(self):
 @if_enabled
 @async_task
 def extend_left_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 83.6)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 100)))
 
 @if_enabled
 @async_task
 def retract_left_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 19.3)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 25)))
 
 @if_enabled
 @async_task
 def extend_right_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 96.4)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 100)))
 
 @if_enabled
 @async_task
 def retract_right_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 160.7)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 175)))
 
 @if_enabled
 @async_task
@@ -78,23 +78,20 @@ def clamp_close(self):
     status2 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 140))
     return check_status(status1, status2)
 
-# VALEURS A TESTER
 @if_enabled
 @async_task
 def push_canon(self):
     return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 180)))
 
-# VALEURS A TESTER
 @if_enabled
 @async_task
 def push_tank(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 51.4)))
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 55)))
 
-# VALEURS A TESTER
 @if_enabled
 @async_task
-def push_drop(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 172)))
+def push_isol(self):
+    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 150)))
 
 '''class ElevatorPosition(Enum):
     Low = (750, 180)
@@ -123,7 +120,6 @@ ElevatorPosition = {
     "GetFourth" : (427, 531),
     "High" : (193, 773)
 }
-
 
 @if_enabled
 @async_task
