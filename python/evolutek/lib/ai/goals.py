@@ -293,7 +293,7 @@ class Goals:
         goals = json.loads(data)
 
         # Parse starting positions
-        for starting_position in goals['starting_position']:
+        for starting_position in goals['starting_positions']:
             try:
                 new = StartingPosition.parse(starting_position)
                 if new is None:
