@@ -186,6 +186,8 @@ def go_drop_all(self):
 def stack_and_grab(self, id = 1, color_name = "Pink"):
     # 1 : 575, 225
     stack_pos = get_stack_pos(id, color_name)
+    if (id == 1 and color_name == "Brown"):
+        stack_pos = Point(1125, 725)
     robot_pos = Point(dict=self.trajman.get_position())
 
     status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
