@@ -200,13 +200,12 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     sleep(0.5)
     input()
 
-    #reculer
-    status = robot_pos.compute_offset_point(stack_pos, -90)
-
+    #recule
+    go_to_point = robot_pos.compute_offset_point(stack_pos, -100)
     input()
     status = self.elevator_move("Low", async_task=False)
     input()
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+    status = self.goto_avoid(x=stack_pos.x, y=stack_pos.y, async_task=False, mirror=False, timeout=10)
     input()
     status = self.clamp_close(async_task=False)
     sleep(0.5)
