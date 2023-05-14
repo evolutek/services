@@ -11,10 +11,11 @@ class Stack:
         self.id = id
         self.pos = Point(x, y)
         self.color = color
+        self.stack_holder = []
 
     def __str__(self):
         return ("Stack %d at pos (%d, %d) with color %s" % (self.id, self.pos.x, self.pos.y, self.color.name))
-    
+
     def to_dict(self):
         return {'x':self.pos.x, 'y':self.pos.y}
 STACKS = [
@@ -162,7 +163,7 @@ def go_drop_all(self):
     dest_point = robot_point.compute_offset_point(zone_pos, -110)
     status = self.goto_avoid(x=dest_point.x, y=dest_point.y, async_task=False, mirror=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))    
+        return RobotStatus.return_status(RobotStatus.get_status(status))
 
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     sleep(1)
@@ -171,7 +172,7 @@ def go_drop_all(self):
     self.clamp_open(async_task=False)
     sleep(0.5)
 
-    # On recule pour manoeuvrer 
+    # On recule pour manoeuvrer
     go_to_point = robot_point.compute_offset_point(zone_pos, -225)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
@@ -179,3 +180,18 @@ def go_drop_all(self):
     #sleep(5)
 
     return RobotStatus.return_status(RobotStatus.Done, score=3)
+
+@if_enabled
+@async_task
+def stack_and_grab(self, id = 1, color_name = "Pink"):
+    # 1 : 575, 225
+    stack_pos = get_stack_pos(id, color_name)
+    robot_pos = Point(dict=self.trajman.get_position())
+    # Aller devant le point
+    status = RobotStatus.get_status(self.elevator_move("GetFourth", async_task=False))
+
+    status = self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False)
+
+    status = self.goto_avoid(x=stack_pos.x, y=stack_pos.y, async_task=False, mirror=False, timeout=10)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.get_status(status))

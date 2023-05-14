@@ -60,6 +60,9 @@ class Robot(Service):
     elevator_move = Service.action(robot_actuators.elevator_move)
 
     # Imported from robot_actions
+
+    stack_and_grab = Service.action(robot_actions.stack_and_grab)
+
     goto_random = Service.action(robot_actions.goto_random)
     roam_stacks = Service.action(robot_actions.roam_stacks)
     roam_zones = Service.action(robot_actions.roam_zones)
