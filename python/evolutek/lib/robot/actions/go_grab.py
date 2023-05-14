@@ -229,15 +229,15 @@ def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
     sleep(0.2)
     status = RobotStatus.get_status(self.clamp_open(async_task=False))
     print(status)
-
     sleep(0.5)
+
     go_to_point = robot_pos.compute_offset_point(f_stack_pos, 40)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.Failed)
-    sleep(0.5)
+    sleep(0.8)
 
     status = RobotStatus.get_status(self.clamp_close(async_task=False))
     print(status)
-
+    sleep(0.5)
     return stack_and_grab(self, first_id, "Yellow", async_task=False)
