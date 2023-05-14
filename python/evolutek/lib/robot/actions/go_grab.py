@@ -189,22 +189,28 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     robot_pos = Point(dict=self.trajman.get_position())
 
     status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
-    sleep(0.5)
+    input()
     status = self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False)
-
+    input()
     status = self.goto_avoid(x=stack_pos.x, y=stack_pos.y, async_task=False, mirror=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
-
+    input()
     status = self.clamp_open(async_task=False)
     sleep(0.5)
+    input()
 
     #reculer
-    go_to_point = robot_pos.compute_offset_point(stack_pos, -90)
-
+    status = robot_pos.compute_offset_point(stack_pos, -90)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.get_status(status))
+    input()
     status = self.elevator_move("Low", async_task=False)
-
+    input()
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+    input()
+    status = self.clamp_close(async_task=False)
+    sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done, score=3)
 
