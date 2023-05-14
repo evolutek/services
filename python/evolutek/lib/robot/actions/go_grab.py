@@ -224,10 +224,10 @@ def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
     f_stack_pos = get_stack_pos(first_id, first_color_name)
     robot_pos = Point(dict=self.trajman.get_position())
 
-    status = RobotStatus.get_status(self.clamp_open(async_task=False))
-    print(status)
-
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
+    print(status)
+    sleep(0.2)
+    status = RobotStatus.get_status(self.clamp_open(async_task=False))
     print(status)
 
     sleep(0.5)
