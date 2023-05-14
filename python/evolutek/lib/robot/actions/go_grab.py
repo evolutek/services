@@ -201,7 +201,10 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     input()
 
     #recule
-    go_to_point = robot_pos.compute_offset_point(stack_pos, -200)
+    go_to_point = robot_pos.compute_offset_point(stack_pos, -100)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.get_status(status))
     input()
     status = self.elevator_move("Low", async_task=False)
     input()
