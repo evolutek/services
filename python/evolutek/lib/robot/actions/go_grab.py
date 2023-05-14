@@ -189,7 +189,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     robot_pos = Point(dict=self.trajman.get_position())
 
     status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
+    if RobotStatus.get_status(status) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
     sleep(0.5)
     status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
@@ -227,7 +227,7 @@ def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
     robot_pos = Point(dict=self.trajman.get_position())
     print("Robot pos : ", robot_pos)
     status = RobotStatus.get_status(self.clamp_open(async_task=False))
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
+    if RobotStatus.get_status(status) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
@@ -239,7 +239,7 @@ def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
         return RobotStatus.return_status(RobotStatus.Failed)
     sleep(0.5)
     status = RobotStatus.get_status(self.clamp_close(async_task=False))
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
+    if RobotStatus.get_status(status) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     return stack_and_grab(self, id + 1, color_name = "Yellow")
