@@ -193,12 +193,10 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 
     sleep(0.5)
     status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.Failed)
+    print(status)
     sleep(0.5)
     status = self.goto_avoid(x=stack_pos.x, y=stack_pos.y, async_task=False, mirror=False, timeout=10)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
+    print(status)
     sleep(0.5)
     status = self.clamp_open(async_task=False)
     sleep(0.5)
