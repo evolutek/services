@@ -183,21 +183,50 @@ def go_drop_all(self):
 
 @if_enabled
 @async_task
+def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
+    f_stack_pos = get_stack_pos(first_id, first_color_name)
+    robot_pos = Point(dict=self.trajman.get_position())
+
+    status = RobotStatus.get_status(self.clamp_open(async_task=False))
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+    status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+    sleep(0.5)
+    go_to_point = robot_pos.compute_offset_point(f_stack_pos, 40)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+    sleep(0.5)
+    status = RobotStatus.get_status(self.clamp_close(async_task=False))
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    return stack_and_grab(self, id + 1, color_name = "Yellow")
+
+
+@if_enabled
+@async_task
 def stack_and_grab(self, id = 1, color_name = "Pink"):
     # 1 : 575, 225
     stack_pos = get_stack_pos(id, color_name)
     robot_pos = Point(dict=self.trajman.get_position())
 
     status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
-    sleep(1)
-    status = self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False)
-    sleep(1)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+    sleep(0.5)
+    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+    sleep(0.5)
     status = self.goto_avoid(x=stack_pos.x, y=stack_pos.y, async_task=False, mirror=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
-    sleep(1)
+    sleep(0.5)
     status = self.clamp_open(async_task=False)
-    sleep(1)
+    sleep(0.5)
 
     #recule
     go_to_point = robot_pos.compute_offset_point(stack_pos, -120)
