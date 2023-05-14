@@ -123,24 +123,74 @@
   "strategies": [
     {
 	    "name": "BELGIUM",
+        "starting_position": "A",
 	    "goals": [
-		    "grab_first",
-			"grab_second",
-			"grab_third",
-		    "fire",
-		    "pal_go_back"
+        "grab_first",
+        "grab_second",
+        "grab_third",
+        "fire",
+        "pal_go_back"
 	    ],
 	    "available": ["pal"],
 	    "use_pathfinding": false
+    },
+    {
+	    "name": "RECAL_225_225_X",
+        "starting_position": "A",
+	    "goals": [
+	    ],
+	    "available": ["pal", "pmi"],
+	    "use_pathfinding": false
+    },
+    {
+	    "name": "RECAL_225_225_Y",
+        "starting_position": "B",
+	    "goals": [
+	    ],
+	    "available": ["pal", "pmi"],
+	    "use_pathfinding": false
+    },
+    {
+	    "name": "RECAL_1875_225_Y",
+        "starting_position": "C",
+	    "goals": [
+	    ],
+	    "available": ["pal", "pmi"],
+	    "use_pathfinding": false
     }
   ],
-  "starting_pos": {
-    "pal": {
-      "x": 225,
-      "y": 225,
-      "theta": "0"
+  "starting_positions": [
+    {
+      "name": "A",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "0",
+      "recal_side": "x",
+      "recal_sensor": "right"
+    },
+    {
+      "name": "B",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "y",
+      "recal_sensor": "left"
+    },
+    {
+      "name": "C",
+      "position": {
+        "x": 1875,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "y",
+      "recal_sensor": "right"
     }
-  },
+  ],
   "critical_goals": {
     "pal": {
       "goal": "pal_go_back",

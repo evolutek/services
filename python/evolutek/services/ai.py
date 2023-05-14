@@ -219,29 +219,48 @@ class AI(Service):
         self.actuators.enable()
         self.robot.reset()
 
+        starting_position = None
+        with self.lock:
+            starting_position = self.goals.current_strategy.starting_position
+
+        if self.color != self.color1:
+                starting_position.position = Point(starting_position.position.x, 2000 - starting_position.position.y)
+                starting_position.theta *= -1
+
+        print('[AI] Setting robot position')
+        self.trajman.free()
+        self.robot.set_pos(
+                x=starting_position.position.x,
+                y=starting_position.position.y,
+                theta=starting_position.theta,
+                mirror=False
+            )
+        self.trajman.unfree()
+
         if self.recalibrate_itself.is_set():
             print('[AI] Recalibrating robot')
             self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
 
-            self.robot.set_theta(0)
-            self.recalibration(x=True, y=False, y_sensor='right', init=True)
-            with self.lock:
-                y = self.trajman.get_position()['y']
-                self.goto(x=400, y=y, avoid=False, mirror=False, async_task=False)
-                self.goto(x=400, y=self.goals.starting_position.y, avoid=False, async_task=False)
-                self.goth(theta=self.goals.starting_theta, async_task=False)
-                self.goto(x=self.goals.starting_position.x, y=self.goals.starting_position.y, avoid=False, async_task=False)
-        else:
-            print('[AI] Setting robot position')
-            self.trajman.free()
-            with self.lock:
-                self.robot.set_pos(
-                    x=self.goals.starting_position.x,
-                    y=self.goals.starting_position.y,
-                    theta=self.goals.starting_theta
-                )
-            self.trajman.unfree()
+            side = starting_position.recal_side == 'x'
+
+            self.recalibration(x=side, y=(not side), init=True,
+                               x_sensor=(starting_position.recal_sensor if not side else "no"),
+                               y_sensor=(starting_position.recal_sensor if side else "no"))
+
+            current_pos = self.trajman.get_position()
+
+            self.goto(
+                x=(starting_position.position.x if side else current_pos['x']),
+                y=(starting_position.position.y if not side else current_pos['y']),
+                avoid=False, mirror=False)
+
+            self.goto(
+                x=starting_position.position.x,
+                y=starting_position.position.y,
+                avoid=False, mirror=False)
+
+            self.goth(theta=starting_position.theta, mirror=False)
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)

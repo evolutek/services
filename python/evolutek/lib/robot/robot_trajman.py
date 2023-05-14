@@ -296,7 +296,7 @@ def homemade_recal(self, decal=0):
         self.trajman.set_y(120 + decal)
     elif theta > 3*pi/4 or theta < -3*pi/4:
         self.trajman.set_theta(pi)
-        self.trajman.set_x(2000 - 120 - decal)
+        self.trajman.set_x(3000 - 120 - decal)
     else:
         self.trajman.set_theta(-pi/2)
         self.trajman.set_y(2000 - 120 - decal)
@@ -376,11 +376,11 @@ def recalibration(self,
         y_sensor = RecalSensor(y_sensor)
 
     # Init pos if necessary
-    if init:
-        self.set_theta(0)
-        self.trajman.set_x(1000)
-        self.trajman.set_y(1000)
-        sleep(0.1)
+    #if init:
+    #    self.set_theta(0)
+    #    self.trajman.set_x(1000)
+    #    self.trajman.set_y(1000)
+    #    sleep(0.1)
 
     if x:
         print('[ROBOT] Recalibration X')
