@@ -221,7 +221,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 
 @if_enabled
 @async_task
-def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
+def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
     f_stack_pos = get_stack_pos(first_id, first_color_name)
     robot_pos = Point(dict=self.trajman.get_position())
 
@@ -241,4 +241,7 @@ def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
     status = RobotStatus.get_status(self.clamp_close(async_task=False))
     print(status)
     sleep(0.5)
-    return stack_and_grab(self, first_id, "Yellow", async_task=False)
+
+    stack_and_grab(self, first_id, "Yellow", async_task=False)
+    sleep(0.5)
+    return stack_and_grab(self, first_id, "Brown", async_task=False)
