@@ -195,3 +195,15 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     status = self.goto_avoid(x=stack_pos.x, y=stack_pos.y, async_task=False, mirror=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
+
+    status = self.clamp_open_half(async_task=False)
+    sleep(0.5)
+    status = self.clamp_open(async_task=False)
+    sleep(0.5)
+
+    #reculer
+    go_to_point = robot_pos.compute_offset_point(stack_pos, -90)
+
+    status = self.elevator_move("Low", async_task=False)
+
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
