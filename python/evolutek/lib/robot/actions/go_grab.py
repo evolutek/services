@@ -202,8 +202,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 
     #reculer
     status = robot_pos.compute_offset_point(stack_pos, -90)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
+
     input()
     status = self.elevator_move("Low", async_task=False)
     input()
