@@ -189,8 +189,8 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     robot_pos = Point(dict=self.trajman.get_position())
 
     status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
+    print(status)
+
     sleep(0.5)
     status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
