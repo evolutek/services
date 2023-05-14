@@ -186,22 +186,20 @@ def go_drop_all(self):
 def stack_and_grab(self, id = 1, color_name = "Pink"):
     # 1 : 575, 225
     stack_pos = get_stack_pos(id, color_name)
-    if (id == 1 and color_name == "Brown"):
-        stack_pos = Point(1125, 725)
     robot_pos = Point(dict=self.trajman.get_position())
 
     status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
     print(status)
 
     sleep(0.5)
-    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
-    print(status)
-    sleep(0.5)
+    #status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
+    #print(status)
+    #sleep(0.5)
+    print("LA POSITION")
     go_to_point = robot_pos.compute_offset_point(stack_pos, 40)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
     print(status)
-    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
-    print(status)
+    print("MON CUL EST ENORME")
     sleep(0.5)
     status = self.clamp_open(async_task=False)
     sleep(0.5)
