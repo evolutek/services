@@ -61,7 +61,7 @@ class Robot(Service):
 
     # Imported from robot_actions
 
-    grab_first_stacks = Service.action(robot_actions.grab_first_two_stacks)
+    grab_first_stacks = Service.action(robot_actions.grab_first_stacks)
     stack_and_grab = Service.action(robot_actions.stack_and_grab)
 
     goto_random = Service.action(robot_actions.goto_random)
