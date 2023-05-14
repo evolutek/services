@@ -195,7 +195,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
     print(status)
     sleep(0.5)
-    go_to_point = robot_pos.compute_offset_point(stack_pos, 30)
+    go_to_point = robot_pos.compute_offset_point(stack_pos, 40)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
     print(status)
     sleep(0.5)
