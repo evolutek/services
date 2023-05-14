@@ -240,4 +240,4 @@ def grab_first_two_stacks(self, first_id = 1, first_color_name = "Pink"):
     status = RobotStatus.get_status(self.clamp_close(async_task=False))
     print(status)
 
-    return stack_and_grab(self, first_id + 1, "Yellow", async_task=False)
+    return stack_and_grab(self, first_id, "Yellow", async_task=False)
