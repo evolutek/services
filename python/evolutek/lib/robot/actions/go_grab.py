@@ -247,6 +247,9 @@ def back_to_base(self):
     robot_pos = Point(dict=self.trajman.get_position())
     base_pos = Point(dict=self.mirror_pos(275, 225))
 
+    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(base_pos), async_task=False))
+    print(status)
+
     go_to_point = robot_pos.compute_offset_point(base_pos, 50)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
