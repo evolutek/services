@@ -228,7 +228,7 @@ def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
     print(status)
     sleep(0.5)
 
-    go_to_point = robot_pos.compute_offset_point(f_stack_pos, 30)
+    go_to_point = robot_pos.compute_offset_point(f_stack_pos, 10)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.Failed)
