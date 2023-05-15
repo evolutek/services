@@ -265,7 +265,7 @@ def back_to_base(self):
         return RobotStatus.return_status(RobotStatus.Failed)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.goth(0), async_task=False)
+    status = RobotStatus.get_status(self.goth(0, async_task=False))
     print(status)
     sleep(0.5)
 
