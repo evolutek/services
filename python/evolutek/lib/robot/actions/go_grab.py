@@ -191,11 +191,14 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     if (len(HOLDING) > 0):
         status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
         print(status)
+        sleep(0.5)
     else:
         status = self.clamp_open(async_task=False)
         print(status)
+        sleep(0.3)
         status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
         print(status)
+        sleep(0.5)
 
     status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
     print(status)
@@ -236,9 +239,9 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
 
     stack_and_grab(self, first_id, "Pink", async_task=False)
-
+    sleep(0.5)
     stack_and_grab(self, first_id, "Yellow", async_task=False)
-
+    sleep(0.5)
     return stack_and_grab(self, first_id, "Brown", async_task=False)
 
 @if_enabled
