@@ -275,7 +275,7 @@ def back_to_base(self):
     print(status)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.elevator_move("GetFourth", async_task=False))
+    status = RobotStatus.get_status(self.elevator_move("DropThird", async_task=False))
     print(status)
     sleep(0.5)
 
@@ -285,7 +285,7 @@ def back_to_base(self):
 
     input("LAISSEZ MOI PASSER 2")
 
-    go_to_point = robot_pos.compute_offset_point(base_pos, 20)
+    go_to_point = robot_pos.compute_offset_point(base_pos, 10)
     status = RobotStatus.get_status(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.Failed)
