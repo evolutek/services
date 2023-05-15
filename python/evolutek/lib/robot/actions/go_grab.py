@@ -265,55 +265,32 @@ def back_to_base(self):
         return RobotStatus.return_status(RobotStatus.Failed)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.goth(-(pi/2), async_task=False))
+    status = RobotStatus.get_status(self.goth(0), async_task=False)
     print(status)
     sleep(0.5)
 
     input("LAISSEZ MOI PASSER")
 
-    status = RobotStatus.get_status(self.clamp_open(async_task=False))
-    print(status)
-    sleep(0.5)
+    for i in range(3):
 
-    status = RobotStatus.get_status(self.elevator_move("DropThird", async_task=False))
-    print(status)
-    sleep(0.5)
+        status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
+        print(status)
+        sleep(0.5)
 
-    status = RobotStatus.get_status(self.clamp_close(async_task=False))
-    print(status)
-    sleep(0.5)
+        status = RobotStatus.get_status(self.clamp_open(async_task=False))
+        print(status)
+        sleep(0.5)
 
-    input("LAISSEZ MOI PASSER 2")
+        status = RobotStatus.get_status(self.elevator_move("DropFourth", async_task=False))
+        print(status)
+        sleep(0.5)
 
-    go_to_point = robot_pos.compute_offset_point(base_pos, 10)
-    status = RobotStatus.get_status(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10))
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.Failed)
-    sleep(0.5)
+        status = RobotStatus.get_status(self.clamp_close(async_task=False))
+        print(status)
+        sleep(0.5)
 
-    status = RobotStatus.get_status(self.goth(-(3 * pi/4), async_task=False))
-    print(status)
-    sleep(0.5)
-
-    status = RobotStatus.get_status(self.goto_avoid(x=base_pos.x, y=base_pos.y, mirror=False, async_task=False, timeout=10))
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.Failed)
-    sleep(0.5)
-
-    status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
-    print(status)
-    sleep(0.5)
-
-    status = RobotStatus.get_status(self.clamp_open(async_task=False))
-    print(status)
-    sleep(0.5)
-
-    status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
-    print(status)
-    sleep(0.5)
-
-    status = RobotStatus.get_status(self.clamp_close(async_task=False))
-    print(status)
-    sleep(0.5)
+        status = RobotStatus.get_status(self.goto_avoid(x=(base_pos.x + 120), y=base_pos.y, mirror=False, async_task=False, timeout=10))
+        print(status)
+        sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done)
