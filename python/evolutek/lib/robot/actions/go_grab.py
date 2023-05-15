@@ -205,7 +205,6 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     sleep(0.5)
 
     if (len(HOLDING) > 0):
-        sleep(0.5)
         go_to_point = robot_pos.compute_offset_point(stack_pos, -30)
         status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
         print(status)
@@ -218,9 +217,9 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
         status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
         if RobotStatus.get_status(status) != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.get_status(status))
-        sleep(1)
+        sleep(0.5)
         status = self.elevator_move("Low", async_task=False)
-        sleep(1)
+        sleep(0.5)
 
     go_to_point = robot_pos.compute_offset_point(stack_pos, 10)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
@@ -237,11 +236,10 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 @if_enabled
 @async_task
 def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
-
+    # THIS METHOD WILL BE REMOVED EVENTUALLY
+    # DONT USE THIS IN A MATCH
     stack_and_grab(self, first_id, "Pink", async_task=False)
-    sleep(0.5)
     stack_and_grab(self, first_id, "Yellow", async_task=False)
-    sleep(0.5)
     return stack_and_grab(self, first_id, "Brown", async_task=False)
 
 @if_enabled
@@ -261,7 +259,6 @@ def drop_1_stack_go_back(self):
     print(status)
     sleep(0.5)
 
-
     status = RobotStatus.get_status(self.clamp_close(async_task=False))
     print(status)
     sleep(0.5)
@@ -273,8 +270,12 @@ def drop_1_stack_go_back(self):
     offset_point = robot_pos.compute_offset_point(robot_pos, -120)
     status = RobotStatus.get_status(self.goto_avoid(x=offset_point.x, y=offset_point.y, async_task=False, mirror=False, timeout=10))
     print(status)
+    print("move trsl")
+    self.move_trsl(acc=100, dec=100, maxspeed=500, dest=50, sens=0, async_task=False)
+    sleep(0.5)
+    print("trsl done")
 
-    status = RobotStatus.get_status(self.move_trsl(acc=100, dec=100, maxspeed=500, dest=50, sens=0, async_task=False))
+    status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     print(status)
     sleep(0.5)
 
