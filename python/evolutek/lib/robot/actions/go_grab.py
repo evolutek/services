@@ -190,6 +190,10 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
     print(status)
 
+    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
+    print(status)
+    sleep(0.5)
+
     sleep(0.5)
     go_to_point = robot_pos.compute_offset_point(stack_pos, -30)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
@@ -228,6 +232,10 @@ def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
     print(status)
     sleep(0.5)
 
+    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(f_stack_pos), async_task=False, mirror=False))
+    print(status)
+    sleep(0.5)
+
     go_to_point = robot_pos.compute_offset_point(f_stack_pos, -10)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
@@ -261,6 +269,8 @@ def back_to_base(self):
     print(status)
     sleep(0.5)
 
+    input("LAISSEZ MOI PASSER")
+
     status = RobotStatus.get_status(self.clamp_open(async_task=False))
     print(status)
     sleep(0.5)
@@ -273,7 +283,9 @@ def back_to_base(self):
     print(status)
     sleep(0.5)
 
-    go_to_point = robot_pos.compute_offset_point(base_pos, -50)
+    intpu("LAISSEZ MOI PASSER 2")
+
+    go_to_point = robot_pos.compute_offset_point(base_pos, 20)
     status = RobotStatus.get_status(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10))
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.Failed)
