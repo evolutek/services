@@ -265,7 +265,7 @@ def back_to_base(self):
         return RobotStatus.return_status(RobotStatus.Failed)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.goth(pi/2, async_task=False))
+    status = RobotStatus.get_status(self.goth(-(pi/2), async_task=False))
     print(status)
     sleep(0.5)
 
@@ -275,7 +275,7 @@ def back_to_base(self):
     print(status)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
+    status = RobotStatus.get_status(self.elevator_move("GetFourth", async_task=False))
     print(status)
     sleep(0.5)
 
@@ -283,7 +283,7 @@ def back_to_base(self):
     print(status)
     sleep(0.5)
 
-    intpu("LAISSEZ MOI PASSER 2")
+    input("LAISSEZ MOI PASSER 2")
 
     go_to_point = robot_pos.compute_offset_point(base_pos, 20)
     status = RobotStatus.get_status(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10))
@@ -291,7 +291,7 @@ def back_to_base(self):
         return RobotStatus.return_status(RobotStatus.Failed)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.goth(3 * pi/4, async_task=False))
+    status = RobotStatus.get_status(self.goth(-(3 * pi/4), async_task=False))
     print(status)
     sleep(0.5)
 
