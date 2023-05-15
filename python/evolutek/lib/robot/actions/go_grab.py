@@ -222,7 +222,7 @@ def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
 
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     print(status)
-    sleep(0.3)
+    sleep(0.5)
     status = RobotStatus.get_status(self.clamp_open(async_task=False))
     print(status)
     sleep(0.5)
