@@ -64,6 +64,7 @@ class Robot(Service):
     grab_first_stacks = Service.action(robot_actions.grab_first_stacks)
     stack_and_grab = Service.action(robot_actions.stack_and_grab)
     back_to_base = Service.action(robot_actions.back_to_base)
+    drop_1_stack_go_back = Service.action(robot_actions.drop_1_stack_go_back)
 
     goto_random = Service.action(robot_actions.goto_random)
     roam_stacks = Service.action(robot_actions.roam_stacks)
