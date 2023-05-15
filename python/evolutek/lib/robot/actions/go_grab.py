@@ -257,7 +257,7 @@ def drop_1_stack_go_back(self):
     print(status)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.elevator_move("DropFourth", async_task=False))
+    status = RobotStatus.get_status(self.elevator_move("GetFourth", async_task=False))
     print(status)
     sleep(0.5)
 
