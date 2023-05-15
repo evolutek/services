@@ -11,7 +11,6 @@ class Stack:
         self.id = id
         self.pos = Point(x, y)
         self.color = color
-        self.stack_holder = []
 
     def __str__(self):
         return ("Stack %d at pos (%d, %d) with color %s" % (self.id, self.pos.x, self.pos.y, self.color.name))
@@ -50,6 +49,8 @@ ZONES = [
     Zone('E', 900, 1350, 1550, 2000),
     Zone('D', 2550, 3000, 1550, 2000)
 ]
+
+HOLDING = []
 
 def check_status(*args, score=0):
     for stat in args:
@@ -187,68 +188,90 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     stack_pos = get_stack_pos(id, color_name)
     robot_pos = Point(dict=self.trajman.get_position())
 
-    status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
-    print(status)
+    if (len(HOLDING) > 0):
+        status = RobotStatus.get_status(self.elevator_move("High", async_task=False))
+        print(status)
+    else:
+        status = self.clamp_open(async_task=False)
+        print(status)
+        status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
+        print(status)
 
     status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
     print(status)
     sleep(0.5)
 
-    sleep(0.5)
-    go_to_point = robot_pos.compute_offset_point(stack_pos, -30)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
-    print(status)
-    sleep(0.5)
-    status = self.clamp_open(async_task=False)
-    sleep(0.5)
+    if (len(HOLDING) > 0):
+        sleep(0.5)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, -30)
+        status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
+        print(status)
+        sleep(0.5)
+        status = self.clamp_open(async_task=False)
+        sleep(0.5)
 
-    #recule
-    go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.get_status(status))
-    sleep(1)
-    status = self.elevator_move("Low", async_task=False)
-    sleep(1)
+        #recule
+        go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
+        status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+        if RobotStatus.get_status(status) != RobotStatus.Reached:
+            return RobotStatus.return_status(RobotStatus.get_status(status))
+        sleep(1)
+        status = self.elevator_move("Low", async_task=False)
+        sleep(1)
+
     go_to_point = robot_pos.compute_offset_point(stack_pos, 30)
     status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10)
     if RobotStatus.get_status(status) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.get_status(status))
     sleep(1)
     status = self.clamp_close(async_task=False)
+    for i in range (3):
+        HOLDING.append(color_name)
 
+    print(f"HOLDING : {HOLDING}")
     return RobotStatus.return_status(RobotStatus.Done, score=3)
 
 @if_enabled
 @async_task
 def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
-    f_stack_pos = get_stack_pos(first_id, first_color_name)
+
+    stack_and_grab(self, first_id, "Pink", async_task=False)
+
+    stack_and_grab(self, first_id, "Yellow", async_task=False)
+
+    return stack_and_grab(self, first_id, "Brown", async_task=False)
+
+@if_enabled
+@async_task
+def drop_1_stack_go_back(self):
     robot_pos = Point(dict=self.trajman.get_position())
 
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     print(status)
     sleep(0.5)
+
     status = RobotStatus.get_status(self.clamp_open(async_task=False))
     print(status)
     sleep(0.5)
 
-    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(f_stack_pos), async_task=False, mirror=False))
+    status = RobotStatus.get_status(self.elevator_move("DropFourth", async_task=False))
     print(status)
     sleep(0.5)
-
-    go_to_point = robot_pos.compute_offset_point(f_stack_pos, -10)
-    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
-    if RobotStatus.get_status(status) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.Failed)
-    sleep(0.8)
 
     status = RobotStatus.get_status(self.clamp_close(async_task=False))
     print(status)
     sleep(0.5)
 
-    stack_and_grab(self, first_id, "Yellow", async_task=False)
+    offset_point = robot_pos.compute_offset_point(robot_pos, -120)
+    status = RobotStatus.get_status(self.goto_avoid(x=offset_point.x, y=offset_point.y, async_task=False, mirror=False, timeout=10))
+    print(status)
     sleep(0.5)
-    return stack_and_grab(self, first_id, "Brown", async_task=False)
+
+    for i in range(3):
+        HOLDING.pop()
+    print(f"HOLDING : {HOLDING}")
+
+    return RobotStatus.return_status(RobotStatus.Done, score=3)
 
 @if_enabled
 @async_task
@@ -268,29 +291,5 @@ def back_to_base(self):
     status = RobotStatus.get_status(self.goth(0, async_task=False))
     print(status)
     sleep(0.5)
-
-    input("LAISSEZ MOI PASSER")
-
-    for i in range(3):
-
-        status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
-        print(status)
-        sleep(0.5)
-
-        status = RobotStatus.get_status(self.clamp_open(async_task=False))
-        print(status)
-        sleep(0.5)
-
-        status = RobotStatus.get_status(self.elevator_move("DropFourth", async_task=False))
-        print(status)
-        sleep(0.5)
-
-        status = RobotStatus.get_status(self.clamp_close(async_task=False))
-        print(status)
-        sleep(0.5)
-
-        status = RobotStatus.get_status(self.goto_avoid(x=(base_pos.x + 120), y=base_pos.y, mirror=False, async_task=False, timeout=10))
-        print(status)
-        sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done)
