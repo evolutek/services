@@ -184,7 +184,6 @@ def go_drop_all(self):
 @if_enabled
 @async_task
 def stack_and_grab(self, id = 1, color_name = "Pink"):
-    # 1 : 575, 225
     stack_pos = get_stack_pos(id, color_name)
     robot_pos = Point(dict=self.trajman.get_position())
 
@@ -192,14 +191,8 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     print(status)
 
     sleep(0.5)
-    #status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
-    #print(status)
-    #sleep(0.5)
-    print("LA POSITION")
-    #go_to_point = robot_pos.compute_offset_point(stack_pos, 40)
     status = self.goto_avoid(x=stack_pos.x, y=stack_pos.y, async_task=False, mirror=False, timeout=10)
     print(status)
-    print("MON CUL EST ENORME")
     sleep(0.5)
     status = self.clamp_open(async_task=False)
     sleep(0.5)
@@ -247,3 +240,27 @@ def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
     stack_and_grab(self, first_id, "Yellow", async_task=False)
     sleep(0.5)
     return stack_and_grab(self, first_id, "Brown", async_task=False)
+
+@if_enabled
+@async_task
+def back_to_base(self):
+    robot_pos = Point(dict=self.trajman.get_position())
+    base_pos = Point(dict=self.mirror_pos(275, 225))
+
+    go_to_point = robot_pos.compute_offset_point(base_pos, 50)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+    sleep(0.8)
+
+    status = RobotStatus.get_status(self.clamp_open(async_task=False))
+    print(status)
+    sleep(0.5)
+
+    go_to_point = robot_pos.compute_offset_point(base_pos, -50)
+    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+    if RobotStatus.get_status(status) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+    sleep(0.8)
+
+    return RobotStatus.return_status(RobotStatus.Done)
