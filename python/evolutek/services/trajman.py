@@ -604,10 +604,10 @@ class TrajMan(Service):
     @Service.action
     def get_position(self):
         return {'x': self.robot_position.x, 'y': self.robot_position.y, 'theta': round(self.robot_orientation, 3)}
-        self.log_serial("get_position")
-        tab = pack('B', 2)
-        tab += pack('B', Commands.GET_POSITION.value)
-        return self.get_command(bytes(tab))
+        #self.log_serial("get_position")
+        #tab = pack('B', 2)
+        #tab += pack('B', Commands.GET_POSITION.value)
+        #return self.get_command(bytes(tab))
 
     @Service.action
     def get_speeds(self):
