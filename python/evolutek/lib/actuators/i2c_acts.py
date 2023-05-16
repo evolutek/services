@@ -16,7 +16,7 @@ class I2CActType(Enum):
 
 class ESCVariation(Enum):
     Default = (0.0, 0.0)
-    Emax = (0.5, 0.10)
+    Emax = (0.05, 0.15)
 
 class I2CAct(Component):
     def __init__(self, id_channel: int, type: I2CActType, max_range: float = 180.0, min_pulse: int = 750, max_pulse: int = 2250, esc_variation=None):
@@ -47,9 +47,6 @@ class I2CAct(Component):
                 self.esc_variation = ESCVariation.Default
 
             self.max_range = min(self.max_range, 1.0)
-
-            # Initialize ESC properly
-            self.set_speed(self.esc_variation.value[0])
 
         return True
 
@@ -145,12 +142,16 @@ class I2CActsHandler(ComponentsHolder):
             return False
         return True
 
-    def _post_initialize(self):
-        if HAS_ESC:
-            sleep(5)
+    def init_escs(self):
+        if not HAS_ESC:
+            return
         for component in self.components:
-            if component.type == I2CActType.ESC:
-                component.set_speed(0)
+            if self.components[component].type == I2CActType.ESC:
+                self.components[component].set_speed(self.components[component].esc_variation.value[0])
+        sleep(5)
+        for component in self.components:
+            if self.components[component].type == I2CActType.ESC:
+                self.components[component].set_speed(0)
         return True
 
     def free_all(self):

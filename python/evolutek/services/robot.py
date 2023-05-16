@@ -34,6 +34,7 @@ class Robot(Service):
     set_theta = Service.action(robot_trajman.set_theta)
     set_pos = Service.action(robot_trajman.set_pos)
     goto = Service.action(robot_trajman.goto)
+    forward = Service.action(robot_trajman.forward)
     goth = Service.action(robot_trajman.goth)
     goto_avoid = Service.action(robot_trajman.goto_avoid)
     goto_with_path = Service.action(robot_trajman.goto_with_path)
@@ -65,9 +66,9 @@ class Robot(Service):
     drop_all = Service.action(robot_actions.drop_all)                         # REFACTO
     suck_rack = Service.action(robot_actions.suck_rack)                       # TODO
     build_cakes = Service.action(robot_actions.build_cakes)                   # TODO
-    shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # REFACTO
-    shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # REFACTO
-    place_cherry = Service.action(robot_actions.place_cherry)                 # TODO    
+    shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # DONE
+    shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # DONE
+    drop_and_cherry = Service.action(robot_actions.drop_and_cherry)           # TODO
     fill_n_cherries = Service.action(robot_actions.fill_n_cherries)           # DONE
     set_cherry_count = Service.action(robot_actions.set_cherry_count)         # DONE
 
@@ -79,6 +80,7 @@ class Robot(Service):
         self.lock = Lock()
 
         self.cherry_count = 0
+        self.HOLDING = []
 
         self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')

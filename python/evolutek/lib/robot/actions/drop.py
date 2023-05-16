@@ -6,6 +6,9 @@ from evolutek.lib.robot.robot_actions_imports import *
 def drop_n(self):
     robot_pos = Point(dict=self.trajman.get_position())
 
+    if (len(self.HOLDING) == 0):
+        return RobotStatus.return_status(RobotStatus.Done)
+
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     print(status)
     sleep(0.5)
@@ -37,8 +40,8 @@ def drop_n(self):
     sleep(0.5)
 
     for i in range(3):
-        HOLDING.pop()
-    print(f"HOLDING : {HOLDING}")
+        self.HOLDING.pop()
+    print(f"HOLDING : {self.HOLDING}")
 
     return RobotStatus.return_status(RobotStatus.Done, score=3)
 

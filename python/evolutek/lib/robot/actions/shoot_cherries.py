@@ -7,24 +7,21 @@ def shoot_n_cherries(self, n):
         n = int(n)
     except:
         return RobotStatus.return_status(RobotStatusFailed)
+
     print('[ROBOT] Turning canon on !')
-    if RobotStatus.get_status(self.canon_on(async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
+    status = []
+    status.append(self.canon_on(async_task=False))
     while n > 0:
         print('[ROBOT] Shooting a cherry !')
-        if RobotStatus.get_status(self.push_tank(async_task=False)) != RobotStatus.Done:
-            return RobotStatus.return_status(RobotStatus.Failed)
-        sleep(1.5)
-        if RobotStatus.get_status(self.push_canon(async_task=False)) != RobotStatus.Done:
-            return RobotStatus.return_status(RobotStatus.Failed)
+        status.append(self.push_tank(async_task=False))
+        sleep(1)
+        status.append(self.push_canon(async_task=False))
         sleep(0.5)
         n -= 1
         self.cherry_count -= 1
     print('[ROBOT] Turning canon off !')
-    if RobotStatus.get_status(self.canon_off(async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
-    score = 0 if n < 1 else (n + 5)
-    return RobotStatus.return_status(RobotStatus.Done, score=score)
+    status.append(self.canon_off(async_task=False))
+    return check_status(*status, score=0)
 
 @if_enabled
 @async_task

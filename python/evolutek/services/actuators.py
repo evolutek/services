@@ -69,7 +69,7 @@ class Actuators(Service):
         self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
-        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
         self.orange_led_strip = create_gpio(12, 'orange led strip', dir=True, type=GpioType.MCP)
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
@@ -111,14 +111,7 @@ class Actuators(Service):
 
         if self.is_initialized:
             self.rgb_led_strip.start()
-            self.orange_led_strip_set(True)
-            sleep(1)
-            self.orange_led_strip_set(False)
-            sleep(1)
-            self.orange_led_strip_set(True)
-            sleep(1)
-            self.orange_led_strip_set(False)
-            sleep(1)
+            self.enable()
             print("[ACTUATORS] Fully initialized")
 
     def stop(self):
@@ -157,6 +150,12 @@ class Actuators(Service):
     def enable(self):
         if self.bau.read():
             self.disabled.clear()
+            self.i2c_acts.init_escs()
+            for i in range(2):
+                self.orange_led_strip_set(True)
+                sleep(0.25)
+                self.orange_led_strip_set(False)
+                sleep(0.25)
 
     #####################
     # PROXIMITY SENSORS #
