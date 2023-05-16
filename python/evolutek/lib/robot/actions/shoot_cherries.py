@@ -2,7 +2,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 
 @if_enabled
 @async_task
-def empty_n_cherries(self, n):
+def shoot_n_cherries(self, n):
     try:
         n = int(n)
     except:
@@ -28,5 +28,5 @@ def empty_n_cherries(self, n):
 
 @if_enabled
 @async_task
-def empty_all_cherries(self):
+def shoot_all_cherries(self):
     return self.empty_n_cherries(self.cherry_count, async_task=False)

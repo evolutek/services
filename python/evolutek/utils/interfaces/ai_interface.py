@@ -115,7 +115,7 @@ class StatusFrame(IFRAME):
 
 	def slurp(self):
 		print("Bonjour slurping")
-		self.cs.robot[ROBOT].fill_all_cherries()
+		self.cs.robot[ROBOT].fill_n_cherries(10)
 
 	def slurp_less(self):
 		print("Bonjour slurping un peu moins")
@@ -151,9 +151,6 @@ class MatchInterface(IFRAME):
 	def __init__(self, container):
 		super().__init__(container)
 		self.__init_interface()
-
-	def close(self):
-		self.parent.close()
 
 	def close(self):
 		self.parent.close()

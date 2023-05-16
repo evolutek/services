@@ -60,24 +60,16 @@ class Robot(Service):
     elevator_move = Service.action(robot_actuators.elevator_move)
 
     # Imported from robot_actions
-
-    grab_first_stacks = Service.action(robot_actions.grab_first_stacks)
-    stack_and_grab = Service.action(robot_actions.stack_and_grab)
-    back_to_base = Service.action(robot_actions.back_to_base)
-    drop_1_stack_go_back = Service.action(robot_actions.drop_1_stack_go_back)
-
-    goto_random = Service.action(robot_actions.goto_random)
-    roam_stacks = Service.action(robot_actions.roam_stacks)
-    roam_zones = Service.action(robot_actions.roam_zones)
-    go_grab_one_stack = Service.action(robot_actions.go_grab_one_stack)
-    go_drop_all = Service.action(robot_actions.go_drop_all)
-    empty_n_cherries = Service.action(robot_actions.empty_n_cherries)
-    empty_all_cherries = Service.action(robot_actions.empty_all_cherries)
-    fill_n_cherries = Service.action(robot_actions.fill_n_cherries)
-    fill_all_cherries = Service.action(robot_actions.fill_all_cherries)
-    set_cherry_count = Service.action(robot_actions.set_cherry_count)
-    vacuum_10_cherry_right = Service.action(robot_actions.vacuum_10_cherry_right)
-    vacuum_10_cherry_left = Service.action(robot_actions.vacuum_10_cherry_left)
+    stack_and_grab = Service.action(robot_actions.stack_and_grab)             # DONE
+    drop_n = Service.action(robot_actions.drop_n)                             # REFACTO
+    drop_all = Service.action(robot_actions.drop_all)                         # REFACTO
+    suck_rack = Service.action(robot_actions.suck_rack)                       # TODO
+    build_cakes = Service.action(robot_actions.build_cakes)                   # TODO
+    shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # REFACTO
+    shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # REFACTO
+    place_cherry = Service.action(robot_actions.place_cherry)                 # TODO    
+    fill_n_cherries = Service.action(robot_actions.fill_n_cherries)           # DONE
+    set_cherry_count = Service.action(robot_actions.set_cherry_count)         # DONE
 
     def __init__(self):
 

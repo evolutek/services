@@ -1,8 +1,12 @@
 from evolutek.lib.robot.robot_actions_imports import *
 
+
 @if_enabled
 @async_task
-def vacuum_10_cherry_left(self):
+def suck_rack(self):
+    return check_status()
+
+'''def vacuum_10_cherry_left(self):
 
     # Set to drop to stock cherry
     if RobotStatus.get_status(self.push_drop(async_task=False)) != RobotStatus.Done:
@@ -41,8 +45,6 @@ def vacuum_10_cherry_left(self):
     return RobotStatus.return_status(RobotStatus.Done, score=0)
 
 
-@if_enabled
-@async_task
 def vacuum_10_cherry_right(self):
 
     # Set to drop to stock cherry
@@ -79,5 +81,4 @@ def vacuum_10_cherry_right(self):
     if RobotStatus.get_status(self.retract_right_vacuum(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    return RobotStatus.return_status(RobotStatus.Done, score=0)
-
+    return RobotStatus.return_status(RobotStatus.Done, score=0)'''
