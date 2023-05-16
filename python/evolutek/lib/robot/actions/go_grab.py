@@ -247,6 +247,9 @@ def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
 def drop_1_stack_go_back(self):
     robot_pos = Point(dict=self.trajman.get_position())
 
+    if (len(HOLDING) < 0):
+        return RobotStatus.return_status(RobotStatus.Done)
+
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     print(status)
     sleep(0.5)
@@ -267,8 +270,9 @@ def drop_1_stack_go_back(self):
     print(status)
     sleep(0.5)
 
+    # REMOVE THIS SHIT
     print("move trsl")
-    status = RobotStatus.get_status(self.move_trsl(acc=100, dec=100, maxspeed=500, dest=120, sens=0))
+    status = RobotStatus.get_status(self.move_trsl(acc=100, dec=100, maxspeed=500, dest=125, sens=0))
     print(status)
     sleep(0.5)
     print("trsl done")
