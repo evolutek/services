@@ -223,17 +223,12 @@ class AI(Service):
         with self.lock:
             starting_position = self.goals.current_strategy.starting_position
 
-        if self.color != self.color1:
-                starting_position.position = Point(starting_position.position.x, 2000 - starting_position.position.y)
-                starting_position.theta *= -1
-
         print('[AI] Setting robot position')
         self.trajman.free()
         self.robot.set_pos(
                 x=starting_position.position.x,
                 y=starting_position.position.y,
                 theta=starting_position.theta,
-                mirror=False
             )
         self.trajman.unfree()
 
@@ -242,25 +237,30 @@ class AI(Service):
             self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
 
-            side = starting_position.recal_side == 'x'
+            axe = starting_position.recal_side == 'x'
+            side = (abs(starting_position.theta - pi) < 0.1 or abs(starting_position.theta + pi/2) < 0.1) 
 
-            self.recalibration(x=side, y=(not side), init=True,
-                               x_sensor=(starting_position.recal_sensor if not side else "no"),
-                               y_sensor=(starting_position.recal_sensor if side else "no"))
+            self.recalibration(x=axe, y=(not axe), init=True,
+                               x_sensor=(starting_position.recal_sensor if not axe else "no"),
+                               y_sensor=(starting_position.recal_sensor if axe else "no"),
+                               side_x = side,
+                               side_y = side)
 
             current_pos = self.trajman.get_position()
+            if self.color != self.color1:
+                current_pos['y'] = 2000 - current_pos['y']
 
             self.goto(
-                x=(starting_position.position.x if side else current_pos['x']),
-                y=(starting_position.position.y if not side else current_pos['y']),
-                avoid=False, mirror=False)
+                x=(starting_position.position.x if axe else current_pos['x']),
+                y=(starting_position.position.y if not axe else current_pos['y']),
+                avoid=False)
 
             self.goto(
                 x=starting_position.position.x,
                 y=starting_position.position.y,
-                avoid=False, mirror=False)
+                avoid=False)
 
-            self.goth(theta=starting_position.theta, mirror=False)
+            self.goth(theta=starting_position.theta)
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
