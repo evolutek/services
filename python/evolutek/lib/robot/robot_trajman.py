@@ -104,8 +104,8 @@ def forward(self, distance, avoid=True):
     traj_pos = self.trajman.get_position()
     origin = Point(dict=traj_pos)
 
-    x = cos(traj_pos['theta']) * distance + traj_pos['x']
-    y = sin(traj_pos['theta']) * distance + traj_pos['y']
+    x =  cos(traj_pos['theta']) * distance + traj_pos['x']
+    y = -sin(traj_pos['theta']) * distance + traj_pos['y']
 
     target = Point(x, y)
 
