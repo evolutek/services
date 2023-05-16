@@ -99,6 +99,8 @@ def goto(self, x, y, avoid=True, mirror=True):
 @if_enabled
 @async_task
 def forward(self, distance, avoid=True):
+    distance = float(distance)
+
     traj_pos = self.trajman.get_position()
     origin = Point(dict=traj_pos)
 
