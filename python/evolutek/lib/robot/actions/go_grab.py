@@ -267,14 +267,10 @@ def drop_1_stack_go_back(self):
     print(status)
     sleep(0.5)
 
-    offset_point = robot_pos.compute_offset_point(robot_pos, -120)
-    status = RobotStatus.get_status(self.goto_avoid(x=offset_point.x, y=offset_point.y, async_task=False, mirror=False, timeout=10))
-    print(status)
     print("move trsl")
     status = RobotStatus.get_status(self.move_trsl(acc=100, dec=100, maxspeed=500, dest=50, sens=0))
     print(status)
     sleep(0.5)
-
     print("trsl done")
 
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
