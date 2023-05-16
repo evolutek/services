@@ -3,8 +3,8 @@ from evolutek.lib.robot.robot_actions_imports import *
 @if_enabled
 @async_task
 def drop_and_cherry(self, n):
-    if (len(self.HOLDING) == 0):
-        return RobotStatus.return_status(RobotStatus.Done)
+    # if (len(self.HOLDING) == 0):
+    #     return RobotStatus.return_status(RobotStatus.Done)
 
     status = RobotStatus.get_status(self.elevator_move("Low", async_task=False))
     print(status)
