@@ -79,6 +79,7 @@ class Robot(Service):
         self.lock = Lock()
 
         self.cherry_count = 0
+        self.HOLDING = []
 
         self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')
