@@ -268,7 +268,7 @@ def drop_1_stack_go_back(self):
     sleep(0.5)
 
     print("move trsl")
-    status = RobotStatus.get_status(self.move_trsl(acc=100, dec=100, maxspeed=500, dest=50, sens=0))
+    status = RobotStatus.get_status(self.move_trsl(acc=100, dec=100, maxspeed=500, dest=120, sens=0))
     print(status)
     sleep(0.5)
     print("trsl done")
