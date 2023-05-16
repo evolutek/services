@@ -113,7 +113,7 @@ def forward(self, distance, avoid=True):
         print('[ROBOT] Already reached position')
         return RobotStatus.return_status(RobotStatus.Reached)
 
-    return self.goto_avoid(x, y, avoid=avoid)
+    return self.goto_avoid(x, y, async_task=False, avoid=avoid)
 
 
 @if_enabled
