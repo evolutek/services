@@ -105,7 +105,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     for i in range (3):
         self.HOLDING.append(color_name)
 
-    print(f"HOLDING : {HOLDING}")
+    print(f"HOLDING : {self.HOLDING}")
     return RobotStatus.return_status(RobotStatus.Done, score=3)
 
 def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
