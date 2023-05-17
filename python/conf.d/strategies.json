@@ -6,7 +6,12 @@
         "x": 1550,
         "y": 450
       },
-      "actions": []
+      "actions": [
+        {
+          "fct": "disguise",
+          "handler": "robot"
+        }
+      ]
     },
     {
       "name": "pal_go_center",
@@ -123,21 +128,25 @@
             "x": 2100,
             "y": 225
           }
+        },
+	{
+          "fct": "disguise",
+          "handler": "robot"
         }
       ]
     },
     {
       "name": "pmi_grab_first",
       "position": {
-        "x": 1125,
-        "y": 1775
+        "x": 2775,
+        "y": 725
       },
       "actions": [
         {
           "fct": "stack_and_grab",
           "handler": "robot",
           "args": {
-            "id": 4,
+            "id": 3,
             "color_name": "Brown"
           }
         }
@@ -146,25 +155,12 @@
     {
       "name": "pmi_drop",
       "position": {
-        "x": 1125,
-        "y": 1775
+        "x": 2730,
+        "y": 725
       },
       "actions": [
         {
           "fct": "drop_all",
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "disguise",
-      "position": {
-        "x": 2100,
-        "y": 225
-      },
-      "actions": [
-        {
-          "fct": "disguise",
           "handler": "robot"
         }
       ]
@@ -189,8 +185,7 @@
         "stack_second",
         "stack_third",
         "drop_all",
-        "pal_go_back",
-        "disguise"
+        "pal_go_back"
       ],
       "available": [
         "pal"
@@ -203,8 +198,7 @@
       "goals": [
         "pmi_grab_first",
         "pmi_drop",
-        "pmi_go_back",
-        "disguise"
+        "pmi_go_back"
       ],
       "available": [
         "pmi"
