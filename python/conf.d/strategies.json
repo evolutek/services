@@ -74,7 +74,7 @@
 				"y": 400
 			},
 			"actions": [
-				
+
 				{
 					"fct": "goth",
 					"handler": "robot",
@@ -101,6 +101,59 @@
 					"fct": "shoot_all_cherries",
 					"handler": "robot",
 					"score": 15
+				}
+			]
+		},
+		{
+			"name": "pmi_go_back",
+			"position": {
+				"x": 1500,
+				"y": 1000
+			},
+			"actions": [
+				{
+					"fct": "goto",
+					"args": {
+						"x": 2100,
+						"y": 1000
+					}
+				},
+				{
+					"fct": "goto",
+					"args": {
+						"x": 2100,
+						"y": 225
+					}
+				}
+			]
+		},
+		{
+			"name": "pmi_grab_first",
+			"position": {
+				"x": 1125,
+				"y": 1775
+			},
+			"actions": [
+				{
+					"fct": "stack_and_grab",
+					"handler": "robot",
+					"args": {
+						"id": 4,
+						"color_name": "Brown"
+					}
+				}
+			]
+		},
+		{
+			"name": "pmi_drop",
+			"position": {
+				"x": 1125,
+				"y": 1775
+			},
+			"actions": [
+				{
+					"fct": "drop_all",
+					"handler": "robot"
 				}
 			]
 		}
@@ -132,58 +185,67 @@
 			],
 			"use_pathfinding": false
 		},
-		{
-			"name": "RECAL_225_225_X",
-			"starting_position": "A",
-			"goals": [],
-			"available": [
-				"pal",
-				"pmi"
-			],
-			"use_pathfinding": false
-		},
-		{
-			"name": "RECAL_225_225_Y",
-			"starting_position": "B",
-			"goals": [],
-			"available": [
-				"pal",
-				"pmi"
-			],
-			"use_pathfinding": false
-		},
-		{
-			"name": "RECAL_1875_225_Y",
-			"starting_position": "C",
-			"goals": [],
-			"available": [
-				"pal",
-				"pmi"
-			],
-			"use_pathfinding": false
-		},
-		{
-			"name": "RECAL_2775_1775_X",
-			"starting_position": "D",
-			"goals": [],
-			"available": [
-				"pal",
-				"pmi"
-			],
-			"use_pathfinding": false
-		},
-		{
-			"name": "RECAL_2775_1775_Y",
-			"starting_position": "E",
-			"goals": [],
-			"available": [
-				"pal",
-				"pmi"
-			],
-			"use_pathfinding": false
-		}
+		"name": "Homologation PMI",
+		"starting_position": "B",
+		"goals": [
+			"pmi_grab_first",
+			"pmi_drop",
+			"pmi_go_back"
+		],
+		"available": ["pmi"],
+		"use_pathfinding": false
+},
+{
+	"name": "RECAL_225_225_X",
+	"starting_position": "A",
+	"goals": [],
+	"available": [
+		"pal",
+		"pmi"
 	],
-
+	"use_pathfinding": false
+},
+{
+	"name": "RECAL_225_225_Y",
+	"starting_position": "B",
+	"goals": [],
+	"available": [
+		"pal",
+		"pmi"
+	],
+	"use_pathfinding": false
+},
+{
+	"name": "RECAL_1875_225_Y",
+	"starting_position": "C",
+	"goals": [],
+	"available": [
+		"pal",
+		"pmi"
+	],
+	"use_pathfinding": false
+},
+{
+	"name": "RECAL_2775_1775_X",
+	"starting_position": "D",
+	"goals": [],
+	"available": [
+		"pal",
+		"pmi"
+	],
+	"use_pathfinding": false
+},
+{
+	"name": "RECAL_2775_1775_Y",
+	"starting_position": "E",
+	"goals": [],
+	"available": [
+		"pal",
+		"pmi"
+	],
+	"use_pathfinding": false
+}
+	],
 	"starting_positions": [
 		{
 			"name": "A",
@@ -240,6 +302,10 @@
 	"critical_goals": {
 		"pal": {
 			"goal": "pal_go_back",
+			"timeout": 90
+		},
+		"pmi": {
+			"goal": "pmi_go_back",
 			"timeout": 90
 		}
 	}
