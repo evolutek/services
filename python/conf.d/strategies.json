@@ -128,8 +128,8 @@
     {
       "name": "zone_c_grab_pink",
       "position": {
-        "x": 2700,
-        "y":  225
+        "x": 2775,
+        "y":  725
       },
       "actions": [
         {
@@ -227,8 +227,8 @@
     {
       "name": "zone_c_build_cakes",
       "position": {
-        "x": 725,
-        "y": 260
+        "x": 2740,
+        "y": 725
       },
       "actions": [
         {
