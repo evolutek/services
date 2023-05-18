@@ -176,8 +176,8 @@
     {
       "name": "zone_b_grab_yellow",
       "position": {
-        "x": 2225,
-        "y": 225
+        "x": 1875,
+        "y": 725
       },
       "actions": [
         {
@@ -200,7 +200,7 @@
     {
       "name": "zone_b_grab_pink",
       "position": {
-        "x": 2425,
+        "x": 2225,
         "y":  225
       },
       "actions": [
