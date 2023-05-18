@@ -6,7 +6,7 @@ def shoot_n_cherries(self, n):
     try:
         n = int(n)
     except:
-        return RobotStatus.return_status(RobotStatusFailed)
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     print('[ROBOT] Turning canon on !')
     status = []
@@ -14,9 +14,9 @@ def shoot_n_cherries(self, n):
     while n > 0:
         print('[ROBOT] Shooting a cherry !')
         status.append(self.push_tank(async_task=False))
-        sleep(2)
+        sleep(1.5)
         status.append(self.push_canon(async_task=False))
-        sleep(1)
+        sleep(0.8)
         n -= 1
         self.cherry_count -= 1
     print('[ROBOT] Turning canon off !')
@@ -26,4 +26,4 @@ def shoot_n_cherries(self, n):
 @if_enabled
 @async_task
 def shoot_all_cherries(self):
-    return self.empty_n_cherries(self.cherry_count, async_task=False)
+    return self.shoot_n_cherries(self.cherry_count, async_task=False)
