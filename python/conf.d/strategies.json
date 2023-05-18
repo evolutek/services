@@ -302,6 +302,7 @@
         "zone_d_grab_yellow",
         "zone_d_grab_brown",
         "zone_c_build_cakes",
+		    "go_center_far_beacon",
         "pmi_go_back"
       ],
       "available": [
