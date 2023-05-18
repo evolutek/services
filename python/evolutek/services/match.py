@@ -144,7 +144,12 @@ class Match(Service):
     # FIXME : FIX THIS
     def around(self, robot, x, y, rx, ry):
         if self.color == self.color2: y = 2000 - y
-        pos = self.cs.trajman[robot].get_position()
+        pos = None
+        try:
+            pos = self.cs.trajman[robot].get_position()
+        except Exception as e:
+            print('[MATCH] Failed to contact trajman/%s: %s' % (robot, str(e)))
+            return False
         if pos['x'] > x+rx or pos['x'] < x-rx: return False
         if pos['y'] > y+ry or pos['y'] < y-ry: return False
         return True
