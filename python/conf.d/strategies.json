@@ -177,7 +177,7 @@
         {
           "fct": "build_cakes",
 		  "args": {
-			"theta": "-3pi/4"
+			"theta": "-3*pi/4"
 		  },
           "handler": "robot",
           "score": 21
