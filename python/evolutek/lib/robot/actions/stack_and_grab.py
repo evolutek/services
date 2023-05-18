@@ -83,7 +83,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     status.append(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
     #print("*******************", status)
 
-    if (not self.proximity_sensor_read(id=1)):
+    if (not self.actuators.proximity_sensor_read(id=1)):
         return RobotStatus.check(*status)
 
     if (len(self.cakes_stack) > 0):
