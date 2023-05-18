@@ -90,4 +90,5 @@ def build_cakes(self, theta):
         return self.build_cakes_raw(center, [a, b, c], [theta - pi / 2, theta, theta + pi / 2], async_task = False)
     else:
         print("[BUILD CAKES]: Invalid stack", self.cakes_stack)
+        self.goth(theta=theta, async_task=False)
         return self.drop_stacks(n=(len(self.cakes_stack)+2)//3, async_task=False)
