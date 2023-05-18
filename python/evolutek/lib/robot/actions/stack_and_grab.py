@@ -68,6 +68,9 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     robot_pos = Point(dict=self.trajman.get_position())
     status = []
 
+    search_offset = -110
+    offset = -70
+
     if (len(self.cakes_stack) <= 0):
         status.append(self.clamp_open(async_task=False))
         sleep(0.3)
@@ -82,14 +85,14 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     status.append(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
 
     if (len(self.cakes_stack) > 0):
-        go_to_point = robot_pos.compute_offset_point(stack_pos, -110)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, search_offset)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
         sleep(0.3)
         print(f"Stack is in front ? : {self.actuators.proximity_sensor_read(id=1)}")
         if (not self.actuators.proximity_sensor_read(id=1)):
             return RobotStatus.check(*status)
 
-        go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, offset)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
 
         status.append(self.clamp_open(async_task=False))
@@ -100,19 +103,19 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False))
         status.append(self.elevator_move("Low", async_task=False))
         sleep(0.5)
-        go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, offset)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
         sleep(0.5)
         status.append(self.clamp_close(async_task=False))
         sleep(0.5)
     else:
-        go_to_point = robot_pos.compute_offset_point(stack_pos, -110)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, search_offset)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
         sleep(0.3)
         print(f"Stack is in front ? : {self.actuators.proximity_sensor_read(id=1)}")
         if (not self.actuators.proximity_sensor_read(id=1)):
             return RobotStatus.check(*status)
-        go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, offset)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
         sleep(0.5)
         status.append(self.clamp_close(async_task=False))
