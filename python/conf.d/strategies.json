@@ -384,7 +384,9 @@
         "zone_b_grab_brown",
         "zone_b_grab_yellow",
         "zone_b_grab_pink",
-        "zone_b_drop_all"
+        "zone_b_drop_all",
+        "fire",
+        "pmi_go_back"
 		],
       "available": [
         "pmi"
