@@ -44,7 +44,7 @@ def retract_left_vacuum(self):
 @if_enabled
 @async_task
 def extend_right_vacuum(self):
-    return RobotStatus.check(self.actuators.servo_set_angle(3, 120))
+    return RobotStatus.check(self.actuators.servo_set_angle(3, 90 if self.service_name == "pmi" else 86))
 
 @if_enabled
 @async_task
