@@ -157,6 +157,81 @@
       ]
     },
     {
+      "name": "zone_b_grab_brown",
+      "position": {
+        "x": 2775,
+        "y": 725
+      },
+      "actions": [
+        {
+          "fct": "stack_and_grab",
+          "handler": "robot",
+          "args": {
+            "id": 3,
+            "color_name": "Brown"
+          }
+        }
+      ]
+    },
+    {
+      "name": "zone_b_grab_yellow",
+      "position": {
+        "x": 1875,
+        "y": 1275
+      },
+      "actions": [
+        {
+          "fct": "stack_and_grab",
+          "handler": "robot",
+          "args": {
+            "id": 3,
+            "color_name": "Yellow"
+          }
+        }
+      ]
+    },
+    {
+      "name": "zone_b_grab_pink",
+      "position": {
+        "x": 2225,
+        "y":  1775
+      },
+      "actions": [
+        {
+          "fct": "stack_and_grab",
+          "handler": "robot",
+          "args": {
+            "id": 3,
+            "color_name": "Pink"
+          }
+        }
+      ]
+    },
+    {
+      "name": "zone_b_drop_all",
+      "position": {
+        "x": 2775,
+        "y": 725
+      },
+      "actions": [
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "args": {
+            "theta": "pi/4"
+          }
+        },
+        {
+          "fct": "drop_stacks",
+		  "args": {
+			"n": 3
+		  },
+          "handler": "robot",
+          "score": 3
+        }
+      ]
+    },
+    {
       "name": "fire",
       "position": {
         "x": 700,
@@ -297,6 +372,20 @@
         "zone_d_build_cakes",
         "pmi_go_back"
       ],
+      "available": [
+        "pmi"
+      ],
+      "use_pathfinding": false
+    },
+    {
+      "name": "ZONE B",
+      "starting_position": "ZONE_B",
+      "goals": [
+        "zone_b_grab_brown",
+        "zone_b_grab_yellow",
+        "zone_b_grab_pink",
+        "zone_b_drop_all"
+		],
       "available": [
         "pmi"
       ],
