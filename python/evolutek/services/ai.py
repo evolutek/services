@@ -510,7 +510,6 @@ class AI(Service):
     """ ENDING """
     def ending(self):
 
-        self.actuators.orange_led_strip_set(True)
         self.red_led.write(False)
         self.green_led.write(True)
 
