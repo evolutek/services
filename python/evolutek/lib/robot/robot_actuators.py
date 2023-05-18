@@ -85,6 +85,8 @@ def push_tank(self):
 @if_enabled
 @async_task
 def push_isol(self):
+    self.push_tank()
+    sleep(0.4)
     return RobotStatus.check(self.actuators.servo_set_angle(4, 150))
 
 @if_enabled
