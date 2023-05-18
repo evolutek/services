@@ -177,7 +177,7 @@
       "name": "zone_b_grab_yellow",
       "position": {
         "x": 1875,
-        "y": 725
+        "y": 225
       },
       "actions": [
         {
