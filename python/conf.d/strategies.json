@@ -181,13 +181,6 @@
       },
       "actions": [
         {
-          "fct": "goth",
-          "handler": "robot",
-          "args": {
-            "theta": "-pi/4"
-          }
-        },
-        {
           "fct": "stack_and_grab",
           "handler": "robot",
           "args": {
