@@ -148,6 +148,9 @@ class Actuators(Service):
     # Enable Actuators
     @Service.action
     def enable(self):
+        if not self.disabled.is_set():
+            return
+
         if self.bau.read():
             self.disabled.clear()
             self.i2c_acts.init_escs()
