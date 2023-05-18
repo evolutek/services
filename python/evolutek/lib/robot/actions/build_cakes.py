@@ -5,11 +5,21 @@ from math import pi, atan2
 @if_enabled
 @async_task
 def build_cakes_raw(self, center, positions, angles=None):
+    speeds = self.trajman.get_speeds()
+    self.trajman.set_max_speed(25)
+    self.trajman.set_acc(15)
     cake_bot_dist = 120
     current_drop_level = 0
     current_position_index = 0
     nb_positions = len(positions)
     score = 0
+
+    if angles is not None: 
+        heading = angles[0]
+    else:
+        heading = atan2(destination.y - center.y, destination.x - center.x)
+
+    self.goth(theta = heading, async_task=False, mirror=False)
 
     while current_drop_level < 3 and 0 <= current_position_index < nb_positions:
         # Compute real destination coordinates for each cake positions
@@ -20,9 +30,6 @@ def build_cakes_raw(self, center, positions, angles=None):
         destination = Point.substract(pos, Point(direction.x * cake_bot_dist, direction.y * cake_bot_dist))
 
         # Goto cake position
-        heading = atan2(destination.y - center.y, destination.x - center.x)
-        if angles is not None: heading = angles[current_position_index]
-        self.goth(theta = heading, async_task=False, mirror=False)
         r = self.goto_avoid(x=destination.x, y=destination.y, async_task=False, mirror=False)
         #if r != RobotStatus.Done and r != RobotStatus.Reached:
         #    return RobotStatus.return_status(RobotStatus.Failed, score=score)
@@ -38,6 +45,8 @@ def build_cakes_raw(self, center, positions, angles=None):
             r = self.drop_until(amount = 1, drop_level = current_drop_level, async_task=False)
         r = RobotStatus.get_status(r)
         if r != RobotStatus.Done and r != RobotStatus.Reached:
+            self.trajman.set_max_speed(speeds['rtmax'])
+            self.trajman.set_acc(speeds['rtacc'])
             return RobotStatus.return_status(RobotStatus.Failed, score=score)
 
         score += 2 if edge and current_drop_level < 2 else 1
@@ -48,12 +57,16 @@ def build_cakes_raw(self, center, positions, angles=None):
         # Return back to center
         r = RobotStatus.get_status(self.goto_avoid(x=center.x, y=center.y, async_task=False, mirror=False))
         if r != RobotStatus.Done and r != RobotStatus.Reached:
+            self.trajman.set_max_speed(speeds['rtmax'])
+            self.trajman.set_acc(speeds['rtacc'])
             return RobotStatus.return_status(RobotStatus.Failed, score=score)
 
         if edge:
             current_drop_level += 1
         current_position_index += 1 if current_drop_level % 2 == 0 else -1
 
+    self.trajman.set_max_speed(speeds['rtmax'])
+    self.trajman.set_acc(speeds['rtacc'])
     return RobotStatus.return_status(RobotStatus.Done, score=score)
 
 
