@@ -5,7 +5,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 def shoot_n_cherries(self, n):
     status = []
     status.append(self.elevator_move("Low", async_task=False))
-    
+
     try:
         n = int(n)
     except:
