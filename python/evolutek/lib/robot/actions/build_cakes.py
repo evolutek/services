@@ -4,7 +4,7 @@ from math import pi, atan2
 
 @if_enabled
 @async_task
-def build_cakes_raw(self, center, positions):
+def build_cakes_raw(self, center, positions, angles=None):
     cake_bot_dist = 120
     current_drop_level = 0
     current_position_index = 0
@@ -21,6 +21,7 @@ def build_cakes_raw(self, center, positions):
 
         # Goto cake position
         heading = atan2(destination.y - center.y, destination.x - center.x)
+        if angles is not None: heading = angles[current_position_index]
         self.goth(theta = heading, async_task=False, mirror=False)
         r = self.goto_avoid(x=destination.x, y=destination.y, async_task=False, mirror=False)
         #if r != RobotStatus.Done and r != RobotStatus.Reached:
@@ -68,4 +69,4 @@ def build_cakes(self, theta):
     b = center.compute_delta_point(theta, dist)
     c = center.compute_delta_point(theta + pi / 2, dist)
     print(a, b, c, center)
-    return self.build_cakes_raw(center, [a, b, c], async_task = False)
+    return self.build_cakes_raw(center, [a, b, c], [theta - pi / 2, theta, theta + pi / 2], async_task = False)
