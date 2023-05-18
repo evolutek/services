@@ -34,7 +34,7 @@ def turbine_off(self):
 @if_enabled
 @async_task
 def extend_left_vacuum(self):
-    return RobotStatus.check(self.actuators.servo_set_angle(2, 80))
+    return RobotStatus.check(self.actuators.servo_set_angle(2, 90))
 
 @if_enabled
 @async_task

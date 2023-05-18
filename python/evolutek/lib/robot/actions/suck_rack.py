@@ -3,28 +3,26 @@ from evolutek.lib.robot.robot_actions_imports import *
 
 @if_enabled
 @async_task
-def suck_rack(self, left=True, forward=True):
+def suck_rack(self, left=True, forward=True, quantity=7):
     status = []
-    init_pos = self.trajman.get_position()
-    quantity = 7 if 500 < init_pos["y"] < 1500 else 10
     forward_value = 30 if forward else -30
 
     if left:
-        self.extend_left_vacuum()
+        status.append(self.extend_left_vacuum(async_task=False))
     else:
-        self.extend_right_vacuum()
+        status.append(self.extend_right_vacuum(async_task=False))
 
     for i in range(quantity):
-        self.turbine_on()
-        sleep(0.5)
-        self.turbine_off()
-        self.forward(forward_value)
+        status.append(self.turbine_on(async_task=False))
+        sleep(1)
+        status.append(self.turbine_off(async_task=False))
+        status.append(self.forward(forward_value, async_task=False))
         self.cherry_count += 1
         sleep(1)
 
     if left:
-        self.retract_left_vacuum()
+        status.append(self.retract_left_vacuum(async_task=False))
     else:
-        self.retract_right_vacuum()
+        status.append(self.retract_right_vacuum(async_task=False))
 
     return RobotStatus.check(*status, score=0)
