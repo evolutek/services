@@ -196,8 +196,8 @@
         "zone_a_grab_pink",
         "zone_a_grab_yellow",
         "zone_a_grab_brown",
-        "zone_a_drop_all",
-		"go_center_near_beacon",
+        "zone_a_build_cakes",
+		    "go_center_near_beacon",
         "pal_go_back"
 		],
       "available": [
