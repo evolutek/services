@@ -159,8 +159,8 @@
     {
       "name": "zone_b_grab_brown",
       "position": {
-        "x": 2775,
-        "y": 725
+        "x": 1875,
+        "y": 225
       },
       "actions": [
         {
