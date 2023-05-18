@@ -8,7 +8,7 @@ def fill_n_cherries(self, n):
     except:
         return RobotStatus.return_status(RobotStatus.Failed)
     print('[ROBOT] Turning arm out on !')
-    if RobotStatus.get_status(self.push_drop(async_task=False)) != RobotStatus.Done:
+    if RobotStatus.get_status(self.push_isol(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
     if RobotStatus.get_status(self.extend_right_vacuum(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
