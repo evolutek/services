@@ -409,7 +409,7 @@
         "x": 1875,
         "y": 225
       },
-      "theta": "-pi/2",
+      "theta": "pi/2",
       "recal_side": "y",
       "recal_sensor": "right"
     },
