@@ -98,7 +98,7 @@
           "fct": "goth",
           "handler": "robot",
           "args": {
-            "theta": "3pi/2"
+            "theta": "3*pi/2"
           }
         },
         {
