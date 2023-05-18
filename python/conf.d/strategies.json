@@ -234,7 +234,7 @@
     {
       "name": "zone_b_secure",
       "position": {
-        "x": 1845,
+        "x": 2705,
         "y": 705
       },
       "actions": [
@@ -249,7 +249,7 @@
           "fct": "forward",
           "handler": "robot",
           "args": {
-            "distance":-30
+            "distance":-100
           }
         }
       ]
