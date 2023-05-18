@@ -171,6 +171,57 @@
       ]
     },
     {
+      "name": "zone_d_grab_pink",
+      "position": {
+        "x": 2700,
+        "y": 1775
+      },
+      "actions": [
+        {
+          "fct": "stack_and_grab",
+          "handler": "robot",
+          "args": {
+            "id": 3,
+            "color_name": "Pink"
+          }
+        }
+      ]
+    },
+    {
+      "name": "zone_d_grab_yellow",
+      "position": {
+        "x": 2500,
+        "y": 1775
+      },
+      "actions": [
+        {
+          "fct": "stack_and_grab",
+          "handler": "robot",
+          "args": {
+            "id": 3,
+            "color_name": "Yellow"
+          }
+        }
+      ]
+    },
+    {
+      "name": "zone_d_grab_brown",
+      "position": {
+        "x": 2500,
+        "y": 1775
+      },
+      "actions": [
+        {
+          "fct": "stack_and_grab",
+          "handler": "robot",
+          "args": {
+            "id": 3,
+            "color_name": "Brown"
+          }
+        }
+      ]
+    },
+    {
       "name": "zone_a_build_cakes",
       "position": {
         "x": 260,
@@ -181,6 +232,23 @@
           "fct": "build_cakes",
 		  "args": {
 			"theta": "-3*pi/4"
+		  },
+          "handler": "robot",
+          "score": 21
+        }
+      ]
+    },
+    {
+      "name": "zone_d_build_cakes",
+      "position": {
+        "x": 2740,
+        "y": 1740
+      },
+      "actions": [
+        {
+          "fct": "build_cakes",
+		  "args": {
+			"theta": "pi/4"
 		  },
           "handler": "robot",
           "score": 21
@@ -201,8 +269,7 @@
         "pal_go_back"
 		],
       "available": [
-        "pal",
-        "pmi"
+        "pal"
       ],
       "use_pathfinding": false
     },
@@ -216,7 +283,6 @@
         "pmi_go_back"
 		],
       "available": [
-        "pal",
         "pmi"
       ],
       "use_pathfinding": false
@@ -224,9 +290,14 @@
     {
       "name": "Zone D",
       "starting_position": "ZONE_D",
-      "goals": [],
+      "goals": [
+        "zone_d_grab_pink",
+        "zone_d_grab_yellow",
+        "zone_d_grab_brown",
+        "zone_d_build_cakes",
+        "pmi_go_back"
+      ],
       "available": [
-        "pal",
         "pmi"
       ],
       "use_pathfinding": false
