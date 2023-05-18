@@ -86,6 +86,7 @@ class Robot(Service):
 
         self.cherry_count = 0
         self.cakes_stack = []
+        self.elevator_status = "Low"
 
         self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')

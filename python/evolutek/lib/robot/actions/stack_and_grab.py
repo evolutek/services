@@ -71,29 +71,26 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     if (len(self.cakes_stack) > 0):
         status.append(self.elevator_move("High", async_task=False))
         #print("*******************", status)
-    else:
+    elif self.elevator_status != "Low":
         status.append(self.clamp_open(async_task=False))
         #print("*******************", status)
         sleep(0.3)
         status.append(self.elevator_move("Low", async_task=False))
         #print("*******************", status)
-        sleep(0.5)
+        sleep(0.4)
 
     status.append(self.goth(robot_pos.compute_angle(stack_pos), async_task=False, mirror=False))
     #print("*******************", status)
-    sleep(0.5)
 
     if (len(self.cakes_stack) > 0):
         go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
-        sleep(0.5)
         status.append(self.clamp_open(async_task=False))
         sleep(0.5)
 
         #recule
         go_to_point = robot_pos.compute_offset_point(stack_pos, -150)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False))
-        sleep(0.5)
         status.append(self.elevator_move("Low", async_task=False))
         sleep(0.5)
 
