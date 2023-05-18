@@ -86,4 +86,8 @@ def build_cakes(self, theta):
     b = center.compute_delta_point(theta, dist)
     c = center.compute_delta_point(theta + pi / 2, dist)
     print(a, b, c, center)
-    return self.build_cakes_raw(center, [a, b, c], [theta - pi / 2, theta, theta + pi / 2], async_task = False)
+    if self.cakes_stack == ["Pink", "Pink", "Pink", "Yellow", "Yellow", "Yellow", "Brown", "Brown", "Brown"]:
+        return self.build_cakes_raw(center, [a, b, c], [theta - pi / 2, theta, theta + pi / 2], async_task = False)
+    else:
+        print("[BUILD CAKES]: Invalid stack", self.cakes_stack)
+        return self.drop_stacks(n=(len(self.cakes_stack)+2)//3, async_task=False)
