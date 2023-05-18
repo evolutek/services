@@ -90,19 +90,22 @@
     {
       "name": "zone_a_drop_all",
       "position": {
-        "x": 400,
-        "y": 400
+        "x": 140,
+        "y": 225
       },
       "actions": [
         {
           "fct": "goth",
           "handler": "robot",
           "args": {
-            "theta": "-2.356194490192345"
+            "theta": "3pi/2"
           }
         },
         {
-          "fct": "drop_all",
+          "fct": "drop_stacks",
+		  "args": {
+			"n": 3
+		  },
           "handler": "robot",
           "score": 3
         }
@@ -140,7 +143,10 @@
           }
         },
         {
-          "fct": "drop_all",
+          "fct": "drop_stacks",
+		  "args": {
+			"n": 3
+		  },
           "handler": "robot",
           "score": 3
         }
@@ -160,6 +166,23 @@
           "score": 15
         }
       ]
+    },
+    {
+      "name": "zone_a_build_cakes",
+      "position": {
+        "x": 245,
+        "y": 245
+      },
+      "actions": [
+        {
+          "fct": "build_cakes",
+		  "args": {
+			"theta": "-3pi/4"
+		  },
+          "handler": "robot",
+          "score": 21
+        }
+      ]
     }
   ],
   "strategies": [
@@ -170,7 +193,7 @@
         "zone_a_grab_pink",
         "zone_a_grab_yellow",
         "zone_a_grab_brown",
-        "zone_a_drop_all",
+        "zone_a_build_cakes",
 		"go_center_near_beacon",
         "pal_go_back"
 		],
