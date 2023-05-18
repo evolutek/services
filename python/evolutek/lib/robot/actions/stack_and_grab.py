@@ -86,6 +86,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     if (len(self.cakes_stack) > 0):
         go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
+        print(f"Stack is in front ? : {self.actuators.proximity_sensor_read(id=1)}")
         if (not self.actuators.proximity_sensor_read(id=1)):
             return RobotStatus.check(*status)
         status.append(self.clamp_open(async_task=False))
