@@ -232,6 +232,29 @@
       ]
     },
     {
+      "name": "zone_b_secure",
+      "position": {
+        "x": 1845,
+        "y": 705
+      },
+      "actions": [
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "args": {
+            "theta": "pi"
+          }
+        },
+        {
+          "fct": "forward",
+          "handler": "robot",
+          "args": {
+            "distance":-30
+          }
+        }
+      ]
+    },
+    {
       "name": "fire",
       "position": {
         "x": 700,
@@ -385,6 +408,7 @@
         "zone_b_grab_yellow",
         "zone_b_grab_pink",
         "zone_b_drop_all",
+        "zone_b_secure",
         "fire",
         "pmi_go_back"
 		],
