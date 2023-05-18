@@ -166,7 +166,7 @@
       "actions": [
         {
           "fct": "shoot_all_cherries",
-          "handler": "robot",
+          "handler": "robot"
         }
       ]
     },
