@@ -85,20 +85,20 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 
     if (len(self.cakes_stack) > 0):
         go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
-        status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10))
+        status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
         sleep(0.5)
         status.append(self.clamp_open(async_task=False))
         sleep(0.5)
 
         #recule
         go_to_point = robot_pos.compute_offset_point(stack_pos, -150)
-        status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10))
+        status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False))
         sleep(0.5)
         status.append(self.elevator_move("Low", async_task=False))
         sleep(0.5)
 
     go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
-    status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10))
+    status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False))
     sleep(0.5)
     status.append(self.clamp_close(async_task=False))
     sleep(0.5)
@@ -126,7 +126,7 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
 #    print(status)
 #
 #    go_to_point = robot_pos.compute_offset_point(base_pos, 50)
-#    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10)
+#    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False)
 #    if RobotStatus.get_status(status) != RobotStatus.Reached:
 #        return RobotStatus.return_status(RobotStatus.Failed)
 #    sleep(0.5)

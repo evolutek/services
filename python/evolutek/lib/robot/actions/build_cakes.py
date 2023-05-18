@@ -39,9 +39,9 @@ def build_cakes_raw(self, center, positions, angles=None):
         r = RobotStatus.get_status(r)
         if r != RobotStatus.Done and r != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.Failed, score=score)
-    
+
         score += 2 if edge and current_drop_level < 2 else 1
-        
+
         if current_drop_level == 2 or (edge and current_drop_level == 1):
             score += 4
 
