@@ -3,13 +3,15 @@ from evolutek.lib.robot.robot_actions_imports import *
 @if_enabled
 @async_task
 def shoot_n_cherries(self, n):
+    status = []
+    status.append(self.elevator_move("Low", async_task=False))
+    
     try:
         n = int(n)
     except:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     print('[ROBOT] Turning canon on !')
-    status = []
     status.append(self.canon_on(async_task=False))
     while n > 0:
         print('[ROBOT] Shooting a cherry !')
