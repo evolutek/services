@@ -408,7 +408,6 @@
         "zone_b_grab_yellow",
         "zone_b_grab_pink",
         "zone_b_drop_all",
-        "zone_b_secure",
         "fire",
         "pmi_go_back"
 		],
