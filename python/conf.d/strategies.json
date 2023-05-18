@@ -92,33 +92,9 @@
       ]
     },
     {
-      "name": "zone_c_drop_all",
-      "position": {
-        "x": 2730,
-        "y": 725
-      },
-      "actions": [
-        {
-          "fct": "goth",
-          "handler": "robot",
-          "args": {
-            "theta": "0"
-          }
-        },
-        {
-          "fct": "drop_stacks",
-		  "args": {
-			"n": 3
-		  },
-          "handler": "robot",
-          "score": 3
-        }
-      ]
-    },
-    {
       "name": "zone_c_grab_brown",
       "position": {
-        "x": 1875,
+        "x": 2500,
         "y": 225
       },
       "actions": [
@@ -135,7 +111,7 @@
     {
       "name": "zone_c_grab_yellow",
       "position": {
-        "x": 1875,
+        "x": 2500,
         "y": 225
       },
       "actions": [
@@ -152,7 +128,7 @@
     {
       "name": "zone_c_grab_pink",
       "position": {
-        "x": 2205,
+        "x": 2700,
         "y":  225
       },
       "actions": [
