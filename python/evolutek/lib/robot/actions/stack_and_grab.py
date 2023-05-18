@@ -68,9 +68,10 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     robot_pos = Point(dict=self.trajman.get_position())
     status = []
 
-    if (len(self.cakes_stack) <= 0) and self.elevator_status != "Low":
+    if (len(self.cakes_stack) <= 0):
         status.append(self.clamp_open(async_task=False))
         sleep(0.3)
+    if (self.elevator_status != "Low"):
         status.append(self.elevator_move("Low", async_task=False))
         sleep(0.4)
 
