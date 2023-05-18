@@ -62,9 +62,9 @@ def get_stack_pos(robot, id, color_name):
 @if_enabled
 @async_task
 def stack_and_grab(self, id = 1, color_name = "Pink"):
-    print("******************* DBG 1")
+    #print("******************* DBG 1")
     stack_pos = get_stack_pos(self, id, color_name)
-    print("******************* DBG 2")
+    #print("******************* DBG 2")
     robot_pos = Point(dict=self.trajman.get_position())
     status = []
 
@@ -84,25 +84,25 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     sleep(0.5)
 
     if (len(self.cakes_stack) > 0):
-        go_to_point = robot_pos.compute_offset_point(stack_pos, -50)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, -110)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10))
         sleep(0.5)
         status.append(self.clamp_open(async_task=False))
         sleep(0.5)
 
         #recule
-        go_to_point = robot_pos.compute_offset_point(stack_pos, -80)
+        go_to_point = robot_pos.compute_offset_point(stack_pos, -150)
         status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False, timeout=10))
         sleep(0.5)
         status.append(self.elevator_move("Low", async_task=False))
 
     sleep(0.5)
-    go_to_point = robot_pos.compute_offset_point(stack_pos, -50)
+    go_to_point = robot_pos.compute_offset_point(stack_pos, -110)
     status.append(self.goto_avoid(x=go_to_point.x, y=go_to_point.y, async_task=False, mirror=False, timeout=10))
     sleep(0.5)
     status.append(self.clamp_close(async_task=False))
     sleep(0.5)
-    for _ in range (3):
+    for _ in range(3):
         self.cakes_stack.append(color_name)
 
     print("******************* cakes_stack :", self.cakes_stack)

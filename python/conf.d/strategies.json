@@ -155,10 +155,10 @@
     {
       "name": "fire",
       "position": {
-        "x": 660,
-        "y": 225
+        "x": 700,
+        "y": 700
       },
-      "theta": "pi",
+      "theta": "7*pi/6",
       "actions": [
         {
           "fct": "shoot_all_cherries",
