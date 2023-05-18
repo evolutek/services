@@ -167,7 +167,7 @@
           "fct": "stack_and_grab",
           "handler": "robot",
           "args": {
-            "id": 3,
+            "id": 4,
             "color_name": "Brown"
           }
         }
@@ -184,7 +184,7 @@
           "fct": "stack_and_grab",
           "handler": "robot",
           "args": {
-            "id": 3,
+            "id": 4,
             "color_name": "Yellow"
           }
         }
@@ -201,7 +201,7 @@
           "fct": "stack_and_grab",
           "handler": "robot",
           "args": {
-            "id": 3,
+            "id": 4,
             "color_name": "Pink"
           }
         }
