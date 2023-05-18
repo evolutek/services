@@ -20,8 +20,8 @@ def build_cakes_raw(self, center, positions):
         destination = Point.substract(pos, Point(direction.x * cake_bot_dist, direction.y * cake_bot_dist))
 
         # Goto cake position
-        self.goth(theta = center.compute_angle(destination), async_task=False)
-        r = self.goto_avoid(x=destination.x, y=destination.y, async_task=False)
+        self.goth(theta = center.compute_angle(destination), async_task=False, mirror=False)
+        r = self.goto_avoid(x=destination.x, y=destination.y, async_task=False, mirror=False)
         #if r != RobotStatus.Done and r != RobotStatus.Reached:
         #    return RobotStatus.return_status(RobotStatus.Failed, score=score)
         #sleep(destination.dist(center) / 200)
@@ -44,7 +44,7 @@ def build_cakes_raw(self, center, positions):
             score += 4
 
         # Return back to center
-        r = RobotStatus.get_status(self.goto_avoid(x=center.x, y=center.y, async_task=False))
+        r = RobotStatus.get_status(self.goto_avoid(x=center.x, y=center.y, async_task=False, mirror=False))
         if r != RobotStatus.Done and r != RobotStatus.Reached:
             return RobotStatus.return_status(RobotStatus.Failed, score=score)
 
@@ -60,6 +60,8 @@ def build_cakes_raw(self, center, positions):
 def build_cakes(self, theta):
     dist = 120 * 2
     theta = float(theta)
+    if not self.side:
+        theta *= -1
     center = Point(dict=self.trajman.get_position())
     a = center.compute_delta_point(theta - pi / 2, dist)
     b = center.compute_delta_point(theta, dist)
