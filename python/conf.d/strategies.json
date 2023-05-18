@@ -92,47 +92,6 @@
       ]
     },
     {
-      "name": "zone_a_drop_all",
-      "position": {
-        "x": 225,
-        "y": 225
-      },
-      "actions": [
-        {
-          "fct": "goth",
-          "handler": "robot",
-          "args": {
-            "theta": "3*pi/2"
-          }
-        },
-        {
-          "fct": "drop_stacks",
-		  "args": {
-			"n": 3
-		  },
-          "handler": "robot",
-          "score": 3
-        }
-      ]
-    },
-    {
-      "name": "zone_c_grab_brown",
-      "position": {
-        "x": 2775,
-        "y": 725
-      },
-      "actions": [
-        {
-          "fct": "stack_and_grab",
-          "handler": "robot",
-          "args": {
-            "id": 2,
-            "color_name": "Brown"
-          }
-        }
-      ]
-    },
-    {
       "name": "zone_c_drop_all",
       "position": {
         "x": 2730,
@@ -157,7 +116,7 @@
       ]
     },
     {
-      "name": "zone_b_grab_brown",
+      "name": "zone_c_grab_brown",
       "position": {
         "x": 1875,
         "y": 225
@@ -174,7 +133,7 @@
       ]
     },
     {
-      "name": "zone_b_grab_yellow",
+      "name": "zone_c_grab_yellow",
       "position": {
         "x": 1875,
         "y": 225
@@ -191,7 +150,7 @@
       ]
     },
     {
-      "name": "zone_b_grab_pink",
+      "name": "zone_c_grab_pink",
       "position": {
         "x": 2205,
         "y":  225
@@ -203,53 +162,6 @@
           "args": {
             "id": 2,
             "color_name": "Pink"
-          }
-        }
-      ]
-    },
-    {
-      "name": "zone_b_drop_all",
-      "position": {
-        "x": 2775,
-        "y": 725
-      },
-      "actions": [
-        {
-          "fct": "goth",
-          "handler": "robot",
-          "args": {
-            "theta": "pi/4"
-          }
-        },
-        {
-          "fct": "drop_stacks",
-		  "args": {
-			"n": 3
-		  },
-          "handler": "robot",
-          "score": 3
-        }
-      ]
-    },
-    {
-      "name": "zone_b_secure",
-      "position": {
-        "x": 2705,
-        "y": 705
-      },
-      "actions": [
-        {
-          "fct": "goth",
-          "handler": "robot",
-          "args": {
-            "theta": "pi"
-          }
-        },
-        {
-          "fct": "forward",
-          "handler": "robot",
-          "args": {
-            "distance":-100
           }
         }
       ]
@@ -337,6 +249,23 @@
       ]
     },
     {
+      "name": "zone_c_build_cakes",
+      "position": {
+        "x": 725,
+        "y": 260
+      },
+      "actions": [
+        {
+          "fct": "build_cakes",
+		  "args": {
+			"theta": "-pi/4"
+		  },
+          "handler": "robot",
+          "score": 21
+        }
+      ]
+    },
+    {
       "name": "zone_d_build_cakes",
       "position": {
         "x": 2740,
@@ -367,7 +296,7 @@
         "pal_go_back"
 		],
       "available": [
-        "pal"
+        "pmi"
       ],
       "use_pathfinding": false
     },
@@ -375,12 +304,15 @@
       "name": "Zone C",
       "starting_position": "ZONE_C",
       "goals": [
+        "zone_c_grab_pink",
+        "zone_c_grab_yellow",
         "zone_c_grab_brown",
-        "zone_c_drop_all",
-		"go_center_far_beacon",
+        "zone_c_build_cakes",
+		    "go_center_far_beacon",
         "pmi_go_back"
 		],
       "available": [
+        "pal",
         "pmi"
       ],
       "use_pathfinding": false
@@ -392,27 +324,11 @@
         "zone_d_grab_pink",
         "zone_d_grab_yellow",
         "zone_d_grab_brown",
-        "zone_d_build_cakes",
+        "zone_c_build_cakes",
         "pmi_go_back"
       ],
       "available": [
-        "pmi"
-      ],
-      "use_pathfinding": false
-    },
-    {
-      "name": "ZONE B",
-      "starting_position": "ZONE_B",
-      "goals": [
-        "zone_b_grab_brown",
-        "zone_b_grab_yellow",
-        "zone_b_grab_pink",
-        "zone_b_drop_all",
-        "fire",
-        "pmi_go_back"
-		],
-      "available": [
-        "pmi"
+        "pal"
       ],
       "use_pathfinding": false
     }
@@ -428,7 +344,7 @@
       "recal_side": "x",
       "recal_sensor": "right"
     },
-	{
+	  {
       "name": "ZONE_B",
       "position": {
         "x": 1875,
