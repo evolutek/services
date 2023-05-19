@@ -10,7 +10,7 @@ def shoot_n_cherries(self, n):
         n = int(n)
     except:
         return RobotStatus.return_status(RobotStatus.Failed)
-
+    sleep(0.8)
     print('[ROBOT] Turning canon on !')
     status.append(self.canon_on(async_task=False))
     sleep(0.5)
