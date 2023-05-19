@@ -68,11 +68,11 @@ class Robot(Service):
     drop_stacks = Service.action(robot_actions.drop_stacks)                   # DONE
     drop_all = Service.action(robot_actions.drop_all)                         # DONE
     suck_rack = Service.action(robot_actions.suck_rack)                       # DONE
-    build_cakes_raw = Service.action(robot_actions.build_cakes_raw)           # STUFF FOR BUILD_CAKES
-    build_cakes = Service.action(robot_actions.build_cakes)                   # TODO
+    build_cakes_raw = Service.action(robot_actions.build_cakes_raw)           # DONE
+    build_cakes = Service.action(robot_actions.build_cakes)                   # DONE
     shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # DONE
     shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # DONE
-    drop_and_cherry = Service.action(robot_actions.drop_and_cherry)           # TODO
+    drop_cherry = Service.action(robot_actions.drop_cherry)                   # DONE
     fill_n_cherries = Service.action(robot_actions.fill_n_cherries)           # DONE
     set_cherry_count = Service.action(robot_actions.set_cherry_count)         # DONE
     disguise = Service.action(robot_actions.disguise)

@@ -129,29 +129,3 @@ def stack_and_grab(self, id = 1, color_name = "Pink"):
     r = RobotStatus.check(*status)
     print("******************* Check :", r)
     return r
-
-#def grab_first_stacks(self, first_id = 1, first_color_name = "Pink"):
-#    # THIS METHOD WILL BE REMOVED EVENTUALLY
-#    # DONT USE THIS IN A MATCH
-#    stack_and_grab(self, first_id, "Pink", async_task=False)
-#    stack_and_grab(self, first_id, "Yellow", async_task=False)
-#    return stack_and_grab(self, first_id, "Brown", async_task=False)
-
-#def back_to_base(self):
-#    robot_pos = Point(dict=self.trajman.get_position())
-#    base_pos = Point(dict=self.mirror_pos(275, 225))
-#
-#    status = RobotStatus.get_status(self.goth(robot_pos.compute_angle(base_pos), async_task=False))
-#    print(status)
-#
-#    go_to_point = robot_pos.compute_offset_point(base_pos, 50)
-#    status = self.goto_avoid(x=go_to_point.x, y=go_to_point.y, mirror=False, async_task=False)
-#    if RobotStatus.get_status(status) != RobotStatus.Reached:
-#        return RobotStatus.return_status(RobotStatus.Failed)
-#    sleep(0.5)
-#
-#    status = RobotStatus.get_status(self.goth(0, async_task=False))
-#    print(status)
-#    sleep(0.5)
-#
-#    return RobotStatus.return_status(RobotStatus.Done)
