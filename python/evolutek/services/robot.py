@@ -72,7 +72,6 @@ class Robot(Service):
     build_cakes = Service.action(robot_actions.build_cakes)                   # DONE
     shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # DONE
     shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # DONE
-    drop_cherry = Service.action(robot_actions.drop_cherry)                   # DONE
     fill_n_cherries = Service.action(robot_actions.fill_n_cherries)           # DONE
     set_cherry_count = Service.action(robot_actions.set_cherry_count)         # DONE
     disguise = Service.action(robot_actions.disguise)

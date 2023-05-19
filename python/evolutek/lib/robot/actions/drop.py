@@ -34,8 +34,6 @@ def drop_until(self, amount = 1, drop_level = 0):
         sleep(0.2)
     status.append(self.elevator_move("High", async_task=False))
     sleep(0.5)
-    if amount + drop_level == 3:
-        status.append(self.drop_cherry(async_task=False))
     status.append(self.forward(-125, async_task=False))
     return RobotStatus.check(*status, score=score)
 
@@ -66,17 +64,3 @@ def drop_all(self):
     print("******************* Status :", status)
     self.cakes_stack.clear()
     return RobotStatus.check(*status, score=3)
-
-
-@if_enabled
-@async_task
-def drop_cherry(self):
-    status = []
-    status.append(self.push_tank(async_task=False))
-    sleep(0.62)
-    status.append(self.push_canon(async_task=False))
-    sleep(1.2)
-    self.cherry_count -= 1
-    if (self.proximity_sensor_read(id = 2)):
-        return RobotStatus.check(*status, score = 3)
-    return RobotStatus.check(*status, score=0)
