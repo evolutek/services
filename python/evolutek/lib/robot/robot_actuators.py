@@ -89,7 +89,7 @@ def drop_slow(self):
     sleep(0.4)
     for i in range(180, 51):
         self.actuators.servo_set_angle(4, i)
-        sleep(0.1)
+        sleep(0.2)
     return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
 
 @if_enabled
