@@ -82,15 +82,15 @@ def push_canon(self):
 def push_tank(self):
     return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
 
-@if_enabled
-@async_task
-def drop_slow(self):
-    self.actuators.servo_set_angle(4, 180)
-    sleep(0.4)
-    for i in range(180, 50, -1):
-        self.actuators.servo_set_angle(4, i)
-        sleep(0.015)
-    return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
+# @if_enabled
+# @async_task
+# def drop_slow(self):
+#     self.actuators.servo_set_angle(4, 180)
+#     sleep(0.4)
+#     for i in range(180, 50, -1):
+#         self.actuators.servo_set_angle(4, i)
+#         sleep(0.015)
+#     return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
 
 @if_enabled
 @async_task
