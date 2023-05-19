@@ -273,7 +273,8 @@
         "pal_go_back"
 		],
       "available": [
-        "pmi"
+        "pmi",
+        "pal"
       ],
       "use_pathfinding": false
     },
