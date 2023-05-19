@@ -17,8 +17,9 @@ def shoot_n_cherries(self, n):
     while n > 0:
         print('[ROBOT] Shooting a cherry !')
         status.append(self.push_tank(async_task=False))
-        sleep(0.2)
+        sleep(0.8)
         status.append(self.push_canon(async_task=False))
+        sleep(0.8)
     print('[ROBOT] Turning canon off !')
     status.append(self.canon_off(async_task=False))
     return RobotStatus.check(*status, score=0)
