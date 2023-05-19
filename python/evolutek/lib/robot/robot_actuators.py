@@ -87,9 +87,9 @@ def push_tank(self):
 def drop_slow(self):
     self.actuators.servo_set_angle(4, 180)
     sleep(0.4)
-    for i in range(180, 51):
+    for i in range(180, 51, -1):
         self.actuators.servo_set_angle(4, i)
-        sleep(0.4)
+        sleep(0.2)
     return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
 
 @if_enabled
