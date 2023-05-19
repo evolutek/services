@@ -84,6 +84,16 @@ def push_tank(self):
 
 @if_enabled
 @async_task
+def drop_slow(self):
+    self.actuators.servo_set_angle(4, 180)
+    sleep(0.4)
+    for i in range(180, 51):
+        self.actuators.servo_set_angle(4, i)
+        sleep(0.1)
+    return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
+
+@if_enabled
+@async_task
 def push_isol(self):
     self.push_canon(async_task=False)
     sleep(0.4)

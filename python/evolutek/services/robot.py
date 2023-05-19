@@ -57,6 +57,7 @@ class Robot(Service):
     clamp_close = Service.action(robot_actuators.clamp_close)
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)
+    drop_slow = Service.action(robot_actuators.drop_slow)
     push_isol = Service.action(robot_actuators.push_isol)
     elevator_move = Service.action(robot_actuators.elevator_move)
     disguise_on = Service.action(robot_actuators.disguise_on)
