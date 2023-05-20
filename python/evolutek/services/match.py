@@ -159,12 +159,12 @@ class Match(Service):
         pmi_around = self.around('pmi', 2100, 450, 50, 50)
 
         # Go back action
-        if pal_around or pmi_around:
-            self.score += 20
+        if pal_around and pmi_around:
+            self.score += 15
 
-        ## Disguise action
-        #if pal_around or pmi_around:
-        #    self.score += 5
+        # Disguise action
+        if pal_around or pmi_around:
+            self.score += 5
 
     """ End match """
     @Service.action
