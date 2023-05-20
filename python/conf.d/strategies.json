@@ -44,7 +44,7 @@
           "fct": "goto",
           "args": {
             "x": 2100,
-            "y": 150
+            "y": 130
           }
         },
         {
@@ -172,31 +172,14 @@
     {
       "name": "zone_c_fire",
       "position": {
-        "x": 2389.476,
-        "y": 485.636
+        "x": 2250,
+        "y": 800
       },
-      "theta": "-3.059",
+      "theta": "-2.9",
       "actions": [
         {
           "fct": "shoot_all_cherries",
           "power": 92,
-          "handler": "robot"
-        }
-      ]
-    },
-    {
-      "name": "zone_d_fire",
-      "position": {
-        "x": 2367.548,
-        "y": 1550.798
-      },
-      "theta": "-2.664",
-      "actions": [
-        {
-          "fct": "shoot_all_cherries",
-          "args": {
-            "power": 105
-          },
           "handler": "robot"
         }
       ]
