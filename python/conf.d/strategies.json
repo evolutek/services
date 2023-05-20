@@ -35,6 +35,19 @@
       },
       "actions": [
         {
+          "fct": "goth",
+          "args": {
+            "theta": "pi/2"
+          }
+        },
+        {
+          "fct": "goto",
+          "args": {
+            "x": 2100,
+            "y": 150
+          }
+        },
+        {
           "fct": "disguise",
           "handler": "robot"
         }
@@ -293,7 +306,7 @@
   ],
   "strategies": [
     {
-      "name": "Zone A",
+      "name": " PAL Zone A",
       "starting_position": "ZONE_A",
       "goals": [
         "zone_a_grab_pink",
@@ -310,7 +323,7 @@
       "use_pathfinding": false
     },
     {
-      "name": "Zone C",
+      "name": " PAL Zone C",
       "starting_position": "ZONE_C",
       "goals": [
         "zone_c_grab_pink",
@@ -326,40 +339,7 @@
       "use_pathfinding": false
     },
     {
-      "name": "Zone D",
-      "starting_position": "ZONE_D",
-      "goals": [
-        "zone_d_grab_pink",
-        "zone_d_grab_yellow",
-        "zone_d_grab_brown",
-        "zone_d_build_cakes",
-        "zone_d_fire",
-		    "go_center_far_beacon",
-        "pal_go_back"
-      ],
-      "available": [
-        "pal"
-      ],
-      "use_pathfinding": false
-    },
-    {
-      "name": "Zone A No Fire",
-      "starting_position": "ZONE_A",
-      "goals": [
-        "zone_a_grab_pink",
-        "zone_a_grab_yellow",
-        "zone_a_grab_brown",
-        "zone_a_build_cakes",
-        "go_center_near_beacon",
-        "pmi_go_back"
-		],
-      "available": [
-        "pmi"
-      ],
-      "use_pathfinding": false
-    },
-    {
-      "name": "Zone C No Fire",
+      "name": " PMI Zone C",
       "starting_position": "ZONE_C",
       "goals": [
         "zone_c_grab_pink",
@@ -374,7 +354,7 @@
       "use_pathfinding": false
     },
     {
-      "name": "Zone D No Fire",
+      "name": "PMI Zone D",
       "starting_position": "ZONE_D",
       "goals": [
         "zone_d_grab_pink",
