@@ -173,9 +173,9 @@
       "name": "zone_c_fire",
       "position": {
         "x": 2250,
-        "y": 725
+        "y": 800
       },
-      "theta": "-2.9.5",
+      "theta": "-2.9",
       "actions": [
         {
           "fct": "shoot_all_cherries",
