@@ -340,7 +340,58 @@
         "pmi_go_back"
       ],
       "available": [
+        "pal",
+        "pmi"
+      ],
+      "use_pathfinding": false
+    },
+    {
+      "name": "Zone A No Fire",
+      "starting_position": "ZONE_A",
+      "goals": [
+        "zone_a_grab_pink",
+        "zone_a_grab_yellow",
+        "zone_a_grab_brown",
+        "zone_a_build_cakes",
+        "go_center_near_beacon",
+        "pal_go_back"
+		],
+      "available": [
+        "pmi",
         "pal"
+      ],
+      "use_pathfinding": false
+    },
+    {
+      "name": "Zone C No Fire",
+      "starting_position": "ZONE_C",
+      "goals": [
+        "zone_c_grab_pink",
+        "zone_c_grab_yellow",
+        "zone_c_grab_brown",
+        "zone_c_build_cakes",
+        "pmi_go_back"
+		],
+      "available": [
+        "pal",
+        "pmi"
+      ],
+      "use_pathfinding": false
+    },
+    {
+      "name": "Zone D No Fire",
+      "starting_position": "ZONE_D",
+      "goals": [
+        "zone_d_grab_pink",
+        "zone_d_grab_yellow",
+        "zone_d_grab_brown",
+        "zone_d_build_cakes",
+		    "go_center_far_beacon",
+        "pmi_go_back"
+      ],
+      "available": [
+        "pal",
+        "pmi"
       ],
       "use_pathfinding": false
     }
