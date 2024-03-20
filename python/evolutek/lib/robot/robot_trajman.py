@@ -13,6 +13,7 @@ from time import sleep
 DELTA_POS = 5
 DELTA_ANGLE = 0.075
 HOMEMADE_RECAL = True
+SENSOR_DIST_TO_SIDE = 15
 
 class RecalSensor(Enum):
     No = "no"
@@ -98,6 +99,30 @@ def goto(self, x, y, avoid=True, mirror=True):
 
 @if_enabled
 @async_task
+def forward(self, distance, avoid=True):
+    distance = float(distance)
+
+    traj_pos = self.trajman.get_position()
+    origin = Point(dict=traj_pos)
+
+    sleep(0.1)
+
+    x = cos(traj_pos['theta']) * distance + traj_pos['x']
+    y = sin(traj_pos['theta']) * distance + traj_pos['y']
+
+    target = Point(x, y)
+
+    if target.dist(origin) < DELTA_POS:
+        print('[ROBOT] Already reached position')
+        return RobotStatus.return_status(RobotStatus.Reached)
+
+    r = self.goto_avoid(x, y, async_task=False, avoid=avoid, mirror=False)
+    print("----------------- Status :", r)
+    return r
+
+
+@if_enabled
+@async_task
 def goth(self, theta, mirror=True):
     mirror = get_boolean(mirror)
     theta = float(theta)
@@ -146,6 +171,29 @@ timeout_event = Event()
 def timeout_handler():
     global timeout_event
     timeout_event.set()
+
+
+@if_enabled
+@async_task
+def goto_avoid_extend(self, x, y, avoid=True, timeout=None, skip=False, mirror=True, dec=None, acc=None):
+    speeds = self.trajman.get_speeds()
+
+    if dec is not None:
+        self.trajman.set_trsl_dec(dec)
+
+    if acc is not None:
+        self.trajman.set_trsl_acc(acc)
+
+    r = self.goto_avoid(x, y, avoid, timeout, skip, mirror, async_task=False)
+
+    if dec is not None:
+        self.trajman.set_trsl_dec(speeds['trdec'])
+
+    if acc is not None:
+        self.trajman.set_trsl_acc(speeds['tracc'])
+
+    return r
+
 
 @if_enabled
 @async_task
@@ -322,7 +370,7 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')
 
     id = 1 if (sensor == RecalSensor.Left) ^ (not self.side and mirror) else 2
-    pos = self.actuators.recal_sensor_read(id) + self.dist_to_center
+    pos = self.actuators.recal_sensor_read(id) + self.dist_to_center + SENSOR_DIST_TO_SIDE
     print(f'[ROBOT] Measured distance: {pos}mm')
 
     if not axis_x and (side ^ (sensor == RecalSensor.Left) ^ (not self.side)):

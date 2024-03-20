@@ -34,8 +34,10 @@ class Robot(Service):
     set_theta = Service.action(robot_trajman.set_theta)
     set_pos = Service.action(robot_trajman.set_pos)
     goto = Service.action(robot_trajman.goto)
+    forward = Service.action(robot_trajman.forward)
     goth = Service.action(robot_trajman.goth)
     goto_avoid = Service.action(robot_trajman.goto_avoid)
+    goto_avoid_extend = Service.action(robot_trajman.goto_avoid_extend)
     goto_with_path = Service.action(robot_trajman.goto_with_path)
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
@@ -53,25 +55,29 @@ class Robot(Service):
     retract_right_vacuum = Service.action(robot_actuators.retract_right_vacuum)
     clamp_open = Service.action(robot_actuators.clamp_open)
     clamp_open_half = Service.action(robot_actuators.clamp_open_half)
+    clamp_untight = Service.action(robot_actuators.clamp_untight)
     clamp_close = Service.action(robot_actuators.clamp_close)
     push_canon = Service.action(robot_actuators.push_canon)
     push_tank = Service.action(robot_actuators.push_tank)
+    #drop_slow = Service.action(robot_actuators.drop_slow)
     push_isol = Service.action(robot_actuators.push_isol)
     elevator_move = Service.action(robot_actuators.elevator_move)
+    disguise_on = Service.action(robot_actuators.disguise_on)
+    disguise_off = Service.action(robot_actuators.disguise_off)
 
     # Imported from robot_actions
-    goto_random = Service.action(robot_actions.goto_random)
-    roam_stacks = Service.action(robot_actions.roam_stacks)
-    roam_zones = Service.action(robot_actions.roam_zones)
-    go_grab_one_stack = Service.action(robot_actions.go_grab_one_stack)
-    go_drop_all = Service.action(robot_actions.go_drop_all)
-    empty_n_cherries = Service.action(robot_actions.empty_n_cherries)
-    empty_all_cherries = Service.action(robot_actions.empty_all_cherries)
-    fill_n_cherries = Service.action(robot_actions.fill_n_cherries)
-    fill_all_cherries = Service.action(robot_actions.fill_all_cherries)
-    set_cherry_count = Service.action(robot_actions.set_cherry_count)
-    vacuum_10_cherry_right = Service.action(robot_actions.vacuum_10_cherry_right)
-    vacuum_10_cherry_left = Service.action(robot_actions.vacuum_10_cherry_left)
+    stack_and_grab = Service.action(robot_actions.stack_and_grab)             # DONE
+    drop_until = Service.action(robot_actions.drop_until)                     # DONE
+    drop_stacks = Service.action(robot_actions.drop_stacks)                   # DONE
+    drop_all = Service.action(robot_actions.drop_all)                         # DONE
+    suck_rack = Service.action(robot_actions.suck_rack)                       # DONE
+    build_cakes_raw = Service.action(robot_actions.build_cakes_raw)           # DONE
+    build_cakes = Service.action(robot_actions.build_cakes)                   # DONE
+    shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # DONE
+    shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # DONE
+    fill_n_cherries = Service.action(robot_actions.fill_n_cherries)           # DONE
+    set_cherry_count = Service.action(robot_actions.set_cherry_count)         # DONE
+    disguise = Service.action(robot_actions.disguise)
 
     def __init__(self):
 
@@ -81,6 +87,8 @@ class Robot(Service):
         self.lock = Lock()
 
         self.cherry_count = 0
+        self.cakes_stack = []
+        self.elevator_status = "Low"
 
         self.bau_state = None
         self.color1 = self.cs.config.get('match', 'color1')

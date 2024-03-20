@@ -7,117 +7,124 @@ from time import sleep
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 from evolutek.lib.actuators.ax12 import AX12Controller
 
-def check_status(*args):
-    for stat in args:
-        if stat != RobotStatus.Done:
-            return RobotStatus.return_status(RobotStatus.Failed)
-    return RobotStatus.return_status(RobotStatus.Done)
-
 @if_enabled
 @async_task
-def canon_on(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(9, 0.35))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(10, 0.35))
-    return check_status(status1, status2)
+def canon_on(self, power=100):
+    power = float(power)
+    speed = min(0.6, max(0.1, 0.3 * power / 100))
+    status1 = self.actuators.esc_set_speed(9, speed)
+    status2 = self.actuators.esc_set_speed(10, speed)
+    return RobotStatus.check(status1, status2)
 
 @if_enabled
-@async_task
+@async_task#
 def canon_off(self):
-    status1 = RobotStatus.get_status(self.actuators.esc_set_speed(9, 0))
-    status2 = RobotStatus.get_status(self.actuators.esc_set_speed(10, 0))
-    return check_status(status1, status2)
+    status1 = self.actuators.esc_set_speed(9, 0)
+    status2 = self.actuators.esc_set_speed(10, 0)
+    return RobotStatus.check(status1, status2)
 
 @if_enabled
 @async_task
 def turbine_on(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.esc_set_speed(8, 0.1)))
+    return RobotStatus.check(self.actuators.esc_set_speed(8, 0.16 if self.service_name == "pal" else 0.19))
 
 @if_enabled
 @async_task
 def turbine_off(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.esc_set_speed(8, 0)))
+    return RobotStatus.check(self.actuators.esc_set_speed(8, 0))
 
 @if_enabled
 @async_task
 def extend_left_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 100)))
+    return RobotStatus.check(self.actuators.servo_set_angle(2, 90))
 
 @if_enabled
 @async_task
 def retract_left_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(2, 25)))
+    return RobotStatus.check(self.actuators.servo_set_angle(2, 25))
 
 @if_enabled
 @async_task
 def extend_right_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 100)))
+    return RobotStatus.check(self.actuators.servo_set_angle(3, 90 if self.service_name == "pmi" else 86))
 
 @if_enabled
 @async_task
 def retract_right_vacuum(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(3, 175)))
+    return RobotStatus.check(self.actuators.servo_set_angle(3, 175))
 
 @if_enabled
 @async_task
 def clamp_open(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 15))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 165))
-    return check_status(status1, status2)
+    status1 = self.actuators.servo_set_angle(0, 15)
+    status2 = self.actuators.servo_set_angle(1, 165)
+    return RobotStatus.check(status1, status2)
 
 @if_enabled
 @async_task
 def clamp_open_half(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 30))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 150))
-    return check_status(status1, status2)
+    status1 = self.actuators.servo_set_angle(0, 30)
+    status2 = self.actuators.servo_set_angle(1, 150)
+    return RobotStatus.check(status1, status2)
+
+@if_enabled
+@async_task
+def clamp_untight(self):
+    status1 = self.actuators.servo_set_angle(0, 34)
+    status2 = self.actuators.servo_set_angle(1, 146)
+    return RobotStatus.check(status1, status2)
 
 @if_enabled
 @async_task
 def clamp_close(self):
-    status1 = RobotStatus.get_status(self.actuators.servo_set_angle(0, 40))
-    status2 = RobotStatus.get_status(self.actuators.servo_set_angle(1, 140))
-    return check_status(status1, status2)
+    status1 = self.actuators.servo_set_angle(0, 40)
+    status2 = self.actuators.servo_set_angle(1, 140)
+    return RobotStatus.check(status1, status2)
 
 @if_enabled
 @async_task
 def push_canon(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 180)))
+    return RobotStatus.check(self.actuators.servo_set_angle(4, 180))
 
 @if_enabled
 @async_task
 def push_tank(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 55)))
+    return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
+
+# @if_enabled
+# @async_task
+# def drop_slow(self):
+#     self.actuators.servo_set_angle(4, 180)
+#     sleep(0.4)
+#     for i in range(180, 50, -1):
+#         self.actuators.servo_set_angle(4, i)
+#         sleep(0.015)
+#     return RobotStatus.check(self.actuators.servo_set_angle(4, 50))
 
 @if_enabled
 @async_task
 def push_isol(self):
-    return RobotStatus.return_status(RobotStatus.get_status(self.actuators.servo_set_angle(4, 150)))
+    self.push_canon(async_task=False)
+    sleep(0.4)
+    return RobotStatus.check(self.actuators.servo_set_angle(4, 155 if self.service_name == "pmi" else 168))
 
-'''class ElevatorPosition(Enum):
-    Low = (750, 180)
-    GetSecond = (655, 305)
-    DropSecond = (635, 325)
-    GetThird = (605, 355)
-    DropThird = (585, 375)
-    GetFourth = (555, 405)
-    High = (520, 450)
+@if_enabled
+@async_task
+def disguise_on(self):
+    return RobotStatus.check(self.actuators.orange_led_strip_set(True))
 
-    @staticmethod
-    def get_position(position):
-        if isinstance(position, ElevatorPositions):
-            return position
-        try:
-            return ElevatorPosition.__members__[positon]
-        except:
-            return None'''
+@if_enabled
+@async_task
+def disguise_off(self):
+    return RobotStatus.check(self.actuators.orange_led_strip_set(False))
 
 ElevatorPosition = {
     "Low" : (717, 246),
-    "GetSecond" : (632, 330),
+    "GetSecond" : (624, 338),
     "DropSecond" : (572, 387),
-    "GetThird" : (537, 423),
+    "GetThird" : (530, 430),
     "DropThird" : (479, 478),
-    "GetFourth" : (427, 531),
+    "GetFourth" : (420, 538),
     "High" : (193, 773)
 }
 
@@ -125,6 +132,7 @@ ElevatorPosition = {
 @async_task
 def elevator_move(self, positon):
     position = ElevatorPosition[positon]
-    status1 = RobotStatus.get_status(self.actuators.ax_move(1, position[0]))
-    status2 = RobotStatus.get_status(self.actuators.ax_move(2, position[1]))
-    return check_status(status1, status2) 
+    status1 = self.actuators.ax_move(1, position[0])
+    status2 = self.actuators.ax_move(2, position[1])
+    self.elevator_status = positon
+    return RobotStatus.check(status1, status2)

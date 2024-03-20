@@ -144,16 +144,28 @@ class Match(Service):
     # FIXME : FIX THIS
     def around(self, robot, x, y, rx, ry):
         if self.color == self.color2: y = 2000 - y
-        pos = self.cs.trajman[robot].get_position()
+        pos = None
+        try:
+            pos = self.cs.trajman[robot].get_position()
+        except Exception as e:
+            print('[MATCH] Failed to contact trajman/%s: %s' % (robot, str(e)))
+            return False
         if pos['x'] > x+rx or pos['x'] < x-rx: return False
         if pos['y'] > y+ry or pos['y'] < y-ry: return False
         return True
 
     def check_end_positions(self):
-        if self.around('pal', 1875, 225, 225, 225): #and \
-            #self.around('pmi', 1375, 975, 300, 300):
-            self.publish('score', value=15)
-    
+        pal_around = self.around('pal', 1650, 450, 50, 50)
+        pmi_around = self.around('pmi', 2100, 450, 50, 50)
+
+        # Go back action
+        if pal_around and pmi_around:
+            self.score += 15
+
+        # Disguise action
+        if pal_around or pmi_around:
+            self.score += 5
+
     """ End match """
     @Service.action
     def match_end(self):
