@@ -41,3 +41,10 @@ class MagnetController(ComponentsHolder):
             if self.components[id] is None:
                 continue
             self.components[id].off()
+
+    def free(self):
+        for magnet in self.components.values():
+            try:
+                magnet.off()
+            except Exception as e:
+                print(e)

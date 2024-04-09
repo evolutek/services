@@ -210,20 +210,7 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
-        self.turbine_off(async_task=False)
-        self.canon_off(async_task=False)
-        self.clamp_open(async_task=False)
-        sleep(0.5)
-        self.push_isol(async_task=False)
-        sleep(0.5)
-        self.retract_left_vacuum(async_task=False)
-        sleep(0.5)
-        self.retract_right_vacuum(async_task=False)
-        sleep(0.5)
-        self.actuators.ax_set_speed(1, 512)
-        self.actuators.ax_set_speed(2, 512)
-        self.elevator_move("Low", async_task=False)
-        sleep(2)
+        # TODO
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

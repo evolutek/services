@@ -30,6 +30,7 @@ import atexit
 from time import sleep
 import json
 
+import atexit
 
 # TODO :
 # - Put components config in a lib / read a JSON
@@ -55,10 +56,9 @@ class Actuators(Service):
         self.recal_sensors[1].calibrate(left_recal_points)
         self.recal_sensors[2].calibrate(right_recal_points)
 
-        self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
+        self.bau = create_gpio(7, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
-        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
@@ -67,33 +67,41 @@ class Actuators(Service):
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
-        # TODO: Set correct ports
-        #self.proximity_sensors = ProximitySensors(
-        #    {
-        #        1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
-        #        2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)],
-        #        2 : [create_gpio(1, 'proximity_sensors3', dir=False, type=GpioType.MCP)]
-        #    }
-        #)
+        self.proximity_sensors = ProximitySensors(
+            {
+                1 : [ # Right sensor
+                    create_gpio(8,  'proximity_sensors1', dir=False, type=GpioType.MCP)
+                ],
+                2 : [ # Middle sensor
+                    create_gpio(9,  'proximity_sensors2', dir=False, type=GpioType.MCP)
+                ],
+                3 : [ # Left sensor
+                    create_gpio(10, 'proximity_sensors3', dir=False, type=GpioType.MCP)
+                ]
+            }
+        )
 
-        # TODO: Set correct gpio
-        #self.magnets = MagnetController(
-        #    {
-        #        0: [
-        #            create_gpio(0, 'magnet1', dir=True, type=GpioType.MCP)
-        #        ],
-        #        1 : [
-        #            create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
-        #        ],
-        #        2 : [
-        #            create_gpio(3, 'magnet3', dir=True, type=GpioType.MCP)
-        #        ]
-        #    }
-        #)
+        self.magnets = MagnetController(
+            {
+                0: [ # Right magnet
+                    create_gpio(5, 'magnet1', dir=True, type=GpioType.MCP)
+                ],
+                1 : [ # Middle magnet
+                    create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
+                ],
+                2 : [ # Left magnet
+                    create_gpio(4, 'magnet3', dir=True, type=GpioType.MCP)
+                ]
+            }
+        )
+
+        self.magnets.free()
+
+        atexit.register(self.critical_stop)
 
         # TODO: Check if numbers here are correct
         #self.axs = AX12Controller(
-        #    [1, 2]
+        #    [1, 2, 3]
         #)
 
         self.i2c_acts = I2CActsHandler({
@@ -107,11 +115,11 @@ class Actuators(Service):
         }, frequency=50)
 
         self.all_actuators = [
-            #self.proximity_sensors,
+            self.proximity_sensors,
             self.recal_sensors,
             #self.axs,
             self.i2c_acts,
-            #self.magnets
+            self.magnets
         ]
 
         self.is_initialized = True
@@ -124,6 +132,11 @@ class Actuators(Service):
             #self.rgb_led_strip.start()
             self.enable()
             print("[ACTUATORS] Fully initialized")
+
+        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+
+    def critical_stop(self):
+        self.magnets.free()
 
     def stop(self):
         print("[ACTUATORS] Stopping")
@@ -148,7 +161,7 @@ class Actuators(Service):
     @Service.action
     def free(self):
         # TODO
-        pass
+        self.magnets.free()
 
     # Disable Actuators
     @Service.action
@@ -159,6 +172,8 @@ class Actuators(Service):
     # Enable Actuators
     @Service.action
     def enable(self):
+        self.magnets.free()
+
         if not self.disabled.is_set():
             return
 
@@ -189,10 +204,11 @@ class Actuators(Service):
     #######
     @Service.action
     def bau_read(self):
-        return 1
-#        return self.bau.read()
+        #return 1
+        return self.bau.read()
 
     def bau_callback(self, event, value, **kwargs):
+        print("BAU is {value}")
         self.bau_led.write(value)
         self.publish(event=event, value=value, **kwargs)
         if value:
