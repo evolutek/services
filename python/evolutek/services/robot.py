@@ -54,9 +54,9 @@ class Robot(Service):
 
     # Imported from robot_actions
     grab_plants = Service.action(robot_actions.grab_plants)
-    place_plants = Service.action(robot_actions.grab_and_lift_plants)
+    grab_and_lift_plants = Service.action(robot_actions.grab_and_lift_plants)
     place_plants = Service.action(robot_actions.place_plants)
-    place_plants = Service.action(robot_actions.place_plants_in_planter)
+    place_plants_in_planter = Service.action(robot_actions.place_plants_in_planter)
     up_herse = Service.action(robot_actions.up_herse)
     down_herse = Service.action(robot_actions.down_herse)
     grab_pots = Service.action(robot_actions.grab_pots)
@@ -218,6 +218,14 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
+        self.move_clamps([0,1,2], robot_actuators.ClampsPosition.CLOSE, async_task=False)
+        sleep(0.5)
+        self.move_elevator(robot_actuators.ElevatorPosition.HIGH, async_task=False)
+        sleep(0.7)
+        self.move_rack(robot_actuators.RackPosition.FOLDED, async_task=False)
+        sleep(0.5)
+        self.move_herse(robot_actuators.HersePosition.UP, async_task=False)
+        sleep(0.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

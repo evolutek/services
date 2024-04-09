@@ -17,10 +17,10 @@ FONT_SMALL = None
 
 
 class IFrame(tk.Frame):
-	def __init__(self, container, border=0):
+	def __init__(self, container, border=0, **kwargs):
 		self.parent = container
 		self.cs = container.cs
-		super().__init__(self.parent.window, bd=border)
+		super().__init__(self.parent.window, bd=border, **kwargs)
 
 	def update_interface(self):
 		pass
@@ -150,7 +150,7 @@ class StatusFrame(IFrame):
 
 class MatchInterface(IFrame):
 	def __init__(self, container):
-		super().__init__(container, bg=self.cs.match.get_color())
+		super().__init__(container, bg=container.cs.match.get_color())
 		self.__init_interface()
 
 	def close(self):
@@ -160,6 +160,7 @@ class MatchInterface(IFrame):
 		self.grid_rowconfigure(0, weight=1, uniform="r")
 		self.grid_rowconfigure(1, weight=1, uniform="r")
 		self.grid_rowconfigure(2, weight=1, uniform="r")
+		self.grid_columnconfigure(0, weight=1)
 		tk.Button(self, text="Close", command=self.close, font=FONT_MEDIUM).grid(column=0, row=0, sticky=tk.NW)
 		self.text = tk.Label(self, text=f"Score: 0", font=FONT_BIG)
 		self.text.grid(column=0, row=1)

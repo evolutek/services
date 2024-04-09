@@ -14,7 +14,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 # This a an enum of pair of angle
 # (the first angle is the right servo and the second is the left servo)
 class ElevatorPosition(Enum):
-    LOW = (350, 620)
+    LOW = (360, 610)
     BORDER = (420, 560)
     HIGH = (720, 250)
 
@@ -23,8 +23,7 @@ class ElevatorPosition(Enum):
 def move_elevator(self, position: ElevatorPosition):
     if isinstance(position, str):
         position = ElevatorPosition[position]
-    # TODO: Use correct servo id
-    if position == HIGH:
+    if position == ElevatorPosition.HIGH:
         self.actuators.ax_set_speed(1, 450)
         self.actuators.ax_set_speed(2, 450)
     else:

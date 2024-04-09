@@ -12,7 +12,7 @@ def grab_plants(self):
     if RobotStatus.get_status(self.move_elevator(ElevatorPosition.LOW, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.7)
+    sleep(1)
 
     if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.CLOSE, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -25,7 +25,7 @@ def grab_plants(self):
 @if_enabled
 @async_task
 def grab_and_lift_plants(self):
-    if RobotStatus.get_status(grab_plants()) != RobotStatus.Done:
+    if RobotStatus.get_status(grab_plants(async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     if RobotStatus.get_status(self.move_elevator(ElevatorPosition.HIGH, async_task=False)) != RobotStatus.Done:
@@ -42,7 +42,7 @@ def place_plants(self):
     if RobotStatus.get_status(self.move_elevator(ElevatorPosition.LOW, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.7)
+    sleep(1)
 
     if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.OPEN, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
