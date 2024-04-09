@@ -3,85 +3,85 @@
     {
       "name": "goto1",
       "position": {
-        "x": 685,
-        "y": 690
+        "x": 690,
+        "y": 685
       },
       "theta": "pi/2"
     },{
       "name": "goto2",
       "position": {
-        "x": 925,
-        "y": 690
+        "x": 690,
+        "y": 925
       }
     },{
       "name": "down_herse1",
       "position": {
-        "x": 925,
-        "y": 690
+        "x": 690,
+        "y": 925
       },
       "fct": "down_herse",
       "handler": "robot"
     },{
       "name": "goto3",
       "position": {
-        "x": 800,
-        "y": 690
+        "x": 690,
+        "y": 800
       }
     },{
       "name": "up_herse1",
       "position": {
-        "x": 800,
-        "y": 690
+        "x": 690,
+        "y": 800
       },
       "fct": "up_herse",
       "handler": "robot"
     },{
       "name": "grab_plants1",
       "position": {
-        "x": 800,
-        "y": 690
+        "x": 690,
+        "y": 800
       },
       "fct": "grab_plants",
       "handler": "robot"
     },{
       "name": "goth1",
       "position": {
-        "x": 800,
-        "y": 690
+        "x": 690,
+        "y": 800
       },
       "theta": "-3*pi/4"
     },{
       "name": "goto4",
       "position": {
-        "x": 350,
-        "y": 320
+        "x": 320,
+        "y": 350
       }
     },{
       "name": "place_plants1",
       "position": {
-        "x": 350,
-        "y": 320
+        "x": 320,
+        "y": 350
       },
       "fct": "place_plants",
       "handler": "robot"
     },{
       "name": "goto5",
       "position": {
-        "x": 690,
-        "y": 550
+        "x": 550,
+        "y": 690
       }
     },{
       "name": "goto6",
       "position": {
-        "x": 690,
-        "y": 1740
+        "x": 1740,
+        "y": 690
       },
       "theta": "-pi/2"
     },{
       "name": "goto7",
       "position": {
-        "x": 220,
-        "y": 1740
+        "x": 1740,
+        "y": 220
       }
     }
   ],
@@ -92,19 +92,10 @@
       "starting_position": "ZONE_NW",
       "goals": [
         "goto1",
-        "goto2",
-        "down_herse1",
-        "goto3",
-        "up_herse1",
-        "grab_plants1",
-        "goth1",
-        "goto4",
-        "place_plants1",
-        "goto5",
-        "goto6",
-        "goto7"
+        "goto2"
 		  ],
-      "use_pathfinding": false
+      "use_pathfinding": false,
+      "available": ["pal"]
     }
   ],
 
@@ -136,7 +127,7 @@
         "y": 225
       },
       "theta": "pi/2",
-      "recal_side": "x",
+      "recal_side": "y",
       "recal_sensor": "left"
     }
   ]

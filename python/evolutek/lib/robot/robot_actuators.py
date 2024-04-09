@@ -24,6 +24,12 @@ def move_elevator(self, position: ElevatorPosition):
     if isinstance(position, str):
         position = ElevatorPosition[position]
     # TODO: Use correct servo id
+    if position == HIGH:
+        self.actuators.ax_set_speed(1, 450)
+        self.actuators.ax_set_speed(2, 450)
+    else:
+        self.actuators.ax_set_speed(1, 170)
+        self.actuators.ax_set_speed(2, 170)
     status1 = self.actuators.ax_move(1, position.value[0]) # Right servo
     status2 = self.actuators.ax_move(2, position.value[1]) # Left servo
     return RobotStatus.check(status1, status2)
