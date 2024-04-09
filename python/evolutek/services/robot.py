@@ -51,7 +51,8 @@ class Robot(Service):
     magnets_off = Service.action(robot_actuators.magnets_off)
 
     # Imported from robot_actions
-    drop_all = Service.action(robot_actions.drop_all)
+    grab_plants = Service.action(robot_actions.grab_plants)
+    place_plants = Service.action(robot_actions.place_plants)
 
     def __init__(self):
         super().__init__(ROBOT)

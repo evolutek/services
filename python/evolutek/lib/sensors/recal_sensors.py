@@ -15,17 +15,17 @@ class RecalSensor(Component):
     def calibrate(self, points: list[list[float]]):
         self.points = [(p[0], p[1]) for p in points]
 
-    def read(self, samples=1, raw=False):
-        use_calibration = not raw and len(self.points) >= 2
+    def read(self, repetitions=1, raw=False):
+        use_calibration = (not raw) and (len(self.points) >= 2)
 
         res = 0
-        for i in range(samples):
+        for i in range(repetitions):
             raw = self.adc.read()
             voltage = max(MIN_VOLTAGE, min(raw, MAX_VOLTAGE))
             alpha = (voltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)
             res += (MAX_DISTANCE - MIN_DISTANCE) * alpha + MIN_DISTANCE
-            if i < samples - 1: time.sleep(0.05)
-        res /= samples
+            if i < repetitions - 1: time.sleep(0.05)
+        res /= repetitions
 
         if use_calibration:
             if res < self.points[0][0]:
@@ -41,6 +41,8 @@ class RecalSensor(Component):
                     if res >= x1 and res <= x2:
                         break
             res = ((res - x1) / (x2 - x1)) * (y2 - y1) + y1
+        else:
+            print("Calibration unused")
 
         return res
 

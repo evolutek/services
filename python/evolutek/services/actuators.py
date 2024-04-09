@@ -60,7 +60,6 @@ class Actuators(Service):
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
         #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
-        self.orange_led_strip = create_gpio(12, 'orange led strip', dir=True, type=GpioType.MCP)
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
 
         try:
@@ -69,48 +68,50 @@ class Actuators(Service):
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
         # TODO: Set correct ports
-        self.proximity_sensors = ProximitySensors(
-            {
-                1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
-                2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)],
-                2 : [create_gpio(1, 'proximity_sensors3', dir=False, type=GpioType.MCP)]
-            }
-        )
+        #self.proximity_sensors = ProximitySensors(
+        #    {
+        #        1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
+        #        2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)],
+        #        2 : [create_gpio(1, 'proximity_sensors3', dir=False, type=GpioType.MCP)]
+        #    }
+        #)
 
         # TODO: Set correct gpio
-        self.magnets = MagnetController(
-            {
-                0: [
-                    create_gpio(0, 'magnet1', dir=True, type=GpioType.MCP)
-                ],
-                1 : [
-                    create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
-                ],
-                2 : [
-                    create_gpio(3, 'magnet3', dir=True, type=GpioType.MCP)
-                ]
-            }
-        )
+        #self.magnets = MagnetController(
+        #    {
+        #        0: [
+        #            create_gpio(0, 'magnet1', dir=True, type=GpioType.MCP)
+        #        ],
+        #        1 : [
+        #            create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
+        #        ],
+        #        2 : [
+        #            create_gpio(3, 'magnet3', dir=True, type=GpioType.MCP)
+        #        ]
+        #    }
+        #)
 
         # TODO: Check if numbers here are correct
-        self.axs = AX12Controller(
-            [1, 2]
-        )
+        #self.axs = AX12Controller(
+        #    [1, 2]
+        #)
 
         self.i2c_acts = I2CActsHandler({
             0: [I2CActType.Servo, 180],
             1: [I2CActType.Servo, 180],
             2: [I2CActType.Servo, 180],
             3: [I2CActType.Servo, 180],
-            4: [I2CActType.Servo, 180]
+            4: [I2CActType.Servo, 180],
+            5: [I2CActType.Servo, 180],
+            6: [I2CActType.Servo, 180]
         }, frequency=50)
 
         self.all_actuators = [
-            self.proximity_sensors,
+            #self.proximity_sensors,
             self.recal_sensors,
-            self.axs,
+            #self.axs,
             self.i2c_acts,
-            self.magnets
+            #self.magnets
         ]
 
         self.is_initialized = True
@@ -120,7 +121,7 @@ class Actuators(Service):
                 self.is_initialized = False
 
         if self.is_initialized:
-            self.rgb_led_strip.start()
+            #self.rgb_led_strip.start()
             self.enable()
             print("[ACTUATORS] Fully initialized")
 
@@ -178,17 +179,18 @@ class Actuators(Service):
     # RECAL SENSORS #
     #################
     @Service.action
-    def recal_sensor_read(self, id, samples=10, raw=False):
+    def recal_sensor_read(self, id, repetitions=10, raw=0):
         if self.recal_sensors[int(id)] == None:
             return None
-        return self.recal_sensors[int(id)].read(samples=samples, raw=raw)
+        return self.recal_sensors[int(id)].read(repetitions=int(repetitions), raw=bool(int(raw)))
 
     #######
     # BAU #
     #######
     @Service.action
     def bau_read(self):
-        return self.bau.read()
+        return 1
+#        return self.bau.read()
 
     def bau_callback(self, event, value, **kwargs):
         self.bau_led.write(value)

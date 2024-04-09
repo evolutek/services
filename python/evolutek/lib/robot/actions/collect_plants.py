@@ -1,12 +1,11 @@
 from evolutek.lib.robot.robot_actions_imports import *
-from evolutek.services.robot import Robot
 
 from evolutek.lib.robot.robot_actuators import ElevatorPosition, ClampsPosition
 
 
 @if_enabled
 @async_task
-def grab_plants(self: Robot):
+def grab_plants(self):
     if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.OPEN, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
