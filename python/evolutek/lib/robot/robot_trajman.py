@@ -13,7 +13,6 @@ from time import sleep
 DELTA_POS = 5
 DELTA_ANGLE = 0.075
 HOMEMADE_RECAL = True
-SENSOR_DIST_TO_SIDE = 15
 
 class RecalSensor(Enum):
     No = "no"
@@ -376,7 +375,7 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     print(f'[ROBOT] axis_x={axis_x} sensor={sensor.value}')
 
     id = 1 if (sensor == RecalSensor.Left) ^ (not self.side and mirror) else 2
-    pos = self.actuators.recal_sensor_read(id) + self.dist_to_center + SENSOR_DIST_TO_SIDE
+    pos = self.actuators.recal_sensor_read(id) + self.dist_recal_sensors_to_center
     print(f'[ROBOT] Measured distance: {pos}mm')
 
     if not axis_x and (side ^ (sensor == RecalSensor.Left) ^ (not self.side)):

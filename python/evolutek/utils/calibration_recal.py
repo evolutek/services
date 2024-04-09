@@ -13,12 +13,12 @@ from time import sleep
 """
 
 # Distance between the glass of the sensor and the side of the robot
-DIST_SIDE = 15
+#DIST_SIDE = 15
 
 # The minimum measurable distance for the sensor is 100mm
-DIST_MIN = 85 + DIST_SIDE
+DIST_MIN = 100
 # The maximum measurable distance for the sensor is 2500mm
-DIST_MAX = 1150 + DIST_SIDE
+DIST_MAX = 1165
 
 DISTS = [100, 200, 500, 750, 1000]
 
@@ -28,8 +28,8 @@ def wait():
 
 
 def obstacle(dist):
-    print(f"Place an obstacle {dist}mm in front of the sensor")
-    print(f"{dist - DIST_SIDE} from the side of the robot")
+    print(f"Place an obstacle {dist} mm in front of the sensor")
+    #print(f"{dist - DIST_SIDE} from the side of the robot")
 
 
 def main():
