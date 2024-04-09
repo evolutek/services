@@ -24,8 +24,8 @@ def move_elevator(self, position: ElevatorPosition):
     if isinstance(position, str):
         position = ElevatorPosition[position]
     # TODO: Use correct servo id
-    status1 = self.actuators.servo_set_angle(1, position.value[0]) # Right servo
-    status2 = self.actuators.servo_set_angle(2, position.value[1]) # Left servo
+    status1 = self.actuators.ax_move(1, position.value[0]) # Right servo
+    status2 = self.actuators.ax_move(2, position.value[1]) # Left servo
     return RobotStatus.check(status1, status2)
 
 
@@ -35,19 +35,22 @@ def move_elevator(self, position: ElevatorPosition):
 # This a list of angle with one angle per clamp,
 # so here there list of length 3, so there is 3 clamps
 class ClampsPosition(Enum):
-    OPEN = [45, 45, 45]
-    CLOSE = [0, 0, 0]
+    OPEN = [180, 175, 180]
+    CLOSE = [145, 145, 145]
 
 # Map clamps to their servo id
 CLAMP_ID_TO_SERVO_ID = [2, 3, 4]
 
 @if_enabled
 @async_task
-def move_clamps(self, clamp_ids: list[int], position: ClampsPosition):
+def move_clamps(self, ids: list[int], position: ClampsPosition):
     if isinstance(position, str):
         position = ClampsPosition[position]
+    _ids = []
+    for id in ids:
+        _ids.append(int(id))
     status = []
-    for clamp_id in clamp_ids:
+    for clamp_id in _ids:
         status.append(self.actuators.servo_set_angle(CLAMP_ID_TO_SERVO_ID[clamp_id], position.value[clamp_id]))
     return RobotStatus.check(*status)
 
@@ -58,17 +61,17 @@ def move_clamps(self, clamp_ids: list[int], position: ClampsPosition):
 # This a an enum of pair of angle
 # (the first angle is the right servo and the second is the left servo)
 class HersePosition(Enum):
-    UP = [160, 20]
-    MIDDLE = [110, 70]
-    DOWN = [50, 130]
+    UP = [173, 36]
+    MIDDLE = [121, 90]
+    DOWN = [74, 140]
 
 @if_enabled
 @async_task
 def move_herse(self, position: HersePosition):
     if isinstance(position, str):
         position = HersePosition[position]
-    status1 = self.actuators.servo_set_angle(1, position.value[0]) # Right servo
-    status2 = self.actuators.servo_set_angle(2, position.value[1]) # Left servo
+    status1 = self.actuators.servo_set_angle(0, position.value[0]) # Right servo
+    status2 = self.actuators.servo_set_angle(1, position.value[1]) # Left servo
     return RobotStatus.check(status1, status2)
 
 
@@ -85,7 +88,7 @@ def move_rack(self, position: RackPosition):
     if isinstance(position, str):
         position = RackPosition[position]
     # TODO: Use correct servo id
-    return RobotStatus.check(self.actuators.servo_set_angle(1, position.value))
+    return RobotStatus.check(self.actuators.ax_move(3, position.value))
 
 
 # ====== Magnets ======

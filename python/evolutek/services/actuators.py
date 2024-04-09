@@ -95,21 +95,17 @@ class Actuators(Service):
             }
         )
 
-        self.magnets.free()
-
-        atexit.register(self.critical_stop)
-
         # TODO: Check if numbers here are correct
-        #self.axs = AX12Controller(
-        #    [1, 2, 3]
-        #)
+        self.axs = AX12Controller(
+            [1, 2, 3]
+        )
 
         self.i2c_acts = I2CActsHandler({
             0: [I2CActType.Servo, 180], # Right herse servo
-            1: [I2CActType.Servo, 180]  # Left herse servo
-            #2: [I2CActType.Servo, 180],
-            #3: [I2CActType.Servo, 180],
-            #4: [I2CActType.Servo, 180],
+            1: [I2CActType.Servo, 180], # Left herse servo
+            2: [I2CActType.Servo, 180], # Right clamp
+            3: [I2CActType.Servo, 180], # Middle clamp
+            4: [I2CActType.Servo, 180], # Left clamp
             #5: [I2CActType.Servo, 180],
             #6: [I2CActType.Servo, 180]
         }, frequency=50)
@@ -117,10 +113,12 @@ class Actuators(Service):
         self.all_actuators = [
             self.proximity_sensors,
             self.recal_sensors,
-            #self.axs,
+            self.axs,
             self.i2c_acts,
             self.magnets
         ]
+
+        self.free()
 
         self.is_initialized = True
         for actuator in self.all_actuators:
@@ -129,17 +127,15 @@ class Actuators(Service):
                 self.is_initialized = False
 
         if self.is_initialized:
-            #self.rgb_led_strip.start()
+            self.rgb_led_strip.start()
             self.enable()
             print("[ACTUATORS] Fully initialized")
 
         #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
-    def critical_stop(self):
-        self.magnets.free()
-
     def stop(self):
         print("[ACTUATORS] Stopping")
+        self.magnets.free()
         self.rgb_led_strip.stop()
         self.free()
 
@@ -162,6 +158,8 @@ class Actuators(Service):
     def free(self):
         # TODO
         self.magnets.free()
+        self.i2c_acts.free_all()
+        self.ax_free_all([1,2,3])
 
     # Disable Actuators
     @Service.action
@@ -179,7 +177,6 @@ class Actuators(Service):
 
         if self.bau.read():
             self.disabled.clear()
-            self.i2c_acts.init_escs()
 
     #####################
     # PROXIMITY SENSORS #
@@ -208,13 +205,12 @@ class Actuators(Service):
         return self.bau.read()
 
     def bau_callback(self, event, value, **kwargs):
-        print("BAU is {value}")
+        #print("BAU is {value}")
         self.bau_led.write(value)
         self.publish(event=event, value=value, **kwargs)
         if value:
             self.enable()
         else:
-            self.free()
             self.disable()
 
     #################
@@ -243,6 +239,7 @@ class Actuators(Service):
         if self.axs[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
         self.axs[int(id)].move(int(pos))
+        print(f"Move servo id {int(id)} to {pos}")
         return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action

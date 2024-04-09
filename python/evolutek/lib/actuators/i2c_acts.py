@@ -142,17 +142,17 @@ class I2CActsHandler(ComponentsHolder):
             return False
         return True
 
-    def init_escs(self):
-        if not HAS_ESC:
-            return
-        for component in self.components:
-            if self.components[component].type == I2CActType.ESC:
-                self.components[component].set_speed(self.components[component].esc_variation.value[0])
-        sleep(5) # Seriously ?
-        for component in self.components:
-            if self.components[component].type == I2CActType.ESC:
-                self.components[component].set_speed(0)
-        return True
+    #def init_escs(self):
+    #    if not HAS_ESC:
+    #        return
+    #    for component in self.components:
+    #        if self.components[component].type == I2CActType.ESC:
+    #            self.components[component].set_speed(self.components[component].esc_variation.value[0])
+    #    sleep(5) # Seriously ?
+    #    for component in self.components:
+    #        if self.components[component].type == I2CActType.ESC:
+    #            self.components[component].set_speed(0)
+    #    return True
 
     def free_all(self):
         for id in self.components:

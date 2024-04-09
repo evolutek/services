@@ -48,6 +48,7 @@ class Robot(Service):
     move_elevator = Service.action(robot_actuators.move_elevator)
     move_clamps = Service.action(robot_actuators.move_clamps)
     move_herse = Service.action(robot_actuators.move_herse)
+    move_rack = Service.action(robot_actuators.move_rack)
     magnets_on = Service.action(robot_actuators.magnets_on)
     magnets_off = Service.action(robot_actuators.magnets_off)
 
@@ -217,7 +218,6 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
-        # TODO
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
