@@ -175,7 +175,7 @@ def timeout_handler():
 
 @if_enabled
 @async_task
-def goto_avoid_extend(self, x, y, avoid=True, timeout=None, skip=False, mirror=True, dec=None, acc=None):
+def goto_avoid_extend(self, x, y, avoid=True, timeout=None, skip=False, mirror=True, dec=None, acc=None, speed=None):
     speeds = self.trajman.get_speeds()
 
     if dec is not None:
@@ -184,6 +184,9 @@ def goto_avoid_extend(self, x, y, avoid=True, timeout=None, skip=False, mirror=T
     if acc is not None:
         self.trajman.set_trsl_acc(acc)
 
+    if speed is not None:
+        self.trajman.set_trsl_max_speed(speed)
+
     r = self.goto_avoid(x, y, avoid, timeout, skip, mirror, async_task=False)
 
     if dec is not None:
@@ -191,6 +194,9 @@ def goto_avoid_extend(self, x, y, avoid=True, timeout=None, skip=False, mirror=T
 
     if acc is not None:
         self.trajman.set_trsl_acc(speeds['tracc'])
+
+    if speed is not None:
+        self.trajman.set_trsl_max_speed(speeds['trmax'])
 
     return r
 

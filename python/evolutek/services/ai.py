@@ -496,11 +496,11 @@ class AI(Service):
             self.goals.finish_goal()
             print('[AI] Finished goal in %fs' % round(time() - goal_starting_time, 2))
 
-        #if current_goal.score > 0:
-        #    self.publish("score", value=current_goal.score)
+        if current_goal.score > 0:
+            self.publish("score", value=current_goal.score)
 
-        #    with self.lock:
-        #        self.score += current_goal.score
+        with self.lock:
+            self.score += current_goal.score
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 

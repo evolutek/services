@@ -51,6 +51,7 @@ class Robot(Service):
     move_rack = Service.action(robot_actuators.move_rack)
     magnets_on = Service.action(robot_actuators.magnets_on)
     magnets_off = Service.action(robot_actuators.magnets_off)
+    move_arm = Service.action(robot_actuators.move_arm)
 
     # Imported from robot_actions
     grab_plants = Service.action(robot_actions.grab_plants)
@@ -61,6 +62,12 @@ class Robot(Service):
     down_herse = Service.action(robot_actions.down_herse)
     grab_pots = Service.action(robot_actions.grab_pots)
     release_pots = Service.action(robot_actions.release_pots)
+    move_trsl2 = Service.action(robot_actions.move_trsl2)
+    move_on_side = Service.action(robot_actions.move_on_side)
+    open_right_arm = Service.action(robot_actions.open_right_arm)
+    open_left_arm = Service.action(robot_actions.open_left_arm)
+    close_right_arm = Service.action(robot_actions.close_right_arm)
+    close_left_arm = Service.action(robot_actions.close_left_arm)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -218,6 +225,8 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
+        self.close_right_arm(async_task=False)
+        self.close_left_arm(async_task=False)
         self.move_clamps([0,1,2], robot_actuators.ClampsPosition.CLOSE, async_task=False)
         sleep(0.5)
         self.move_elevator(robot_actuators.ElevatorPosition.HIGH, async_task=False)

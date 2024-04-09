@@ -1,0 +1,180 @@
+{
+  "goals": [
+    {
+      "name": "goto1",
+      "position": {
+        "x": 690,
+        "y": 750
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 690,
+            "y": 925,
+            "acc": 80
+          }
+        }
+      ]
+    },{
+      "name": "grab_plants1",
+      "position": {
+        "x": 690,
+        "y": 925
+      },
+      "actions": [
+        {
+          "fct": "grab_and_lift_plants",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto2",
+      "position": {
+        "x": 690,
+        "y": 925
+      }
+    },{
+      "name": "goto3",
+      "position": {
+        "x": 225,
+        "y": 230
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "down_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto4",
+      "position": {
+        "x": 660,
+        "y": 230
+      }
+    },{
+      "name": "goto5",
+      "position": {
+        "x": 590,
+        "y": 230
+      },
+      "actions": [
+        {
+          "fct": "up_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto6",
+      "position": {
+        "x": 590,
+        "y": 230
+      },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "grab_pots",
+          "handler": "robot"
+        },{
+          "fct": "move_trsl2",
+          "handler": "robot",
+          "args": {
+            "dest": 50,
+            "acc": 180,
+            "dec": 400,
+            "maxspeed": 200,
+            "sens": 1
+          }
+        }
+      ]
+    },{
+      "name": "goto7",
+      "position": {
+        "x": 590,
+        "y": 260
+      },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "place_plants",
+          "handler": "robot"
+        }
+      ],
+      "score": 8
+    },{
+      "name": "goto8",
+      "position": {
+        "x": 300,
+        "y": 260
+      },
+      "actions": [
+        {
+          "fct": "release_pots",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto9",
+      "position": {
+        "x": 400,
+        "y": 260
+      }
+    }
+  ],
+
+  "strategies": [
+    {
+      "name": "Zone North West",
+      "starting_position": "ZONE_NW",
+      "goals": [
+        "goto1",
+        "grab_plants1",
+        "goto2",
+        "goto3",
+        "goto4",
+        "goto5",
+        "goto6",
+        "goto7",
+        "goto8"
+		  ],
+      "use_pathfinding": false,
+      "available": ["pal"]
+    }
+  ],
+
+  "starting_positions": [
+    {
+      "name": "ZONE_E",
+      "position": {
+        "x": 1000,
+        "y": 2775
+      },
+      "theta": "-pi/2",
+      "recal_side": "x",
+      "recal_sensor": "left"
+    },
+	  {
+      "name": "ZONE_SW",
+      "position": {
+        "x": 1775,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "x",
+      "recal_sensor": "right"
+    },
+	  {
+      "name": "ZONE_NW",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "y",
+      "recal_sensor": "left"
+    }
+  ]
+}

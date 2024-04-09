@@ -21,3 +21,9 @@ def release_pots(self):
     sleep(0.05)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
+
+
+@if_enabled
+@async_task
+def move_trsl2(self, dest, acc, dec, maxspeed, sens):
+    self.trajman.move_trsl(dest, acc, dec, maxspeed, sens)

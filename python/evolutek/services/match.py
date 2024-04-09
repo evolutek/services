@@ -86,7 +86,7 @@ class Match(Service):
         match_timer = Timer(self.match_duration, self.match_end)
         match_timer.start()
         self.match_status = MatchStatus.started
-        self.score += 5
+        self.score += 0
         print('[MATCH] Match start')
 
     """ ACTION """
@@ -162,11 +162,7 @@ class Match(Service):
 
         # Go back action
         if pal_around and pmi_around:
-            self.score += 15
-
-        # Disguise action
-        if pal_around or pmi_around:
-            self.score += 5
+            self.score += 20
 
     """ End match """
     @Service.action

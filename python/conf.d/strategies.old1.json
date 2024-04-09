@@ -1,0 +1,186 @@
+{
+  "goals": [
+    {
+      "name": "goto1",
+      "position": {
+        "x": 690,
+        "y": 750
+      },
+      "theta": "pi/2"
+    },{
+      "name": "goto2",
+      "position": {
+        "x": 690,
+        "y": 750
+      },
+      "actions": [
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 690,
+            "y": 925,
+            "acc": 80
+          }
+        },
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 690,
+            "y": 1100,
+            "acc": 80
+          }
+        },
+        {
+          "fct": "down_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "down_herse1",
+      "position": {
+        "x": 690,
+        "y": 925
+      },
+      "actions": [
+        {
+          "fct": "down_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "up_herse1",
+      "position": {
+        "x": 690,
+        "y": 800
+      },
+      "actions": [
+        {
+          "fct": "up_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "grab_plants1",
+      "position": {
+        "x": 690,
+        "y": 925
+      },
+      "actions": [
+        {
+          "fct": "grab_plants",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goth1",
+      "position": {
+        "x": 690,
+        "y": 925
+      },
+      "theta": "-3*pi/4"
+    },{
+      "name": "goto4",
+      "position": {
+        "x": 320,
+        "y": 350
+      }
+    },{
+      "name": "place_plants1",
+      "position": {
+        "x": 1740,
+        "y": 220
+      },
+      "actions": [
+        {
+          "fct": "place_plants",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto5",
+      "position": {
+        "x": 550,
+        "y": 690
+      }
+    },{
+      "name": "goto6",
+      "position": {
+        "x": 1740,
+        "y": 690
+      },
+      "theta": "-pi/2"
+    },{
+      "name": "goto7",
+      "position": {
+        "x": 1740,
+        "y": 220
+      }
+    }
+  ],
+
+  "strategies": [
+    {
+      "name": "Homologation",
+      "starting_position": "ZONE_NW",
+      "goals": [
+        "goto1",
+        "goto2",
+        "grab_plants1",
+        "goto6",
+        "goto7",
+        "place_plants1"
+		  ],
+      "use_pathfinding": false,
+      "available": ["pal"]
+    },
+    {
+      "name": "Zone North West",
+      "starting_position": "ZONE_NW",
+      "goals": [
+        "goto1",
+        "goto2",
+        "grab_plants1",
+        "goto6",
+        "goto7",
+        "place_plants1"
+		  ],
+      "use_pathfinding": false,
+      "available": ["pal"]
+    }
+  ],
+
+  "starting_positions": [
+    {
+      "name": "ZONE_E",
+      "position": {
+        "x": 1000,
+        "y": 2775
+      },
+      "theta": "-pi/2",
+      "recal_side": "x",
+      "recal_sensor": "left"
+    },
+	  {
+      "name": "ZONE_SW",
+      "position": {
+        "x": 1775,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "x",
+      "recal_sensor": "right"
+    },
+	  {
+      "name": "ZONE_NW",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "y",
+      "recal_sensor": "left"
+    }
+  ]
+}

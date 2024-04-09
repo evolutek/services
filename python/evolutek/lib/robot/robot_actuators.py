@@ -41,7 +41,7 @@ def move_elevator(self, position: ElevatorPosition):
 # so here there list of length 3, so there is 3 clamps
 class ClampsPosition(Enum):
     OPEN = [180, 175, 180]
-    CLOSE = [145, 145, 145]
+    CLOSE = [138, 138, 138]
 
 # Map clamps to their servo id
 CLAMP_ID_TO_SERVO_ID = [2, 3, 4]
@@ -109,3 +109,23 @@ def magnets_on(self, magnet_ids: list[int]):
 @async_task
 def magnets_off(self, magnet_ids: list[int]):
     return RobotStatus.check(self.actuators.magnets_off(magnet_ids))
+
+
+# ====== Arms ======
+
+# TODO: Use correct angles
+# Right then left angle
+class ArmsPosition(Enum):
+    OPEN = (85, 98)
+    CLOSE = (170, 18)
+
+# Map clamps to their servo id
+ARM_ID_TO_SERVO_ID = [5, 6]
+
+@if_enabled
+@async_task
+def move_arm(self, id: int, position: ArmsPosition):
+    id = int(id)
+    if isinstance(position, str):
+        position = HersePosition[position]
+    return RobotStatus.check(self.actuators.servo_set_angle(ARM_ID_TO_SERVO_ID[id], position.value[id]))

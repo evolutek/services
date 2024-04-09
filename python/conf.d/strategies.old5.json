@@ -4,7 +4,7 @@
       "name": "gotof",
       "position": {
         "x": 225,
-        "y": 175
+        "y": 160
       },
       "theta": "0",
       "actions": [
@@ -12,13 +12,12 @@
           "fct": "down_herse",
           "handler": "robot"
         }
-      ],
-      "score": 1
+      ]
     },{
       "name": "goto0",
       "position": {
         "x": 740,
-        "y": 175
+        "y": 160
       },
       "actions": [
         {
@@ -30,7 +29,7 @@
       "name": "goto0.5",
       "position": {
         "x": 680,
-        "y": 175
+        "y": 160
       }
     },{
       "name": "goto1",
@@ -83,8 +82,7 @@
         "x": 400,
         "y": 220
       },
-      "theta": "pi",
-      "score": 3
+      "theta": "pi"
     },{
       "name": "goto4",
       "position": {
@@ -92,10 +90,10 @@
         "y": 770
       },
       "theta": "pi"
-    },{
+    }, {
       "name": "goto5",
       "position": {
-        "x": 90,
+        "x": 80,
         "y": 770
       },
       "actions": [
@@ -103,10 +101,8 @@
           "fct": "place_plants_in_planter",
           "handler": "robot"
         }
-      ],
-      "score": 12
+      ]
     },
-
 
 
     {
@@ -142,135 +138,64 @@
         }
       ]
     },{
-      "name": "goto11",
+      "name": "goto7",
       "position": {
-        "x": 330,
-        "y": 330
+        "x": 1750,
+        "y": 250
       },
-      "theta": "-2.7",
+      "theta": "-pi/4",
       "actions": [
         {
           "fct": "up_herse",
           "handler": "robot"
         }
-      ],
-      "score": 3
+      ]
     },{
-      "name": "goto13",
+      "name": "goto8",
       "position": {
-        "x": 420,
-        "y": 400
+        "x": 1300,
+        "y": 700
       }
     },{
-      "name": "goto14",
+      "name": "goto9",
       "position": {
         "x": 600,
-        "y": 400
+        "y": 650
       },
       "theta": "-pi/2"
     },{
-      "name": "goto15",
+      "name": "goto11",
       "position": {
         "x": 600,
-        "y": 90
+        "y": 70
       },
       "actions": [
         {
           "fct": "place_plants_in_planter",
           "handler": "robot"
         }
-      ],
-      "score": 12
+      ]
     },
-
-
-
+    
+    
     {
-      "name": "goto16",
+      "name": "goto12",
       "position": {
         "x": 600,
         "y": 770
       }
     },{
-      "name": "goto17",
+      "name": "goto13",
       "position": {
-        "x": 1700,
+        "x": 1740,
         "y": 700
       }
     },{
-      "name": "goto17.5",
+      "name": "goto14",
       "position": {
-        "x": 1700,
+        "x": 1740,
         "y": 400
       }
-    },{
-      "name": "goto18",
-      "position": {
-        "x": 1700,
-        "y": 170
-      },
-      "theta": "pi/2",
-      "actions": [
-        {
-          "fct": "recalibration",
-          "handler": "robot",
-          "args":  {
-            "x": false,
-            "x_sensor": "right"
-          }
-        }
-      ]
-    },
-
-
-
-    {
-      "name": "goto19",
-      "position": {
-        "x": 1830,
-        "y": 240
-      },
-      "theta": "pi/2",
-      "actions": [
-        {
-          "fct": "open_right_arm",
-          "handler": "robot"
-        },
-        {
-          "fct": "down_herse",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {
-            "x": 1830,
-            "y": 1800,
-            "skip": true
-          },
-          "avoid_strategy": "skip"
-        },
-        {
-          "fct": "close_right_arm",
-          "handler": "robot"
-        },
-        {
-          "fct": "up_herse",
-          "handler": "robot"
-        }
-      ],
-      "score": 30
-    },
-
-
-
-    {
-      "name": "goto25",
-      "position": {
-        "x": 1700,
-        "y": 400
-      },
-      "score": 10
     }
   ],
 
@@ -288,15 +213,13 @@
         "goto4",
         "goto5",
         "goto6",
+        "goto7",
+        "goto8",
+        "goto9",
         "goto11",
+        "goto12",
         "goto13",
-        "goto14",
-        "goto15",
-        "goto16",
-        "goto17",
-        "goto18",
-        "goto19",
-        "goto25"
+        "goto14"
 		  ],
       "use_pathfinding": false,
       "available": ["pal"]

@@ -106,8 +106,8 @@ class Actuators(Service):
             2: [I2CActType.Servo, 180], # Right clamp
             3: [I2CActType.Servo, 180], # Middle clamp
             4: [I2CActType.Servo, 180], # Left clamp
-            #5: [I2CActType.Servo, 180],
-            #6: [I2CActType.Servo, 180]
+            5: [I2CActType.Servo, 180], # Right arm
+            6: [I2CActType.Servo, 180]  # Left arm
         }, frequency=50)
 
         self.all_actuators = [

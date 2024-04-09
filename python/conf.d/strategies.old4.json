@@ -1,0 +1,123 @@
+{
+  "goals": [
+    {
+      "name": "goto1",
+      "position": {
+        "x": 690,
+        "y": 750
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 690,
+            "y": 910,
+            "acc": 80
+          }
+        }
+      ]
+    },{
+      "name": "grab_plants1",
+      "position": {
+        "x": 690,
+        "y": 925
+      },
+      "actions": [
+        {
+          "fct": "grab_and_lift_plants",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto2",
+      "position": {
+        "x": 260,
+        "y": 770
+      },
+      "theta": "pi"
+    },{
+      "name": "goto3",
+      "position": {
+        "x": 60,
+        "y": 770
+      },
+      "actions": [
+        {
+          "fct": "place_plants_in_planter",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto4",
+      "position": {
+        "x": 300,
+        "y": 770
+      }
+    },{
+      "name": "goto5",
+      "position": {
+        "x": 1740,
+        "y": 700
+      }
+    },{
+      "name": "goto6",
+      "position": {
+        "x": 1740,
+        "y": 225
+      }
+    }
+  ],
+
+  "strategies": [
+    {
+      "name": "Zone North West",
+      "starting_position": "ZONE_NW",
+      "goals": [
+        "goto1",
+        "grab_plants1",
+        "goto2",
+        "goto3",
+        "goto4",
+        "goto5",
+        "goto6"
+		  ],
+      "use_pathfinding": false,
+      "available": ["pal"]
+    }
+  ],
+
+  "starting_positions": [
+    {
+      "name": "ZONE_E",
+      "position": {
+        "x": 1000,
+        "y": 2775
+      },
+      "theta": "-pi/2",
+      "recal_side": "x",
+      "recal_sensor": "left"
+    },
+	  {
+      "name": "ZONE_SW",
+      "position": {
+        "x": 1775,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "x",
+      "recal_sensor": "right"
+    },
+	  {
+      "name": "ZONE_NW",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "y",
+      "recal_sensor": "left"
+    }
+  ]
+}
