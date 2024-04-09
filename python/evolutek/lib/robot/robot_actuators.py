@@ -70,7 +70,7 @@ def move_clamps(self, ids: list[int], position: ClampsPosition):
 class HersePosition(Enum):
     UP = [173, 36]
     MIDDLE = [121, 90]
-    DOWN = [74, 140]
+    DOWN = [70, 144]
 
 @if_enabled
 @async_task

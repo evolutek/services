@@ -6,15 +6,15 @@ from evolutek.lib.robot.robot_actuators import ElevatorPosition, ClampsPosition,
 @if_enabled
 @async_task
 def grab_plants(self):
-    if RobotStatus.get_status(self.move_rack(RackPosition.PLANTS, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
+    #if RobotStatus.get_status(self.move_rack(RackPosition.PLANTS, async_task=False)) != RobotStatus.Done:
+    #    return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.5)
+    #sleep(0.5)
 
     if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.OPEN, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    if RobotStatus.get_status(self.move_elevator(ElevatorPosition.LOWEST, async_task=False)) != RobotStatus.Done:
+    if RobotStatus.get_status(self.move_elevator(ElevatorPosition.LOW, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     sleep(1)
@@ -35,10 +35,10 @@ def lift_plants(self):
 
     sleep(0.7)
 
-    if RobotStatus.get_status(self.move_rack(RackPosition.FOLDED, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
+    #if RobotStatus.get_status(self.move_rack(RackPosition.FOLDED, async_task=False)) != RobotStatus.Done:
+    #    return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.5)
+    #sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
 
