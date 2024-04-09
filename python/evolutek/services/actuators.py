@@ -60,7 +60,7 @@ class Actuators(Service):
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
 
-        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
+        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 27, 0.25)
 
         try:
             self.match_color_callback(self.cs.match.get_color())

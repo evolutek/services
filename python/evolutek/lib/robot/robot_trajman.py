@@ -30,7 +30,7 @@ def mirror_pos(self, x=None, y=None, theta=None):
         side = self.side
 
     if y is not None:
-        y = (y if side else 2000 - y)
+        y = (y if side else 3000 - y)
 
     if theta is not None:
         theta = (theta if side else -1 * theta)
@@ -350,10 +350,10 @@ def homemade_recal(self, decal=0):
         self.trajman.set_y(120 + decal)
     elif theta > 3*pi/4 or theta < -3*pi/4:
         self.trajman.set_theta(pi)
-        self.trajman.set_x(3000 - 120 - decal)
+        self.trajman.set_x(2000 - 120 - decal)
     else:
         self.trajman.set_theta(-pi/2)
-        self.trajman.set_y(2000 - 120 - decal)
+        self.trajman.set_y(3000 - 120 - decal)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
@@ -380,9 +380,9 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
     print(f'[ROBOT] Measured distance: {pos}mm')
 
     if not axis_x and (side ^ (sensor == RecalSensor.Left) ^ (not self.side)):
-        pos = 2000 - pos
-    if axis_x and ((not side) ^ (sensor == RecalSensor.Left)):
         pos = 3000 - pos
+    if axis_x and ((not side) ^ (sensor == RecalSensor.Left)):
+        pos = 2000 - pos
 
     if not init:
         position = self.trajman.get_position()

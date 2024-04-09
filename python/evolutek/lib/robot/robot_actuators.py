@@ -14,8 +14,10 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 # This a an enum of pair of angle
 # (the first angle is the right servo and the second is the left servo)
 class ElevatorPosition(Enum):
+    LOWEST = (340, 630)
     LOW = (360, 610)
     BORDER = (420, 560)
+    POTS = (480, 500)
     HIGH = (720, 250)
 
 @if_enabled
@@ -85,7 +87,8 @@ def move_herse(self, position: HersePosition):
 # TODO: Use correct angles (ax12 angles)
 class RackPosition(Enum):
     FOLDED = 512
-    POTS = 350
+    POTS = 200
+    PLANTS = 100
     UNFOLDED = 0
 
 @if_enabled
