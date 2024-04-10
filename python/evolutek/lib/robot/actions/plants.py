@@ -5,6 +5,13 @@ from evolutek.lib.robot.robot_actuators import ElevatorPosition, ClampsPosition,
 
 @if_enabled
 @async_task
+def good_by_plants(self):
+    r = self.move_rot(dest=2*pi, acc=5, dec=5, maxspeed=15, sens=1)
+    return RobotStatus.return_status(RobotStatus.get_status(r))
+
+
+@if_enabled
+@async_task
 def grab_plants(self):
     #if RobotStatus.get_status(self.move_rack(RackPosition.PLANTS, async_task=False)) != RobotStatus.Done:
     #    return RobotStatus.return_status(RobotStatus.Failed)

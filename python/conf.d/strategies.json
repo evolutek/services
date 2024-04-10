@@ -9,19 +9,19 @@
       "theta": "0",
       "actions": [
         {"fct": "down_herse", "handler": "robot"},
-        {"fct": "goto", "args": {"x": 740, "y": 240}},
+        {"fct": "goto", "args": {"x": 740, "y": 230}},
         {"fct": "up_herse", "handler": "robot"},
-        {"fct": "goto", "args": {"x": 650, "y": 240}},
+        {"fct": "goto", "args": {"x": 650, "y": 230}},
       
-        {"fct": "goto", "args": {"x": 700, "y": 690}},
+        {"fct": "goto", "args": {"x": 700, "y": 790}},
         {"fct": "goth", "args": {"theta": 1.57}},
         {
           "fct": "goto_avoid_extend",
           "handler": "robot",
           "args": {
             "x": 700,
-            "y": 900,
-            "acc": 70
+            "y": 880,
+            "acc": 220
           }
         },
         {"fct": "grab_plants", "handler": "robot"},
@@ -30,8 +30,8 @@
           "handler": "robot",
           "args": {
             "x": 700,
-            "y": 850,
-            "acc": 100
+            "y": 830,
+            "acc": 350
           }
         },
         {"fct": "lift_plants", "handler": "robot"},
@@ -40,39 +40,76 @@
           "handler": "robot",
           "args": {
             "x": 700,
-            "y": 1100,
-            "acc": 70
+            "y": 1040,
+            "acc": 110
           }
         },
         {"fct": "down_herse", "handler": "robot"},
       
-        {"fct": "goto", "args": {"x": 610, "y": 400}},
         {"fct": "goth", "args": {"theta": -1.54}},
+        {"fct": "goto", "args": {"x": 610, "y": 225}},
         {
           "fct": "goto_avoid_extend",
           "handler": "robot",
           "args": {
             "x": 610,
             "y": 175,
-            "acc": 70
+            "acc": 120
           }
         },
         {"fct": "place_plants_in_pots", "handler": "robot"},
         {"fct": "goto", "args": {"x": 610, "y": 250}},
         {"fct": "up_herse", "handler": "robot"},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 610,
+            "y": 240,
+            "acc": 210
+          }
+        },
         {"fct": "grab_plants", "handler": "robot"},
         {"fct": "lift_plants", "handler": "robot"},
+        {"fct": "good_by_plants", "handler": "robot"},
+
         {"fct": "grab_pots", "handler": "robot"},
-        {"fct": "goto", "args": {"x": 610, "y": 115}},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 610,
+            "y": 112,
+            "acc": 100
+          }
+        },
         {"fct": "place_plants_in_planter", "handler": "robot"},
         {"fct": "goto", "args": {"x": 610, "y": 220}},
         {"fct": "goth", "args": {"theta": 3.14}},
         {"fct": "goto", "args": {"x": 350, "y": 220}},
         {"fct": "release_pots", "handler": "robot"},
-        {"fct": "goto", "args": {"x": 500, "y": 220}},
-        {"fct": "goto", "args": {"x": 600, "y": 650}}
+        {"fct": "goto", "args": {"x": 440, "y": 220}}
       ],
       "score": 24
+    },
+
+    {
+      "name": "recale_zone_top",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "recalibration",
+          "args": {
+            "x": false,
+            "y": true,
+            "x_sensor": "left"
+          }
+        }
+      ]
     },
 
     {
@@ -245,7 +282,8 @@
       "name": "Test Area 1",
       "starting_position": "ZONE_TOP",
       "goals": [
-        "handle_plants_set_1"
+        "handle_plants_set_1",
+        "recale_zone_top"
 		  ],
       "use_pathfinding": false,
       "available": ["pal"]
