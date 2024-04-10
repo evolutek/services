@@ -261,6 +261,13 @@ class Actuators(Service):
         self.axs[int(id)].moving_speed(int(speed))
         return RobotStatus.return_status(RobotStatus.Done)
 
+    @Service.action
+    def ax_get_load(self, id):
+        if self.axs[int(id)] == None:
+            return None
+        return self.axs[int(id)].get_present_load()
+
+
     ##########
     # SERVOS #
     ##########
