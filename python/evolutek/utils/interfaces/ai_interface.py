@@ -34,24 +34,22 @@ class StrategyFrame(IFrame):
 		self.strategy_number = tk.IntVar()
 		self.init_interface()
 
-	def action_strategy(self):
+	def change_strategy(self):
 		self.root.cs.ai[ROBOT].set_strategy(self.strategy_number.get())
-		print(f"New strategy: {self.root.cs.ai[ROBOT].get_strategies().keys(self.strategy_number.get())}")
+		print(f"New strategy: {self.root.cs.ai[ROBOT].get_strategies()[self.strategy_number.get()]}")
 
 	def init_interface(self):
 		list_strategy = self.root.cs.ai[ROBOT].get_strategies()
-		buttons = []
 		for strategy in list_strategy:
-			l = tk.Radiobutton(
+			btn = tk.Radiobutton(
 				self,
 				text=strategy,
 				variable=self.strategy_number,
 				value=list_strategy[strategy],
-				command=self.action_strategy,
+				command=self.change_strategy,
 				font=FONT_MEDIUM
 			)
-			l.pack(side=tk.TOP, fill=tk.X)
-			buttons.append(l)
+			btn.pack(side=tk.TOP, fill=tk.X)
 
 
 class ButtonSystem(IFrame):
@@ -100,6 +98,7 @@ class StatusFrame(IFrame):
 
 	def reset_match(self):
 		try:
+			self.root.cs.match.end_match()
 			self.root.cs.match.reset_match()
 		except Exception as e:
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
@@ -119,7 +118,7 @@ class StatusFrame(IFrame):
 
 class HomeInterface(IFrame):
 	def __init__(self, root, parent):
-		super().__init__(root, parent, bg=root.cs.match.get_color())
+		super().__init__(root, parent)
 		self.init_interface()
 
 	def init_interface(self):
@@ -140,22 +139,28 @@ class HomeInterface(IFrame):
 
 class MatchInterface(IFrame):
 	def __init__(self, root, parent):
-		super().__init__(root, parent, bg=root.cs.match.get_color())
+		super().__init__(root, parent)
 		self.init_interface()
 
-	def close(self):
-		self.root.cs.match.reset_match()
+	def reset(self):
+		if self.root.match_status["status"] != "Started":
+			self.root.cs.match.reset_match()
+			self.root.cs.ai[ROBOT].reset(False)
+
+	def stop(self):
+		if self.root.match_status["status"] == "Started":
+			self.root.cs.match.match_end()
 
 	def init_interface(self):
 		topbar = tk.Frame(self)
-		topbar.pack(side=tk.TOP, fill=tk.X, expand=True)
-		tk.Button(topbar, text="Close", command=self.close, font=FONT_MEDIUM).pack(side=tk.LEFT)
+		topbar.pack(side=tk.TOP, fill=tk.X)
+		tk.Button(topbar, text="Reset", command=self.reset, font=FONT_MEDIUM).pack(side=tk.LEFT)
+		tk.Button(topbar, text="Stop", command=self.stop, font=FONT_MEDIUM).pack(side=tk.LEFT)
 		self.text = tk.Label(self, text=f"Score: 0", font=FONT_BIG)
 		self.text.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
 	def update_interface(self):
-		match_status = self.root.cs.match.get_status()
-		self.text.config(text=f"Score: {match_status['score']}")
+		self.text.config(text=f"Score: {self.root.match_status['score']}")
 
 
 class AIInterface(Interface):
@@ -163,17 +168,25 @@ class AIInterface(Interface):
 		super().__init__('AI')
 		self.cs = CellaservProxy()
 		self.init_fonts()
-		self.match_interface = MatchInterface(self, self.window)
-		self.home_interface = HomeInterface(self, self.window)
-		self.current_frame = None
+		#self.current_frame = None
+		self.match_status = None
+
+		self.container = tk.Frame(self.window)
+		self.container.pack(side="top", fill="both", expand=True)
+		self.container.grid_rowconfigure(0, weight=1)
+		self.container.grid_columnconfigure(0, weight=1)
+
+		self.match_interface = MatchInterface(self, self.container)
+		self.home_interface = HomeInterface(self, self.container)
+	
+		self.match_interface.grid(row=0, column=0, sticky="nsew")
+		self.home_interface.grid(row=0, column=0, sticky="nsew")
 
 	def set_frame(self, frame):
-		if frame == self.current_frame:
-			return
-		if self.current_frame is not None:
-			self.current_frame.pack_forget()
-		self.current_frame = frame
-		self.current_frame.pack(expand=True, fill=tk.BOTH)
+		#if frame is self.current_frame:
+		#	return
+		#self.current_frame = frame
+		frame.tkraise()
 
 	def init_fonts(self):
 		global FONT_BIG, FONT_MEDIUM, FONT_SMALL
@@ -182,17 +195,16 @@ class AIInterface(Interface):
 		FONT_SMALL = tkinter.font.Font(self.window, size=16)
 
 	def update_interface(self):
-		match_status = self.cs.match.get_status()
+		self.match_status = self.cs.match.get_status()
 		self.window.configure(bd=5, highlightcolor=self.cs.match.get_color(), highlightthickness=5)
-		if match_status["status"] == "Started" or match_status["status"] == "Ended":
-			print("[+] Match is running")
+		if self.match_status["status"] == "Started" or self.match_status["status"] == "Ended":
+			#print("[+] Match is running")
 			self.set_frame(self.match_interface)
 			self.match_interface.update_interface()
 		else:
-			print("[+] Match is not running")
+			#print("[+] Match is not running")
 			self.set_frame(self.home_interface)
 			self.home_interface.update_interface()
-		self.window.after(self.interface_refresh, self.update_interface)
 
 
 def main():
