@@ -40,6 +40,7 @@ class StrategyFrame(IFrame):
 		print(f"New strategy: {self.cs.ai[ROBOT].get_strategies().keys(self.strategy_number.get())}")
 
 	def __create_radio_strategy(self):
+		#list_strategy = {"Strategie 1": 0, "Strategie 2": 1}
 		list_strategy = self.cs.ai[ROBOT].get_strategies()
 		buttons = []
 		for strategy in list_strategy:
@@ -129,10 +130,10 @@ class StatusFrame(IFrame):
 		self.cs.robot[ROBOT].set_cherry_count()
 
 	def create_buttons(self):
-		tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
-		tk.Button(self, text="Reset position", command=self.reset_position, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
-		tk.Button(self, text="Reset match", command=self.reset_match, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
-		tk.Button(self, text="Change color", command=self.action_color, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
+		tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
+		tk.Button(self, text="Reset position", command=self.reset_position, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
+		tk.Button(self, text="Reset match", command=self.reset_match, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
+		tk.Button(self, text="Change color", command=self.action_color, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 
 	def __init_interface(self):
 		#self.create_color()
@@ -173,25 +174,32 @@ class AIInterface(Interface):
 		self.cs = CellaservProxy()
 		self.color = self.cs.match.get_color()
 		super().__init__('AI')
-		self.window.after(self.interface_refresh, self.update_interface)
 		self.init_fonts()
+		self.window.after(self.interface_refresh, self.update_interface)
+		self.create_widget()
+		self.update_interface()
 
 	def init_fonts(self):
 		global FONT_BIG, FONT_MEDIUM, FONT_SMALL
-		FONT_BIG = tkinter.font.Font(size=36)
-		FONT_MEDIUM = tkinter.font.Font(size=24)
-		FONT_SMALL = tkinter.font.Font(size=16)
+		FONT_BIG = tkinter.font.Font(self.window, size=36)
+		FONT_MEDIUM = tkinter.font.Font(self.window, size=24)
+		FONT_SMALL = tkinter.font.Font(self.window, size=16)
 
 	def create_widget(self, start_match=False):
 		if not start_match:
+			self.window.grid_rowconfigure(0, weight=0)
+			self.window.grid_rowconfigure(1, weight=1)
+			self.window.grid_columnconfigure(0, weight=1)
+			self.window.grid_columnconfigure(1, weight=1)
+
 			self.button_system_frame = ButtonSystem(self)
-			self.button_system_frame.pack(side=tk.TOP, fill=tk.X, expand=True, padx=4, pady=4)
+			self.button_system_frame.grid(row=0, column=0, columnspan=2, padx=4, pady=4)
 
 			self.strategies_frame = StrategyFrame(self)
-			self.strategies_frame.pack(side=tk.LEFT, fill=tk.Y, expand=True, padx=8, pady=8)
+			self.strategies_frame.grid(row=1, column=0, padx=8, pady=8)
 
 			self.status_frame = StatusFrame(self)
-			self.status_frame.pack(side=tk.RIGHT, fill=tk.Y, expand=True, padx=8, pady=8)
+			self.status_frame.grid(row=1, column=1, padx=8, pady=8)
 		else:
 			self.match_interfaces_frame = MatchInterface(self)
 			self.match_interfaces_frame.pack(expand=True, fill=tk.BOTH)
