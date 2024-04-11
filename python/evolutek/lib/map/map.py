@@ -3,7 +3,6 @@ from evolutek.lib.map.utils import *
 
 from collections import deque
 from copy import deepcopy
-from planar import Polygon as PolygonPlanar
 from shapely.geometry import Polygon, MultiPolygon
 
 from time import time
@@ -130,22 +129,6 @@ class Map:
 
         return self.add_obstacle(Polygon(l), tag=tag, type=type)
 
-    def build_octogon(self, center, radius):
-        poly = PolygonPlanar.regular(8, radius=radius, angle=22.5, center=center.to_tuple())
-        l = []
-        for point in poly:
-            l.append((point.x, point.y))
-        return Polygon(l)
-
-    # Add an octogonal obstacle
-    # center : center of the octogon
-    # radius : external radius of the octogon
-    def add_octogon_obstacle(self, center, radius, tag=None, type=ObstacleType.fixed):
-        if not self.is_inside(center):
-            return False
-        octogon = self.build_octogon(center, radius+self.robot_radius)
-        return self.add_obstacle(octogon, tag=tag, type=type)
-
     # Add the obstacles from the JSON config file
     def add_obstacles(self, obstacles, mirror=False, type=ObstacleType.fixed):
         obstacles = deepcopy(obstacles)
@@ -176,15 +159,6 @@ class Map:
                 obstacle['p1'] = p1
                 obstacle['p2'] = p2
                 self.add_rectangle_obstacle(**obstacle, type=type)
-            elif form == 'octogon':
-                if not 'center' in obstacle:
-                    print('[MAP] Bad circle obstacle in parsing')
-                    continue
-                center = Point(dict=obstacle['center'])
-                if mirror:
-                    center = Point(x=center.x, y=(3000 - center.y))
-                obstacle['center'] = center
-                self.add_octogon_obstacle(**obstacle, type=type)
             else:
                 print('[MAP] Obstacle form not found')
 
@@ -319,10 +293,6 @@ class Map:
             print('[MAP] End point outside current map')
             return []
 
-        # Exclusion zone around the start point
-        #ex = self.build_octogon(start, self.robot_radius)
-        #obstacles = obstacles.difference(ex)
-
         if isinstance(obstacles, Polygon):
             obstacles = MultiPolygon(obstacles)
 
@@ -348,10 +318,6 @@ class Map:
 
         start = path[0]
         end = path[1]
-
-        # Exclusion zone around the start point
-        #ex = self.build_octogon(start, self.robot_radius)
-        #obstacles = obstacles.difference(ex)
 
         prev = start
         for p in path[1:]:

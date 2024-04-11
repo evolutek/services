@@ -200,7 +200,6 @@ class Robot(Service):
             # Add robots on the map
             for i in range(len(detected_robots)):
                 self.robots_tags.append('robot-%d' % i)
-                self.map.add_octogon_obstacle(detected_robots[i], self.robot_size + 10, tag=self.robots_tags[-1], type=ObstacleType.robot)
 
             # Compute path
             path = self.map.get_path(origin, destination)

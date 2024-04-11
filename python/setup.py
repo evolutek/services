@@ -3,7 +3,6 @@
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from subprocess import check_call
-import sys
 
 class PostDevelopCommand(develop):
     def run(self):
@@ -12,7 +11,7 @@ class PostDevelopCommand(develop):
 
 setup(
     name = "services",
-    version = "2021",
+    version = "2024",
     packages = find_packages(),
     namespace_packages = ['evolutek'],
 
@@ -20,7 +19,7 @@ setup(
         'develop': PostDevelopCommand
     },
 
-    install_requires = open('requirements.pip').read().splitlines(),
+    install_requires = open('requirements.txt').read().splitlines(),
 
     entry_points = {
         'console_scripts': [
