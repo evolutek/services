@@ -1,24 +1,22 @@
 #!/usr/bin/python3
 
 import os
+from sys import argv
+
+import tkinter as tk
 import tkinter.font
 
 from evolutek.lib.settings import ROBOT
-from cellaserv.service import Service
-from cellaserv.proxy import CellaservProxy
-import json
-from tkinter import *
-from evolutek.lib.settings import SIMULATION
-
-if SIMULATION:
-	from evolutek.simulation.simulator import read_config
-
-from sys import argv
-from tkinter import Button, Canvas, Label, ttk
 from evolutek.lib.interface import Interface
+from cellaserv.proxy import CellaservProxy
 
 
-class IFRAME(Frame):
+FONT_BIG = None
+FONT_MEDIUM = None
+FONT_SMALL = None
+
+
+class IFrame(tk.Frame):
 	def __init__(self, container, border=0):
 		self.parent = container
 		self.cs = container.cs
@@ -31,10 +29,10 @@ class IFRAME(Frame):
 		pass
 
 
-class StrategyFrame(IFRAME):
+class StrategyFrame(IFrame):
 	def __init__(self, container):
-		self.strategy_number = IntVar()
-		super().__init__(container, border=30)
+		self.strategy_number = tk.IntVar()
+		super().__init__(container)
 		self.__init_interface()
 
 	def action_strategy(self):
@@ -44,11 +42,16 @@ class StrategyFrame(IFRAME):
 	def __create_radio_strategy(self):
 		list_strategy = self.cs.ai[ROBOT].get_strategies()
 		buttons = []
-
 		for strategy in list_strategy:
-			l = Radiobutton(self, text=strategy, variable=self.strategy_number, value=list_strategy[strategy],
-							command=self.action_strategy)
-			l.pack()
+			l = tk.Radiobutton(
+				self,
+				text=strategy,
+				variable=self.strategy_number,
+				value=list_strategy[strategy],
+				command=self.action_strategy,
+				font=FONT_MEDIUM
+			)
+			l.pack(side=tk.TOP, fill=tk.X)
 			buttons.append(l)
 
 	def __init_interface(self):
@@ -58,15 +61,14 @@ class StrategyFrame(IFRAME):
 		pass
 
 
-class ButtonSystem(IFRAME):
-
+class ButtonSystem(IFrame):
 	def __init__(self, container):
 		super().__init__(container)
 		self.__init_interface()
 
 	@staticmethod
 	def shutdown():
-		os.system("sudo shutdown now")
+		os.system("sudo reboot -p")
 
 	@staticmethod
 	def reboot():
@@ -75,17 +77,19 @@ class ButtonSystem(IFRAME):
 	def close(self):
 		self.parent.close()
 
-	def create_button(self):
-		Button(self, text="reboot", command=self.reboot).grid(row=0, column=0)
-		Button(self, text="shutdown", command=self.shutdown).grid(row=0, column=2)
-		Button(self, text="close", command=self.close).grid(row=0, column=6)
+	def create_buttons(self):
+		self.grid_columnconfigure(0, weight=1, uniform="c")
+		self.grid_columnconfigure(1, weight=1, uniform="c")
+		self.grid_columnconfigure(2, weight=1, uniform="c")
+		tk.Button(self, text="Reboot", command=self.reboot, font=FONT_MEDIUM).grid(row=0, column=0, sticky=tk.N)
+		tk.Button(self, text="Shutdown", command=self.shutdown, font=FONT_MEDIUM).grid(row=0, column=1, sticky=tk.N)
+		tk.Button(self, text="Close", command=self.close, font=FONT_MEDIUM).grid(row=0, column=2, sticky=tk.N)
 
 	def __init_interface(self):
-		self.create_button()
+		self.create_buttons()
 
 
-class StatusFrame(IFRAME):
-
+class StatusFrame(IFrame):
 	def __init__(self, container):
 		super().__init__(container)
 		self.color1 = self.cs.config.get('match', 'color1')
@@ -93,8 +97,7 @@ class StatusFrame(IFRAME):
 		self.__init_interface()
 
 	def create_color(self):
-
-		self.change_color = Frame(self, relief="raised", background=self.cs.match.get_color(), width=500, height=400)
+		self.change_color = tk.Frame(self, relief="raised", background=self.cs.match.get_color(), width=500, height=400)
 		self.change_color.grid(column=5, row=5)
 
 	def recalibration(self):
@@ -125,18 +128,15 @@ class StatusFrame(IFRAME):
 		print("Bonjour slurping le set")
 		self.cs.robot[ROBOT].set_cherry_count()
 
-	def create_button(self):
-		Button(self, text="Recalibration", command=self.recalibration).grid(row=2, column=1)
-		Button(self, text="set position", command=self.reset_position).grid(row=3, column=1)
-		Button(self, text="Reset Match", command=self.reset_match).grid(row=4, column=1)
-		Button(self, text="Fill 10 cherries", command=self.slurp).grid(row=5, column=1)
-		Button(self, text="Fill 2 more cherries", command=self.slurp_less).grid(row=6, column=1)
-		Button(self, text="Set cherry count", command=self.slurp_set).grid(row=7, column=1)
-		Button(self, width=20, text="Change Color", command=self.action_color).grid(column=1, row=8)
+	def create_buttons(self):
+		tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
+		tk.Button(self, text="Reset position", command=self.reset_position, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
+		tk.Button(self, text="Reset match", command=self.reset_match, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
+		tk.Button(self, text="Change color", command=self.action_color, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP)
 
 	def __init_interface(self):
 		#self.create_color()
-		self.create_button()
+		self.create_buttons()
 
 	def action_color(self):
 		if self.cs.match.get_color() == self.color1:
@@ -147,25 +147,25 @@ class StatusFrame(IFRAME):
 			self.change_color.config(bg=self.color1)
 
 
-class MatchInterface(IFRAME):
+class MatchInterface(IFrame):
 	def __init__(self, container):
-		super().__init__(container)
+		super().__init__(container, bg=self.cs.match.get_color())
 		self.__init_interface()
 
 	def close(self):
 		self.parent.close()
 
 	def __init_interface(self):
-		Button(self, text="Close", command=self.close).grid(row=0, column=0)
-		self.canvas = Canvas(self.parent.window, bg=self.cs.match.get_color(), width=800, height=640)
-		fonts = tkinter.font.Font(family='Helvetica', size=36, weight='bold')
-		self.text = self.canvas.create_text(800 / 2, 480 / 2, text=f"Score: 0", font=fonts)
-		self.canvas.pack()
-		Button(self, text="close", command=self.close).grid(row=0, column=3)
+		self.grid_rowconfigure(0, weight=1, uniform="r")
+		self.grid_rowconfigure(1, weight=1, uniform="r")
+		self.grid_rowconfigure(2, weight=1, uniform="r")
+		tk.Button(self, text="Close", command=self.close, font=FONT_MEDIUM).grid(column=0, row=0, sticky=tk.NW)
+		self.text = tk.Label(self, text=f"Score: 0", font=FONT_BIG)
+		self.text.grid(column=0, row=1)
 
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
-		self.canvas.itemconfig(self.text, text=f"Score: {match_status['score']}")
+		self.text.config(text=f"Score: {match_status['score']}")
 
 
 class AIInterface(Interface):
@@ -174,24 +174,27 @@ class AIInterface(Interface):
 		self.color = self.cs.match.get_color()
 		super().__init__('AI')
 		self.window.after(self.interface_refresh, self.update_interface)
+		self.init_fonts()
+
+	def init_fonts(self):
+		global FONT_BIG, FONT_MEDIUM, FONT_SMALL
+		FONT_BIG = tkinter.font.Font(size=36)
+		FONT_MEDIUM = tkinter.font.Font(size=24)
+		FONT_SMALL = tkinter.font.Font(size=16)
 
 	def create_widget(self, start_match=False):
 		if not start_match:
-			self.strategies_frame = StrategyFrame(self)
-			self.strategies_frame.config(bd=10)
-			self.strategies_frame.pack()
-			self.strategies_frame.place(height=150, width=250, x=0, y=100)
-
 			self.button_system_frame = ButtonSystem(self)
-			self.button_system_frame.pack()
-			self.button_system_frame.place(height=29, width=213, x=480 / 2, y=0)
+			self.button_system_frame.pack(side=tk.TOP, fill=tk.X, expand=True, padx=4, pady=4)
+
+			self.strategies_frame = StrategyFrame(self)
+			self.strategies_frame.pack(side=tk.LEFT, fill=tk.Y, expand=True, padx=8, pady=8)
 
 			self.status_frame = StatusFrame(self)
-			self.status_frame.grid(row=1, column=2)
-			self.status_frame.place(height=200, width=300, x=450, y=40)
+			self.status_frame.pack(side=tk.RIGHT, fill=tk.Y, expand=True, padx=8, pady=8)
 		else:
 			self.match_interfaces_frame = MatchInterface(self)
-			self.match_interfaces_frame.pack()
+			self.match_interfaces_frame.pack(expand=True, fill=tk.BOTH)
 
 	def update_interface(self):
 		match_status = self.cs.match.get_status()
@@ -225,6 +228,7 @@ def main():
     interface = AIInterface()
     interface.window.configure(bd=0)
     interface.loop()
+
 
 if __name__ == "__main__":
 	main()

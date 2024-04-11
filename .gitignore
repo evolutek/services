@@ -2,6 +2,9 @@
 # Created by https://www.gitignore.io/api/vim,c++,linux,clion,emacs,python,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=vim,c++,linux,clion,emacs,python,visualstudiocode
 
+# Python virtual environment
+venv/
+
 ### C++ ###
 # Prerequisites
 *.d
