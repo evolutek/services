@@ -5,42 +5,44 @@ MIN_VOLTAGE = 0.6
 MAX_VOLTAGE = 3.0
 MIN_DISTANCE = 100
 MAX_DISTANCE = 1250
-CALIB_MIDPOINT = (MIN_DISTANCE + MAX_DISTANCE) / 2
-
-# TODO : rework this
 
 class RecalSensor(Component):
-
     def __init__(self, id, adc):
         self.adc = adc
-        self.slope1 = 0
-        self.slope2 = 0
-        self.intercept1 = 0
-        self.intercept2 = 0
+        self.points: list[tuple[float, float]] = []
         super().__init__("RecalSensor", id)
 
-    def calibrate(self, slope1, intercept1, slope2, intercept2):
-        self.slope1 = slope1
-        self.intercept1 = intercept1
-        self.slope2 = slope2
-        self.intercept2 = intercept2
+    def calibrate(self, points: list[list[float]]):
+        self.points = [(p[0], p[1]) for p in points]
 
-    def calibration(self, x):
-        slope = self.slope1 if x < CALIB_MIDPOINT else self.slope2
-        intercept = self.intercept1 if x < CALIB_MIDPOINT else self.intercept2
-        err = slope * x + intercept
-        return x - err
+    def read(self, samples=1, raw=False):
+        use_calibration = not raw and len(self.points) >= 2
 
-    def read(self, repetitions=1, use_calibration=True):
         res = 0
-        for i in range(repetitions):
+        for i in range(samples):
             raw = self.adc.read()
             voltage = max(MIN_VOLTAGE, min(raw, MAX_VOLTAGE))
             alpha = (voltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)
             res += (MAX_DISTANCE - MIN_DISTANCE) * alpha + MIN_DISTANCE
-            if i < repetitions-1: time.sleep(0.05)
-        res /= repetitions
-        return self.calibration(res) if use_calibration else res
+            if i < samples - 1: time.sleep(0.05)
+        res /= samples
+
+        if use_calibration:
+            if res < self.points[0][0]:
+                x1, y1 = self.points[0]
+                x2, y2 = self.points[1]
+            elif res > self.points[-1][0]:
+                x1, y1 = self.points[-2]
+                x2, y2 = self.points[-1]
+            else:
+                for i in range(len(self.points) - 1):
+                    x1, y1 = self.points[i]
+                    x2, y2 = self.points[i + 1]
+                    if res >= x1 and res <= x2:
+                        break
+            res = ((res - x1) / (x2 - x1)) * (y2 - y1) + y1
+
+        return res
 
     def __str__(self):
         s = "----------\n"

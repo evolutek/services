@@ -12,6 +12,7 @@ from evolutek.lib.gpio.gpio import Edge
 # Components
 from evolutek.lib.actuators.ax12 import AX12Controller
 from evolutek.lib.actuators.pump import PumpController
+from evolutek.lib.actuators.magnet import MagnetController
 from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
@@ -27,6 +28,8 @@ from evolutek.lib.utils.wrappers import if_enabled
 from threading import Event
 import atexit
 from time import sleep
+import json
+
 
 # TODO :
 # - Put components config in a lib / read a JSON
@@ -34,28 +37,14 @@ from time import sleep
 # Actuators service class
 @Service.require('config')
 class Actuators(Service):
-
     def __init__(self):
         super().__init__(ROBOT)
         self.cs = CellaservProxy()
         self.disabled = Event()
         atexit.register(self.stop)
 
-        self.proximity_sensors = ProximitySensors(
-            {
-                1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
-                2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)]
-            }
-        )
-
-        left_slope1 = float(self.cs.config.get(ROBOT, "left_slope1"))
-        left_intercept1 = float(self.cs.config.get(ROBOT, "left_intercept1"))
-        left_slope2 = float(self.cs.config.get(ROBOT, "left_slope2"))
-        left_intercept2 = float(self.cs.config.get(ROBOT, "left_intercept2"))
-        right_slope1 = float(self.cs.config.get(ROBOT, "right_slope1"))
-        right_intercept1 = float(self.cs.config.get(ROBOT, "right_intercept1"))
-        right_slope2 = float(self.cs.config.get(ROBOT, "right_slope2"))
-        right_intercept2 = float(self.cs.config.get(ROBOT, "right_intercept2"))
+        left_recal_points = json.loads(self.cs.config.get(ROBOT, "left_recal_points"))
+        right_recal_points = json.loads(self.cs.config.get(ROBOT, "right_recal_points"))
 
         self.recal_sensors = RecalSensors(
             {
@@ -63,8 +52,8 @@ class Actuators(Service):
                 2: [create_adc(1, "recal2", type=AdcType.ADS)]
             }
         )
-        self.recal_sensors[1].calibrate(left_slope1, left_intercept1, left_slope2, left_intercept2)
-        self.recal_sensors[2].calibrate(right_slope1, right_intercept1, right_slope2, right_intercept2)
+        self.recal_sensors[1].calibrate(left_recal_points)
+        self.recal_sensors[2].calibrate(right_recal_points)
 
         self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
         self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
@@ -79,28 +68,49 @@ class Actuators(Service):
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
+        # TODO: Set correct ports
+        self.proximity_sensors = ProximitySensors(
+            {
+                1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
+                2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)],
+                2 : [create_gpio(1, 'proximity_sensors3', dir=False, type=GpioType.MCP)]
+            }
+        )
+
+        # TODO: Set correct gpio
+        self.magnets = MagnetController(
+            {
+                0: [
+                    create_gpio(0, 'magnet1', dir=True, type=GpioType.MCP)
+                ],
+                1 : [
+                    create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
+                ],
+                2 : [
+                    create_gpio(3, 'magnet3', dir=True, type=GpioType.MCP)
+                ]
+            }
+        )
+
+        # TODO: Check if numbers here are correct
         self.axs = AX12Controller(
             [1, 2]
         )
 
-        acts = {
+        self.i2c_acts = I2CActsHandler({
             0: [I2CActType.Servo, 180],
             1: [I2CActType.Servo, 180],
             2: [I2CActType.Servo, 180],
             3: [I2CActType.Servo, 180],
-            4: [I2CActType.Servo, 180],
-            8: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax},
-            9: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax},
-            10: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax}
-        }
-
-        self.i2c_acts = I2CActsHandler(acts, frequency=50)
+            4: [I2CActType.Servo, 180]
+        }, frequency=50)
 
         self.all_actuators = [
             self.proximity_sensors,
             self.recal_sensors,
             self.axs,
-            self.i2c_acts
+            self.i2c_acts,
+            self.magnets
         ]
 
         self.is_initialized = True
@@ -154,11 +164,6 @@ class Actuators(Service):
         if self.bau.read():
             self.disabled.clear()
             self.i2c_acts.init_escs()
-            for i in range(2):
-                self.orange_led_strip_set(True)
-                sleep(0.25)
-                self.orange_led_strip_set(False)
-                sleep(0.25)
 
     #####################
     # PROXIMITY SENSORS #
@@ -173,10 +178,10 @@ class Actuators(Service):
     # RECAL SENSORS #
     #################
     @Service.action
-    def recal_sensor_read(self, id, repetitions=10):
+    def recal_sensor_read(self, id, samples=10, raw=False):
         if self.recal_sensors[int(id)] == None:
             return None
-        return self.recal_sensors[int(id)].read(repetitions=repetitions)
+        return self.recal_sensors[int(id)].read(samples=samples, raw=raw)
 
     #######
     # BAU #
@@ -193,13 +198,6 @@ class Actuators(Service):
         else:
             self.free()
             self.disable()
-
-    ####################
-    # ORANGE LED STRIP #
-    ####################
-    @Service.action
-    def orange_led_strip_set(self, on):
-        self.orange_led_strip.write(get_boolean(on))
 
     #################
     # RGB LED STRIP #
@@ -219,7 +217,7 @@ class Actuators(Service):
             print('[ACTUATORS] Faile to set loading mode: %s' % str(e))
 
     #######
-    # AXS #
+    # AXs #
     #######
     @if_enabled
     @Service.action
@@ -230,7 +228,7 @@ class Actuators(Service):
         return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action
-    def axs_free(self, ids):
+    def ax_free_all(self, ids):
         if isinstance(ids, str):
             ids = ids.split(",")
 
@@ -259,16 +257,37 @@ class Actuators(Service):
             return RobotStatus.return_status(RobotStatus.Done)
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    #########
-    #  ESC  #
-    #########
+    ###########
+    # MAGNETS #
+    ###########
     @Service.action
-    def esc_set_speed(self, id, value):
-        if self.i2c_acts[int(id)] == None:
+    def magnets_on(self, ids: list[int]):
+        _ids = []
+        for id in ids:
+            if self.magnets[int(id)] == None:
+                continue
+            _ids.append(int(id))
+
+        if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
-        if self.i2c_acts[int(id)].set_speed(float(value)):
-            return RobotStatus.return_status(RobotStatus.Done)
-        return RobotStatus.return_status(RobotStatus.Failed)
+
+        self.magnets.on(_ids)
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @if_enabled
+    @Service.action
+    def magnets_off(self, ids: list[int]):
+        _ids = []
+        for id in ids:
+            if self.magnets[int(id)] == None:
+                continue
+            _ids.append(int(id))
+
+        if len(_ids) < 1:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        self.magnets.off(_ids)
+        return RobotStatus.return_status(RobotStatus.Done)
 
 def main():
     actuators = Actuators()
@@ -276,6 +295,7 @@ def main():
         print('[ACTUATORS] Failed to initialize service')
         return
     actuators.run()
+
 
 if __name__ == '__main__':
     main()

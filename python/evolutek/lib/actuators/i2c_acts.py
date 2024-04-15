@@ -27,7 +27,7 @@ class I2CAct(Component):
         self.max_range = max_range
         self.esc_variation = esc_variation
         super().__init__(type.value, id_channel)
-    
+
     def _initialize(self) -> bool:
         if self.id < 0 or self.id >= 16:
             raise ValueError(f"[{self.name}] Bad channel id {self.id}")
@@ -94,7 +94,7 @@ class I2CAct(Component):
     def set_angle(self, angle: float) -> bool:
         if self.type != I2CActType.Servo:
             return False
-        
+
         if angle < 0 or angle > self.max_range:
             raise ValueError(f"[{self.name}] Bad angle {angle} for servo {self.id}")
 
@@ -108,7 +108,7 @@ class I2CAct(Component):
 
         if self.fraction is None:  # special case for disabled escs
             return None
-        
+
         return self.fraction
 
     def set_speed(self, speed: float) -> bool:
@@ -116,7 +116,7 @@ class I2CAct(Component):
             return False
         if speed < 0.0 or speed > self.max_range:
             raise ValueError(f"[{self.name}] Bad speed {speed} for esc {self.id}")
- 
+
         self.fraction = (speed + self.esc_variation.value[1])
         print(f"[{self.name}] Moving {self.id} at {self.fraction}")
         return True
@@ -126,7 +126,7 @@ class I2CActsHandler(ComponentsHolder):
     def __init__(self, acts, frequency):
         self.frequency = frequency
         super().__init__('I2CActsHandler', acts, I2CAct)
-    
+
     def _initialize(self):
         global PCA
         try:

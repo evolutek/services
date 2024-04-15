@@ -1,5 +1,4 @@
 class Component:
-
     def __init__(self, name, id):
 
         self.init = False
@@ -38,9 +37,7 @@ class Component:
         }
 
 class ComponentsHolder:
-
     def __init__(self, name, components, component_type, components_common_params=None):
-
         self.init = False
         self.name = name
         self.components = {}
@@ -82,7 +79,7 @@ class ComponentsHolder:
 
         if not self.init:
             return False
-        
+
         self.init &= self._post_initialize()
         return self.init
 

@@ -19,11 +19,11 @@ from threading import Event, Lock, Thread
 
 DEBUG = False
 
+
 @Service.require('config')
 @Service.require('actuators', ROBOT)
 @Service.require('trajman', ROBOT)
 class Robot(Service):
-
     start_event = CellaservEvent('%s_started' % ROBOT)
     stop_event = CellaservEvent('%s_stopped' % ROBOT)
 
@@ -45,42 +45,15 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    canon_on = Service.action(robot_actuators.canon_on)
-    canon_off = Service.action(robot_actuators.canon_off)
-    turbine_on = Service.action(robot_actuators.turbine_on)
-    turbine_off = Service.action(robot_actuators.turbine_off)
-    extend_left_vacuum = Service.action(robot_actuators.extend_left_vacuum)
-    retract_left_vacuum = Service.action(robot_actuators.retract_left_vacuum)
-    extend_right_vacuum = Service.action(robot_actuators.extend_right_vacuum)
-    retract_right_vacuum = Service.action(robot_actuators.retract_right_vacuum)
-    clamp_open = Service.action(robot_actuators.clamp_open)
-    clamp_open_half = Service.action(robot_actuators.clamp_open_half)
-    clamp_untight = Service.action(robot_actuators.clamp_untight)
-    clamp_close = Service.action(robot_actuators.clamp_close)
-    push_canon = Service.action(robot_actuators.push_canon)
-    push_tank = Service.action(robot_actuators.push_tank)
-    #drop_slow = Service.action(robot_actuators.drop_slow)
-    push_isol = Service.action(robot_actuators.push_isol)
-    elevator_move = Service.action(robot_actuators.elevator_move)
-    disguise_on = Service.action(robot_actuators.disguise_on)
-    disguise_off = Service.action(robot_actuators.disguise_off)
+    move_elevator = Service.action(robot_actuators.move_elevator)
+    move_clamps = Service.action(robot_actuators.move_clamps)
+    magnets_on = Service.action(robot_actuators.magnets_on)
+    magnets_off = Service.action(robot_actuators.magnets_off)
 
     # Imported from robot_actions
-    stack_and_grab = Service.action(robot_actions.stack_and_grab)             # DONE
-    drop_until = Service.action(robot_actions.drop_until)                     # DONE
-    drop_stacks = Service.action(robot_actions.drop_stacks)                   # DONE
-    drop_all = Service.action(robot_actions.drop_all)                         # DONE
-    suck_rack = Service.action(robot_actions.suck_rack)                       # DONE
-    build_cakes_raw = Service.action(robot_actions.build_cakes_raw)           # DONE
-    build_cakes = Service.action(robot_actions.build_cakes)                   # DONE
-    shoot_n_cherries = Service.action(robot_actions.shoot_n_cherries)         # DONE
-    shoot_all_cherries = Service.action(robot_actions.shoot_all_cherries)     # DONE
-    fill_n_cherries = Service.action(robot_actions.fill_n_cherries)           # DONE
-    set_cherry_count = Service.action(robot_actions.set_cherry_count)         # DONE
-    disguise = Service.action(robot_actions.disguise)
+    drop_all = Service.action(robot_actions.drop_all)
 
     def __init__(self):
-
         super().__init__(ROBOT)
 
         self.cs = CellaservProxy()
@@ -253,7 +226,6 @@ class Robot(Service):
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
-
         new_state = get_boolean(value)
         # If the state didn't change, return
         if new_state == self.bau_state:
@@ -278,9 +250,11 @@ class Robot(Service):
             return RobotStatus.Aborted
         return RobotStatus.Ok
 
+
 def main():
     robot = Robot()
     robot.run()
+
 
 if __name__ == '__main__':
     main()

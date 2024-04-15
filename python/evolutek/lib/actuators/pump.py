@@ -35,7 +35,6 @@ class Pump(Component):
         }
 
 class PumpController(ComponentsHolder):
-
     def __init__(self, pumps, valve_delay=None):
         super().__init__('Pump Controller', pumps, Pump)
 
