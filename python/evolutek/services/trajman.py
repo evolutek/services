@@ -8,6 +8,7 @@ from struct import pack, unpack, calcsize
 from threading import Thread, Event, Lock
 from time import sleep
 import atexit
+from math import sin, cos
 
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service, ConfigVariable
@@ -36,6 +37,7 @@ class Commands(Enum):
     MOVE_BEGIN         = 128
     MOVE_END           = 129
 
+    GET_TRAVEL_THETA   = 2
     GET_PID_TRSL       = 10
     GET_PID_ROT        = 11
     GET_POSITION       = 12
@@ -102,25 +104,24 @@ class TrajMan(Service):
     the robot will not move.
     """
 
-    w1 = ConfigVariable(section=ROBOT, option="wheel_diam1", coerc=float)
-    w2 = ConfigVariable(section=ROBOT, option="wheel_diam2", coerc=float)
-    spacing = ConfigVariable(section=ROBOT, option="wheels_spacing", coerc=float)
-    pidtp = ConfigVariable(section=ROBOT, option="pidtrsl_p", coerc=float)
-    pidti = ConfigVariable(section=ROBOT, option="pidtrsl_i", coerc=float)
-    pidtd = ConfigVariable(section=ROBOT, option="pidtrsl_d", coerc=float)
-    pidrp = ConfigVariable(section=ROBOT, option="pidrot_p", coerc=float)
-    pidri = ConfigVariable(section=ROBOT, option="pidrot_i", coerc=float)
-    pidrd = ConfigVariable(section=ROBOT, option="pidrot_d", coerc=float)
-    trslacc = ConfigVariable(section=ROBOT, option="trsl_acc", coerc=float)
-    trsldec = ConfigVariable(section=ROBOT, option="trsl_dec", coerc=float)
+    #w1 = ConfigVariable(section=ROBOT, option="wheel_diam1", coerc=float)
+    #w2 = ConfigVariable(section=ROBOT, option="wheel_diam2", coerc=float)
+    #spacing = ConfigVariable(section=ROBOT, option="wheels_spacing", coerc=float)
+    #pidtp = ConfigVariable(section=ROBOT, option="pidtrsl_p", coerc=float)
+    #pidti = ConfigVariable(section=ROBOT, option="pidtrsl_i", coerc=float)
+    #pidtd = ConfigVariable(section=ROBOT, option="pidtrsl_d", coerc=float)
+    #pidrp = ConfigVariable(section=ROBOT, option="pidrot_p", coerc=float)
+    #pidri = ConfigVariable(section=ROBOT, option="pidrot_i", coerc=float)
+    #pidrd = ConfigVariable(section=ROBOT, option="pidrot_d", coerc=float)
+    #trslacc = ConfigVariable(section=ROBOT, option="trsl_acc", coerc=float)
+    #trsldec = ConfigVariable(section=ROBOT, option="trsl_dec", coerc=float)
     trslmax = ConfigVariable(section=ROBOT, option="trsl_max", coerc=float)
-    rotacc = ConfigVariable(section=ROBOT, option="rot_acc", coerc=float)
-    rotdec = ConfigVariable(section=ROBOT, option="rot_dec", coerc=float)
+    #rotacc = ConfigVariable(section=ROBOT, option="rot_acc", coerc=float)
+    #rotdec = ConfigVariable(section=ROBOT, option="rot_dec", coerc=float)
     rotmax = ConfigVariable(section=ROBOT, option="rot_max", coerc=float)
-    deltatrsl = ConfigVariable(section=ROBOT, option="delta_trsl", coerc=float)
-    deltarot = ConfigVariable(section=ROBOT, option="delta_rot", coerc=float)
-    robot_size_x = ConfigVariable(section=ROBOT, option="robot_size_x", coerc=float)
-    robot_size_y = ConfigVariable(section=ROBOT, option="robot_size_y", coerc=float)
+    #deltatrsl = ConfigVariable(section=ROBOT, option="delta_trsl", coerc=float)
+    #deltarot = ConfigVariable(section=ROBOT, option="delta_rot", coerc=float)
+    robot_radius = ConfigVariable(section=ROBOT, option="robot_radius", coerc=float)
     telemetry_refresh = ConfigVariable(section=ROBOT, option="telemetry_refresh", coerc=float)
 
     def __init__(self):
@@ -158,6 +159,7 @@ class TrajMan(Service):
         self.robot_position = Point(0, 0)
         self.robot_orientation = 0.0
         self.robot_speed = 0.0
+        self.travel_orientation = 0.0
 
         self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
 
@@ -165,33 +167,33 @@ class TrajMan(Service):
         self.thread.start()
 
         # Set config of the robot
-        self.init_sequence()
+        #self.init_sequence()
         self.set_telemetry(0)
 
-        self.set_wheels_diameter(w1=self.w1(), w2=self.w2())
-        self.set_wheels_spacing(spacing=self.spacing())
+        #self.set_wheels_diameter(w1=self.w1(), w2=self.w2())
+        #self.set_wheels_spacing(spacing=self.spacing())
 
-        self.set_pid_trsl(self.pidtp(), self.pidti(), self.pidtd())
-        self.set_pid_rot(self.pidrp(), self.pidri(), self.pidrd())
+        #self.set_pid_trsl(self.pidtp(), self.pidti(), self.pidtd())
+        #self.set_pid_rot(self.pidrp(), self.pidri(), self.pidrd())
 
-        self.trsl_acc = self.trslacc()
-        self.set_trsl_acc(self.trsl_acc)
-        self.trsl_dec = self.trsldec()
-        self.set_trsl_dec(self.trsl_dec)
+        #self.trsl_acc = self.trslacc()
+        #self.set_trsl_acc(self.trsl_acc)
+        #self.trsl_dec = self.trsldec()
+        #self.set_trsl_dec(self.trsl_dec)
         self.trsl_max_speed = self.trslmax()
         self.set_trsl_max_speed(self.trsl_max_speed)
 
-        self.set_rot_acc(self.rotacc())
-        self.set_rot_dec(self.rotdec())
+        #self.set_rot_acc(self.rotacc())
+        #self.set_rot_dec(self.rotdec())
         self.set_rot_max_speed(self.rotmax())
 
-        self.set_delta_max_rot(self.deltarot())
-        self.set_delta_max_trsl(self.deltatrsl())
+        #self.set_delta_max_rot(self.deltarot())
+        #self.set_delta_max_trsl(self.deltatrsl())
 
-        self.size_x = self.robot_size_x()
-        self.set_robot_size_x(self.size_x)
-        self.size_y = self.robot_size_y()
-        self.set_robot_size_y(self.size_y)
+        #self.size_x = self.robot_size_x()
+        #self.set_robot_size_x(self.size_x)
+        #self.size_y = self.robot_size_y()
+        #self.set_robot_size_y(self.size_y)
 
 
         Thread(target=self.avoid_loop).start()
@@ -219,27 +221,20 @@ class TrajMan(Service):
         return robots
 
     @Service.action
-    def need_to_avoid(self, detection_dist, side):
+    def need_to_avoid(self, detection_dist):
         with self.lock:
-
-            d1 = self.size_y + self.robot_size + 10
-            d2 = detection_dist + self.robot_size
-
-            # Compute the vertexes of the detection zone
-            p1 = Point(self.size_x * (1 if side else -1), d1)
-            p2 = Point(p1.x + d2 * (1 if side else -1), -p1.y)
-
             for robot in self.detected_robots:
-                if min(p1.x, p2.x) < robot.x and robot.x < max(p1.x, p2.x) and\
-                    min(p1.y, p2.y) < robot.y and robot.y < max(p1.y, p2.y):
-
-                    global_pos = robot.change_referencial(self.robot_position, self.robot_orientation)
-
+                global_pos = robot.change_referencial(self.robot_position, self.robot_orientation)
+                dx = self.global_pos.x - self.robot_position.x
+                dy = self.global_pos.y - self.robot_position.y
+                vx = cos(self.travel_orientation)
+                vy = sin(self.travel_orientation)
+                cross_product = -vy * dx + vx * dy
+                if abs(cross_product) < self.robot_radius and Point(x=0, y=0).dist(Point(x=dx, y=dy)) < detection_dist:
                     # Check if it is located on the map
                     if 0 < global_pos.x and global_pos.x < 3000 and 0 < global_pos.y and global_pos.y < 2000:
                         print('[ROBOT] Need to avoid robot at dist: %f' % Point(x=0, y=0).dist(robot))
                         return True
-
                     else:
                         print('[ROBOT] Ignoring obstacle: %s' % str(global_pos))
 
@@ -252,7 +247,6 @@ class TrajMan(Service):
 
     def avoid_loop(self):
         while True:
-
             sleep(0.01)
 
             if not self.is_avoid_enabled.is_set():
@@ -260,19 +254,15 @@ class TrajMan(Service):
 
             stop_distance = 0.0
             detection_dist = 0.0
-            side = False
 
             with self.lock:
-
                 if self.robot_speed == 0.0:
                     continue
 
                 stop_distance = (self.robot_speed**2 / (2 * 1000))
                 detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + 50
-                side = self.robot_speed > 0.0
 
-            if self.need_to_avoid(detection_dist, side):
-
+            if self.need_to_avoid(detection_dist):
                 with self.lock:
                     self.avoid_side = self.robot_speed > 0.0
 
@@ -376,23 +366,6 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
-    @if_enabled
-    def curve(self, dt, at, det, mt, st, dr, ar, der, mr, sr, delayed):
-        tab = pack('B', 35)
-        tab += pack('B', Commands.CURVE.value)
-        tab += pack('ffffffff', float(dt), float(at), float(det), float(mt),
-                    float(dr), float(ar), float(der), float(mt))
-
-        s = 0
-        s += 1 if int(st) == 1 else 0
-        s += 2 if int(sr) == 1 else 0
-        s += 4 if int(delayed) == 1 else 0
-
-        self.log_serial(s)
-        tab += pack('B', s)
-        self.write(bytes(tab))
-
-    @Service.action
     def free(self):
         print('[TRAJMAN] Free robot')
         tab = pack('B', 2)
@@ -427,88 +400,6 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
-    def set_pid_trsl(self, P, I, D):
-        tab = pack('B', 14)
-        tab += pack('B', Commands.SET_PID_TRSL.value)
-        tab += pack('fff', float(P), float(I), float(D))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_pid_rot(self, P, I, D):
-        tab = pack('B', 14)
-        tab += pack('B', Commands.SET_PID_ROT.value)
-        tab += pack('fff', float(P), float(I), float(D))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_debug(self, state: "on or off"):
-        tab = pack('B', 3)
-        tab += pack('B', Commands.SET_DEBUG.value)
-        if state == "on":
-            self.debug_file = open("debug.data", "w")
-            tab += pack('B', 1)
-
-            data = self.get_pid_trsl()
-            with open("trslpid.data", "w") as f:
-                f.write("P = {kp} I = {ki} D = {kd}\n".format(**data))
-
-            data = self.get_pid_rot()
-
-            with open("rotpid.data", "w") as f:
-                f.write("P = {kp} I = {ki} D = {kd}\n".format(**data))
-        else:
-            tab += pack('B', 0)
-            if self.debug_file:
-                self.debug_file.close()
-
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_trsl_acc(self, acc):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_TRSL_ACC.value)
-        tab += pack('f', float(acc))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_trsl_max_speed(self, maxspeed):
-        if maxspeed is None:
-            maxspeed = self.trsl_max_speed
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_TRSL_MAXSPEED.value)
-        tab += pack('f', float(maxspeed))
-        self.command(bytes(tab))
-
-
-    @Service.action
-    def set_trsl_dec(self, dec):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_TRSL_DEC.value)
-        tab += pack('f', float(dec))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_rot_acc(self, acc):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_ROT_ACC.value)
-        tab += pack('f', float(acc))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_rot_max_speed(self, maxspeed):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_ROT_MAXSPEED.value)
-        tab += pack('f', float(maxspeed))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_rot_dec(self, dec):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_ROT_DEC.value)
-        tab += pack('f', float(dec))
-        self.command(bytes(tab))
-
-    @Service.action
     def set_x(self, x):
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_X.value)
@@ -530,52 +421,19 @@ class TrajMan(Service):
         self.command(bytes(tab))
 
     @Service.action
-    def set_wheels_diameter(self, w1, w2):
-        tab = pack('B', 10)
-        tab += pack('B', Commands.SET_WHEELS_DIAM.value)
-        tab += pack('ff', float(w1), float(w2))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_delta_max_rot(self, delta):
+    def set_trsl_max_speed(self, maxspeed):
+        if maxspeed is None:
+            maxspeed = self.trsl_max_speed
         tab = pack('B', 6)
-        tab += pack('B', Commands.SET_DELTA_MAX_ROT.value)
-        tab += pack('f', float(delta))
+        tab += pack('B', Commands.SET_TRSL_MAXSPEED.value)
+        tab += pack('f', float(maxspeed))
         self.command(bytes(tab))
 
     @Service.action
-    def set_delta_max_trsl(self, delta):
+    def set_rot_max_speed(self, maxspeed):
         tab = pack('B', 6)
-        tab += pack('B', Commands.SET_DELTA_MAX_TRSL.value)
-        tab += pack('f', float(delta))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_wheels_spacing(self, spacing):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_WHEELS_SPACING.value)
-        tab += pack('f', float(spacing))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_pwm(self, left, right):
-        tab = pack('B', 10)
-        tab += pack('B', Commands.SET_PWM.value)
-        tab += pack('ff', float(left), float(right))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_robot_size_x(self, size):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_ROBOT_SIZE_X.value)
-        tab += pack('f', float(size))
-        self.command(bytes(tab))
-
-    @Service.action
-    def set_robot_size_y(self, size):
-        tab = pack('B', 6)
-        tab += pack('B', Commands.SET_ROBOT_SIZE_Y.value)
-        tab += pack('f', float(size))
+        tab += pack('B', Commands.SET_ROT_MAXSPEED.value)
+        tab += pack('f', float(maxspeed))
         self.command(bytes(tab))
 
     @Service.action
@@ -588,18 +446,6 @@ class TrajMan(Service):
     #######
     # Get #
     #######
-
-    @Service.action
-    def get_pid_trsl(self):
-        tab = pack('B', 2)
-        tab += pack('B', Commands.GET_PID_TRSL.value)
-        return self.get_command(bytes(tab))
-
-    @Service.action
-    def get_pid_rot(self):
-        tab = pack('B', 2)
-        tab += pack('B', Commands.GET_PID_ROT.value)
-        return self.get_command(bytes(tab))
 
     @Service.action
     def get_position(self):
@@ -615,71 +461,11 @@ class TrajMan(Service):
         tab += pack('B', Commands.GET_SPEEDS.value)
         return self.get_command(bytes(tab))
 
-    @Service.action
-    def get_wheels(self):
-        tab = pack('B', 2)
-        tab += pack('B', Commands.GET_WHEELS.value)
-        return self.get_command(bytes(tab))
-
-    @Service.action
-    def get_delta_max(self):
-        tab = pack('B', 2)
-        tab += pack('B', Commands.GET_DELTA_MAX.value)
-        return self.get_command(bytes(tab))
-
-    @Service.action
-    def get_vector_trsl(self):
-        tab = pack('B', 2)
-        tab += pack('B', Commands.GET_VECTOR_TRSL.value)
-        return self.get_command(bytes(tab))
-
-    @Service.action
-    def get_vector_rot(self):
-        tab = pack('B', 2)
-        tab += pack('B', Commands.GET_VECTOR_ROT.value)
-        return self.get_command(bytes(tab))
-
-    @Service.action
-    def flush_serial(self):
-        self.log_serial("Clearing CM buffer")
-        self.write(bytes(128))
-
-    @Service.action
-    def init_sequence(self):
-        self.log_serial("Sending init sequence")
-        self.write(bytes([5]))
-        self.write(bytes([254]))
-        self.write(bytes([0xAA]))
-        self.write(bytes([0xAA]))
-        self.write(bytes([0xAA]))
-
-    @Service.action
-    def flush_queue(self):
-        """
-        If the serial spits out more messages than expected it will be
-        necessary to clean the message buffer.
-        """
-        self.log_serial("Clearing queue")
-        ret = []
-        while not self.queue.empty():
-            ret.append(self.queue.get())
-        return ret
-
-    @Service.action
-    def is_moving(self):
-        return not self.has_stopped.is_set()
-
-    # Calibrate
-
-    @Service.action
-    @if_enabled
-    def recalibration(self, sens, decal=0, set=1):
-        tab = pack('B', 7)
-        tab += pack('B', Commands.RECALAGE.value)
-        tab += pack('B', int(sens))
-        tab += pack('f', float(decal))
-        tab += pack('B', int(set))
-        return self.command(bytes(tab))
+    #@Service.action
+    #def get_travel_theta(self):
+    #    tab = pack('B', 2)
+    #    tab += pack('B', Commands.GET_TRAVEL_THETA.value)
+    #    return self.get_command(bytes(tab))
 
     # Thread 2
 
@@ -809,6 +595,16 @@ class TrajMan(Service):
 
                     self.log_serial("Rotation vector: ", speed)
 
+                elif tab[1] == Commands.GET_TRAVEL_THETA.value:
+                    a, b, travel_theta = unpack('=bbf', bytes(tab))
+
+                    self.queue.put({
+                        'travel_theta': travel_theta,
+                    })
+                    self.travel_orientation = travel_theta
+
+                    self.log_serial("Travel theta: ", speed)
+
                 elif tab[1] == Commands.RECALAGE.value:
                     a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
 
@@ -835,7 +631,7 @@ class TrajMan(Service):
                         pass
 
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
-                    counter, commandid, xpos, ypos, theta, speed =unpack('=bbffff', bytes(tab))
+                    counter, commandid, xpos, ypos, theta, speed, move_theta =unpack('=bbfffff', bytes(tab))
 
                     with self.lock:
                         self.robot_position = Point(x=xpos, y=ypos)

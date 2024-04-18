@@ -45,14 +45,14 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    move_elevator = Service.action(robot_actuators.move_elevator)
-    move_clamps = Service.action(robot_actuators.move_clamps)
-    magnets_on = Service.action(robot_actuators.magnets_on)
-    magnets_off = Service.action(robot_actuators.magnets_off)
+    #move_elevator = Service.action(robot_actuators.move_elevator)
+    #move_clamps = Service.action(robot_actuators.move_clamps)
+    #magnets_on = Service.action(robot_actuators.magnets_on)
+    #magnets_off = Service.action(robot_actuators.magnets_off)
 
     # Imported from robot_actions
-    grab_plants = Service.action(robot_actions.grab_plants)
-    place_plants = Service.action(robot_actions.place_plants)
+    #grab_plants = Service.action(robot_actions.grab_plants)
+    #place_plants = Service.action(robot_actions.place_plants)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -69,9 +69,7 @@ class Robot(Service):
         self.side = True
 
         # Size of the robot and min dist from wall
-        self.size_x = float(self.cs.config.get(section=ROBOT, option='robot_size_x'))
-        self.size_y = float(self.cs.config.get(section=ROBOT, option='robot_size_y'))
-        self.size = float(self.cs.config.get(section=ROBOT, option='robot_size'))
+        self.size = float(self.cs.config.get(section=ROBOT, option='robot_radius'))
         self.dist_to_center = float(self.cs.config.get(section=ROBOT, option='dist_to_center'))
 
         # TODO: rename
@@ -86,7 +84,7 @@ class Robot(Service):
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
         self.recal = event_waiter(self.trajman.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
-        self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
+        self.robot_size = float(self.cs.config.get(section='match', option='robot_radius'))
         self.pattern = None
         self.disabled = Event()
         self.need_to_abort = Event()
@@ -210,20 +208,6 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
-        self.turbine_off(async_task=False)
-        self.canon_off(async_task=False)
-        self.clamp_open(async_task=False)
-        sleep(0.5)
-        self.push_isol(async_task=False)
-        sleep(0.5)
-        self.retract_left_vacuum(async_task=False)
-        sleep(0.5)
-        self.retract_right_vacuum(async_task=False)
-        sleep(0.5)
-        self.actuators.ax_set_speed(1, 512)
-        self.actuators.ax_set_speed(2, 512)
-        self.elevator_move("Low", async_task=False)
-        sleep(2)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

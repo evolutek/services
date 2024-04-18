@@ -43,21 +43,21 @@ class Actuators(Service):
         self.disabled = Event()
         atexit.register(self.stop)
 
-        left_recal_points = json.loads(self.cs.config.get(ROBOT, "left_recal_points"))
-        right_recal_points = json.loads(self.cs.config.get(ROBOT, "right_recal_points"))
+        #left_recal_points = json.loads(self.cs.config.get(ROBOT, "left_recal_points"))
+        #right_recal_points = json.loads(self.cs.config.get(ROBOT, "right_recal_points"))
 
-        self.recal_sensors = RecalSensors(
-            {
-                1: [create_adc(0, "recal1", type=AdcType.ADS)],
-                2: [create_adc(1, "recal2", type=AdcType.ADS)]
-            }
-        )
-        self.recal_sensors[1].calibrate(left_recal_points)
-        self.recal_sensors[2].calibrate(right_recal_points)
+        #self.recal_sensors = RecalSensors(
+        #    {
+        #        1: [create_adc(0, "recal1", type=AdcType.ADS)],
+        #        2: [create_adc(1, "recal2", type=AdcType.ADS)]
+        #    }
+        #)
+        #self.recal_sensors[1].calibrate(left_recal_points)
+        #self.recal_sensors[2].calibrate(right_recal_points)
 
-        self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
-        self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
-        self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
+        #self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
+        #self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
+        #self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
         #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
@@ -96,21 +96,21 @@ class Actuators(Service):
         #    [1, 2]
         #)
 
-        self.i2c_acts = I2CActsHandler({
-            0: [I2CActType.Servo, 180],
-            1: [I2CActType.Servo, 180],
-            2: [I2CActType.Servo, 180],
-            3: [I2CActType.Servo, 180],
-            4: [I2CActType.Servo, 180],
-            5: [I2CActType.Servo, 180],
-            6: [I2CActType.Servo, 180]
-        }, frequency=50)
+        #self.i2c_acts = I2CActsHandler({
+        #    0: [I2CActType.Servo, 180],
+        #    1: [I2CActType.Servo, 180],
+        #    2: [I2CActType.Servo, 180],
+        #    3: [I2CActType.Servo, 180],
+        #    4: [I2CActType.Servo, 180],
+        #    5: [I2CActType.Servo, 180],
+        #    6: [I2CActType.Servo, 180]
+        #}, frequency=50)
 
         self.all_actuators = [
             #self.proximity_sensors,
-            self.recal_sensors,
+            #self.recal_sensors,
             #self.axs,
-            self.i2c_acts,
+            #self.i2c_acts,
             #self.magnets
         ]
 
@@ -187,19 +187,19 @@ class Actuators(Service):
     #######
     # BAU #
     #######
-    @Service.action
-    def bau_read(self):
-        return 1
-#        return self.bau.read()
+    #@Service.action
+    #def bau_read(self):
+    #    return 1
+    #     return self.bau.read()
 
-    def bau_callback(self, event, value, **kwargs):
-        self.bau_led.write(value)
-        self.publish(event=event, value=value, **kwargs)
-        if value:
-            self.enable()
-        else:
-            self.free()
-            self.disable()
+    #def bau_callback(self, event, value, **kwargs):
+    #    self.bau_led.write(value)
+    #    self.publish(event=event, value=value, **kwargs)
+    #    if value:
+    #        self.enable()
+    #    else:
+    #        self.free()
+    #        self.disable()
 
     #################
     # RGB LED STRIP #
@@ -221,75 +221,75 @@ class Actuators(Service):
     #######
     # AXs #
     #######
-    @if_enabled
-    @Service.action
-    def ax_move(self, id, pos):
-        if self.axs[int(id)] == None:
-            return RobotStatus.return_status(RobotStatus.Failed)
-        self.axs[int(id)].move(int(pos))
-        return RobotStatus.return_status(RobotStatus.Done)
+    #@if_enabled
+    #@Service.action
+    #def ax_move(self, id, pos):
+    #    if self.axs[int(id)] == None:
+    #        return RobotStatus.return_status(RobotStatus.Failed)
+    #    self.axs[int(id)].move(int(pos))
+    #    return RobotStatus.return_status(RobotStatus.Done)
 
-    @Service.action
-    def ax_free_all(self, ids):
-        if isinstance(ids, str):
-            ids = ids.split(",")
+    #@Service.action
+    #def ax_free_all(self, ids):
+    #    if isinstance(ids, str):
+    #        ids = ids.split(",")
 
-        for i in ids:
-            if self.axs[int(i)] == None:
-                continue
-            self.axs[int(i)].free()
+    #    for i in ids:
+    #        if self.axs[int(i)] == None:
+    #            continue
+    #        self.axs[int(i)].free()
 
-        return RobotStatus.return_status(RobotStatus.Done)
+    #    return RobotStatus.return_status(RobotStatus.Done)
 
-    @Service.action
-    def ax_set_speed(self, id, speed):
-        if self.axs[int(id)] == None:
-            return None
-        self.axs[int(id)].moving_speed(int(speed))
-        return RobotStatus.return_status(RobotStatus.Done)
+    #@Service.action
+    #def ax_set_speed(self, id, speed):
+    #    if self.axs[int(id)] == None:
+    #        return None
+    #    self.axs[int(id)].moving_speed(int(speed))
+    #    return RobotStatus.return_status(RobotStatus.Done)
 
     ##########
     # SERVOS #
     ##########
-    @Service.action
-    def servo_set_angle(self, id, angle):
-        if self.i2c_acts[int(id)] == None:
-            return RobotStatus.return_status(RobotStatus.Failed)
-        if self.i2c_acts[int(id)].set_angle(int(angle)):
-            return RobotStatus.return_status(RobotStatus.Done)
-        return RobotStatus.return_status(RobotStatus.Failed)
+    #@Service.action
+    #def servo_set_angle(self, id, angle):
+    #    if self.i2c_acts[int(id)] == None:
+    #        return RobotStatus.return_status(RobotStatus.Failed)
+    #    if self.i2c_acts[int(id)].set_angle(int(angle)):
+    #        return RobotStatus.return_status(RobotStatus.Done)
+    #    return RobotStatus.return_status(RobotStatus.Failed)
 
     ###########
     # MAGNETS #
     ###########
-    @Service.action
-    def magnets_on(self, ids: list[int]):
-        _ids = []
-        for id in ids:
-            if self.magnets[int(id)] == None:
-                continue
-            _ids.append(int(id))
+    #@Service.action
+    #def magnets_on(self, ids: list[int]):
+    #    _ids = []
+    #    for id in ids:
+    #        if self.magnets[int(id)] == None:
+    #            continue
+    #        _ids.append(int(id))
 
-        if len(_ids) < 1:
-            return RobotStatus.return_status(RobotStatus.Failed)
+    #    if len(_ids) < 1:
+    #        return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.magnets.on(_ids)
-        return RobotStatus.return_status(RobotStatus.Done)
+    #    self.magnets.on(_ids)
+    #    return RobotStatus.return_status(RobotStatus.Done)
 
-    @if_enabled
-    @Service.action
-    def magnets_off(self, ids: list[int]):
-        _ids = []
-        for id in ids:
-            if self.magnets[int(id)] == None:
-                continue
-            _ids.append(int(id))
+    #@if_enabled
+    #@Service.action
+    #def magnets_off(self, ids: list[int]):
+    #    _ids = []
+    #    for id in ids:
+    #        if self.magnets[int(id)] == None:
+    #            continue
+    #        _ids.append(int(id))
 
-        if len(_ids) < 1:
-            return RobotStatus.return_status(RobotStatus.Failed)
+    #    if len(_ids) < 1:
+    #        return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.magnets.off(_ids)
-        return RobotStatus.return_status(RobotStatus.Done)
+    #    self.magnets.off(_ids)
+    #    return RobotStatus.return_status(RobotStatus.Done)
 
 def main():
     actuators = Actuators()
