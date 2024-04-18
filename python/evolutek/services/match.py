@@ -1,7 +1,7 @@
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import Service
 
-import cv2 as cv
+#import cv2 as cv
 from enum import Enum
 from threading import Timer, Thread
 from time import localtime, sleep, time, strftime
@@ -45,6 +45,8 @@ class Match(Service):
         print('[MATCH] score is now: %d' % self.score)
 
     def record_match(self, match_duration=100):
+        return
+
         # Define the duration (in seconds) of the video capture here
         DIM = (1280, 720)
         capture_duration = int(match_duration + 5)

@@ -4,5 +4,5 @@ port = 4200
 
 [client]
 debug = 1
-host = beacon
+host = holo
 port = 4200

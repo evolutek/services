@@ -9,10 +9,13 @@ class PostDevelopCommand(develop):
         check_call("cp -r conf.d /etc/".split())
         develop.run(self)
 
+packages = find_packages()
+print("Packages:", packages)
+
 setup(
     name = "services",
     version = "2024",
-    packages = find_packages(),
+    packages = packages,
     namespace_packages = ['evolutek'],
 
     cmdclass = {

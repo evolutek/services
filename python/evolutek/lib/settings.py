@@ -15,8 +15,7 @@ from evolutek.lib.utils.boolean import get_boolean
 hostname = socket.gethostname()
 
 # Check if the machine is not on a Rpi (Robot, Beacon)
-if hostname not in ['pal', 'pmi', 'beacon']:
-
+if hostname not in ['holo']:
     # Set the simulation flag
     make_setting('SIMULATION', True, 'evolutek', 'simulation', 'SIMULATION')
     cs = CellaservProxy()

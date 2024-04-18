@@ -52,6 +52,7 @@ class Commands(Enum):
     MOVE_ROT           = 103
     CURVE              = 104
     FREE               = 109
+    UNFREE             = 108
     RECALAGE           = 110
     SET_PWM            = 111
     STOP_ASAP          = 112
@@ -75,6 +76,8 @@ class Commands(Enum):
     SET_ROBOT_SIZE_Y   = 166
     SET_DEBUG          = 200
     ERROR              = 255
+
+    NOT_IMPLEMENTED    = 9
 
 #################
 # The errors ID #
@@ -297,6 +300,8 @@ class TrajMan(Service):
     def command(self, data):
         """Handle commands sent to the card and wait for ack."""
 
+        self.log("Send command id: %i" % data[1])
+
         self.ack_recieved.clear()
         self.write(data)
         if not self.ack_recieved.wait(timeout=1):
@@ -375,7 +380,10 @@ class TrajMan(Service):
     @Service.action
     @if_enabled
     def unfree(self):
-        self.move_trsl(0, 1, 1, 1, 1)
+        print('[TRAJMAN] Unfree robot')
+        tab = pack('B', 2)
+        tab += pack('B', Commands.UNFREE.value)
+        self.command(bytes(tab))
 
     @Service.action
     def disable(self):
@@ -388,6 +396,15 @@ class TrajMan(Service):
             self.disabled.clear()
             self.unfree()
 
+    @Service.action
+    def init_sequence(self):
+        self.log_serial("Sending init sequence")
+        self.write(bytes([5]))
+        self.write(bytes([254]))
+        self.write(bytes([0xAA]))
+        self.write(bytes([0xAA]))
+        self.write(bytes([0xAA]))
+
     #######
     # Set #
     #######
@@ -397,6 +414,7 @@ class TrajMan(Service):
         tab = pack('B', 4)
         tab += pack('B', Commands.SET_TELEMETRY.value)
         tab += pack('H', int(inter))
+        #self.log("Send TELEMETRY")
         self.command(bytes(tab))
 
     @Service.action
@@ -404,6 +422,7 @@ class TrajMan(Service):
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_X.value)
         tab += pack('f', float(x))
+        #self.log("Send set x")
         self.command(bytes(tab))
 
     @Service.action
@@ -411,6 +430,7 @@ class TrajMan(Service):
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_Y.value)
         tab += pack('f', float(y))
+        #self.log("Send set y")
         self.command(bytes(tab))
 
     @Service.action
@@ -418,6 +438,7 @@ class TrajMan(Service):
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_THETA.value)
         tab += pack('f', float(theta))
+        #self.log("Send set theta")
         self.command(bytes(tab))
 
     @Service.action
@@ -427,6 +448,7 @@ class TrajMan(Service):
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_TRSL_MAXSPEED.value)
         tab += pack('f', float(maxspeed))
+        #self.log("Send trsl max speed")
         self.command(bytes(tab))
 
     @Service.action
@@ -434,6 +456,7 @@ class TrajMan(Service):
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_ROT_MAXSPEED.value)
         tab += pack('f', float(maxspeed))
+        #self.log("Send set rot max speed")
         self.command(bytes(tab))
 
     @Service.action
@@ -603,7 +626,7 @@ class TrajMan(Service):
                     })
                     self.travel_orientation = travel_theta
 
-                    self.log_serial("Travel theta: ", speed)
+                    self.log_serial("Travel: theta = %.2f" % speed)
 
                 elif tab[1] == Commands.RECALAGE.value:
                     a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
@@ -631,12 +654,14 @@ class TrajMan(Service):
                         pass
 
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
-                    counter, commandid, xpos, ypos, theta, speed, move_theta =unpack('=bbfffff', bytes(tab))
+                    counter, commandid, xpos, ypos, theta, speed = unpack('=bbffff', bytes(tab))
 
                     with self.lock:
                         self.robot_position = Point(x=xpos, y=ypos)
                         self.robot_orientation = theta
                         self.robot_speed = speed * 1000
+        
+                    self.log_serial("Telemetry: xpos = %i, ypos = %i, theta = %.2f, speed = %i" % (xpos, ypos, theta, speed))
 
                     #telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
                     #self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)
@@ -655,8 +680,11 @@ class TrajMan(Service):
                     message = bytes(tab)[2:]
                     print(message)
 
+                elif tab[1] == Commands.NOT_IMPLEMENTED.value:
+                    self.log("Command not implemented (id %i)" % tab[1])
+
                 else:
-                    self.log("Message not recognised")
+                    self.log("Message not recognised (id %i)" % tab[1])
 
 def main():
     trajman = TrajMan()
