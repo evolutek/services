@@ -47,12 +47,19 @@ class Robot(Service):
     # Imported from robot_actuators
     move_elevator = Service.action(robot_actuators.move_elevator)
     move_clamps = Service.action(robot_actuators.move_clamps)
+    move_herse = Service.action(robot_actuators.move_herse)
     magnets_on = Service.action(robot_actuators.magnets_on)
     magnets_off = Service.action(robot_actuators.magnets_off)
 
     # Imported from robot_actions
     grab_plants = Service.action(robot_actions.grab_plants)
+    place_plants = Service.action(robot_actions.grab_and_lift_plants)
     place_plants = Service.action(robot_actions.place_plants)
+    place_plants = Service.action(robot_actions.place_plants_in_planter)
+    up_herse = Service.action(robot_actions.up_herse)
+    down_herse = Service.action(robot_actions.down_herse)
+    grab_pots = Service.action(robot_actions.grab_pots)
+    release_pots = Service.action(robot_actions.release_pots)
 
     def __init__(self):
         super().__init__(ROBOT)

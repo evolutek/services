@@ -69,13 +69,13 @@ class Actuators(Service):
 
         self.proximity_sensors = ProximitySensors(
             {
-                1 : [ # Right sensor
+                0: [ # Right sensor
                     create_gpio(8,  'proximity_sensors1', dir=False, type=GpioType.MCP)
                 ],
-                2 : [ # Middle sensor
+                1: [ # Middle sensor
                     create_gpio(9,  'proximity_sensors2', dir=False, type=GpioType.MCP)
                 ],
-                3 : [ # Left sensor
+                2: [ # Left sensor
                     create_gpio(10, 'proximity_sensors3', dir=False, type=GpioType.MCP)
                 ]
             }
@@ -86,10 +86,10 @@ class Actuators(Service):
                 0: [ # Right magnet
                     create_gpio(5, 'magnet1', dir=True, type=GpioType.MCP)
                 ],
-                1 : [ # Middle magnet
+                1: [ # Middle magnet
                     create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
                 ],
-                2 : [ # Left magnet
+                2: [ # Left magnet
                     create_gpio(4, 'magnet3', dir=True, type=GpioType.MCP)
                 ]
             }
@@ -105,13 +105,13 @@ class Actuators(Service):
         #)
 
         self.i2c_acts = I2CActsHandler({
-            0: [I2CActType.Servo, 180],
-            1: [I2CActType.Servo, 180],
-            2: [I2CActType.Servo, 180],
-            3: [I2CActType.Servo, 180],
-            4: [I2CActType.Servo, 180],
-            5: [I2CActType.Servo, 180],
-            6: [I2CActType.Servo, 180]
+            1: [I2CActType.Servo, 180], # Right herse servo
+            2: [I2CActType.Servo, 180]  # Left herse servo
+            #2: [I2CActType.Servo, 180],
+            #3: [I2CActType.Servo, 180],
+            #4: [I2CActType.Servo, 180],
+            #5: [I2CActType.Servo, 180],
+            #6: [I2CActType.Servo, 180]
         }, frequency=50)
 
         self.all_actuators = [

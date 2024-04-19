@@ -1,10 +1,87 @@
 {
   "goals": [
     {
-      "name": "go_center_near_beacon",
+      "name": "goto1",
       "position": {
-        "x": 775,
-        "y": 1000
+        "x": 685,
+        "y": 690
+      },
+      "theta": "pi/2"
+    },{
+      "name": "goto2",
+      "position": {
+        "x": 925,
+        "y": 690
+      }
+    },{
+      "name": "down_herse1",
+      "position": {
+        "x": 925,
+        "y": 690
+      },
+      "fct": "down_herse",
+      "handler": "robot"
+    },{
+      "name": "goto3",
+      "position": {
+        "x": 800,
+        "y": 690
+      }
+    },{
+      "name": "up_herse1",
+      "position": {
+        "x": 800,
+        "y": 690
+      },
+      "fct": "up_herse",
+      "handler": "robot"
+    },{
+      "name": "grab_plants1",
+      "position": {
+        "x": 800,
+        "y": 690
+      },
+      "fct": "grab_plants",
+      "handler": "robot"
+    },{
+      "name": "goth1",
+      "position": {
+        "x": 800,
+        "y": 690
+      },
+      "theta": "-3*pi/4"
+    },{
+      "name": "goto4",
+      "position": {
+        "x": 350,
+        "y": 320
+      }
+    },{
+      "name": "place_plants1",
+      "position": {
+        "x": 350,
+        "y": 320
+      },
+      "fct": "place_plants",
+      "handler": "robot"
+    },{
+      "name": "goto5",
+      "position": {
+        "x": 690,
+        "y": 550
+      }
+    },{
+      "name": "goto6",
+      "position": {
+        "x": 690,
+        "y": 1740
+      },
+      "theta": "-pi/2"
+    },{
+      "name": "goto7",
+      "position": {
+        "x": 220,
+        "y": 1740
       }
     }
   ],
@@ -14,13 +91,18 @@
       "name": "Zone North West",
       "starting_position": "ZONE_NW",
       "goals": [
-        "zone_a_grab_pink",
-        "zone_a_grab_yellow",
-        "zone_a_grab_brown",
-        "zone_a_build_cakes",
-        "zone_a_fire",
-        "go_center_near_beacon",
-        "pal_go_back"
+        "goto1",
+        "goto2",
+        "down_herse1",
+        "goto3",
+        "up_herse1",
+        "grab_plants1",
+        "goth1",
+        "goto4",
+        "place_plants1",
+        "goto5",
+        "goto6",
+        "goto7"
 		  ],
       "use_pathfinding": false
     }
