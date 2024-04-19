@@ -72,9 +72,6 @@ class Robot(Service):
         self.size = float(self.cs.config.get(section=ROBOT, option='robot_radius'))
         self.dist_to_center = float(self.cs.config.get(section=ROBOT, option='dist_to_center'))
 
-        # TODO: rename
-        self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
-
         self.actuators = self.cs.actuators[ROBOT]
         self.trajman = self.cs.trajman[ROBOT]
 
@@ -84,7 +81,7 @@ class Robot(Service):
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
         self.recal = event_waiter(self.trajman.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
-        self.robot_size = float(self.cs.config.get(section='match', option='robot_radius'))
+        self.robot_size = float(self.cs.config.get(section='holo', option='robot_radius'))
         self.pattern = None
         self.disabled = Event()
         self.need_to_abort = Event()
