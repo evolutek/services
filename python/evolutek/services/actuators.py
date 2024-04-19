@@ -105,8 +105,8 @@ class Actuators(Service):
         #)
 
         self.i2c_acts = I2CActsHandler({
-            1: [I2CActType.Servo, 180], # Right herse servo
-            2: [I2CActType.Servo, 180]  # Left herse servo
+            0: [I2CActType.Servo, 180], # Right herse servo
+            1: [I2CActType.Servo, 180]  # Left herse servo
             #2: [I2CActType.Servo, 180],
             #3: [I2CActType.Servo, 180],
             #4: [I2CActType.Servo, 180],

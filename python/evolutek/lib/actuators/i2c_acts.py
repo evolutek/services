@@ -148,7 +148,7 @@ class I2CActsHandler(ComponentsHolder):
         for component in self.components:
             if self.components[component].type == I2CActType.ESC:
                 self.components[component].set_speed(self.components[component].esc_variation.value[0])
-        sleep(5)
+        sleep(5) # Seriously ?
         for component in self.components:
             if self.components[component].type == I2CActType.ESC:
                 self.components[component].set_speed(0)
