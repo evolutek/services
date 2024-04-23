@@ -85,6 +85,7 @@ def move_herse(self, position: HersePosition):
 # TODO: Use correct angles (ax12 angles)
 class RackPosition(Enum):
     FOLDED = 512
+    POTS = 350
     UNFOLDED = 0
 
 @if_enabled

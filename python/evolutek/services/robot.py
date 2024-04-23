@@ -58,6 +58,7 @@ class Robot(Service):
     grab_and_lift_plants = Service.action(robot_actions.grab_and_lift_plants)
     place_plants = Service.action(robot_actions.place_plants)
     place_plants_in_planter = Service.action(robot_actions.place_plants_in_planter)
+    place_plants_in_pots = Service.action(robot_actions.place_plants_in_pots)
     up_herse = Service.action(robot_actions.up_herse)
     down_herse = Service.action(robot_actions.down_herse)
     grab_pots = Service.action(robot_actions.grab_pots)

@@ -1,0 +1,338 @@
+{
+  "goals": [
+    {
+      "name": "gotof",
+      "position": {
+        "x": 225,
+        "y": 175
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "down_herse",
+          "handler": "robot"
+        }
+      ],
+      "score": 1
+    },{
+      "name": "goto0",
+      "position": {
+        "x": 740,
+        "y": 175
+      },
+      "actions": [
+        {
+          "fct": "up_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto0.5",
+      "position": {
+        "x": 680,
+        "y": 175
+      }
+    },{
+      "name": "goto1",
+      "position": {
+        "x": 690,
+        "y": 750
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 690,
+            "y": 892,
+            "acc": 70
+          }
+        },{
+          "fct": "grab_and_lift_plants",
+          "handler": "robot"
+        },{
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 690,
+            "y": 972,
+            "acc": 120
+          }
+        },{
+          "fct": "down_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto2",
+      "position": {
+        "x": 220,
+        "y": 220
+      },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "up_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto3",
+      "position": {
+        "x": 400,
+        "y": 220
+      },
+      "theta": "pi",
+      "score": 3
+    },{
+      "name": "goto4",
+      "position": {
+        "x": 260,
+        "y": 770
+      },
+      "theta": "pi"
+    },{
+      "name": "goto5",
+      "position": {
+        "x": 90,
+        "y": 770
+      },
+      "actions": [
+        {
+          "fct": "place_plants_in_planter",
+          "handler": "robot"
+        }
+      ],
+      "score": 12
+    },
+
+
+
+    {
+      "name": "goto6",
+      "position": {
+        "x": 1300,
+        "y": 720
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 1300,
+            "y": 892,
+            "acc": 80
+          }
+        },{
+          "fct": "grab_and_lift_plants",
+          "handler": "robot"
+        },{
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 1300,
+            "y": 972,
+            "acc": 120
+          }
+        },{
+          "fct": "down_herse",
+          "handler": "robot"
+        }
+      ]
+    },{
+      "name": "goto11",
+      "position": {
+        "x": 330,
+        "y": 330
+      },
+      "theta": "-2.7",
+      "actions": [
+        {
+          "fct": "up_herse",
+          "handler": "robot"
+        }
+      ],
+      "score": 3
+    },{
+      "name": "goto13",
+      "position": {
+        "x": 420,
+        "y": 400
+      }
+    },{
+      "name": "goto14",
+      "position": {
+        "x": 600,
+        "y": 400
+      },
+      "theta": "-pi/2"
+    },{
+      "name": "goto15",
+      "position": {
+        "x": 600,
+        "y": 90
+      },
+      "actions": [
+        {
+          "fct": "place_plants_in_planter",
+          "handler": "robot"
+        }
+      ],
+      "score": 12
+    },
+
+
+
+    {
+      "name": "goto16",
+      "position": {
+        "x": 600,
+        "y": 770
+      }
+    },{
+      "name": "goto17",
+      "position": {
+        "x": 1700,
+        "y": 700
+      }
+    },{
+      "name": "goto17.5",
+      "position": {
+        "x": 1700,
+        "y": 400
+      }
+    },{
+      "name": "goto18",
+      "position": {
+        "x": 1700,
+        "y": 170
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "recalibration",
+          "handler": "robot",
+          "args":  {
+            "x": false,
+            "x_sensor": "right"
+          }
+        }
+      ]
+    },
+
+
+
+    {
+      "name": "goto19",
+      "position": {
+        "x": 1830,
+        "y": 240
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "open_right_arm",
+          "handler": "robot"
+        },
+        {
+          "fct": "down_herse",
+          "handler": "robot"
+        },
+        {
+          "fct": "goto_avoid",
+          "handler": "robot",
+          "args": {
+            "x": 1830,
+            "y": 1800,
+            "skip": true
+          },
+          "avoid_strategy": "skip"
+        },
+        {
+          "fct": "close_right_arm",
+          "handler": "robot"
+        },
+        {
+          "fct": "up_herse",
+          "handler": "robot"
+        }
+      ],
+      "score": 30
+    },
+
+
+
+    {
+      "name": "goto25",
+      "position": {
+        "x": 1700,
+        "y": 400
+      },
+      "score": 10
+    }
+  ],
+
+  "strategies": [
+    {
+      "name": "Zone North West",
+      "starting_position": "ZONE_NW",
+      "goals": [
+        "gotof",
+        "goto0",
+        "goto0.5",
+        "goto1",
+        "goto2",
+        "goto3",
+        "goto4",
+        "goto5",
+        "goto6",
+        "goto11",
+        "goto13",
+        "goto14",
+        "goto15",
+        "goto16",
+        "goto17",
+        "goto18",
+        "goto19",
+        "goto25"
+		  ],
+      "use_pathfinding": false,
+      "available": ["pal"]
+    }
+  ],
+
+  "starting_positions": [
+    {
+      "name": "ZONE_E",
+      "position": {
+        "x": 1000,
+        "y": 2775
+      },
+      "theta": "-pi/2",
+      "recal_side": "x",
+      "recal_sensor": "left"
+    },
+	  {
+      "name": "ZONE_SW",
+      "position": {
+        "x": 1775,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "x",
+      "recal_sensor": "right"
+    },
+	  {
+      "name": "ZONE_NW",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "theta": "pi/2",
+      "recal_side": "y",
+      "recal_sensor": "left"
+    }
+  ]
+}

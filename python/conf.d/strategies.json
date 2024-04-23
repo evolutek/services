@@ -1,116 +1,57 @@
 {
   "goals": [
     {
-      "name": "gotof",
+      "name": "handle_plants_set_1",
       "position": {
         "x": 225,
         "y": 175
       },
       "theta": "0",
       "actions": [
-        {
-          "fct": "down_herse",
-          "handler": "robot"
-        }
-      ],
-      "score": 1
-    },{
-      "name": "goto0",
-      "position": {
-        "x": 740,
-        "y": 175
-      },
-      "actions": [
-        {
-          "fct": "up_herse",
-          "handler": "robot"
-        }
-      ]
-    },{
-      "name": "goto0.5",
-      "position": {
-        "x": 680,
-        "y": 175
-      }
-    },{
-      "name": "goto1",
-      "position": {
-        "x": 690,
-        "y": 750
-      },
-      "theta": "pi/2",
-      "actions": [
+        {"fct": "goto", "args": {"x": 690, "y": 750}},
+        {"fct": "goth", "args": {"theta": 1.57}},
         {
           "fct": "goto_avoid_extend",
           "handler": "robot",
           "args": {
             "x": 690,
-            "y": 892,
+            "y": 900,
             "acc": 70
           }
-        },{
-          "fct": "grab_and_lift_plants",
-          "handler": "robot"
-        },{
+        },
+        {"fct": "grab_and_lift_plants", "handler": "robot"},
+        {
           "fct": "goto_avoid_extend",
           "handler": "robot",
           "args": {
             "x": 690,
-            "y": 972,
-            "acc": 120
+            "y": 1000,
+            "acc": 70
           }
-        },{
-          "fct": "down_herse",
-          "handler": "robot"
-        }
-      ]
-    },{
-      "name": "goto2",
-      "position": {
-        "x": 220,
-        "y": 220
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "up_herse",
-          "handler": "robot"
-        }
-      ]
-    },{
-      "name": "goto3",
-      "position": {
-        "x": 400,
-        "y": 220
-      },
-      "theta": "pi",
-      "score": 3
-    },{
-      "name": "goto4",
-      "position": {
-        "x": 260,
-        "y": 770
-      },
-      "theta": "pi"
-    },{
-      "name": "goto5",
-      "position": {
-        "x": 90,
-        "y": 770
-      },
-      "actions": [
-        {
-          "fct": "place_plants_in_planter",
-          "handler": "robot"
-        }
+        },
+        {"fct": "down_herse", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 600, "y": 400}},
+        {"fct": "goth", "args": {"theta": -1.54}},
+        {"fct": "goto", "args": {"x": 600, "y": 140}},
+        {"fct": "place_plants_in_pots", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 600, "y": 220}},
+        {"fct": "up_herse", "handler": "robot"},
+        {"fct": "grab_and_lift_plants", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 600, "y": 100}},
+        {"fct": "magnets_on", "handler": "robot"},
+        {"fct": "place_plants_in_planter", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 600, "y": 220}},
+        {"fct": "goth", "args": {"theta": 3.14}},
+        {"fct": "goto", "args": {"x": 350, "y": 220}},
+        {"fct": "magnets_off", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 500, "y": 220}},
+        {"fct": "goto", "args": {"x": 600, "y": 650}}
       ],
-      "score": 12
+      "score": 24
     },
 
-
-
     {
-      "name": "goto6",
+      "name": "handle_plants_set_2",
       "position": {
         "x": 1300,
         "y": 720
@@ -122,127 +63,84 @@
           "handler": "robot",
           "args": {
             "x": 1300,
-            "y": 892,
-            "acc": 80
+            "y": 900,
+            "acc": 70
           }
-        },{
-          "fct": "grab_and_lift_plants",
-          "handler": "robot"
-        },{
+        },
+        {"fct": "grab_and_lift_plants","handler": "robot"},
+        {
           "fct": "goto_avoid_extend",
           "handler": "robot",
           "args": {
             "x": 1300,
-            "y": 972,
-            "acc": 120
+            "y": 1000,
+            "acc": 70
           }
-        },{
-          "fct": "down_herse",
-          "handler": "robot"
-        }
-      ]
-    },{
-      "name": "goto11",
-      "position": {
-        "x": 330,
-        "y": 330
-      },
-      "theta": "-2.7",
-      "actions": [
-        {
-          "fct": "up_herse",
-          "handler": "robot"
-        }
+        },
+        {"fct": "down_herse", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1380, "y": 550}},
+        {"fct": "goth", "args": {"theta": -1.57}},
+        {"fct": "goto", "args": {"x": 1380, "y": 140}},
+        {"fct": "place_plants_in_pots", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1380, "y": 220}},
+        {"fct": "up_herse", "handler": "robot"},
+        {"fct": "grab_and_lift_plants", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1380, "y": 100}},
+        {"fct": "magnets_on", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1380, "y": 220}},
+        {"fct": "goth", "args": {"theta": 0}},
+        {"fct": "goto", "args": {"x": 1600, "y": 220}},
+        {"fct": "magnets_off", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1380, "y": 220}},
+        {"fct": "goth", "args": {"theta": 1.57}},
+        {"fct": "goto", "args": {"x": 1380, "y": 2890}},
+        {"fct": "place_plants_in_planter", "handler": "robot"},
+        {"fct": "open_left_arm", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1380, "y": 2790}}
       ],
-      "score": 3
-    },{
-      "name": "goto13",
-      "position": {
-        "x": 420,
-        "y": 400
-      }
-    },{
-      "name": "goto14",
-      "position": {
-        "x": 600,
-        "y": 400
-      },
-      "theta": "-pi/2"
-    },{
-      "name": "goto15",
-      "position": {
-        "x": 600,
-        "y": 90
-      },
-      "actions": [
-        {
-          "fct": "place_plants_in_planter",
-          "handler": "robot"
-        }
-      ],
-      "score": 12
+      "score": 24
     },
 
-
-
     {
-      "name": "goto16",
+      "name": "handle_plants_set_3",
       "position": {
-        "x": 600,
-        "y": 770
-      }
-    },{
-      "name": "goto17",
-      "position": {
-        "x": 1700,
-        "y": 700
-      }
-    },{
-      "name": "goto17.5",
-      "position": {
-        "x": 1700,
-        "y": 400
-      }
-    },{
-      "name": "goto18",
-      "position": {
-        "x": 1700,
-        "y": 170
+        "x": 1640,
+        "y": 1640
       },
-      "theta": "pi/2",
+      "theta": "-3*pi/4",
       "actions": [
         {
-          "fct": "recalibration",
+          "fct": "goto_avoid_extend",
           "handler": "robot",
-          "args":  {
-            "x": false,
-            "x_sensor": "right"
+          "args": {
+            "x": 1540,
+            "y": 1540,
+            "acc": 70
           }
-        }
-      ]
+        },
+        {"fct": "grab_and_lift_plants","handler": "robot"},
+        {"fct": "goth", "args": {"theta": 0.74}},
+        {"fct": "goto", "args": {"x": 360, "y": 1130}},
+        {"fct": "goto", "args": {"x": 260, "y": 770}},
+        {"fct": "goto", "args": {"x": 90, "y": 770}},
+        {"fct": "place_plants_in_planter", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 120, "y": 770}}
+      ],
+      "score": 24
     },
 
-
-
     {
-      "name": "goto19",
+      "name": "solar_panels",
       "position": {
         "x": 1830,
         "y": 240
       },
       "theta": "pi/2",
       "actions": [
+        {"fct": "open_right_arm", "handler": "robot"},
+        {"fct": "down_herse", "handler": "robot"},
         {
-          "fct": "open_right_arm",
-          "handler": "robot"
-        },
-        {
-          "fct": "down_herse",
-          "handler": "robot"
-        },
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
+          "fct": "goto",
           "args": {
             "x": 1830,
             "y": 1800,
@@ -250,22 +148,16 @@
           },
           "avoid_strategy": "skip"
         },
-        {
-          "fct": "close_right_arm",
-          "handler": "robot"
-        },
-        {
-          "fct": "up_herse",
-          "handler": "robot"
-        }
+        {"fct": "close_right_arm", "handler": "robot"},
+        {"fct": "up_herse", "handler": "robot"}
       ],
       "score": 30
-    },
+    }
+  ],
 
-
-
+  "critical_goals": [
     {
-      "name": "goto25",
+      "name": "goto_end_area",
       "position": {
         "x": 1700,
         "y": 400
@@ -276,27 +168,13 @@
 
   "strategies": [
     {
-      "name": "Zone North West",
-      "starting_position": "ZONE_NW",
+      "name": "Down Area",
+      "starting_position": "ZONE_DOWN",
       "goals": [
-        "gotof",
-        "goto0",
-        "goto0.5",
-        "goto1",
-        "goto2",
-        "goto3",
-        "goto4",
-        "goto5",
-        "goto6",
-        "goto11",
-        "goto13",
-        "goto14",
-        "goto15",
-        "goto16",
-        "goto17",
-        "goto18",
-        "goto19",
-        "goto25"
+        "solar_panels",
+        "handle_plants_set_3",
+        "handle_plants_set_1",
+        "handle_plants_set_2"
 		  ],
       "use_pathfinding": false,
       "available": ["pal"]
@@ -305,7 +183,7 @@
 
   "starting_positions": [
     {
-      "name": "ZONE_E",
+      "name": "ZONE_MIDDLE",
       "position": {
         "x": 1000,
         "y": 2775
@@ -315,7 +193,7 @@
       "recal_sensor": "left"
     },
 	  {
-      "name": "ZONE_SW",
+      "name": "ZONE_DOWN",
       "position": {
         "x": 1775,
         "y": 225
@@ -325,7 +203,7 @@
       "recal_sensor": "right"
     },
 	  {
-      "name": "ZONE_NW",
+      "name": "ZONE_TOP",
       "position": {
         "x": 225,
         "y": 225
