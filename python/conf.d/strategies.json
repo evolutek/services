@@ -250,17 +250,17 @@
     {
       "name": "handle_set_3_after_panels",
       "position": {
-        "x": 1710,
-        "y": 1710
+        "x": 1500,
+        "y": 1700
       },
-      "theta": "-3*pi/4",
+      "theta": "-pi/2",
       "actions": [
         {
           "fct": "goto_avoid_extend",
           "handler": "robot",
           "args": {
-            "x": 1540,
-            "y": 1540,
+            "x": 1500,
+            "y": 1550,
             "acc": 70
           }
         },
@@ -268,10 +268,20 @@
         {"fct": "lift_plants","handler": "robot"},
         {"fct": "goth", "args": {"theta": 0.74}},
         {"fct": "goto", "args": {"x": 360, "y": 1200}},
-        {"fct": "goto", "args": {"x": 260, "y": 770}},
+        {"fct": "goto", "args": {"x": 220, "y": 770}},
         {"fct": "goth", "args": {"theta": 3.14}},
-        {"fct": "goto", "args": {"x": 90, "y": 770}},
+        {"fct": "goto", "args": {"x": 120, "y": 770}},
         {"fct": "place_plants_in_planter", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 220, "y": 770}},
+        {"fct": "goth", "args": {"theta": 0}},
+        {
+          "fct": "recalibration",
+          "args": {
+            "x": true,
+            "y": false,
+            "y_sensor": "right"
+          }
+        },
         {"fct": "goto", "args": {"x": 200, "y": 770}}
       ],
       "score": 24
@@ -323,6 +333,14 @@
         "y": 400
       },
       "score": 10
+    },
+    {
+      "name": "goto_end_area_top",
+      "position": {
+        "x": 320,
+        "y": 320
+      },
+      "score": 10
     }
   ],
 
@@ -332,7 +350,7 @@
       "starting_position": "ZONE_DOWN",
       "goals": [
         "solar_panels",
-        "handle_plants_set_3",
+        "handle_set_3_after_panels",
         "handle_plants_set_1"
 		  ],
       "use_pathfinding": false,
