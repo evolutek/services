@@ -248,6 +248,36 @@
     },
 
     {
+      "name": "handle_set_3_after_panels",
+      "position": {
+        "x": 1710,
+        "y": 1710
+      },
+      "theta": "-3*pi/4",
+      "actions": [
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 1540,
+            "y": 1540,
+            "acc": 70
+          }
+        },
+        {"fct": "grab_plants","handler": "robot"},
+        {"fct": "lift_plants","handler": "robot"},
+        {"fct": "goth", "args": {"theta": 0.74}},
+        {"fct": "goto", "args": {"x": 360, "y": 1200}},
+        {"fct": "goto", "args": {"x": 260, "y": 770}},
+        {"fct": "goth", "args": {"theta": 3.14}},
+        {"fct": "goto", "args": {"x": 90, "y": 770}},
+        {"fct": "place_plants_in_planter", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 200, "y": 770}}
+      ],
+      "score": 24
+    },
+
+    {
       "name": "solar_panels",
       "position": {
         "x": 1815,
