@@ -69,14 +69,23 @@ class Actuators(Service):
 
         self.proximity_sensors = ProximitySensors(
             {
-                0: [ # Right sensor
-                    create_gpio(8,  'proximity_sensors1', dir=False, type=GpioType.MCP)
+                0: [ # Bottom right sensor
+                    create_gpio(10, 'proximity_sensors1', dir=False, type=GpioType.MCP)
                 ],
-                1: [ # Middle sensor
+                1: [ # Bottom middle sensor
                     create_gpio(9,  'proximity_sensors2', dir=False, type=GpioType.MCP)
                 ],
-                2: [ # Left sensor
-                    create_gpio(10, 'proximity_sensors3', dir=False, type=GpioType.MCP)
+                2: [ # Bottom left sensor
+                    create_gpio(8,  'proximity_sensors3', dir=False, type=GpioType.MCP)
+                ],
+                3: [ # Clamp right sensor
+                    create_gpio(11, 'proximity_sensors4', dir=False, type=GpioType.MCP)
+                ],
+                4: [ # Clamp middle sensor
+                    create_gpio(12, 'proximity_sensors5', dir=False, type=GpioType.MCP)
+                ],
+                5: [ # Clamp left sensor
+                    create_gpio(13, 'proximity_sensors6', dir=False, type=GpioType.MCP)
                 ]
             }
         )
@@ -84,30 +93,34 @@ class Actuators(Service):
         self.magnets = MagnetController(
             {
                 0: [ # Right magnet
-                    create_gpio(5, 'magnet1', dir=True, type=GpioType.MCP)
+                    create_gpio(3, 'magnet1', dir=True, type=GpioType.MCP)
                 ],
                 1: [ # Middle magnet
-                    create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
+                    create_gpio(4, 'magnet2', dir=True, type=GpioType.MCP)
                 ],
                 2: [ # Left magnet
-                    create_gpio(4, 'magnet3', dir=True, type=GpioType.MCP)
+                    create_gpio(5, 'magnet3', dir=True, type=GpioType.MCP)
                 ]
             }
         )
 
         # TODO: Check if numbers here are correct
         self.axs = AX12Controller(
-            [1, 2, 3]
+            [
+                1, # Right elevator servo
+                2, # Left elevator servo
+                3, # Rack servo
+                4, # Right herse servo
+                5, # Left herse servo
+            ]
         )
 
         self.i2c_acts = I2CActsHandler({
-            0: [I2CActType.Servo, 180], # Right herse servo
-            1: [I2CActType.Servo, 180], # Left herse servo
-            2: [I2CActType.Servo, 180], # Right clamp
-            3: [I2CActType.Servo, 180], # Middle clamp
-            4: [I2CActType.Servo, 180], # Left clamp
-            5: [I2CActType.Servo, 180], # Right arm
-            6: [I2CActType.Servo, 180]  # Left arm
+            0: [I2CActType.Servo, 180], # Right arm
+            1: [I2CActType.Servo, 180], # Left arm
+            3: [I2CActType.Servo, 180], # Right clamp
+            4: [I2CActType.Servo, 180], # Middle clamp
+            5: [I2CActType.Servo, 180]  # Left clamp
         }, frequency=50)
 
         self.all_actuators = [
@@ -265,7 +278,10 @@ class Actuators(Service):
     def ax_get_load(self, id):
         if self.axs[int(id)] == None:
             return None
-        return self.axs[int(id)].get_present_load()
+        v = self.axs[int(id)].get_present_load()
+        if v > 1000:
+            return v - 1000
+        return v
 
 
     ##########

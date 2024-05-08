@@ -36,21 +36,24 @@ class StrategyFrame(IFrame):
 
 	def change_strategy(self):
 		self.root.cs.ai[ROBOT].set_strategy(self.strategy_number.get())
-		print(f"New strategy: {self.root.cs.ai[ROBOT].get_strategies()[self.strategy_number.get()]}")
+		# print(f"New strategy: {self.root.cs.ai[ROBOT].get_strategies()[self.strategy_number.get()]}")
 
 	def init_interface(self):
-		list_strategy = self.root.cs.ai[ROBOT].get_strategies()
-		for strategy in list_strategy:
+		self.list_strategy = self.root.cs.ai[ROBOT].get_strategies()
+		for strategy in self.list_strategy:
 			btn = tk.Radiobutton(
 				self,
 				text=strategy,
 				variable=self.strategy_number,
-				value=list_strategy[strategy],
+				value=self.list_strategy[strategy],
 				command=self.change_strategy,
 				font=FONT_MEDIUM
 			)
 			btn.pack(side=tk.TOP, fill=tk.X)
 
+	def update_strats(self):
+		self.strategy_number.set(0)
+		self.change_strategy()
 
 class ButtonSystem(IFrame):
 	def __init__(self, root, parent):
@@ -98,7 +101,7 @@ class StatusFrame(IFrame):
 
 	def reset_match(self):
 		try:
-			self.root.cs.match.end_match()
+			self.root.cs.match.match_end()
 			self.root.cs.match.reset_match()
 		except Exception as e:
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
@@ -178,9 +181,10 @@ class AIInterface(Interface):
 
 		self.match_interface = MatchInterface(self, self.container)
 		self.home_interface = HomeInterface(self, self.container)
-	
+
 		self.match_interface.grid(row=0, column=0, sticky="nsew")
 		self.home_interface.grid(row=0, column=0, sticky="nsew")
+		self.has_been_reset = False
 
 	def set_frame(self, frame):
 		#if frame is self.current_frame:
@@ -201,10 +205,15 @@ class AIInterface(Interface):
 			#print("[+] Match is running")
 			self.set_frame(self.match_interface)
 			self.match_interface.update_interface()
+			self.has_been_reset = False
 		else:
 			#print("[+] Match is not running")
 			self.set_frame(self.home_interface)
 			self.home_interface.update_interface()
+			if not self.has_been_reset:
+				self.home_interface.strategies_frame.update_strats()
+				self.has_been_reset = True
+
 
 
 def main():

@@ -13,7 +13,7 @@
         {"fct": "up_herse", "handler": "robot"},
         {"fct": "goto", "args": {"x": 650, "y": 230}},
       
-        {"fct": "goto", "args": {"x": 700, "y": 790}},
+        {"fct": "goto", "args": {"x": 700, "y": 810}},
         {"fct": "goth", "args": {"theta": 1.57}},
         {
           "fct": "goto_avoid_extend",
@@ -282,8 +282,7 @@
       "name": "Test Area 1",
       "starting_position": "ZONE_TOP",
       "goals": [
-        "handle_plants_set_1",
-        "recale_zone_top"
+        "handle_plants_set_1"
 		  ],
       "use_pathfinding": false,
       "available": ["pal"]

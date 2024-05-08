@@ -3,7 +3,7 @@ from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.task import async_task
 from evolutek.lib.utils.wrappers import if_enabled
-from time import sleep
+from time import sleep, time
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 from evolutek.lib.actuators.ax12 import AX12Controller
 
@@ -14,11 +14,11 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 # This a an enum of pair of angle
 # (the first angle is the right servo and the second is the left servo)
 class ElevatorPosition(Enum):
-    LOWEST = (340, 630)
-    LOW = (360, 610)
-    BORDER = (420, 560)
-    POTS = (480, 500)
-    HIGH = (720, 250)
+    #LOWEST = (315, 656)
+    LOW = (315, 656)
+    BORDER = (369, 600)
+    POTS = (492, 472)
+    HIGH = (677, 293)
 
 @if_enabled
 @async_task
@@ -26,8 +26,8 @@ def move_elevator(self, position: ElevatorPosition):
     if isinstance(position, str):
         position = ElevatorPosition[position]
     if position == ElevatorPosition.HIGH:
-        self.actuators.ax_set_speed(1, 450)
-        self.actuators.ax_set_speed(2, 450)
+        self.actuators.ax_set_speed(1, 650)
+        self.actuators.ax_set_speed(2, 650)
     else:
         self.actuators.ax_set_speed(1, 170)
         self.actuators.ax_set_speed(2, 170)
@@ -43,10 +43,10 @@ def move_elevator(self, position: ElevatorPosition):
 # so here there list of length 3, so there is 3 clamps
 class ClampsPosition(Enum):
     OPEN = [180, 175, 180]
-    CLOSE = [138, 138, 138]
+    CLOSE = [120, 120, 125]
 
 # Map clamps to their servo id
-CLAMP_ID_TO_SERVO_ID = [2, 3, 4]
+CLAMP_ID_TO_SERVO_ID = [3, 4, 5]
 
 @if_enabled
 @async_task
@@ -68,18 +68,44 @@ def move_clamps(self, ids: list[int], position: ClampsPosition):
 # This a an enum of pair of angle
 # (the first angle is the right servo and the second is the left servo)
 class HersePosition(Enum):
-    UP = [173, 36]
-    MIDDLE = [121, 90]
-    DOWN = [70, 144]
+    UP = [696, 332]
+    MIDDLE = [498, 529]
+    DOWN = [331, 695]
 
 @if_enabled
 @async_task
 def move_herse(self, position: HersePosition):
     if isinstance(position, str):
         position = HersePosition[position]
-    status1 = self.actuators.servo_set_angle(0, position.value[0]) # Right servo
-    status2 = self.actuators.servo_set_angle(1, position.value[1]) # Left servo
-    return RobotStatus.check(status1, status2)
+
+    if position != HersePosition.DOWN:
+        self.actuators.ax_set_speed(4, 450)
+        self.actuators.ax_set_speed(5, 450)
+    else:
+        self.actuators.ax_set_speed(4, 170)
+        self.actuators.ax_set_speed(5, 170)
+
+    status = RobotStatus.check(
+        self.actuators.ax_move(4, position.value[0]), # Right servo
+        self.actuators.ax_move(5, position.value[1])  # Left servo
+    )
+
+    if RobotStatus.get_status(status) != RobotStatus.Done:
+        return status
+
+    if position == HersePosition.DOWN:
+        # Check if the servo are forcing
+        end_time = time() + 0.7
+        while time() < end_time:
+            if abs(self.actuators.ax_get_load(4)) > 500 or abs(self.actuators.ax_get_load(5)) > 500:
+                self.actuators.ax_move(4, HersePosition.MIDDLE.value[0]), # Right servo
+                self.actuators.ax_move(5, HersePosition.MIDDLE.value[1])  # Left servo
+                return RobotStatus.return_status(RobotStatus.Failed)
+            sleep(0.1)
+    else:
+        sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done)
 
 
 # ====== Rack ======
@@ -121,15 +147,15 @@ def magnets_off(self, magnet_ids: list[int]):
 # Right then left angle
 class ArmsPosition(Enum):
     OPEN = (85, 98)
-    CLOSE = (170, 18)
+    CLOSE = (175, 18)
 
 # Map clamps to their servo id
-ARM_ID_TO_SERVO_ID = [5, 6]
+ARM_ID_TO_SERVO_ID = [0, 1]
 
 @if_enabled
 @async_task
 def move_arm(self, id: int, position: ArmsPosition):
     id = int(id)
     if isinstance(position, str):
-        position = HersePosition[position]
+        position = ArmsPosition[position]
     return RobotStatus.check(self.actuators.servo_set_angle(ARM_ID_TO_SERVO_ID[id], position.value[id]))
