@@ -248,7 +248,7 @@ class AI(Service):
 
             current_pos = self.trajman.get_position()
             if self.color != self.color1:
-                current_pos['y'] = 2000 - current_pos['y']
+                current_pos['y'] = 3000 - current_pos['y']
 
             self.goto(
                 x=(starting_position.position.x if axe else current_pos['x']),

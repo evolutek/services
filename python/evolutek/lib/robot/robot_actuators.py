@@ -17,7 +17,7 @@ class ElevatorPosition(Enum):
     #LOWEST = (315, 656)
     LOW = (315, 656)
     BORDER = (369, 600)
-    POTS = (492, 472)
+    POTS = (512, 452)
     HIGH = (677, 293)
 
 @if_enabled
@@ -25,15 +25,36 @@ class ElevatorPosition(Enum):
 def move_elevator(self, position: ElevatorPosition):
     if isinstance(position, str):
         position = ElevatorPosition[position]
+    
     if position == ElevatorPosition.HIGH:
         self.actuators.ax_set_speed(1, 650)
         self.actuators.ax_set_speed(2, 650)
     else:
         self.actuators.ax_set_speed(1, 170)
         self.actuators.ax_set_speed(2, 170)
-    status1 = self.actuators.ax_move(1, position.value[0]) # Right servo
-    status2 = self.actuators.ax_move(2, position.value[1]) # Left servo
-    return RobotStatus.check(status1, status2)
+    
+    status = RobotStatus.check(
+        self.actuators.ax_move(1, position.value[0]), # Right servo
+        self.actuators.ax_move(2, position.value[1]) # Left servo
+    )
+
+    if RobotStatus.get_status(status) != RobotStatus.Done:
+        return status
+
+    if position != ElevatorPosition.HIGH:
+        threshold = 800
+        # Check if the servos are forcing
+        end_time = time() + (0.6 if position != ElevatorPosition.LOW else 0.8)
+        while time() < end_time:
+            if abs(self.actuators.ax_get_load(1)) > threshold or abs(self.actuators.ax_get_load(2)) > threshold:
+                self.actuators.ax_move(1, ElevatorPosition.HIGH.value[0]), # Right servo
+                self.actuators.ax_move(2, ElevatorPosition.HIGH.value[1])  # Left servo
+                return RobotStatus.return_status(RobotStatus.Failed)
+            sleep(0.1)
+    else:
+        sleep(1)
+
+    return RobotStatus.return_status(RobotStatus.Done)
 
 
 # ====== Clamps ======

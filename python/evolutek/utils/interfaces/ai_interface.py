@@ -10,6 +10,8 @@ from evolutek.lib.settings import ROBOT
 from evolutek.lib.interface import Interface
 from cellaserv.proxy import CellaservProxy
 
+from math import degrees
+
 
 FONT_BIG = None
 FONT_MEDIUM = None
@@ -139,6 +141,20 @@ class HomeInterface(IFrame):
 		self.status_frame = StatusFrame(self.root, self)
 		self.status_frame.grid(row=1, column=1, padx=8, pady=8)
 
+		# Display coordinates on the interface
+		self.coords = self.root.cs.trajman[ROBOT].get_position()
+		self.coords_text = tk.Label(self, text=self.coords, font=("Helvetica", 18))
+		self.coords_text.grid(row=2, column=1, sticky="nsew")
+		self.coords_text.configure(text=f"X: {int(self.coords.get('x'))}  Y: {int(self.coords.get('y'))}  Theta: {round(degrees(self.coords.get('theta')), 2)}")
+	
+	def update_interface(self):
+		try:
+			self.coords = self.root.cs.trajman[ROBOT].get_position()
+			self.coords_text.configure(text=f"X : {int(self.coords.get('x'))}  Y : {int(self.coords.get('y'))}  Theta: {round(degrees(self.coords.get('theta')), 2)}")
+		except:
+			print("[POS DISPLAY] : Trajman is not running, retrying...")
+			pass
+
 
 class MatchInterface(IFrame):
 	def __init__(self, root, parent):
@@ -159,11 +175,16 @@ class MatchInterface(IFrame):
 		topbar.pack(side=tk.TOP, fill=tk.X)
 		tk.Button(topbar, text="Reset", command=self.reset, font=FONT_MEDIUM).pack(side=tk.LEFT)
 		tk.Button(topbar, text="Stop", command=self.stop, font=FONT_MEDIUM).pack(side=tk.LEFT)
+		self.timeLeft = tk.Label(self, text="Time Left : 90", font=FONT_BIG)
 		self.text = tk.Label(self, text=f"Score: 0", font=FONT_BIG)
+		self.timeLeft.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 		self.text.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
 	def update_interface(self):
 		self.text.config(text=f"Score: {self.root.match_status['score']}")
+		self.timeLeft.config(text=f"Time Left : {round(90 - (self.root.match_status['time']), 2)}")
+		if (90 - (self.root.match_status['time']) < 0):
+			self.timeLeft.config(text="Time's Up !")
 
 
 class AIInterface(Interface):
