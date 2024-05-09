@@ -157,7 +157,7 @@ class Match(Service):
         return True
 
     def check_end_positions(self):
-        pal_around = self.around('pal', 0, 0, 450, 450) or self.around('pal', 1550, 0, 450, 450)
+        pal_around = self.around('pal', 225, 225, 225, 225) or self.around('pal', 1775, 225, 225, 225)
 
         # Go back action
         if pal_around:
