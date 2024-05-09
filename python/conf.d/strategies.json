@@ -313,6 +313,202 @@
     },
 
     {
+      "name": "first_3_solar_panels",
+      "position": {
+        "x": 1815,
+        "y": 240
+      },
+      "actions": [
+        {"fct": "open_right_arm", "handler": "robot"},
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1815,
+            "y": 778
+          }
+        },
+        {"fct": "close_right_arm", "handler": "robot"}
+      ],
+      "score": 15
+    },
+
+    {
+      "name": "force_get_pots",
+      "position": {
+        "x": 1760,
+        "y": 700
+      },
+      "actions": [
+        {"fct": "goth", "args": {"theta": 1.57}},
+        {"fct": "goto", "args": {"x": 1760, "y": 1125}},
+        {"fct": "up_herse", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1700, "y": 1000}},
+        {"fct": "goth", "args": {"theta": 0.0}},
+        {"fct": "grab_pots", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1899, "y": 1000}},
+        {"fct": "goto", "args": {"x": 1750, "y": 1000}},
+        {"fct": "release_pots", "handler": "robot"},
+        {"fct": "down_herse", "handler": "robot"}
+      ]
+    },
+    {
+      "name": "middle_3_solar_panels",
+      "position": {
+        "x": 1815,
+        "y": 1250
+      },
+      "theta": "pi/2",
+      "actions": [
+        {"fct": "open_right_arm", "handler": "robot"},
+        {
+          "fct": "goto",
+          "args": {
+            "x": 1815,
+            "y": 1730
+          },
+          "avoid_strategy": "timeout",
+          "timeout": 3
+        },
+        {"fct": "close_right_arm", "handler": "robot"},
+        {"fct": "count_solar_points", "handler": "robot"}
+      ]
+    },
+    {
+      "name": "drop_off_pots",
+      "position": {
+        "x": 1750,
+        "y": 260
+      },
+      "theta": "-pi/4",
+      "actions": [
+        {"fct": "up_herse", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 1720, "y": 290}}
+      ]
+    },
+    {
+      "name": "after_panel_handle_set_2",
+      "position": {
+        "x": 1300,
+        "y": 760
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 1300,
+            "y": 880,
+            "acc": 220
+          }
+        },
+        {"fct": "grab_plants", "handler": "robot"},
+
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 1300,
+            "y": 830,
+            "acc": 350
+          }
+        },
+        {"fct": "lift_plants", "handler": "robot"},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 1300,
+            "y": 1040,
+            "acc": 110
+          }
+        },
+        {"fct": "down_herse", "handler": "robot"},
+        {"fct": "goth", "args": {"theta": -0.78}},
+        {"fct": "goto", "args": {"x": 1720, "y": 290}},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 1760,
+            "y": 250,
+            "acc": 110
+          }
+        },
+        {"fct": "place_plants_in_pots", "handler": "robot"}
+      ],
+      "score": 12
+    },
+    {
+      "name": "drop_held_plants_to_planter",
+      "position": {
+        "x": 1340,
+        "y": 620
+      },
+      "actions": [
+        {"fct": "goto", "args": {"x": 260, "y": 770}},
+        {"fct": "goth", "args": {"theta": 3.14}},
+
+        {"fct": "up_herse", "handler": "robot"},
+        {"fct": "grab_plants", "handler": "robot"},
+        {"fct": "lift_plants", "handler": "robot"},
+
+        {"fct": "goto", "args": {"x": 90, "y": 770}},
+        {"fct": "place_plants_in_planter", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 200, "y": 770}}
+      ],
+      "score": 12
+    },
+
+    {
+      "name": "handle_plants_set_1_fast",
+      "position": {
+        "x": 700,
+        "y": 650
+      },
+      "theta": "pi/2",
+      "actions": [
+        {"fct": "goto", "args": {"x": 700, "y": 780}},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 700,
+            "y": 880,
+            "acc": 220
+          }
+        },
+        {"fct": "grab_plants", "handler": "robot"},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 700,
+            "y": 830,
+            "acc": 350
+          }
+        },
+        {"fct": "lift_plants", "handler": "robot"},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 700,
+            "y": 1040,
+            "acc": 110
+          }
+        },
+        {"fct": "down_herse", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 300, "y": 300}},
+        {"fct": "goth", "args": {"theta": 0.78}},
+        {"fct": "up_herse", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 210, "y": 210}},
+        {"fct": "place_plants", "handler": "robot"}
+      ],
+      "score": 6
+    },
+
+    {
       "name": "test_avoid",
       "position": {
         "x": 225,
@@ -349,11 +545,20 @@
       "name": "Strategy Bottom",
       "starting_position": "ZONE_DOWN",
       "goals": [
-        "solar_panels",
-        "handle_set_3_after_panels",
-        "handle_plants_set_1"
+        "first_3_solar_panels",
+        "force_get_pots",
+        "middle_3_solar_panels",
+        "drop_off_pots",
+        "after_panel_handle_set_2",
+        "drop_held_plants_to_planter",
+        "handle_plants_set_1_fast"
 		  ],
       "use_pathfinding": false,
+      "config_actions": [
+        {"fct": "goto", "args": {"x": 1815, "y": 240}},
+        {"fct": "goth", "args": {"theta": "pi/2"}},
+        {"fct": "down_herse", "handler": "robot"}
+      ],
       "available": ["pal"]
     },
     {
