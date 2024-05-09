@@ -346,9 +346,7 @@
         {"fct": "goth", "args": {"theta": 0.0}},
         {"fct": "grab_pots", "handler": "robot"},
         {"fct": "goto", "args": {"x": 1899, "y": 1000}},
-        {"fct": "goto", "args": {"x": 1750, "y": 1000}},
-        {"fct": "release_pots", "handler": "robot"},
-        {"fct": "down_herse", "handler": "robot"}
+        {"fct": "goto", "args": {"x": 1750, "y": 1000}}
       ]
     },
     {
@@ -364,10 +362,10 @@
           "fct": "goto",
           "args": {
             "x": 1815,
-            "y": 1730
+            "y": 1780
           },
           "avoid_strategy": "timeout",
-          "timeout": 3
+          "timeout": 5
         },
         {"fct": "close_right_arm", "handler": "robot"},
         {"fct": "count_solar_points", "handler": "robot"}
@@ -381,7 +379,7 @@
       },
       "theta": "-pi/4",
       "actions": [
-        {"fct": "up_herse", "handler": "robot"},
+        {"fct": "release_pots", "handler": "robot"},
         {"fct": "goto", "args": {"x": 1720, "y": 290}}
       ]
     },

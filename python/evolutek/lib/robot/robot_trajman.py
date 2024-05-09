@@ -211,7 +211,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
     destination = Point(x, y)
     status = RobotStatus.NotReached
-    start = time.time()
+    start = time()
 
     while status != RobotStatus.Reached:
 
@@ -240,7 +240,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
                 if self.check_abort() != RobotStatus.Ok:
                     return RobotStatus.return_status(RobotStatus.Aborted)
 
-                if timeout is not None and time.time() - start >= timeout:
+                if timeout is not None and time() - start >= timeout:
                     return RobotStatus.return_status(RobotStatus.Timeout)
 
                 print('[ROBOT] Waiting')
