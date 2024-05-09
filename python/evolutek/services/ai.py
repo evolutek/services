@@ -23,6 +23,7 @@ from time import sleep, time
 DELTA_POS = 5
 
 class States(Enum):
+    Init = "Init"
     Setup = "Setup"
     Waiting = "Waiting"
     Selecting = "Selecting"
@@ -62,7 +63,8 @@ class AI(Service):
         self.tirette.auto_refresh(refresh=0.05, callback=self.publish)
 
         self.fsm = Fsm(States)
-        self.fsm.add_state(States.Setup, self.setup, prevs=[States.Waiting, States.Ending])
+        self.fsm.add_state(States.Init, self.init)
+        self.fsm.add_state(States.Setup, self.setup, prevs=[States.Init, States.Waiting, States.Ending])
         self.fsm.add_state(States.Waiting, self.waiting, prevs=[States.Setup, States.Waiting])
         self.fsm.add_state(States.Selecting, self.selecting, prevs=[States.Waiting, States.Making])
         self.fsm.add_state(States.Making, self.making, prevs=[States.Selecting, States.Making])
@@ -109,7 +111,7 @@ class AI(Service):
                 self.handle_bau(self.cs.actuators[ROBOT].bau_read())
             except Exception as e:
                 print('[AI] Failed to get BAU status: %s' % str(e))
-            Thread(target=self.fsm.start_fsm, args=[States.Setup]).start()
+            Thread(target=self.fsm.start_fsm, args=[States.Init]).start()
 
     @Service.event("match_color")
     def color_callback(self, color):
@@ -200,6 +202,22 @@ class AI(Service):
             print('[AI] Current strategy:')
             print(self.goals.current_strategy)
 
+    """ INIT """
+    def init(self):
+        self.red_led.write(False)
+        self.green_led.write(True)
+
+        self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
+
+        while not self.reset_event.is_set():
+            sleep(0.01)
+
+        next = States.Setup
+        self.red_led.write(True)
+        self.green_led.write(False)
+
+        return next
+
     """ SETUP """
     def setup(self):
 
@@ -261,6 +279,11 @@ class AI(Service):
                 avoid=False)
 
             self.goth(theta=starting_position.theta)
+
+        for action in self.goals.current_strategy.config_actions:
+            status, _ = self.make_action(action)
+            if status != RobotStatus.Done and status != RobotStatus.Reached:
+                return States.Error
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
@@ -454,22 +477,8 @@ class AI(Service):
 
             action_starting_time = time()
             print('[AI] Making action at %fs' % round(action_starting_time - match_starting_time, 2))
-            print(action)
 
-            data = action.make()
-            status = RobotStatus.get_status(data)
-
-            score = None
-            if action.score > 0 and 'score' in data:
-                score = int(data['score'])
-                self.publish("score", value=score)
-
-                current_goal.score -= score
-
-                with self.lock:
-                    self.score += score
-
-            print(status)
+            status, score = self.make_action(action)
 
             if status == RobotStatus.Aborted:
                 return States.Selecting
@@ -491,6 +500,9 @@ class AI(Service):
 
                 with self.lock:
                     self.score += action.score
+            
+            elif score is not None:
+                current_goal.score -= score
 
         with self.lock:
             self.goals.finish_goal()
@@ -506,6 +518,23 @@ class AI(Service):
 
         return States.Selecting
 
+    def make_action(self, action):
+        print(action)
+
+        data = action.make()
+        status = RobotStatus.get_status(data)
+
+        score = None
+        if 'score' in data:
+            score = int(data['score'])
+            self.publish("score", value=score)
+
+            with self.lock:
+                self.score += score
+
+        print(status)
+        return (status, score)
+        
 
     """ ENDING """
     def ending(self):

@@ -208,12 +208,13 @@ class StartingPosition:
 # available: robot list fro which the strategy is available
 # use_pathfinding: tell if the strategy use the pathfinding
 class Strategy:
-    def __init__(self, name, starting_position, goals=None, available=None, use_pathfinding=True):
+    def __init__(self, name, starting_position, goals=None, available=None, use_pathfinding=True, config_actions=None):
         self.name = name
         self.starting_position = starting_position
         self.goals = [] if goals is None else goals
         self.available = [] if available is None else available
         self.use_pathfinding = use_pathfinding
+        self.config_actions = [] if config_actions is None else config_actions
 
     def __str__(self):
         s = "--- %s ---" % self.name
@@ -224,12 +225,15 @@ class Strategy:
         for robot in self.available:
             s += '\n-->%s' % robot
         s += "\nuse pathfinding: " + str(self.use_pathfinding)
+        s += "\nconfig actions:"
+        for action in self.config_actions:
+            s += f"\n{str(action)}"
         return s
 
     # Static method
     # Parse strategy from JSON
     @classmethod
-    def parse(cls, strategy, starting_positions, goals):
+    def parse(cls, strategy, starting_positions, goals, ai):
 
         if not strategy['starting_position'] in starting_positions:
             print('[GOALS] No existing starting position %s' % strategy['starting_position'])
@@ -247,8 +251,21 @@ class Strategy:
             _goals.append(goal)
 
         use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else False
+        config_actions = []
+        if 'config_actions' in strategy:
+            for action in strategy['config_actions']:
+                try:
+                    new = Action.parse(action, ai)
+                except Exception as e:
+                    print('[GOALS] Failed to parse config action: %s' % str(e))
+                    return None
 
-        new = Strategy(strategy['name'], starting_position, _goals, strategy['available'], use_pathfinding)
+                if new is None:
+                    return None
+
+                config_actions.append(new)
+
+        new = Strategy(strategy['name'], starting_position, _goals, strategy['available'], use_pathfinding, config_actions)
 
         return new
 
@@ -306,7 +323,6 @@ class Goals:
 
         # Parse goals
         for goal in goals['goals']:
-
             try:
                 new = Goal.parse(goal, ai)
             except Exception as e:
@@ -332,7 +348,7 @@ class Goals:
         for strategy in goals['strategies']:
 
             try:
-                new = Strategy.parse(strategy, self.starting_positions, self.goals)
+                new = Strategy.parse(strategy, self.starting_positions, self.goals, ai)
             except Exception as e:
                 print('[GOALS] Failed to parse strategy: %s' % str(e))
                 return False
