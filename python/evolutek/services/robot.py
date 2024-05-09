@@ -70,6 +70,7 @@ class Robot(Service):
     open_left_arm = Service.action(robot_actions.open_left_arm)
     close_right_arm = Service.action(robot_actions.close_right_arm)
     close_left_arm = Service.action(robot_actions.close_left_arm)
+    count_solar_points = Service.action(robot_actions.count_solar_points)
 
     def __init__(self):
         super().__init__(ROBOT)

@@ -27,8 +27,8 @@ def move_elevator(self, position: ElevatorPosition):
         position = ElevatorPosition[position]
     
     if position == ElevatorPosition.HIGH:
-        self.actuators.ax_set_speed(1, 650)
-        self.actuators.ax_set_speed(2, 650)
+        self.actuators.ax_set_speed(1, 220)
+        self.actuators.ax_set_speed(2, 220)
     else:
         self.actuators.ax_set_speed(1, 170)
         self.actuators.ax_set_speed(2, 170)
@@ -64,10 +64,10 @@ def move_elevator(self, position: ElevatorPosition):
 # so here there list of length 3, so there is 3 clamps
 class ClampsPosition(Enum):
     OPEN = [180, 175, 180]
-    CLOSE = [120, 120, 125]
+    CLOSE = [120, 115, 125]
 
 # Map clamps to their servo id
-CLAMP_ID_TO_SERVO_ID = [3, 4, 5]
+CLAMP_ID_TO_SERVO_ID = [2, 3, 4]
 
 @if_enabled
 @async_task
@@ -103,8 +103,8 @@ def move_herse(self, position: HersePosition):
         self.actuators.ax_set_speed(4, 450)
         self.actuators.ax_set_speed(5, 450)
     else:
-        self.actuators.ax_set_speed(4, 170)
-        self.actuators.ax_set_speed(5, 170)
+        self.actuators.ax_set_speed(4, 250)
+        self.actuators.ax_set_speed(5, 250)
 
     status = RobotStatus.check(
         self.actuators.ax_move(4, position.value[0]), # Right servo
@@ -116,15 +116,15 @@ def move_herse(self, position: HersePosition):
 
     if position == HersePosition.DOWN:
         # Check if the servo are forcing
-        end_time = time() + 0.7
+        end_time = time() + 0.5
         while time() < end_time:
-            if abs(self.actuators.ax_get_load(4)) > 500 or abs(self.actuators.ax_get_load(5)) > 500:
+            if abs(self.actuators.ax_get_load(4)) > 800 or abs(self.actuators.ax_get_load(5)) > 800:
                 self.actuators.ax_move(4, HersePosition.MIDDLE.value[0]), # Right servo
                 self.actuators.ax_move(5, HersePosition.MIDDLE.value[1])  # Left servo
                 return RobotStatus.return_status(RobotStatus.Failed)
             sleep(0.1)
     else:
-        sleep(0.5)
+        sleep(0.3)
 
     return RobotStatus.return_status(RobotStatus.Done)
 

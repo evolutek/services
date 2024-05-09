@@ -118,9 +118,9 @@ class Actuators(Service):
         self.i2c_acts = I2CActsHandler({
             0: [I2CActType.Servo, 180], # Right arm
             1: [I2CActType.Servo, 180], # Left arm
-            3: [I2CActType.Servo, 180], # Right clamp
-            4: [I2CActType.Servo, 180], # Middle clamp
-            5: [I2CActType.Servo, 180]  # Left clamp
+            2: [I2CActType.Servo, 180], # Right clamp
+            3: [I2CActType.Servo, 180], # Middle clamp
+            4: [I2CActType.Servo, 180]  # Left clamp
         }, frequency=50)
 
         self.all_actuators = [
@@ -172,7 +172,7 @@ class Actuators(Service):
         # TODO
         self.magnets.free()
         self.i2c_acts.free_all()
-        self.ax_free_all([1,2,3])
+        #self.ax_free_all([1,2,3])
 
     # Disable Actuators
     @Service.action

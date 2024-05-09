@@ -8,7 +8,7 @@ from evolutek.lib.utils.wrappers import if_enabled
 from enum import Enum
 from math import pi, cos, sin
 from threading import Event
-from time import sleep
+from time import sleep, time
 
 DELTA_POS = 5
 DELTA_ANGLE = 0.075
@@ -165,12 +165,6 @@ def move_back(self, side):
 
     return self.move_trsl(acc=200, dec=200, dest=self.dist, maxspeed=400, sens=int(side))
 
-timeout_event = Event()
-
-def timeout_handler():
-    global timeout_event
-    timeout_event.set()
-
 
 @if_enabled
 @async_task
@@ -217,6 +211,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
     destination = Point(x, y)
     status = RobotStatus.NotReached
+    start = time.time()
 
     while status != RobotStatus.Reached:
 
@@ -239,28 +234,17 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
             #    return RobotStatus.return_status(_status)
 
             pos = Point(dict=self.trajman.get_position())
-            dist = pos.dist(destination)
-
-            global timeout_event
-            timeout_event.clear()
-
-            watchdog = None
-            if timeout is not None:
-                watchdog = Watchdog(float(timeout), timeout_handler)
-                watchdog.reset()
+            dist = pos.dist(destination)            
 
             while get_boolean(self.trajman.need_to_avoid(dist, side)):
                 if self.check_abort() != RobotStatus.Ok:
                     return RobotStatus.return_status(RobotStatus.Aborted)
 
-                if timeout_event.is_set():
+                if timeout is not None and time.time() - start >= timeout:
                     return RobotStatus.return_status(RobotStatus.Timeout)
 
                 print('[ROBOT] Waiting')
                 sleep(0.1)
-
-            if watchdog is not None:
-                watchdog.stop()
 
         elif status != RobotStatus.Reached:
             break
