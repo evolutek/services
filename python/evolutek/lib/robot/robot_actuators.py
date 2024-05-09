@@ -16,13 +16,13 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 class ElevatorPosition(Enum):
     #LOWEST = (315, 656)
     LOW = (315, 656)
-    BORDER = (369, 600)
+    BORDER = (409, 560)
     POTS = (512, 452)
     HIGH = (677, 293)
 
 @if_enabled
 @async_task
-def move_elevator(self, position: ElevatorPosition):
+def move_elevator(self, position: ElevatorPosition, wait = True):
     if isinstance(position, str):
         position = ElevatorPosition[position]
     
@@ -41,18 +41,19 @@ def move_elevator(self, position: ElevatorPosition):
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    if position != ElevatorPosition.HIGH:
-        threshold = 800
-        # Check if the servos are forcing
-        end_time = time() + (0.6 if position != ElevatorPosition.LOW else 0.8)
-        while time() < end_time:
-            if abs(self.actuators.ax_get_load(1)) > threshold or abs(self.actuators.ax_get_load(2)) > threshold:
-                self.actuators.ax_move(1, ElevatorPosition.HIGH.value[0]), # Right servo
-                self.actuators.ax_move(2, ElevatorPosition.HIGH.value[1])  # Left servo
-                return RobotStatus.return_status(RobotStatus.Failed)
-            sleep(0.1)
-    else:
-        sleep(1)
+    if wait:
+        if position != ElevatorPosition.HIGH:
+            threshold = 800
+            # Check if the servos are forcing
+            end_time = time() + (0.6 if position != ElevatorPosition.LOW else 0.8)
+            while time() < end_time:
+                if abs(self.actuators.ax_get_load(1)) > threshold or abs(self.actuators.ax_get_load(2)) > threshold:
+                    self.actuators.ax_move(1, ElevatorPosition.HIGH.value[0]), # Right servo
+                    self.actuators.ax_move(2, ElevatorPosition.HIGH.value[1])  # Left servo
+                    return RobotStatus.return_status(RobotStatus.Failed)
+                sleep(0.1)
+        else:
+            sleep(0.3)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
@@ -95,7 +96,7 @@ class HersePosition(Enum):
 
 @if_enabled
 @async_task
-def move_herse(self, position: HersePosition):
+def move_herse(self, position: HersePosition, wait = True):
     if isinstance(position, str):
         position = HersePosition[position]
 
@@ -114,17 +115,18 @@ def move_herse(self, position: HersePosition):
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    if position == HersePosition.DOWN:
-        # Check if the servo are forcing
-        end_time = time() + 0.5
-        while time() < end_time:
-            if abs(self.actuators.ax_get_load(4)) > 800 or abs(self.actuators.ax_get_load(5)) > 800:
-                self.actuators.ax_move(4, HersePosition.MIDDLE.value[0]), # Right servo
-                self.actuators.ax_move(5, HersePosition.MIDDLE.value[1])  # Left servo
-                return RobotStatus.return_status(RobotStatus.Failed)
-            sleep(0.1)
-    else:
-        sleep(0.3)
+    if wait:
+        if position == HersePosition.DOWN:
+            # Check if the servo are forcing
+            end_time = time() + 0.4
+            while time() < end_time:
+                if abs(self.actuators.ax_get_load(4)) > 800 or abs(self.actuators.ax_get_load(5)) > 800:
+                    self.actuators.ax_move(4, HersePosition.MIDDLE.value[0]), # Right servo
+                    self.actuators.ax_move(5, HersePosition.MIDDLE.value[1])  # Left servo
+                    return RobotStatus.return_status(RobotStatus.Failed)
+                sleep(0.05)
+        else:
+            sleep(0.3)
 
     return RobotStatus.return_status(RobotStatus.Done)
 

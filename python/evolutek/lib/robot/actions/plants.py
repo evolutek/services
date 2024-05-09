@@ -1,6 +1,6 @@
 from evolutek.lib.robot.robot_actions_imports import *
 
-from evolutek.lib.robot.robot_actuators import ElevatorPosition, ClampsPosition, RackPosition
+from evolutek.lib.robot.robot_actuators import ElevatorPosition, ClampsPosition, RackPosition, HersePosition
 
 
 @if_enabled
@@ -79,8 +79,10 @@ def place_plants_in_planter(self):
 
     sleep(0.2)
 
-    if RobotStatus.get_status(self.move_elevator(ElevatorPosition.HIGH, async_task=False)) != RobotStatus.Done:
+    if RobotStatus.get_status(self.move_elevator(ElevatorPosition.HIGH, wait=False, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.2)
 
     if RobotStatus.get_status(self.move_rack(RackPosition.FOLDED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -113,5 +115,49 @@ def place_plants_in_pots(self):
         return RobotStatus.return_status(RobotStatus.Failed)
 
     sleep(0.4)
+
+    return RobotStatus.return_status(RobotStatus.Done, score=0)
+
+
+@if_enabled
+@async_task
+def place_plants_in_pots_and_grab_plants(self):
+    if RobotStatus.get_status(self.move_rack(RackPosition.POTS, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.2)
+
+    if RobotStatus.get_status(self.move_elevator(ElevatorPosition.POTS, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.OPEN, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.15)
+
+    if RobotStatus.get_status(self.move_elevator(ElevatorPosition.HIGH, wait = False, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.15)
+
+    if RobotStatus.get_status(self.move_rack(RackPosition.FOLDED, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    if RobotStatus.get_status(self.forward(-80, async_task=False)) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    if RobotStatus.get_status(self.move_herse(HersePosition.MIDDLE, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    if RobotStatus.get_status(self.move_herse(HersePosition.UP, wait = False, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    if RobotStatus.get_status(self.move_elevator(ElevatorPosition.LOW, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.CLOSE, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.15)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
