@@ -9,6 +9,8 @@ import tkinter.font
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.interface import Interface
 
+from threading import Thread
+import asyncore
 from cellaserv.proxy import CellaservProxy
 from cellaserv.service import AsynClient
 from cellaserv.settings import get_socket
@@ -197,8 +199,8 @@ class AIInterface(Interface):
 		self.cs = CellaservProxy()
 
 		self.client = AsynClient(get_socket())
-        self.client.add_subscribe_cb('status_update', self.on_status_update)
-        self.client.add_subscribe_cb(ROBOT + '_telemetry', self.on_position_update)
+		self.client.add_subscribe_cb('status_update', self.on_status_update)
+		self.client.add_subscribe_cb(ROBOT + '_telemetry', self.on_position_update)
 
 		self.init_fonts()
 	
@@ -217,13 +219,17 @@ class AIInterface(Interface):
 		self.home_interface.grid(row=0, column=0, sticky="nsew")
 		self.has_been_reset = False
 
-	def on_status_update(self, status):
-		print("Received status:", status)
-		self.match_status = status
+		self.client_thread = Thread(target=asyncore.loop)
+		self.client_thread.daemon = True
+		self.client_thread.start()
 
-	def on_position_update(self, position):
-		print("Received position:", position)
-		self.position = position
+	def on_status_update(self, value):
+		#print("Received status:", value)
+		self.match_status = value
+
+	def on_position_update(self, status, telemetry, robot):
+		#print("Received position:", telemetry)
+		self.position = telemetry
 
 	def set_frame(self, frame):
 		#if frame is self.current_frame:
@@ -254,12 +260,11 @@ class AIInterface(Interface):
 				self.has_been_reset = True
 
 
-
 def main():
-    if len(argv) > 1:
-       global ROBOT
-    interface = AIInterface()
-    interface.loop()
+	if len(argv) > 1:
+		global ROBOT
+	interface = AIInterface()
+	interface.loop()
 
 
 if __name__ == "__main__":

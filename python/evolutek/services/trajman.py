@@ -6,7 +6,8 @@ from queue import Queue
 import serial
 from struct import pack, unpack, calcsize
 from threading import Thread, Event, Lock
-from time import sleep, time
+from time import sleep
+import time as timelib
 import atexit
 
 from cellaserv.proxy import CellaservProxy
@@ -128,7 +129,7 @@ class TrajMan(Service):
 
         atexit.register(self.lidar_stop)
 
-        self.last_telemetry_send = time()
+        self.last_telemetry_send = timelib.time()
         self.telemetry_send_interval = 0.5
 
         # Messages comming from the motor card
@@ -845,9 +846,9 @@ class TrajMan(Service):
                         self.robot_orientation = theta
                         self.robot_speed = speed * 1000
 
-                    if time() > self.last_telemetry_send + self.telemetry_send_interval:
-                        self.last_telemetry_send = time()
-                        telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
+                    if timelib.time() > self.last_telemetry_send + self.telemetry_send_interval:
+                        self.last_telemetry_send = timelib.time()
+                        telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed': round(self.robot_speed, 2)}
                         self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)
 
                 elif tab[1] == Commands.ERROR.value:

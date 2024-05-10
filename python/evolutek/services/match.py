@@ -49,13 +49,13 @@ class Match(Service):
 
     def status_publisher(self):
         while True:
+            sleep(0.5)
             status = {}
             status['status'] = self.match_status.value
             status['color'] = self.color
             status['score'] = self.score
             status['time'] = time() - self.start_time
             self.publish("status_update", value=status)
-            sleep(0.5)
 
     def record_match(self, match_duration=100):
         return

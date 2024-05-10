@@ -410,7 +410,7 @@ class Goals:
             strats[self.strategies[i].name] = i
         return strats
 
-    # Get next goal
+    # Get current goal
     def get_goal(self):
         if self.current >= len(self.current_strategy.goals):
             return None

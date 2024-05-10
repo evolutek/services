@@ -481,6 +481,7 @@ class AI(Service):
             status, score = self.make_action(action)
 
             if status == RobotStatus.Aborted:
+                self.goals.finish_goal()
                 return States.Selecting
 
             if status == RobotStatus.Timeout and action.avoid_strategy == AvoidStrategy.Timeout:

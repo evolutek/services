@@ -18,6 +18,11 @@ def grab_plants(self):
 
     #sleep(0.5)
 
+    sensors = [0, 1, 2]
+    for i in sensors:
+        if not self.actuators.proximity_sensor_read(id=i):
+            return RobotStatus.return_status(RobotStatus.Aborted)
+
     if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.OPEN, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
