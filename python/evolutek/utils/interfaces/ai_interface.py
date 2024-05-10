@@ -145,14 +145,14 @@ class HomeInterface(IFrame):
 		self.status_frame.grid(row=1, column=1, padx=8, pady=8)
 
 		# Display coordinates on the interface
-		self.coords = self.root.cs.trajman[ROBOT].get_position()
+		self.coords = self.root.position
 		self.coords_text = tk.Label(self, text=self.coords, font=("Helvetica", 18))
 		self.coords_text.grid(row=2, column=1, sticky="nsew")
 		self.coords_text.configure(text=f"X: {int(self.coords.get('x'))}  Y: {int(self.coords.get('y'))}  Theta: {round(degrees(self.coords.get('theta')), 2)}")
 	
 	def update_interface(self):
 		try:
-			self.coords = self.root.cs.trajman[ROBOT].get_position()
+			self.coords = self.root.position
 			self.coords_text.configure(text=f"X : {int(self.coords.get('x'))}  Y : {int(self.coords.get('y'))}  Theta: {round(degrees(self.coords.get('theta')), 2)}")
 		except:
 			print("[POS DISPLAY] : Trajman is not running, retrying...")
@@ -198,11 +198,12 @@ class AIInterface(Interface):
 
 		self.client = AsynClient(get_socket())
         self.client.add_subscribe_cb('status_update', self.on_status_update)
+        self.client.add_subscribe_cb(ROBOT + '_telemetry', self.on_position_update)
 
 		self.init_fonts()
 	
 		self.match_status = self.cs.match.get_status()
-		self.match_status["color"] = self.cs.match.get_color()
+		self.position = self.cs.trajman[ROBOT].get_position()
 
 		self.container = tk.Frame(self.window)
 		self.container.pack(side="top", fill="both", expand=True)
@@ -217,7 +218,12 @@ class AIInterface(Interface):
 		self.has_been_reset = False
 
 	def on_status_update(self, status):
+		print("Received status:", status)
 		self.match_status = status
+
+	def on_position_update(self, position):
+		print("Received position:", position)
+		self.position = position
 
 	def set_frame(self, frame):
 		#if frame is self.current_frame:

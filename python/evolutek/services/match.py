@@ -34,6 +34,9 @@ class Match(Service):
         self.score = 0
         self.start_time = 0
 
+        self.status_publisher_thr = Thread(target=self.status_publisher)
+        self.status_publisher_thr.start()
+
         print('[MATCH] Match ready')
 
     """ EVENT """
@@ -43,6 +46,16 @@ class Match(Service):
     def add_score(self, value=0):
         self.score += int(value)
         print('[MATCH] score is now: %d' % self.score)
+
+    def status_publisher(self):
+        while True:
+            status = {}
+            status['status'] = self.match_status.value
+            status['color'] = self.color
+            status['score'] = self.score
+            status['time'] = time() - self.start_time
+            self.publish("status_update", value=status)
+            sleep(0.5)
 
     def record_match(self, match_duration=100):
         return
@@ -82,7 +95,7 @@ class Match(Service):
         self.start_time = time()
 
         self.publish('match_start')
-        Thread(target=self.record_match, args=[self.match_duration]).start()
+        #Thread(target=self.record_match, args=[self.match_duration]).start()
         match_timer = Timer(self.match_duration, self.match_end)
         match_timer.start()
         self.match_status = MatchStatus.started
