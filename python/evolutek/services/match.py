@@ -145,7 +145,7 @@ class Match(Service):
 
     # FIXME : FIX THIS
     def around(self, robot, x, y, rx, ry):
-        if self.color == self.color2: y = 2000 - y
+        if self.color == self.color2: y = 3000 - y
         pos = None
         try:
             pos = self.cs.trajman[robot].get_position()
