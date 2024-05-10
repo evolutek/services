@@ -43,7 +43,7 @@ def move_elevator(self, position: ElevatorPosition, wait = True):
 
     if wait:
         if position != ElevatorPosition.HIGH:
-            threshold = 800
+            threshold = 1100
             # Check if the servos are forcing
             end_time = time() + (0.6 if position != ElevatorPosition.LOW else 0.8)
             while time() < end_time:

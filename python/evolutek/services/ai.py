@@ -496,13 +496,8 @@ class AI(Service):
 
             if action.score > 0 and score is None:
                 self.publish("score", value=action.score)
-                current_goal.score -= action.score
-
                 with self.lock:
                     self.score += action.score
-            
-            elif score is not None:
-                current_goal.score -= score
 
         with self.lock:
             self.goals.finish_goal()

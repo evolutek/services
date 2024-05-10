@@ -72,11 +72,9 @@
         },
         {"fct": "place_plants_in_planter", "handler": "robot"},
         {"fct": "goto", "args": {"x": 610, "y": 220}},
-        {"fct": "goth", "args": {"theta": 3.14}},
-        {"fct": "goto", "args": {"x": 350, "y": 220}},
-        {"fct": "release_pots", "handler": "robot"}
+        {"fct": "goth", "args": {"theta": 0}}
       ],
-      "score": 24
+      "score": 12
     },
 
     {
@@ -511,7 +509,7 @@
     },
 
     {
-      "name": "pannels_and_pots",
+      "name": "aggressive_panels",
       "position": {
         "x": 1815,
         "y": 240
@@ -522,10 +520,21 @@
         {"fct": "goto", "args": {"x": 1650, "y": 1000}},
         {"fct": "goto","args": {"x": 1815,"y": 1270}},
         {"fct": "goth", "args": {"theta": 1.57}},
-        {"fct": "goto","args": {"x": 1815,"y": 1780}},
+        {"fct": "goto","args": {"x": 1815,"y": 1780}, "avoid_strategy":"timeout","timeout":5},
+        {"fct": "count_solar_points", "handler": "robot"},
         {"fct": "close_right_arm", "handler": "robot"},
-        {"fct": "goth", "args": {"theta": -1.57}},
-        {"fct": "goto", "args": {"x": 1760, "y": 1350}},
+        {"fct": "goth", "args": {"theta": -1.57}}
+      ],
+      "score": 15
+    },
+
+    {
+      "name": "grab_plant_set_2",
+      "position": {
+        "x": 1760,
+        "y": 1350
+      },
+      "actions": [
         {"fct": "goto", "args": {"x": 1760, "y": 700}},
         {"fct": "up_herse", "handler": "robot"},
         {"fct": "goto", "args": {"x": 1300, "y": 700}},
@@ -540,7 +549,6 @@
           }
         },
         {"fct": "grab_plants", "handler": "robot"},
-
         {
           "fct": "goto_avoid_extend",
           "handler": "robot",
@@ -560,13 +568,21 @@
             "acc": 220
           }
         },
-        {"fct": "down_herse", "handler": "robot"},
-        {"fct": "goto", "args": {"x": 1300, "y": 1000}},
-        {"fct": "goth", "args": {"theta": 0}},
+        {"fct": "down_herse", "handler": "robot"}
+      ]
+    },
+
+    {
+      "name": "drop_plant_set_2",
+      "position": {
+        "x": 1300,
+        "y": 1000
+      },
+      "theta": 0,
+      "actions": [
         {"fct": "goto", "args": {"x": 1828, "y": 1000}},
         {"fct": "place_plants_in_pots_and_grab_plants", "handler": "robot"},
         {"fct": "lift_plants", "handler": "robot"},
-      
         {"fct": "grab_pots", "handler": "robot"},
         {
           "fct": "goto_avoid_extend",
@@ -580,6 +596,7 @@
         {"fct": "goto", "args": {"x": 1750, "y": 1000}},
         {"fct": "goth", "args": {"theta": -1.57}},
         {"fct": "goto", "args": {"x": 1750, "y": 460}},
+        {"fct": "count_plants_in_pots", "handler": "robot"},
         {"fct": "release_pots", "handler": "robot"},
         {"fct": "goto", "args": {"x": 1750, "y": 650}},
         {"fct": "goth", "args": {"theta": 3.14}}
@@ -587,20 +604,18 @@
     },
 
     {
-      "name": "gros_con",
+      "name": "final_plant_position",
       "position": {
-        "x": 1000,
-        "y": 2775
+        "x": 325,
+        "y": 220
       },
       "actions": [
-        {"fct": "goto", "args": {"x": 1300, "y": 1000}},
-        {"fct": "goto", "args": {"x": 1500, "y": 1500}},
-        {"fct": "goto", "args": {"x": 1300, "y": 2000}},
-        {"fct": "goto", "args": {"x": 700, "y": 2000}},
-        {"fct": "goto", "args": {"x": 500, "y": 1500}},
-        {"fct": "goto", "args": {"x": 700, "y": 1000}}
+        {"fct": "count_plants_in_pots", "handler": "robot"},
+        {"fct": "release_pots", "handler": "robot"},
+        {"fct": "goto", "args": {"x": 190, "y": 220}}
       ]
     }
+
   ],
 
   "critical_goals": [
@@ -624,16 +639,15 @@
 
   "strategies": [
     {
-      "name": "Strategy Bottom",
+      "name": "New Bottom Strat",
       "starting_position": "ZONE_DOWN",
       "goals": [
-        "first_3_solar_panels",
-        "force_get_pots",
-        "middle_3_solar_panels",
-        "drop_off_pots",
-        "after_panel_handle_set_2",
+        "aggressive_panels",
+        "grab_plant_set_2",
+        "drop_plant_set_2",
         "drop_held_plants_to_planter",
-        "handle_plants_set_1_fast"
+        "handle_plants_set_1",
+        "final_plant_position"
 		  ],
       "use_pathfinding": false,
       "config_actions": [
@@ -644,12 +658,16 @@
       "available": ["pal"]
     },
     {
-      "name": "[TEST] New Bottom",
+      "name": "Old Bottom Strat",
       "starting_position": "ZONE_DOWN",
       "goals": [
-        "pannels_and_pots",
+        "first_3_solar_panels",
+        "force_get_pots",
+        "middle_3_solar_panels",
+        "drop_off_pots",
+        "after_panel_handle_set_2",
         "drop_held_plants_to_planter",
-        "handle_plants_set_1"
+        "handle_plants_set_1_fast"
 		  ],
       "use_pathfinding": false,
       "config_actions": [
@@ -670,22 +688,6 @@
     ],
     "use_pathfinding": false,
     "available": ["pal"]
-    },
-    {
-      "name": "RCT Mid PAS TOUCHE",
-      "starting_position": "ZONE_MIDDLE",
-      "goals": [
-        "gros_con",
-        "gros_con",
-        "gros_con",
-        "gros_con",
-        "gros_con",
-        "gros_con",
-        "gros_con",
-        "gros_con"
-		  ],
-      "use_pathfinding": false,
-      "available": ["pal"]
     }
   ],
 

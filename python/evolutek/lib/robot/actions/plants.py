@@ -45,6 +45,16 @@ def lift_plants(self):
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
 
+@if_enabled
+@async_task
+def count_plants_in_pots(self):
+    score = 0
+    sensors = [0, 1, 2]
+    for i in sensors:
+        if self.actuators.proximity_sensor_read(id=i):
+            score += 4
+
+    return RobotStatus.return_status(RobotStatus.Done, score=score)    
 
 @if_enabled
 @async_task
