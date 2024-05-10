@@ -8,7 +8,10 @@ import tkinter.font
 
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.interface import Interface
+
 from cellaserv.proxy import CellaservProxy
+from cellaserv.service import AsynClient
+from cellaserv.settings import get_socket
 
 from math import degrees
 
@@ -190,10 +193,16 @@ class MatchInterface(IFrame):
 class AIInterface(Interface):
 	def __init__(self):
 		super().__init__('AI')
+
 		self.cs = CellaservProxy()
+
+		self.client = AsynClient(get_socket())
+        self.client.add_subscribe_cb('status_update', self.on_status_update)
+
 		self.init_fonts()
-		#self.current_frame = None
-		self.match_status = None
+	
+		self.match_status = self.cs.match.get_status()
+		self.match_status["color"] = self.cs.match.get_color()
 
 		self.container = tk.Frame(self.window)
 		self.container.pack(side="top", fill="both", expand=True)
@@ -206,6 +215,9 @@ class AIInterface(Interface):
 		self.match_interface.grid(row=0, column=0, sticky="nsew")
 		self.home_interface.grid(row=0, column=0, sticky="nsew")
 		self.has_been_reset = False
+
+	def on_status_update(self, status):
+		self.match_status = status
 
 	def set_frame(self, frame):
 		#if frame is self.current_frame:
@@ -220,8 +232,8 @@ class AIInterface(Interface):
 		FONT_SMALL = tkinter.font.Font(self.window, size=16)
 
 	def update_interface(self):
-		self.match_status = self.cs.match.get_status()
-		self.window.configure(bd=5, highlightcolor=self.cs.match.get_color(), highlightthickness=5)
+		#self.match_status = self.cs.match.get_status()
+		self.window.configure(bd=5, highlightcolor=self.match_status["color"], highlightthickness=5)
 		if self.match_status["status"] == "Started" or self.match_status["status"] == "Ended":
 			#print("[+] Match is running")
 			self.set_frame(self.match_interface)

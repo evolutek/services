@@ -4,12 +4,20 @@
       "name": "handle_plants_set_1",
       "position": {
         "x": 300,
-        "y": 250
+        "y": 240
       },
       "theta": "0",
       "actions": [
         {"fct": "down_herse", "handler": "robot"},
-        {"fct": "goto", "args": {"x": 740, "y": 230}},
+        {
+          "fct": "goto_avoid_extend",
+          "handler": "robot",
+          "args": {
+            "x": 740,
+            "y": 240,
+            "acc": 400
+          }
+        },
         {"fct": "up_herse", "handler": "robot"},
       
         {"fct": "goth", "args": {"theta": 1.57}},
