@@ -84,6 +84,7 @@ class AI(Service):
         self.reset_event = Event()
         self.match_start = Event()
         self.match_end = Event()
+        self.pami_start = Event()
 
         self.critical_timer = None
         self.critical_timeout = Event()
@@ -146,7 +147,7 @@ class AI(Service):
             print('[AI] Waiting until')
 
     def check_abort(self):
-        if self.match_end.is_set() or self.critical_timeout.is_set():
+        if self.match_end.is_set() or (self.pami_start.is_set() and not self.goals.get_goal().ignore_pami) or self.critical_timeout.is_set():
             print('[AI] Aborting')
             self.robot.abort_action()
             return RobotStatus.Aborted
@@ -158,6 +159,8 @@ class AI(Service):
 
     @Service.event('match_end')
     def match_end_handler(self):
+        self.pami_start.set()
+
         if not self.goals.get_goal().ignore_pami:
             self.robot.abort_action()
 
@@ -235,6 +238,7 @@ class AI(Service):
             self.goals.reset()
 
         self.match_end.clear()
+        self.pami_start.clear()
 
         self.trajman.enable()
         self.actuators.enable()
@@ -340,6 +344,7 @@ class AI(Service):
 
             with self.lock:
                 self.current_goal = self.goals.get_critical_goal()
+            
             self.critical_timeout.clear()
         else:
             print('[AI] Selecting Goal')
@@ -348,6 +353,9 @@ class AI(Service):
                 self.current_goal = self.goals.get_goal()
 
                 if self.current_goal is None:
+                    return States.Ending
+
+                if self.pami_start.is_set() and not self.current_goal.ignore_pami:
                     return States.Ending
 
                 if self.current_goal.name == self.goals.critical_goal:

@@ -67,6 +67,7 @@
         
         {"fct": "place_plants_in_pots_and_grab_plants", "handler": "robot"},
         {"fct": "lift_plants", "handler": "robot"},
+        {"fct": "good_by_plants", "handler": "robot"},
 
         {"fct": "grab_pots", "handler": "robot"},
         {
@@ -591,6 +592,7 @@
         {"fct": "goto", "args": {"x": 1828, "y": 1000}},
         {"fct": "place_plants_in_pots_and_grab_plants", "handler": "robot"},
         {"fct": "lift_plants", "handler": "robot"},
+        {"fct": "good_by_plants", "handler": "robot"},
         {"fct": "grab_pots", "handler": "robot"},
         {
           "fct": "goto_avoid_extend",
@@ -621,6 +623,20 @@
         {"fct": "count_plants_in_pots", "handler": "robot"},
         {"fct": "release_pots", "handler": "robot"},
         {"fct": "goto", "args": {"x": 190, "y": 220}}
+      ],
+      "ignore_pami": true
+    },
+
+    {
+      "name": "test_after_pami_move",
+      "position": {
+        "x": 225,
+        "y": 225
+      },
+      "actions": [
+        {"fct": "wait_action", "handler": "robot", "args": {"delay": 89}},
+        {"fct": "goto", "args": {"x": 225, "y": 800}},
+        {"fct": "goth", "args": {"theta": 0}}
       ],
       "ignore_pami": true
     }
@@ -687,16 +703,25 @@
       "available": ["pal"]
     },
     {
-    "name": "Strategy Top",
-    "starting_position": "ZONE_TOP",
-    "goals": [
-      "handle_plants_set_1",
-      "recale_zone_down",
-      "solar_panels",
-      "handle_plants_set_2"
-    ],
-    "use_pathfinding": false,
-    "available": ["pal"]
+      "name": "Strategy Top",
+      "starting_position": "ZONE_TOP",
+      "goals": [
+        "handle_plants_set_1",
+        "recale_zone_down",
+        "solar_panels",
+        "handle_plants_set_2"
+      ],
+      "use_pathfinding": false,
+      "available": ["pal"]
+    },
+    {
+      "name": "After PAMI Move",
+      "starting_position": "ZONE_TOP",
+      "goals": [
+        "test_after_pami_move"
+      ],
+      "use_pathfinding": false,
+      "available": ["pal"]
     }
   ],
 

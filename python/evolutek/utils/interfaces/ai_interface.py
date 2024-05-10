@@ -180,15 +180,15 @@ class MatchInterface(IFrame):
 		topbar.pack(side=tk.TOP, fill=tk.X)
 		tk.Button(topbar, text="Reset", command=self.reset, font=FONT_MEDIUM).pack(side=tk.LEFT)
 		tk.Button(topbar, text="Stop", command=self.stop, font=FONT_MEDIUM).pack(side=tk.LEFT)
-		self.timeLeft = tk.Label(self, text="Time Left : 90", font=FONT_BIG)
+		self.timeLeft = tk.Label(self, text="Time Left : 100", font=FONT_BIG)
 		self.text = tk.Label(self, text=f"Score: 0", font=FONT_BIG)
 		self.timeLeft.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 		self.text.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
 	def update_interface(self):
 		self.text.config(text=f"Score: {self.root.match_status['score']}")
-		self.timeLeft.config(text=f"Time Left : {round(90 - (self.root.match_status['time']), 2)}")
-		if (90 - (self.root.match_status['time']) < 0):
+		self.timeLeft.config(text=f"Time Left : {round(100 - (self.root.match_status['time']), 2)}")
+		if (self.root.match_status['time'] >= 100):
 			self.timeLeft.config(text="Time's Up !")
 
 

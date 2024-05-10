@@ -20,8 +20,10 @@ def grab_plants(self):
 
     sensors = [0, 1, 2]
     for i in sensors:
-        if not self.actuators.proximity_sensor_read(id=i):
-            return RobotStatus.return_status(RobotStatus.Aborted)
+        if self.actuators.proximity_sensor_read(id=i):
+            break
+    else:
+        return RobotStatus.return_status(RobotStatus.Aborted)
 
     if RobotStatus.get_status(self.move_clamps([0, 1, 2], ClampsPosition.OPEN, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -176,3 +178,10 @@ def place_plants_in_pots_and_grab_plants(self):
     sleep(0.15)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
+
+
+@if_enabled
+@async_task
+def wait_action(self, delay):
+    sleep(delay)
+    return RobotStatus.return_status(RobotStatus.Done)

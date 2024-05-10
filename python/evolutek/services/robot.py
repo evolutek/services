@@ -65,7 +65,6 @@ class Robot(Service):
     down_herse = Service.action(robot_actions.down_herse)
     grab_pots = Service.action(robot_actions.grab_pots)
     release_pots = Service.action(robot_actions.release_pots)
-    #move_trsl2 = Service.action(robot_actions.move_trsl2)
     move_on_side = Service.action(robot_actions.move_on_side)
     open_right_arm = Service.action(robot_actions.open_right_arm)
     open_left_arm = Service.action(robot_actions.open_left_arm)
@@ -73,6 +72,8 @@ class Robot(Service):
     close_left_arm = Service.action(robot_actions.close_left_arm)
     count_solar_points = Service.action(robot_actions.count_solar_points)
     count_plants_in_pots = Service.action(robot_actions.count_plants_in_pots)
+
+    wait_action = Service.action(robot_actions.wait_action)
 
     def __init__(self):
         super().__init__(ROBOT)
