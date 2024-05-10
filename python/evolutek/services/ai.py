@@ -158,15 +158,18 @@ class AI(Service):
 
     @Service.event('match_end')
     def match_end_handler(self):
-
-        self.robot.abort_action()
-        self.match_end.set()
+        if not self.goals.get_goal().ignore_pami:
+            self.robot.abort_action()
 
         with self.lock:
             if self.critical_timer is not None:
                 self.critical_timer.cancel()
         self.critical_timeout.clear()
 
+    @Service.event('pami_end')
+    def pami_end_handler(self):
+        self.robot.abort_action()
+        self.match_end.set()
 
     @Service.action
     def reset(self, recalibrate_itself=False):

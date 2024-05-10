@@ -621,7 +621,8 @@
         {"fct": "count_plants_in_pots", "handler": "robot"},
         {"fct": "release_pots", "handler": "robot"},
         {"fct": "goto", "args": {"x": 190, "y": 220}}
-      ]
+      ],
+      "ignore_pami": true
     }
 
   ],

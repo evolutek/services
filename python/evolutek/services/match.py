@@ -26,6 +26,7 @@ class Match(Service):
         self.color2 = match_config['color2']
         self.stop_delay = int(match_config['stop_delay'])
         self.match_duration = int(match_config['duration'])
+        self.pami_duration = float(match_config['pami_duration'])
 
         # Match Status
         self.match_status = MatchStatus.unstarted
@@ -98,6 +99,8 @@ class Match(Service):
         #Thread(target=self.record_match, args=[self.match_duration]).start()
         match_timer = Timer(self.match_duration, self.match_end)
         match_timer.start()
+        pami_timer = Timer(self.match_duration + self.pami_duration, self.pami_end)
+        pami_timer.start()
         self.match_status = MatchStatus.started
         self.score += 0
         print('[MATCH] Match start')
@@ -180,8 +183,12 @@ class Match(Service):
     @Service.action
     def match_end(self):
         print('[MATCH] Call for match end')
-        self.check_end_positions()
         self.publish('match_end')
+
+    def pami_end(self):
+        print('[MATCH] Call for PAMI end')
+        self.check_end_positions()
+        self.publish('pami_end')
         Timer(self.stop_delay, self._set_match_end).start()
 
 def main():

@@ -99,7 +99,7 @@ class Action:
 # timeout: abort timeout if we can't make goal
 class Goal:
 
-    def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, secondary_goal=None, timeout=None):
+    def __init__(self, name, position, theta=None, actions=None, score=0, obstacles=None, secondary_goal=None, timeout=None, ignore_pami=False):
         self.name = name
         self.position = position
         self.actions = [] if actions is None else actions
@@ -110,6 +110,7 @@ class Goal:
         self.obstacles = [] if obstacles is None else obstacles
         self.secondary_goal = secondary_goal
         self.timeout = timeout
+        self.ignore_pami = ignore_pami
 
     def __str__(self):
         actions = ""
@@ -149,8 +150,9 @@ class Goal:
         obstacles = goal['obstacles'] if 'obstacles' in goal else []
         secondary_goal = goal['secondary_goal'] if 'secondary_goal' in goal else None
         timeout = goal['timeout'] if 'timeout' in goal else None
+        ignore_pami = goal['ignore_pami'] if 'ignore_pami' in goal else False
 
-        new = Goal(goal['name'], position, theta, actions, score, obstacles, secondary_goal, timeout)
+        new = Goal(goal['name'], position, theta, actions, score, obstacles, secondary_goal, timeout, ignore_pami)
 
         return new
 
