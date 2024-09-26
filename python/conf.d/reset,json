@@ -1,0 +1,21 @@
+{
+    "pal": [
+        "trajman",
+        "actuators",
+        "robot",
+        "ai"
+    ],
+    "pmi": [
+        "trajman",
+        "actuators",
+        "robot",
+        "ai"
+    ],
+    "beacon": [
+        "config",
+        "match"
+    ],
+    "basket": [
+        "basket"
+    ]
+}

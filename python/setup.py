@@ -31,8 +31,7 @@ setup(
             'match = evolutek.services.match:main',
             'robot = evolutek.services.robot:main',
             'ai = evolutek.services.ai:main',
-            # Utils
-            'reset = evolutek.utils.service_reset:main',
+            'reset = evolutek.services.reset:main',
         ],
     },
 )
