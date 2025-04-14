@@ -8,6 +8,50 @@ from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVaria
 from evolutek.lib.actuators.ax12 import AX12Controller
 
 
+class ArmPositions(Enum):
+    LOW = 200
+    DROP_OFF = 345
+    SOLAR_PANEL = 470
+    HIGH = 590
+    
+@if_enabled
+@async_task
+def move_arm(self, id, position: ArmPositions):
+    id = int(id)
+    if isinstance(position, str):
+        position = ArmPositions[position]
+    status = self.actuators.ax_move(id, position.value)
+    return RobotStatus.check(status)
+
+class ClawPositions(Enum):
+    OPEN = 155
+    RELEASE = 50
+    CLOSE = 10
+    
+#Specific to each servomotor (if the rudder isn't in quite the same position)
+OFFSET_1 = -5
+OFFSET_2 = 0
+OFFSET_3 = 5
+    
+@if_enabled
+@async_task
+def move_claw(self, id, position: ClawPositions):
+    id = int(id)
+    if isinstance(position, str):
+        position = ClawPositions[position]
+            
+    if id == 1:
+        status = self.actuators.servo_set_angle(id, position.value + OFFSET_1)
+    elif 2:
+        status = self.actuators.servo_set_angle(id, position.value + OFFSET_2)
+    elif 3:
+        status = self.actuators.servo_set_angle(id, position.value + OFFSET_3)  
+    else :
+        status = RobotStatus.return_status(RobotStatus.Failed) 
+    
+    return RobotStatus.check(status)
+
+"""
 # TODO: Use correct angles
 # This a an enum of pair of angle
 # (the first angle is the left servo and the second is the right servo)
@@ -54,3 +98,4 @@ def magnets_on(self, magnet_ids: list[int]):
 @async_task
 def magnets_off(self, magnet_ids: list[int]):
     return RobotStatus.check(self.actuators.magnets_off(magnet_ids))
+"""

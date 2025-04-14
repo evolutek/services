@@ -135,6 +135,12 @@ class AI(Service):
         return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action
+    def set_pos(self, x, y):
+        print('[AI] AI setting pos')
+        self.robot.set_pos(x, y)
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @Service.action
     def wait_until(self):
         while True:
             if self.check_abort() != RobotStatus.Ok:
@@ -232,19 +238,11 @@ class AI(Service):
             )
         self.trajman.unfree()
 
+        """
         if self.recalibrate_itself.is_set():
             print('[AI] Recalibrating robot')
             self.actuators.rgb_led_strip_set_mode(LightningMode.Running.value)
             self.recalibrate_itself.clear()
-
-            axe = starting_position.recal_side == 'x'
-            side = (abs(starting_position.theta - pi) < 0.1 or abs(starting_position.theta + pi/2) < 0.1) 
-
-            self.recalibration(x=axe, y=(not axe), init=True,
-                               x_sensor=(starting_position.recal_sensor if not axe else "no"),
-                               y_sensor=(starting_position.recal_sensor if axe else "no"),
-                               side_x = side,
-                               side_y = side)
 
             current_pos = self.trajman.get_position()
             if self.color != self.color1:
@@ -261,6 +259,7 @@ class AI(Service):
                 avoid=False)
 
             self.goth(theta=starting_position.theta)
+        """
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
@@ -496,11 +495,11 @@ class AI(Service):
             self.goals.finish_goal()
             print('[AI] Finished goal in %fs' % round(time() - goal_starting_time, 2))
 
-        #if current_goal.score > 0:
-        #    self.publish("score", value=current_goal.score)
-
-        #    with self.lock:
-        #        self.score += current_goal.score
+        if current_goal.score > 0:
+            self.publish("score", value=current_goal.score)
+        else:
+            with self.lock:
+                self.score += current_goal.score
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
 

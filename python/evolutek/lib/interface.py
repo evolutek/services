@@ -14,9 +14,6 @@ class Interface:
 		self.start_match = False
 		self.reset = False
 
-	def create_widget(self):
-		pass
-
 	def update_interface(self):
 		"""
 		Updates the interface. This function can be overriden and
@@ -31,8 +28,8 @@ class Interface:
 		#     (2000 * self.interface_ratio) / 2,
 		#     image=self.map,
 		#     tag="background")
-		self.window.after(self.interface_refresh, self._update_interface)
 		self.update_interface()
+		self.window.after(self.interface_refresh, self._update_interface)
 
 	def loop(self):
 		"""
@@ -41,6 +38,7 @@ class Interface:
 		the same thread as the constructor of the interface.
 		"""
 		print('[INTERFACE] Window looping')
+		self._update_interface() # Start the refresh loop
 		self.window.mainloop()
 
 	def close(self, signal_received=None, frame=None):
