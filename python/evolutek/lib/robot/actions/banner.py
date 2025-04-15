@@ -54,7 +54,7 @@ def count_plants_in_pots(self):
         if self.actuators.proximity_sensor_read(id=i):
             score += 4
 
-    return RobotStatus.return_status(RobotStatus.Done, score=score)    
+    return RobotStatus.return_status(RobotStatus.Done, score=score)
 
 @if_enabled
 @async_task

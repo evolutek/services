@@ -4,7 +4,7 @@
 from cellaserv.service import Service, ConfigVariable
 from cellaserv.proxy import CellaservProxy
 
-# Gpio
+# GPIO
 import board
 from evolutek.lib.gpio.gpio_factory import AdcType, create_adc, GpioType, create_gpio
 from evolutek.lib.gpio.gpio import Edge

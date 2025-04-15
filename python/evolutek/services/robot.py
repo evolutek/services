@@ -45,34 +45,12 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
+    toggle_magnet = Service.action(robot_actuators.toggle_magnet)
     move_elevator = Service.action(robot_actuators.move_elevator)
-    move_clamps = Service.action(robot_actuators.move_clamps)
-    move_herse = Service.action(robot_actuators.move_herse)
-    move_rack = Service.action(robot_actuators.move_rack)
-    magnets_on = Service.action(robot_actuators.magnets_on)
-    magnets_off = Service.action(robot_actuators.magnets_off)
-    move_arm = Service.action(robot_actuators.move_arm)
+    move_plank_arm = Service.action(robot_actuators.move_plank_arm)
 
     # Imported from robot_actions
-    grab_plants = Service.action(robot_actions.grab_plants)
-    lift_plants = Service.action(robot_actions.lift_plants)
     place_plants = Service.action(robot_actions.place_plants)
-    good_by_plants = Service.action(robot_actions.good_by_plants)
-    place_plants_in_planter = Service.action(robot_actions.place_plants_in_planter)
-    place_plants_in_pots = Service.action(robot_actions.place_plants_in_pots)
-    place_plants_in_pots_and_grab_plants = Service.action(robot_actions.place_plants_in_pots_and_grab_plants)
-    up_herse = Service.action(robot_actions.up_herse)
-    down_herse = Service.action(robot_actions.down_herse)
-    grab_pots = Service.action(robot_actions.grab_pots)
-    release_pots = Service.action(robot_actions.release_pots)
-    #move_trsl2 = Service.action(robot_actions.move_trsl2)
-    move_on_side = Service.action(robot_actions.move_on_side)
-    open_right_arm = Service.action(robot_actions.open_right_arm)
-    open_left_arm = Service.action(robot_actions.open_left_arm)
-    close_right_arm = Service.action(robot_actions.close_right_arm)
-    close_left_arm = Service.action(robot_actions.close_left_arm)
-    count_solar_points = Service.action(robot_actions.count_solar_points)
-    count_plants_in_pots = Service.action(robot_actions.count_plants_in_pots)
 
     def __init__(self):
         super().__init__(ROBOT)

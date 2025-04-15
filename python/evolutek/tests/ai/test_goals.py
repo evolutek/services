@@ -1,4 +1,4 @@
-from evolutek.lib.ai.goals import AvoidStrategy, Goals
+from evolutek.lib.ai.sequential.goals import AvoidStrategy, Goals
 from evolutek.lib.map.point import Point
 
 from math import pi
