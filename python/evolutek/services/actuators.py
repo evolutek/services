@@ -17,6 +17,7 @@ from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
+from evolutek.lib.actuators.i2c_motor_board import I2CMotorBoard, I2CMotorBoardStepper
 
 # Other imports
 from evolutek.lib.settings import ROBOT
@@ -105,6 +106,14 @@ class Actuators(Service):
         #    5: [I2CActType.Servo, 180],
         #    6: [I2CActType.Servo, 180]
         #}, frequency=50)
+
+
+        self.i2c_acts = I2CMotorBoard({
+            0: (I2CMotorBoardStepper, [0]),
+            1: (I2CMotorBoardStepper, [1]),
+            2: (I2CMotorBoardStepper, [2]),
+            3: (I2CMotorBoardStepper, [3])
+        })
 
         self.all_actuators = [
             #self.proximity_sensors,
