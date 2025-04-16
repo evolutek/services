@@ -234,7 +234,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
             #    return RobotStatus.return_status(_status)
 
             pos = Point(dict=self.trajman.get_position())
-            dist = pos.dist(destination)            
+            dist = pos.dist(destination)
 
             while get_boolean(self.trajman.need_to_avoid(dist, side)):
                 if self.check_abort() != RobotStatus.Ok:
