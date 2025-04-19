@@ -256,7 +256,7 @@ class AI(Service):
             self.recalibrate_itself.clear()
 
             axe = starting_position.recal_side == 'x'
-            side = (abs(starting_position.theta - pi) < 0.1 or abs(starting_position.theta + pi/2) < 0.1) 
+            side = (abs(starting_position.theta - pi) < 0.1 or abs(starting_position.theta + pi/2) < 0.1)
 
             self.recalibration(x=axe, y=(not axe), init=True,
                                x_sensor=(starting_position.recal_sensor if not axe else "no"),
@@ -529,7 +529,7 @@ class AI(Service):
 
         print(status)
         return (status, score)
-        
+
 
     """ ENDING """
     def ending(self):

@@ -1,14 +1,44 @@
 {
   "goals": [
     {
-      "name": "homologation_move_1",
+      "name": "go_to_end_area",
       "position": {
         "x": 350,
         "y": 450
       },
       "theta": "pi",
       "actions": [],
-      "score": 20
+      "score": 10
+    },
+    {
+      "name": "just_push_move_1",
+      "position": {
+        "x": 1500,
+        "y": 1050
+      },
+      "theta": "-pi/2",
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "just_push_move_2",
+      "position": {
+        "x": 1500,
+        "y": 780
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "just_push_move_3",
+      "position": {
+        "x": 1800,
+        "y": 780
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 10
     }
   ],
 
@@ -17,7 +47,20 @@
       "name": "Homologation",
       "starting_position": "THE_ONLY_ONE",
       "goals": [
-        "homologation_move_1"
+        "go_to_end_area"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [],
+      "available": ["pal"]
+    },
+    {
+      "name": "Just Push",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "just_push_move_1",
+        "just_push_move_2",
+        "just_push_move_3",
+        "go_to_end_area"
 		  ],
       "use_pathfinding": false,
       "config_actions": [],
