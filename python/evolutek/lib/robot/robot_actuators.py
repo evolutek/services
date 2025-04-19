@@ -138,34 +138,34 @@ class MagnetsSet(Enum):
         MagnetId.FRONT_MAGNET_3,
         MagnetId.FRONT_MAGNET_4
     ]
-    BACK_MAGNETS = [
-        MagnetId.BACK_MAGNET_1,
-        MagnetId.BACK_MAGNET_2,
-        MagnetId.BACK_MAGNET_3,
-        MagnetId.BACK_MAGNET_4
-    ]
+    #BACK_MAGNETS = [
+    #    MagnetId.BACK_MAGNET_1,
+    #    MagnetId.BACK_MAGNET_2,
+    #    MagnetId.BACK_MAGNET_3,
+    #    MagnetId.BACK_MAGNET_4
+    #]
 
 # TODO: Set angles
 class MagnetState(Enum):
     ENABLE = {
-        MagnetId.FRONT_MAGNET_1: 0,
-        MagnetId.FRONT_MAGNET_2: 0,
+        MagnetId.FRONT_MAGNET_1: 180,
+        MagnetId.FRONT_MAGNET_2: 180,
         MagnetId.FRONT_MAGNET_3: 0,
         MagnetId.FRONT_MAGNET_4: 0,
-        MagnetId.BACK_MAGNET_1: 0,
-        MagnetId.BACK_MAGNET_2: 0,
-        MagnetId.BACK_MAGNET_3: 0,
-        MagnetId.BACK_MAGNET_4: 0
+        #MagnetId.BACK_MAGNET_1: 0,
+        #MagnetId.BACK_MAGNET_2: 0,
+        #MagnetId.BACK_MAGNET_3: 0,
+        #MagnetId.BACK_MAGNET_4: 0
     }
     DISABLE = {
         MagnetId.FRONT_MAGNET_1: 90,
         MagnetId.FRONT_MAGNET_2: 90,
         MagnetId.FRONT_MAGNET_3: 90,
         MagnetId.FRONT_MAGNET_4: 90,
-        MagnetId.BACK_MAGNET_1: 90,
-        MagnetId.BACK_MAGNET_2: 90,
-        MagnetId.BACK_MAGNET_3: 90,
-        MagnetId.BACK_MAGNET_4: 90
+        #MagnetId.BACK_MAGNET_1: 90,
+        #MagnetId.BACK_MAGNET_2: 90,
+        #MagnetId.BACK_MAGNET_3: 90,
+        #MagnetId.BACK_MAGNET_4: 90
     }
 
 @if_enabled

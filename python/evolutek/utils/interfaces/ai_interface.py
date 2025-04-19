@@ -197,7 +197,7 @@ class AIInterface(Interface):
 		self.cs = CellaservProxy()
 
 		self.client = AsynClient(get_socket())
-        self.client.add_subscribe_cb('status_update', self.on_status_update)
+		self.client.add_subscribe_cb('status_update', self.on_status_update)
 
 		self.init_fonts()
 	
