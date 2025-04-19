@@ -1,4 +1,5 @@
 from enum import Enum
+from evolutek.lib.utils.boolean import get_boolean
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.color import Color
 from evolutek.lib.utils.task import async_task
@@ -195,6 +196,8 @@ class PumpsSet(Enum):
 def toggle_pumps(self, pumps: PumpsSet, grab: bool):
     if isinstance(pumps, str):
         pumps = PumpsSet[pumps]
+
+    grab = get_boolean(grab)
 
     if grab:
         return RobotStatus.check(self.actuators.pumps_grab(pumps.value))
