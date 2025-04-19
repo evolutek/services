@@ -196,8 +196,8 @@ class AIInterface(Interface):
 
 		self.cs = CellaservProxy()
 
-		self.client = AsynClient(get_socket())
-		self.client.add_subscribe_cb('status_update', self.on_status_update)
+		#self.client = AsynClient(get_socket())
+		#self.client.add_subscribe_cb('status_update', self.on_status_update)
 
 		self.init_fonts()
 	
@@ -232,7 +232,7 @@ class AIInterface(Interface):
 		FONT_SMALL = tkinter.font.Font(self.window, size=16)
 
 	def update_interface(self):
-		#self.match_status = self.cs.match.get_status()
+		self.match_status = self.cs.match.get_status()
 		self.window.configure(bd=5, highlightcolor=self.match_status["color"], highlightthickness=5)
 		if self.match_status["status"] == "Started" or self.match_status["status"] == "Ended":
 			#print("[+] Match is running")

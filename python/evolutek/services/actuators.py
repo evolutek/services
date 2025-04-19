@@ -112,11 +112,11 @@ class Actuators(Service):
 
         self.pumps = PumpController({
             0: [
-                create_gpio(0, 'pump1', dir=True, type=GpioType.MCP),
+                create_gpio(9, 'pump1', dir=True, type=GpioType.MCP),
                 None
             ],
             1: [
-                create_gpio(1, 'pump2', dir=True, type=GpioType.MCP),
+                create_gpio(8, 'pump2', dir=True, type=GpioType.MCP),
                 None
             ]
         })

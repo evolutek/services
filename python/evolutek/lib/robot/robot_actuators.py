@@ -155,10 +155,10 @@ class MagnetState(Enum):
         #MagnetId.BACK_MAGNET_4: 0
     }
     DISABLE = {
-        MagnetId.FRONT_MAGNET_1: 90,
+        MagnetId.FRONT_MAGNET_1: 0,
         MagnetId.FRONT_MAGNET_2: 180,
         MagnetId.FRONT_MAGNET_3: 0,
-        MagnetId.FRONT_MAGNET_4: 90,
+        MagnetId.FRONT_MAGNET_4: 180,
         #MagnetId.BACK_MAGNET_1: 90,
         #MagnetId.BACK_MAGNET_2: 90,
         #MagnetId.BACK_MAGNET_3: 90,
