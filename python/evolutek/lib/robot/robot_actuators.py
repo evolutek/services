@@ -17,9 +17,9 @@ class ElevatorId(Enum):
     #BACK = (2, 3)
 
 class ElevatorPosition(Enum):
-    LOWEST = {ElevatorId.FRONT: (380, 640)}
+    LOWEST = {ElevatorId.FRONT: (390, 630)}
     MIDDLE = {ElevatorId.FRONT: (420, 600)}
-    HIGHEST = {ElevatorId.FRONT: (750, 270)}
+    HIGHEST = {ElevatorId.FRONT: (760, 260)}
 
 @if_enabled
 @async_task
@@ -29,6 +29,9 @@ def move_elevator(self, elevator_id: ElevatorId, position: ElevatorPosition, wai
 
     if isinstance(position, str):
         position = ElevatorPosition[position]
+
+    self.actuators.ax_set_speed(elevator_id.value[0], 256)
+    self.actuators.ax_set_speed(elevator_id.value[0], 256)
 
     """
     if position == ElevatorPosition.HIGH:
@@ -70,18 +73,49 @@ def move_elevator(self, elevator_id: ElevatorId, position: ElevatorPosition, wai
 
     return RobotStatus.return_status(RobotStatus.Done)
 
+@if_enabled
+@async_task
+def move_elevator_ex(self, elevator_id: ElevatorId, position: float, wait = True):
+    if isinstance(elevator_id, str):
+        elevator_id = ElevatorId[elevator_id]
+
+    if isinstance(position, str):
+        position = float(position)
+
+
+    self.actuators.ax_set_speed(elevator_id.value[0], 256)
+    self.actuators.ax_set_speed(elevator_id.value[0], 256)
+
+    angles = (
+        (ElevatorPosition.HIGHEST.value[elevator_id][0] - ElevatorPosition.LOWEST.value[elevator_id][0]) * position + ElevatorPosition.LOWEST.value[elevator_id][0],
+        (ElevatorPosition.HIGHEST.value[elevator_id][1] - ElevatorPosition.LOWEST.value[elevator_id][1]) * position + ElevatorPosition.LOWEST.value[elevator_id][1]
+    )
+
+    # TODO: Moving the two AX12 with two Cellaserv command can be too slow (too much delay between two commands)
+    status = RobotStatus.check(
+        self.actuators.ax_move(elevator_id.value[0], angles[0]), # Right servo
+        self.actuators.ax_move(elevator_id.value[1], angles[1])  # Left servo
+    )
+
+    if RobotStatus.get_status(status) != RobotStatus.Done:
+        return status
+
+    sleep(2)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
 
 # ====== Plank Arm ======
 
 # (Right, Left)
 class PlankArmId(Enum):
-    FRONT = (1, 2)
+    FRONT = (8, 7)
     #BACK = (7, 8)
 
 class PlankArmPosition(Enum):
-    LIFT       = {PlankArmId.FRONT: (180, 175)}
-    EXPANDED   = {PlankArmId.FRONT: (120, 115)}
-    COLLAPSED  = {PlankArmId.FRONT: (120, 115)}
+    LIFT       = {PlankArmId.FRONT: (118, 83)}
+    EXPANDED   = {PlankArmId.FRONT: (90, 110)}
+    COLLAPSED  = {PlankArmId.FRONT: (180, 20)}
 
 @if_enabled
 @async_task
@@ -120,10 +154,10 @@ def move_plank_arm(self, plank_arm_id: PlankArmId, position: PlankArmPosition):
 # ====== Magnets ======
 
 class MagnetId(Enum):
-    FRONT_MAGNET_1 = 3
-    FRONT_MAGNET_2 = 4
-    FRONT_MAGNET_3 = 5
-    FRONT_MAGNET_4 = 6
+    FRONT_MAGNET_1 = 6
+    FRONT_MAGNET_2 = 5
+    FRONT_MAGNET_3 = 4
+    FRONT_MAGNET_4 = 3
     #BACK_MAGNET_1 = 4
     #BACK_MAGNET_2 = 5
     #BACK_MAGNET_3 = 6
@@ -145,7 +179,7 @@ class MagnetsSet(Enum):
 
 # TODO: Set angles
 class MagnetState(Enum):
-    ENABLE = {
+    DISABLE = {
         MagnetId.FRONT_MAGNET_1: 180,
         MagnetId.FRONT_MAGNET_2: 0,
         MagnetId.FRONT_MAGNET_3: 180,
@@ -155,7 +189,7 @@ class MagnetState(Enum):
         #MagnetId.BACK_MAGNET_3: 0,
         #MagnetId.BACK_MAGNET_4: 0
     }
-    DISABLE = {
+    ENABLE = {
         MagnetId.FRONT_MAGNET_1: 0,
         MagnetId.FRONT_MAGNET_2: 180,
         MagnetId.FRONT_MAGNET_3: 0,
@@ -208,12 +242,13 @@ def toggle_pumps(self, pumps: PumpsSet, grab: bool):
 # ====== Pumps Arms ======
 
 class PumpsArmId(Enum):
-    FRONT = 0
+    FRONT = 9
     #BACK = ?
 
 class PumpsArmPosition(Enum):
-    COLLAPSED  = {PumpsArmId.FRONT: 90}
-    EXPANDED   = {PumpsArmId.FRONT: 0}
+    COLLAPSED       = {PumpsArmId.FRONT: 20}
+    EXPANDED        = {PumpsArmId.FRONT: 105}
+    ALMOST_EXPANDED = {PumpsArmId.FRONT: 90}
 
 @if_enabled
 @async_task
@@ -224,7 +259,7 @@ def move_pumps_arm(self, pumps_arm_id: PumpsArmId, position: PumpsArmPosition):
     if isinstance(position, str):
         position = PumpsArmPosition[position]
 
-    angles = position.value[plank_arm_id]
+    angles = position.value[pumps_arm_id]
 
     status = RobotStatus.check(self.actuators.servo_set_angle(
         pumps_arm_id.value,

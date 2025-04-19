@@ -101,13 +101,13 @@ class Actuators(Service):
         )
 
         self.i2c_acts = I2CActsHandler({
-            0: [I2CActType.Servo, 180], # Pumps arm
-            1: [I2CActType.Servo, 180], # Left plank arm
-            2: [I2CActType.Servo, 180], # Right plank arm
-            3: [I2CActType.Servo, 180], # Right most magnet
-            4: [I2CActType.Servo, 180], # Middle right magnet
-            5: [I2CActType.Servo, 180], # Middle left magnet
-            6: [I2CActType.Servo, 180], # Left most magnet
+            3: [I2CActType.Servo, 180], # Left most magnet
+            4: [I2CActType.Servo, 180], # Middle left magnet
+            5: [I2CActType.Servo, 180], # Middle right magnet
+            6: [I2CActType.Servo, 180], # Right most magnet
+            7: [I2CActType.Servo, 180], # Left plank arm
+            8: [I2CActType.Servo, 180], # Right plank arm
+            9: [I2CActType.Servo, 180], # Pump arm
         }, frequency = 50)
 
         self.pumps = PumpController({

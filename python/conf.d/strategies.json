@@ -39,6 +39,32 @@
       "theta": "0",
       "actions": [],
       "score": 10
+    },
+    {
+      "name": "place_banner_1",
+      "position": {
+        "x": 1865,
+        "y": 1220
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "place_banner",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "score": 10
+    },
+    {
+      "name": "place_banner_2",
+      "position": {
+        "x": 1750,
+        "y": 1220
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 10
     }
   ],
 
@@ -65,6 +91,26 @@
       "use_pathfinding": false,
       "config_actions": [],
       "available": ["pal"]
+    },
+    {
+      "name": "Banner",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "place_banner_1",
+        "just_push_move_1",
+        "just_push_move_2",
+        "just_push_move_3",
+        "go_to_end_area"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [
+        {
+          "fct": "prepare_banner",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "available": ["pal"]
     }
   ],
 
@@ -72,10 +118,10 @@
     {
       "name": "THE_ONLY_ONE",
       "position": {
-        "x": 1780,
+        "x": 1750,
         "y": 1220
       },
-      "theta": "pi",
+      "theta": "0",
       "recal_side": "x",
       "recal_sensor": "no"
     }
