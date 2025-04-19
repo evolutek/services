@@ -1,8 +1,9 @@
 from evolutek.lib.robot.robot_actions_imports import *
 
-from evolutek.lib.robot.robot_actuators import ElevatorPosition, ClampsPosition, RackPosition, HersePosition
+from evolutek.lib.robot.robot_actuators import ElevatorPosition
 
 
+"""
 @if_enabled
 @async_task
 def good_by_plants(self):
@@ -171,3 +172,4 @@ def place_plants_in_pots_and_grab_plants(self):
     sleep(0.15)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
+"""

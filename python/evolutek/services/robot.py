@@ -45,12 +45,12 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    toggle_magnet = Service.action(robot_actuators.toggle_magnet)
-    move_elevator = Service.action(robot_actuators.move_elevator)
-    move_plank_arm = Service.action(robot_actuators.move_plank_arm)
+    #toggle_magnet = Service.action(robot_actuators.toggle_magnet)
+    #move_elevator = Service.action(robot_actuators.move_elevator)
+    #move_plank_arm = Service.action(robot_actuators.move_plank_arm)
 
     # Imported from robot_actions
-    place_plants = Service.action(robot_actions.place_plants)
+    #place_plants = Service.action(robot_actions.place_plants)
 
     def __init__(self):
         super().__init__(ROBOT)

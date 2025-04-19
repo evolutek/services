@@ -72,14 +72,12 @@ class PlankArmPosition(Enum):
     COLLAPSED = (180, 175)
     EXPANDED = (120, 115)
 
-# Map clamps to their servo id
-CLAMP_ID_TO_SERVO_ID = [2, 3, 4]
-
+"""
 @if_enabled
 @async_task
 def move_plank_arm(self, plank_arm_id: PlankArmId, position: PlankArmPosition):
     if isinstance(position, str):
-        position = ClampsPosition[position]
+        position = PlankArmPosition[position]
     _ids = []
     for id in ids:
         _ids.append(int(id))
@@ -87,6 +85,7 @@ def move_plank_arm(self, plank_arm_id: PlankArmId, position: PlankArmPosition):
     for clamp_id in _ids:
         status.append(self.actuators.servo_set_angle(CLAMP_ID_TO_SERVO_ID[clamp_id], position.value[clamp_id]))
     return RobotStatus.check(*status)
+"""
 
 
 # ====== Magnets ======
