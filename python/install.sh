@@ -1,7 +1,15 @@
 #!/bin/bash
 
-export PYTHON="$(which python | head -n1)"
-export PWD="$(dirname -- "${BASH_SOURCE[0]}")"
+export PWD="$(realpath "$(dirname -- "${BASH_SOURCE[0]}")")"
+export PYTHON="$PWD/.venv/bin/python"
+
+cd "$PWD"
+
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
+
+cd -
 
 function install {
     cat "systemd/$1" | envsubst > "/etc/systemd/system/$1"
