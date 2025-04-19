@@ -90,20 +90,6 @@ class Actuators(Service):
             }
         )
 
-        self.magnets = MagnetController(
-            {
-                0: [ # Right magnet
-                    create_gpio(3, 'magnet1', dir=True, type=GpioType.MCP)
-                ],
-                1: [ # Middle magnet
-                    create_gpio(4, 'magnet2', dir=True, type=GpioType.MCP)
-                ],
-                2: [ # Left magnet
-                    create_gpio(5, 'magnet3', dir=True, type=GpioType.MCP)
-                ]
-            }
-        )
-
         # TODO: Check if numbers here are correct
         self.axs = AX12Controller(
             [
@@ -123,12 +109,23 @@ class Actuators(Service):
             4: [I2CActType.Servo, 180]  # Left clamp
         }, frequency=50)
 
+        self.pumps = PumpController({
+            0: [
+                create_gpio(3, 'pump1', dir=True, type=GpioType.MCP),
+                None
+            ],
+            1: [
+                create_gpio(4, 'pump2', dir=True, type=GpioType.MCP),
+                None
+            ]
+        })
+
         self.all_actuators = [
             self.proximity_sensors,
             self.recal_sensors,
             self.axs,
             self.i2c_acts,
-            self.magnets
+            self.pumps
         ]
 
         self.free()
@@ -295,36 +292,50 @@ class Actuators(Service):
             return RobotStatus.return_status(RobotStatus.Done)
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    ###########
-    # MAGNETS #
-    ###########
     @Service.action
-    def magnets_on(self, ids: list[int]):
+    def servos_set_angles(self, ids, angles):
+        ids = list(map(lambda x: int(x), ids))
+        angles = list(map(lambda x: float(x), angles))
+
+        for i, id in enumerate(ids):
+            if self.i2c_acts[id] == None:
+                continue
+
+            if not self.i2c_acts[id].set_angle(angles[i]):
+                return RobotStatus.return_status(RobotStatus.Failed)
+
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    #########
+    # PUMPS #
+    #########
+    @Service.action
+    def pumps_grab(self, ids: list[int]):
         _ids = []
         for id in ids:
-            if self.magnets[int(id)] == None:
+            if self.pumps[int(id)] == None:
                 continue
             _ids.append(int(id))
 
         if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.magnets.on(_ids)
+        self.pumps.gets(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled
     @Service.action
-    def magnets_off(self, ids: list[int]):
+    def pumps_drop(self, ids: list[int]):
         _ids = []
         for id in ids:
-            if self.magnets[int(id)] == None:
+            if self.pumps[int(id)] == None:
                 continue
             _ids.append(int(id))
 
         if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.magnets.off(_ids)
+        self.pumps.drops(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
 def main():

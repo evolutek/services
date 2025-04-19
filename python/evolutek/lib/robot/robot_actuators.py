@@ -101,9 +101,72 @@ class MagnetId(Enum):
     BACK_MAGNET_3 = 6
     BACK_MAGNET_4 = 7
 
+class MagnetsSet(Enum):
+    FRONT_MAGNETS = [
+        MagnetId.FRONT_MAGNET_1,
+        MagnetId.FRONT_MAGNET_2,
+        MagnetId.FRONT_MAGNET_3,
+        MagnetId.FRONT_MAGNET_4
+    ]
+    BACK_MAGNETS = [
+        MagnetId.BACK_MAGNET_1,
+        MagnetId.BACK_MAGNET_2,
+        MagnetId.BACK_MAGNET_3,
+        MagnetId.BACK_MAGNET_4
+    ]
+
+# TODO: Set angles
+class MagnetState(Enum):
+    ENABLE = {
+        MagnetId.FRONT_MAGNET_1: 0,
+        MagnetId.FRONT_MAGNET_2: 0,
+        MagnetId.FRONT_MAGNET_3: 0,
+        MagnetId.FRONT_MAGNET_4: 0,
+        MagnetId.BACK_MAGNET_1: 0,
+        MagnetId.BACK_MAGNET_2: 0,
+        MagnetId.BACK_MAGNET_3: 0,
+        MagnetId.BACK_MAGNET_4: 0
+    }
+    DISABLE = {
+        MagnetId.FRONT_MAGNET_1: 90,
+        MagnetId.FRONT_MAGNET_2: 90,
+        MagnetId.FRONT_MAGNET_3: 90,
+        MagnetId.FRONT_MAGNET_4: 90,
+        MagnetId.BACK_MAGNET_1: 90,
+        MagnetId.BACK_MAGNET_2: 90,
+        MagnetId.BACK_MAGNET_3: 90,
+        MagnetId.BACK_MAGNET_4: 90
+    }
+
 @if_enabled
 @async_task
-def toggle_magnet(self, magnet_id: MagnetId, enable: bool):id = int(id)
-    if isinstance(position, str):
-        position = ArmsPosition[position]
-    return RobotStatus.check(self.actuators.servo_set_angle(ARM_ID_TO_SERVO_ID[id], position.value[id]))
+def toggle_magnets(self, magnets: MagnetsSet, state: MagnetState):
+    if isinstance(magnet_id, str):
+        magnet_id = MagnetId[magnet_id]
+
+    if isinstance(state, str):
+        state = MagnetState[state]
+
+    ids = list(map(lambda x: x.value, magnets.value))
+    angles = list(map(lambda x: state.value[x], magnets.value))
+
+    return RobotStatus.check(self.actuators.servos_set_angles(ids, angles))
+
+
+# ====== Pumps ======
+
+# TODO
+class PumpsSet(Enum):
+    FRONT_PLANK = [0, 1]
+    BACK_PLANK = [2, 3]
+
+@if_enabled
+@async_task
+def toggle_pumps(self, pumps: PumpsSet, grab: bool):
+    if isinstance(pumps, str):
+        pumps = PumpsSet[pumps]
+
+    if grab:
+        return RobotStatus.check(self.actuators.pumps_grab(pumps.value))
+    else:
+        return RobotStatus.check(self.actuators.pumps_drop(pumps.value))
