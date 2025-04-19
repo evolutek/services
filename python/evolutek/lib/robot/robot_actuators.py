@@ -146,8 +146,8 @@ class MagnetsSet(Enum):
 class MagnetState(Enum):
     ENABLE = {
         MagnetId.FRONT_MAGNET_1: 180,
-        MagnetId.FRONT_MAGNET_2: 180,
-        MagnetId.FRONT_MAGNET_3: 0,
+        MagnetId.FRONT_MAGNET_2: 0,
+        MagnetId.FRONT_MAGNET_3: 180,
         MagnetId.FRONT_MAGNET_4: 0,
         #MagnetId.BACK_MAGNET_1: 0,
         #MagnetId.BACK_MAGNET_2: 0,
@@ -156,8 +156,8 @@ class MagnetState(Enum):
     }
     DISABLE = {
         MagnetId.FRONT_MAGNET_1: 90,
-        MagnetId.FRONT_MAGNET_2: 90,
-        MagnetId.FRONT_MAGNET_3: 90,
+        MagnetId.FRONT_MAGNET_2: 180,
+        MagnetId.FRONT_MAGNET_3: 0,
         MagnetId.FRONT_MAGNET_4: 90,
         #MagnetId.BACK_MAGNET_1: 90,
         #MagnetId.BACK_MAGNET_2: 90,
@@ -168,8 +168,8 @@ class MagnetState(Enum):
 @if_enabled
 @async_task
 def toggle_magnets(self, magnets: MagnetsSet, state: MagnetState):
-    if isinstance(magnet_id, str):
-        magnet_id = MagnetId[magnet_id]
+    if isinstance(magnets, str):
+        magnets = MagnetsSet[magnets]
 
     if isinstance(state, str):
         state = MagnetState[state]
@@ -188,7 +188,7 @@ def toggle_magnets(self, magnets: MagnetsSet, state: MagnetState):
 # TODO
 class PumpsSet(Enum):
     FRONT_PLANK = [0, 1]
-    BACK_PLANK = [2, 3]
+    #BACK_PLANK = [2, 3]
 
 @if_enabled
 @async_task

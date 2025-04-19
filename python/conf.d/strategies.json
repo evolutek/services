@@ -24,7 +24,7 @@
       "name": "just_push_move_2",
       "position": {
         "x": 1500,
-        "y": 780
+        "y": 840
       },
       "theta": "0",
       "actions": [],
@@ -34,7 +34,7 @@
       "name": "just_push_move_3",
       "position": {
         "x": 1800,
-        "y": 780
+        "y": 840
       },
       "theta": "0",
       "actions": [],
