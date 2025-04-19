@@ -3,6 +3,7 @@ Description=Actuators service
 PartOf=evolutek.target
 
 [Service]
+WorkingDirectory=$PWD
 ExecStart=$PYTHON -m evolutek.services.actuators
 CPUSchedulingPolicy=rr
 

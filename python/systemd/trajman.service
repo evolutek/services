@@ -3,6 +3,7 @@ Description=Trajman service
 PartOf=evolutek.target
 
 [Service]
+WorkingDirectory=$PWD
 ExecStart=$PYTHON -m evolutek.services.trajman
 CPUSchedulingPolicy=rr
 
