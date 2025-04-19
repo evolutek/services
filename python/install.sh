@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export PYTHON="$(which python | head -n1)"
+export PWD="$(dirname -- "${BASH_SOURCE[0]}")"
 
 function install {
     cat "systemd/$1" | envsubst > "/etc/systemd/system/$1"
