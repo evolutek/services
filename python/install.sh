@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PYTHON="which python | head -n1"
+export PYTHON="$(which python | head -n1)"
 
 function install {
     cat "systemd/$1" | envsubst > "/etc/systemd/system/$1"
