@@ -212,8 +212,8 @@ class PumpsArmId(Enum):
     #BACK = ?
 
 class PumpsArmPosition(Enum):
-    COLLAPSED  = {PumpsArmId.FRONT: 120}
-    EXPANDED   = {PumpsArmId.FRONT: 120}
+    COLLAPSED  = {PumpsArmId.FRONT: 90}
+    EXPANDED   = {PumpsArmId.FRONT: 0}
 
 @if_enabled
 @async_task
