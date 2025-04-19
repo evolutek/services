@@ -145,7 +145,6 @@ class Actuators(Service):
 
     def stop(self):
         print("[ACTUATORS] Stopping")
-        self.magnets.free()
         self.rgb_led_strip.stop()
         self.free()
 
@@ -167,7 +166,8 @@ class Actuators(Service):
     @Service.action
     def free(self):
         # TODO
-        self.magnets.free()
+        #self.magnets.free()
+        #self.pumps.drops()
         self.i2c_acts.free_all()
         #self.ax_free_all([1,2,3])
 
@@ -180,7 +180,7 @@ class Actuators(Service):
     # Enable Actuators
     @Service.action
     def enable(self):
-        self.magnets.free()
+        #self.magnets.free()
 
         if not self.disabled.is_set():
             return
@@ -211,8 +211,8 @@ class Actuators(Service):
     #######
     @Service.action
     def bau_read(self):
-        #return 1
-        return self.bau.read()
+        return 1
+        #return self.bau.read()
 
     def bau_callback(self, event, value, **kwargs):
         #print("BAU is {value}")
