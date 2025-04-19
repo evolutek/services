@@ -16,12 +16,9 @@ class ElevatorId(Enum):
     #BACK = (2, 3)
 
 class ElevatorPosition(Enum):
-    GRAB_LOW     = {ElevatorId.FRONT: (315, 656)}
-    LIFT_LOW     = {ElevatorId.FRONT: (409, 560)}
-    GRAB_HIGH    = {ElevatorId.FRONT: (512, 452)}
-    LIFT_HIGH    = {ElevatorId.FRONT: (677, 293)}
-    PLACE_BANNER = {ElevatorId.FRONT: (677, 293)}
-    LIFT_BANNER  = {ElevatorId.FRONT: (677, 293)}
+    LOWEST = {ElevatorId.FRONT: (380, 640)}
+    MIDDLE = {ElevatorId.FRONT: (420, 600)}
+    HIGHEST = {ElevatorId.FRONT: (750, 270)}
 
 @if_enabled
 @async_task
@@ -217,7 +214,7 @@ class PumpsArmPosition(Enum):
 
 @if_enabled
 @async_task
-def toggle_pumps(self, pumps_arm_id: PumpsArmId, position: PumpsArmPosition):
+def move_pumps_arm(self, pumps_arm_id: PumpsArmId, position: PumpsArmPosition):
     if isinstance(pumps_arm_id, str):
         pumps_arm_id = PumpsArmId[pumps_arm_id]
 
@@ -248,8 +245,8 @@ class SideArmsId(Enum):
 
 # TODO: Set angles
 class SideArmPosition(Enum):
-    NORMAL   = {SideArmsId.FRONT: (120, 0)}
-    SPREADED = {SideArmsId.FRONT: (120, 0)}
+    NORMAL   = {SideArmsId.FRONT: (200, 830)}
+    SPREADED = {SideArmsId.FRONT: (600, 430)}
 
 @if_enabled
 @async_task

@@ -3,8 +3,8 @@
     {
       "name": "go_to_end_area",
       "position": {
-        "x": 350,
-        "y": 450
+        "x": 530,
+        "y": 330
       },
       "theta": "pi",
       "actions": [],

@@ -70,22 +70,22 @@ class Actuators(Service):
         self.proximity_sensors = ProximitySensors(
             {
                 0: [ # Bottom right sensor
-                    create_gpio(10, 'proximity_sensors1', dir=False, type=GpioType.MCP)
+                    create_gpio(3, 'proximity_sensors1', dir=False, type=GpioType.MCP)
                 ],
                 1: [ # Bottom middle sensor
-                    create_gpio(9,  'proximity_sensors2', dir=False, type=GpioType.MCP)
+                    create_gpio(4,  'proximity_sensors2', dir=False, type=GpioType.MCP)
                 ],
                 2: [ # Bottom left sensor
-                    create_gpio(8,  'proximity_sensors3', dir=False, type=GpioType.MCP)
+                    create_gpio(5,  'proximity_sensors3', dir=False, type=GpioType.MCP)
                 ],
                 3: [ # Clamp right sensor
-                    create_gpio(11, 'proximity_sensors4', dir=False, type=GpioType.MCP)
+                    create_gpio(6, 'proximity_sensors4', dir=False, type=GpioType.MCP)
                 ],
                 4: [ # Clamp middle sensor
-                    create_gpio(12, 'proximity_sensors5', dir=False, type=GpioType.MCP)
+                    create_gpio(7, 'proximity_sensors5', dir=False, type=GpioType.MCP)
                 ],
                 5: [ # Clamp left sensor
-                    create_gpio(13, 'proximity_sensors6', dir=False, type=GpioType.MCP)
+                    create_gpio(8, 'proximity_sensors6', dir=False, type=GpioType.MCP)
                 ]
             }
         )
@@ -112,11 +112,11 @@ class Actuators(Service):
 
         self.pumps = PumpController({
             0: [
-                create_gpio(3, 'pump1', dir=True, type=GpioType.MCP),
+                create_gpio(0, 'pump1', dir=True, type=GpioType.MCP),
                 None
             ],
             1: [
-                create_gpio(4, 'pump2', dir=True, type=GpioType.MCP),
+                create_gpio(1, 'pump2', dir=True, type=GpioType.MCP),
                 None
             ]
         })

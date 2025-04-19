@@ -45,9 +45,12 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    #toggle_magnet = Service.action(robot_actuators.toggle_magnet)
-    #move_elevator = Service.action(robot_actuators.move_elevator)
-    #move_plank_arm = Service.action(robot_actuators.move_plank_arm)
+    move_elevator  = Service.action(robot_actuators.move_elevator)
+    move_plank_arm = Service.action(robot_actuators.move_plank_arm)
+    toggle_magnets = Service.action(robot_actuators.toggle_magnets)
+    toggle_pumps   = Service.action(robot_actuators.toggle_pumps)
+    move_pumps_arm = Service.action(robot_actuators.move_pumps_arm)
+    move_side_arms = Service.action(robot_actuators.move_side_arms)
 
     # Imported from robot_actions
     #place_plants = Service.action(robot_actions.place_plants)
@@ -208,16 +211,16 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
-        self.close_right_arm(async_task=False)
-        self.close_left_arm(async_task=False)
-        self.move_elevator(robot_actuators.ElevatorPosition.HIGH, async_task=False)
-        sleep(0.7)
-        self.move_clamps([0,1,2], robot_actuators.ClampsPosition.CLOSE, async_task=False)
-        sleep(0.5)
-        self.move_rack(robot_actuators.RackPosition.FOLDED, async_task=False)
-        sleep(0.5)
-        self.move_herse(robot_actuators.HersePosition.UP, async_task=False)
-        sleep(0.5)
+        #self.close_right_arm(async_task=False)
+        #self.close_left_arm(async_task=False)
+        #self.move_elevator(robot_actuators.ElevatorPosition.HIGH, async_task=False)
+        #sleep(0.7)
+        #self.move_clamps([0,1,2], robot_actuators.ClampsPosition.CLOSE, async_task=False)
+        #sleep(0.5)
+        #self.move_rack(robot_actuators.RackPosition.FOLDED, async_task=False)
+        #sleep(0.5)
+        #self.move_herse(robot_actuators.HersePosition.UP, async_task=False)
+        #sleep(0.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
