@@ -1,3 +1,19 @@
-[tool.isort]
-profile = "black"
-known_first_party = ["cellaserv", "evolutek"]
+#[tool.isort]
+#profile = "black"
+#known_first_party = ["cellaserv", "evolutek"]
+
+[project]
+name = "evolutek"
+version = "1.0.0"
+description = "Evolutek high level code"
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.scripts]
+robot = "evolutek.services.robot:main"
+config = "evolutek.services.actuators:main"
+actuators = "evolutek.services.actuators:main"
+trajman = "evolutek.services.trajman:main"
+match = "evolutek.services.match:main"
+ai = "evolutek.services.ai:main"
+reset = "evolutek.utils.service_reset:main"

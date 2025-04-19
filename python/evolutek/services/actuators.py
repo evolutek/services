@@ -93,21 +93,22 @@ class Actuators(Service):
         # TODO: Check if numbers here are correct
         self.axs = AX12Controller(
             [
-                1, # Right elevator servo
-                2, # Left elevator servo
-                3, # Rack servo
-                4, # Right herse servo
-                5, # Left herse servo
+                1, # Front elevator right arm
+                2, # Front elevator left arm
+                3, # Front right can arm
+                4, # Front left can arm
             ]
         )
 
         self.i2c_acts = I2CActsHandler({
-            0: [I2CActType.Servo, 180], # Right arm
-            1: [I2CActType.Servo, 180], # Left arm
-            2: [I2CActType.Servo, 180], # Right clamp
-            3: [I2CActType.Servo, 180], # Middle clamp
-            4: [I2CActType.Servo, 180]  # Left clamp
-        }, frequency=50)
+            0: [I2CActType.Servo, 180], # Pumps arm
+            1: [I2CActType.Servo, 180], # Left plank arm
+            2: [I2CActType.Servo, 180], # Right plank arm
+            3: [I2CActType.Servo, 180], # Right most magnet
+            4: [I2CActType.Servo, 180], # Middle right magnet
+            5: [I2CActType.Servo, 180], # Middle left magnet
+            6: [I2CActType.Servo, 180], # Left most magnet
+        }, frequency = 50)
 
         self.pumps = PumpController({
             0: [
