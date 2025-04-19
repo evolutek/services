@@ -3,7 +3,7 @@ Description=AI service
 PartOf=evolutek.target
 
 [Service]
-ExecStart=ai
+ExecStart=$PYTHON -m evolutek.services.ai
 CPUSchedulingPolicy=rr
 
 [Install]

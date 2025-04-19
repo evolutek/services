@@ -3,7 +3,7 @@ Description=Actuators service
 PartOf=evolutek.target
 
 [Service]
-ExecStart=actuators
+ExecStart=$PYTHON -m evolutek.services.actuators
 CPUSchedulingPolicy=rr
 
 [Install]

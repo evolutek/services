@@ -3,7 +3,7 @@ Description=Reset service
 PartOf=evolutek.target
 
 [Service]
-ExecStart=reset
+ExecStart=$PYTHON -m evolutek.services.reset
 CPUSchedulingPolicy=rr
 
 [Install]

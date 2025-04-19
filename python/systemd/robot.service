@@ -3,7 +3,7 @@ Description=Robot service
 PartOf=evolutek.target
 
 [Service]
-ExecStart=robot
+ExecStart=$PYTHON -m evolutek.services.robot
 CPUSchedulingPolicy=rr
 
 [Install]

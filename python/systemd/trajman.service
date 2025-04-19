@@ -3,7 +3,7 @@ Description=Trajman service
 PartOf=evolutek.target
 
 [Service]
-ExecStart=trajman
+ExecStart=$PYTHON -m evolutek.services.trajman
 CPUSchedulingPolicy=rr
 
 [Install]
