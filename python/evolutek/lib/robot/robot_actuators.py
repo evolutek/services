@@ -8,12 +8,19 @@ from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVaria
 from evolutek.lib.actuators.ax12 import AX12Controller
 
 
-# TODO: Use correct angles
-# This a an enum of pair of angle
-# (the first angle is the left servo and the second is the right servo)
-class ElevatorPosition(Enum):
-    LOW = (0, 45)
-    HIGH = (45, 0)
+
+
+class ArmPosition(Enum):
+     = [45, 45]
+    CLOSE = [0, q, 0]
+
+
+@if_enabled
+@async_task
+def move_elevator(self, position: ElevatorPosition):
+
+
+
 
 @if_enabled
 @async_task
@@ -40,7 +47,7 @@ def move_clamps(self, clamp_ids: list[int], position: ClampsPosition):
     status = []
     for clamp_id in clamp_ids:
         status.append(self.actuators.servo_set_angle(CLAMP_ID_TO_SERVO_ID[clamp_id], position[clamp_id]))
-    return RobotStatus.check(*status)
+    return RobotStatus.check(*status   )
 
 
 # Magnet id is 0, 1 or 2

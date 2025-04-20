@@ -78,44 +78,41 @@ class Actuators(Service):
         #)
 
         # TODO: Set correct gpio
-        #self.magnets = MagnetController(
-        #    {
-        #        0: [
-        #            create_gpio(0, 'magnet1', dir=True, type=GpioType.MCP)
-        #        ],
-        #        1 : [
-        #            create_gpio(2, 'magnet2', dir=True, type=GpioType.MCP)
-        #        ],
-        #        2 : [
-        #            create_gpio(3, 'magnet3', dir=True, type=GpioType.MCP)
-        #        ]
-        #    }
-        #)
+        self.pumps = PumpController(
+            {
+                0: [
+                    create_gpio(0, 'pump1', dir=True, type=GpioType.MCP), None 
+                ],
+                1 : [
+                    create_gpio(2, 'pump2', dir=True, type=GpioType.MCP), None
+                ]
+            }
+        )
 
-        # TODO: Check if numbers here are correct
-        #self.axs = AX12Controller(
-        #    [1, 2]
-        #)
+        self.axs = AX12Controller(
+            [1, 2]
+        )
 
-        #self.i2c_acts = I2CActsHandler({
-        #    0: [I2CActType.Servo, 180],
-        #    1: [I2CActType.Servo, 180],
-        #    2: [I2CActType.Servo, 180],
-        #    3: [I2CActType.Servo, 180],
-        #    4: [I2CActType.Servo, 180],
-        #    5: [I2CActType.Servo, 180],
-        #    6: [I2CActType.Servo, 180]
-        #}, frequency=50)
+        self.i2c_serv = I2CActsHandler({
+            0: [I2CActType.Servo, 180],
+            1: [I2CActType.Servo, 180],
+            2: [I2CActType.Servo, 180],
+            3: [I2CActType.Servo, 180],
+            4: [I2CActType.Servo, 180],
+        }, frequency=50)
 
 
-        self.i2c_acts = I2CMotorBoard({
+        self.i2c_mots = I2CMotorBoard({
             0: (I2CMotorBoardStepper, [0]),
             1: (I2CMotorBoardStepper, [1]),
             2: (I2CMotorBoardStepper, [2]),
-            3: (I2CMotorBoardStepper, [3])
         })
 
         self.all_actuators = [
+
+            self.i2c_mots,
+            self.i2c_serv,
+            self.axs
             #self.proximity_sensors,
             #self.recal_sensors,
             #self.axs,
@@ -144,7 +141,7 @@ class Actuators(Service):
         for actuators in self.all_actuators:
             print(actuators)
 
-    #@Service.action
+    @Service.action
     def get_status(self):
         d = {}
         for actuators in self.all_actuators:
@@ -173,7 +170,7 @@ class Actuators(Service):
 
         if self.bau.read():
             self.disabled.clear()
-            self.i2c_acts.init_escs()
+      #      self.i2c_acts.init_escs()
 
     #####################
     # PROXIMITY SENSORS #
@@ -230,44 +227,44 @@ class Actuators(Service):
     #######
     # AXs #
     #######
-    #@if_enabled
-    #@Service.action
-    #def ax_move(self, id, pos):
-    #    if self.axs[int(id)] == None:
-    #        return RobotStatus.return_status(RobotStatus.Failed)
-    #    self.axs[int(id)].move(int(pos))
-    #    return RobotStatus.return_status(RobotStatus.Done)
+    @if_enabled
+    @Service.action
+    def ax_move(self, id, pos):
+        if self.axs[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        self.axs[int(id)].move(int(pos))
+        return RobotStatus.return_status(RobotStatus.Done)
 
-    #@Service.action
-    #def ax_free_all(self, ids):
-    #    if isinstance(ids, str):
-    #        ids = ids.split(",")
+    @Service.action
+    def ax_free_all(self, ids):
+        if isinstance(ids, str):
+            ids = ids.split(",")
 
-    #    for i in ids:
-    #        if self.axs[int(i)] == None:
-    #            continue
-    #        self.axs[int(i)].free()
+        for i in ids:
+            if self.axs[int(i)] == None:
+                continue
+            self.axs[int(i)].free()
 
-    #    return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Done)
 
-    #@Service.action
-    #def ax_set_speed(self, id, speed):
-    #    if self.axs[int(id)] == None:
-    #        return None
-    #    self.axs[int(id)].moving_speed(int(speed))
-    #    return RobotStatus.return_status(RobotStatus.Done)
+    @Service.action
+    def ax_set_speed(self, id, speed):
+        if self.axs[int(id)] == None:
+           return None
+        self.axs[int(id)].moving_speed(int(speed))
+        return RobotStatus.return_status(RobotStatus.Done)
 
     ##########
     # SERVOS #
     ##########
-    #@Service.action
-    #def servo_set_angle(self, id, angle):
-    #    if self.i2c_acts[int(id)] == None:
-    #        return RobotStatus.return_status(RobotStatus.Failed)
-    #    if self.i2c_acts[int(id)].set_angle(int(angle)):
-    #        return RobotStatus.return_status(RobotStatus.Done)
-    #    return RobotStatus.return_status(RobotStatus.Failed)
-
+    @Service.action
+    def servo_set_angle(self, id, angle):
+        if self.i2c_serv[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_serv[int(id)].set_angle(int(angle)):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
+    
     ###########
     # MAGNETS #
     ###########
@@ -299,6 +296,38 @@ class Actuators(Service):
 
     #    self.magnets.off(_ids)
     #    return RobotStatus.return_status(RobotStatus.Done)
+
+    #########
+    # PUMPS #
+    #########
+    @Service.action
+    def pumps_on(self, ids: list[int]):
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
+                continue
+            _ids.append(int(id))
+
+        if len(_ids) < 1:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        self.pumps.on(_ids)
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @if_enabled
+    @Service.action
+    def pumps_off(self, ids: list[int]):
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
+                continue
+            _ids.append(int(id))
+
+        if len(_ids) < 1:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        self.pumps.off(_ids)
+        return RobotStatus.return_status(RobotStatus.Done)
 
 def main():
     actuators = Actuators()

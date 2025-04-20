@@ -9,30 +9,40 @@ class Pump(Component):
 
     def get(self):
         self.pump_gpio.write(True)
-        self.ev_gpio.write(False)
+        if(self.ev_gpio is not None) :
+            self.ev_gpio.write(False)
 
     def drop(self, use_ev=True):
         self.pump_gpio.write(False)
-        if use_ev: self.ev_gpio.write(True)
+        if(self.ev_gpio is not None) :
+            if use_ev: self.ev_gpio.write(True)
 
     def stop_ev(self):
-        self.ev_gpio.write(False)
+        if(self.ev_gpio is not None) :
+            self.ev_gpio.write(False)
 
     def __str__(self):
         s = "----------\n"
         s += "Pump: %d\n" % self.id
         s += "Pump output: %d\n" % self.pump_gpio.read()
-        s += "EV output: %d\n" % self.ev_gpio.read()
+        if(self.ev_gpio is not None) : s += "EV output: %d\n" % self.ev_gpio.read()
         s += "----------"
         return s
 
     def __dict__(self):
-        return {
-            "name" : self.name,
-            "id": self.id,
-            "pump_output": self.pump_gpio.read(),
-            "ev_output": self.ev_gpio.read()
-        }
+        if(self.ev_gpio is not None) :
+            return {
+                "name" : self.name,
+                "id": self.id,
+                "pump_output": self.pump_gpio.read(),
+                "ev_output": self.ev_gpio.read()
+            }
+        else : 
+            return {
+                "name" : self.name,
+                "id": self.id,
+                "pump_output": self.pump_gpio.read(),
+            }
 
 class PumpController(ComponentsHolder):
     def __init__(self, pumps, valve_delay=None):
