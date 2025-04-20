@@ -70,7 +70,7 @@
       "name": "grab_materials_1",
       "position": {
         "x": 1500,
-        "y": 1050
+        "y": 780
       },
       "theta": "0",
       "actions": [
@@ -86,7 +86,7 @@
       "name": "place_materials_1",
       "position": {
         "x": 1750,
-        "y": 1050
+        "y": 780
       },
       "theta": "0",
       "actions": [
@@ -99,20 +99,10 @@
       "score": 0
     },
     {
-      "name": "go_to_materials_2_1",
+      "name": "go_to_materials_1_1",
       "position": {
-        "x": 1350,
-        "y": 2000
-      },
-      "theta": "0",
-      "actions": [],
-      "score": 10
-    },
-    {
-      "name": "go_to_materials_2_2",
-      "position": {
-        "x": 1350,
-        "y": 450
+        "x": 1500,
+        "y": 1220
       },
       "theta": "0",
       "actions": [],
@@ -121,10 +111,10 @@
     {
       "name": "grab_materials_2",
       "position": {
-        "x": 1600,
-        "y": 300
+        "x": 1250,
+        "y": 1100
       },
-      "theta": "-pi/2",
+      "theta": "pi",
       "actions": [
         {
           "fct": "grab_materials",
@@ -137,8 +127,8 @@
     {
       "name": "place_materials_2",
       "position": {
-        "x": 1750,
-        "y": 225
+        "x": 1600,
+        "y": 1220
       },
       "theta": "0",
       "actions": [
@@ -201,14 +191,11 @@
       "starting_position": "THE_ONLY_ONE",
       "goals": [
         "place_banner_1",
+        "go_to_materials_1_1",
         "grab_materials_1",
         "place_materials_1",
-        "go_to_materials_2_1",
-        "go_to_materials_2_2",
-        "grab_materials_1",
-        "place_materials_1",
-        "go_to_materials_2_2",
-        "go_to_materials_2_1",
+        "grab_materials_2",
+        "place_materials_2",
         "go_to_end_area"
 		  ],
       "use_pathfinding": false,
