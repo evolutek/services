@@ -216,16 +216,18 @@ class Robot(Service):
         if not self.bau_state:
             return
         self.enable()
-        #self.close_right_arm(async_task=False)
-        #self.close_left_arm(async_task=False)
-        #self.move_elevator(robot_actuators.ElevatorPosition.HIGH, async_task=False)
-        #sleep(0.7)
-        #self.move_clamps([0,1,2], robot_actuators.ClampsPosition.CLOSE, async_task=False)
-        #sleep(0.5)
-        #self.move_rack(robot_actuators.RackPosition.FOLDED, async_task=False)
-        #sleep(0.5)
-        #self.move_herse(robot_actuators.HersePosition.UP, async_task=False)
-        #sleep(0.5)
+
+        self.move_elevator_ex(robot_actuators.ElevatorId.FRONT, 0)
+        self.move_plank_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PlankArmPosition.COLLAPSED)
+        self.toggle_magnets(robot_actuators.MagnetsSetId.FRONT, robot_actuators.MagnetState.DISABLE)
+        self.toggle_pumps(robot_actuators.PumpsSetId.FRONT, False)
+        self.move_side_arms(robot_actuators.SideArmsId.FRONT, robot_actuators.SideArmPosition.NORMAL)
+
+        sleep(1.5)
+
+        self.move_pumps_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PumpsArmPosition.COLLAPSED)
+
+        sleep(0.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
