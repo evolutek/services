@@ -65,6 +65,90 @@
       "theta": "0",
       "actions": [],
       "score": 10
+    },
+    {
+      "name": "grab_materials_1",
+      "position": {
+        "x": 1500,
+        "y": 1050
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "grab_materials",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "place_materials_1",
+      "position": {
+        "x": 1750,
+        "y": 1050
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "place_materials",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "go_to_materials_2_1",
+      "position": {
+        "x": 1350,
+        "y": 2000
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 10
+    },
+    {
+      "name": "go_to_materials_2_2",
+      "position": {
+        "x": 1350,
+        "y": 450
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 10
+    },
+    {
+      "name": "grab_materials_2",
+      "position": {
+        "x": 1600,
+        "y": 300
+      },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "grab_materials",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "place_materials_2",
+      "position": {
+        "x": 1750,
+        "y": 225
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "place_materials",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "score": 0
     }
   ],
 
@@ -100,6 +184,29 @@
         "just_push_move_1",
         "just_push_move_2",
         "just_push_move_3",
+        "go_to_end_area"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [
+        {
+          "fct": "prepare_banner",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "available": ["pal"]
+    },
+    {
+      "name": "All",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "place_banner_1",
+        "grab_materials_1",
+        "place_materials_1",
+        "go_to_materials_2_1",
+        "go_to_materials_2_2",
+        "grab_materials_1",
+        "place_materials_1",
         "go_to_end_area"
 		  ],
       "use_pathfinding": false,

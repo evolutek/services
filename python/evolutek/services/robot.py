@@ -58,7 +58,7 @@ class Robot(Service):
     prepare_banner = Service.action(robot_actions.prepare_banner)
     place_banner = Service.action(robot_actions.place_banner)
     drop_materials = Service.action(robot_actions.drop_materials)
-    grab_materials = Service.action(robot_actions.grab_materials)
+    place_materials = Service.action(robot_actions.grab_materials)
 
     def __init__(self):
         super().__init__(ROBOT)

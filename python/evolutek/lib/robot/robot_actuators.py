@@ -23,84 +23,52 @@ class ElevatorPosition(Enum):
 
 @if_enabled
 @async_task
-def move_elevator(self, elevator_id: ElevatorId, position: ElevatorPosition, wait = True):
-    if isinstance(elevator_id, str):
-        elevator_id = ElevatorId[elevator_id]
+def move_elevator(self, id: ElevatorId, position: ElevatorPosition):
+    if isinstance(id, str):
+        id = ElevatorId[id]
 
     if isinstance(position, str):
         position = ElevatorPosition[position]
 
-    self.actuators.ax_set_speed(elevator_id.value[0], 256)
-    self.actuators.ax_set_speed(elevator_id.value[0], 256)
+    angles = position.value[id]
 
-    """
-    if position == ElevatorPosition.HIGH:
-        self.actuators.ax_set_speed(1, 220)
-        self.actuators.ax_set_speed(2, 220)
-    else:
-        self.actuators.ax_set_speed(1, 170)
-        self.actuators.ax_set_speed(2, 170)
-    """
-
-    angles = position.value[elevator_id]
-
-    # TODO: Moving the two AX12 with two Cellaserv command can be too slow (too much delay between two commands)
-    status = RobotStatus.check(
-        self.actuators.ax_move(elevator_id.value[0], angles[0]), # Right servo
-        self.actuators.ax_move(elevator_id.value[1], angles[1])  # Left servo
-    )
+    status = RobotStatus.check(self.actuators.axs_moves_ex(
+        [id.value[0], id.value[1]],
+        [angles[0], angles[1]],
+        [256, 256]
+    ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    sleep(2)
-
-    """
-    if wait:
-        if position != ElevatorPosition.HIGH:
-            threshold = 1100
-            # Check if the servos are forcing
-            end_time = time() + (0.6 if position != ElevatorPosition.LOW else 0.8)
-            while time() < end_time:
-                if abs(self.actuators.ax_get_load(1)) > threshold or abs(self.actuators.ax_get_load(2)) > threshold:
-                    self.actuators.ax_move(1, ElevatorPosition.HIGH.value[0]), # Right servo
-                    self.actuators.ax_move(2, ElevatorPosition.HIGH.value[1])  # Left servo
-                    return RobotStatus.return_status(RobotStatus.Failed)
-                sleep(0.1)
-        else:
-            sleep(0.3)
-    """
+    #sleep(1)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
 @if_enabled
 @async_task
-def move_elevator_ex(self, elevator_id: ElevatorId, position: float, wait = True):
-    if isinstance(elevator_id, str):
-        elevator_id = ElevatorId[elevator_id]
+def move_elevator_ex(self, id: ElevatorId, position: float, wait = True):
+    if isinstance(id, str):
+        id = ElevatorId[id]
 
     if isinstance(position, str):
         position = float(position)
 
-
-    self.actuators.ax_set_speed(elevator_id.value[0], 256)
-    self.actuators.ax_set_speed(elevator_id.value[0], 256)
-
     angles = (
-        (ElevatorPosition.HIGHEST.value[elevator_id][0] - ElevatorPosition.LOWEST.value[elevator_id][0]) * position + ElevatorPosition.LOWEST.value[elevator_id][0],
-        (ElevatorPosition.HIGHEST.value[elevator_id][1] - ElevatorPosition.LOWEST.value[elevator_id][1]) * position + ElevatorPosition.LOWEST.value[elevator_id][1]
+        (ElevatorPosition.HIGHEST.value[id][0] - ElevatorPosition.LOWEST.value[id][0]) * position + ElevatorPosition.LOWEST.value[id][0],
+        (ElevatorPosition.HIGHEST.value[id][1] - ElevatorPosition.LOWEST.value[id][1]) * position + ElevatorPosition.LOWEST.value[id][1]
     )
 
-    # TODO: Moving the two AX12 with two Cellaserv command can be too slow (too much delay between two commands)
-    status = RobotStatus.check(
-        self.actuators.ax_move(elevator_id.value[0], angles[0]), # Right servo
-        self.actuators.ax_move(elevator_id.value[1], angles[1])  # Left servo
-    )
+    status = RobotStatus.check(self.actuators.axs_moves_ex(
+        [id.value[0], id.value[1]],
+        [angles[0], angles[1]],
+        [256, 256]
+    ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    sleep(2)
+    #sleep(2)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
@@ -119,36 +87,26 @@ class PlankArmPosition(Enum):
 
 @if_enabled
 @async_task
-def move_plank_arm(self, plank_arm_id: PlankArmId, position: PlankArmPosition):
-    if isinstance(plank_arm_id, str):
-        plank_arm_id = PlankArmPosition[plank_arm_id]
+def move_plank_arm(self, id: PlankArmId, position: PlankArmPosition):
+    if isinstance(id, str):
+        id = PlankArmPosition[id]
 
     if isinstance(position, str):
         position = PlankArmPosition[position]
 
-    angles = position.value[plank_arm_id]
+    angles = position.value[id]
 
     status = RobotStatus.check(self.actuators.servos_set_angles(
-        [plank_arm_id.value[0], plank_arm_id.value[1]],
+        [id.value[0], id.value[1]],
         [angles[0], angles[1]]
     ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    sleep(1)
+    #sleep(1)
 
     return RobotStatus.return_status(RobotStatus.Done)
-
-    """
-    _ids = []
-    for id in ids:
-        _ids.append(int(id))
-    status = []
-    for clamp_id in _ids:
-        status.append(self.actuators.servo_set_angle(CLAMP_ID_TO_SERVO_ID[clamp_id], position.value[clamp_id]))
-    return RobotStatus.check(*status)
-    """
 
 
 # ====== Magnets ======
@@ -163,8 +121,8 @@ class MagnetId(Enum):
     #BACK_MAGNET_3 = 6
     #BACK_MAGNET_4 = 7
 
-class MagnetsSet(Enum):
-    FRONT_MAGNETS = [
+class MagnetsSetId(Enum):
+    FRONT = [
         MagnetId.FRONT_MAGNET_1,
         MagnetId.FRONT_MAGNET_2,
         MagnetId.FRONT_MAGNET_3,
@@ -202,15 +160,15 @@ class MagnetState(Enum):
 
 @if_enabled
 @async_task
-def toggle_magnets(self, magnets: MagnetsSet, state: MagnetState):
-    if isinstance(magnets, str):
-        magnets = MagnetsSet[magnets]
+def toggle_magnets(self, id: MagnetsSetId, state: MagnetState):
+    if isinstance(id, str):
+        id = MagnetsSetId[id]
 
     if isinstance(state, str):
         state = MagnetState[state]
 
-    ids = list(map(lambda x: x.value, magnets.value))
-    angles = list(map(lambda x: state.value[x], magnets.value))
+    ids = list(map(lambda x: x.value, id.value))
+    angles = list(map(lambda x: state.value[x], id.value))
 
     status = RobotStatus.check(self.actuators.servos_set_angles(ids, angles))
     # TODO: Wait if status is OK ?
@@ -221,22 +179,22 @@ def toggle_magnets(self, magnets: MagnetsSet, state: MagnetState):
 # ====== Pumps ======
 
 # TODO
-class PumpsSet(Enum):
-    FRONT_PLANK = [0, 1]
+class PumpsSetId(Enum):
+    FRONT = [0, 1]
     #BACK_PLANK = [2, 3]
 
 @if_enabled
 @async_task
-def toggle_pumps(self, pumps: PumpsSet, grab: bool):
-    if isinstance(pumps, str):
-        pumps = PumpsSet[pumps]
+def toggle_pumps(self, id: PumpsSetId, grab: bool):
+    if isinstance(id, str):
+        id = PumpsSetId[id]
 
     grab = get_boolean(grab)
 
     if grab:
-        return RobotStatus.check(self.actuators.pumps_grab(pumps.value))
+        return RobotStatus.check(self.actuators.pumps_grab(id.value))
     else:
-        return RobotStatus.check(self.actuators.pumps_drop(pumps.value))
+        return RobotStatus.check(self.actuators.pumps_drop(id.value))
 
 
 # ====== Pumps Arms ======
@@ -252,24 +210,24 @@ class PumpsArmPosition(Enum):
 
 @if_enabled
 @async_task
-def move_pumps_arm(self, pumps_arm_id: PumpsArmId, position: PumpsArmPosition):
-    if isinstance(pumps_arm_id, str):
-        pumps_arm_id = PumpsArmId[pumps_arm_id]
+def move_pumps_arm(self, id: PumpsArmId, position: PumpsArmPosition):
+    if isinstance(id, str):
+        id = PumpsArmId[id]
 
     if isinstance(position, str):
         position = PumpsArmPosition[position]
 
-    angles = position.value[pumps_arm_id]
+    angles = position.value[id]
 
     status = RobotStatus.check(self.actuators.servo_set_angle(
-        pumps_arm_id.value,
-        position.value[pumps_arm_id]
+        id.value,
+        position.value[id]
     ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    sleep(1)
+    #sleep(1)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
@@ -288,23 +246,23 @@ class SideArmPosition(Enum):
 
 @if_enabled
 @async_task
-def move_side_arms(self, side_arms_id: SideArmsId, position: SideArmPosition):
-    if isinstance(side_arms_id, str):
-        side_arms_id = SideArmsId[side_arms_id]
+def move_side_arms(self, id: SideArmsId, position: SideArmPosition):
+    if isinstance(id, str):
+        id = SideArmsId[id]
 
     if isinstance(position, str):
         position = SideArmPosition[position]
 
-    angles = position.value[side_arms_id]
+    angles = position.value[id]
 
     status = RobotStatus.check(
-        self.actuators.ax_move(side_arms_id.value[0], angles[0]), # Right servo
-        self.actuators.ax_move(side_arms_id.value[1], angles[1])  # Left servo
+        self.actuators.ax_move(id.value[0], angles[0]), # Right servo
+        self.actuators.ax_move(id.value[1], angles[1])  # Left servo
     )
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    sleep(1)
+    #sleep(1)
 
     return RobotStatus.return_status(RobotStatus.Done)

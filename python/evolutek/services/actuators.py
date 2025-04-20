@@ -253,6 +253,23 @@ class Actuators(Service):
         print(f"Move servo id {int(id)} to {pos}")
         return RobotStatus.return_status(RobotStatus.Done)
 
+    @if_enabled
+    @Service.action
+    def axs_moves_ex(self, ids: list[int], positions: list[int], speeds: list[int] = None):
+        for i, id in enumerate(ids):
+            id = int(id)
+            if self.axs[id] == None:
+                continue
+
+            if speeds is not None:
+                self.axs[id].moving_speed(int(speeds[i]))
+
+            position = int(positions[i])
+            print(f"Move servo id {id} to {positions[i]}")
+            self.axs[id].move(position)
+
+        return RobotStatus.return_status(RobotStatus.Done)
+
     @Service.action
     def ax_free_all(self, ids):
         if isinstance(ids, str):
