@@ -207,6 +207,8 @@
         "go_to_materials_2_2",
         "grab_materials_1",
         "place_materials_1",
+        "go_to_materials_2_2",
+        "go_to_materials_2_1",
         "go_to_end_area"
 		  ],
       "use_pathfinding": false,
