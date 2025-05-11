@@ -51,6 +51,7 @@ class Commands(Enum):
     MOVE_TRSL          = 102
     MOVE_ROT           = 103
     CURVE              = 104
+    GLOBAL_GOTO        = 105
     FREE               = 109
     UNFREE             = 108
     RECALAGE           = 110
@@ -370,6 +371,50 @@ class TrajMan(Service):
                     float(maxspeed), int(sens))
         self.command(bytes(tab))
 
+    @Service.action
+    @if_enabled
+    def global_goto(self, x, y, theta, 
+                            rot_start_pct=0, rot_end_pct=100,
+                            trsl_start_pct=0, trsl_end_pct=100,
+                            rot_direction=0, avoid=True):
+        """
+        Mouvement combiné avec contrôle temporel des rotations et translations
+        
+        Args:
+            x, y (float): Coordonnées absolues de destination
+            theta (float): Angle absolu de destination en radians
+            rot_start_pct (int): Pourcentage du mouvement où la rotation commence (0-100)
+            rot_end_pct (int): Pourcentage du mouvement où la rotation se termine (0-100)
+            trsl_start_pct (int): Pourcentage du mouvement où la translation commence (0-100)
+            trsl_end_pct (int): Pourcentage du mouvement où la translation se termine (0-100)
+            rot_direction (int): Direction de rotation (0=auto, 1=sens horaire, -1=sens anti-horaire)
+            avoid (bool): Active l'évitement d'obstacles
+        """
+        # Validation des pourcentages
+        rot_start_pct = max(0, min(100, int(rot_start_pct)))
+        rot_end_pct = max(rot_start_pct, min(100, int(rot_end_pct)))
+        trsl_start_pct = max(0, min(100, int(trsl_start_pct)))
+        trsl_end_pct = max(trsl_start_pct, min(100, int(trsl_end_pct)))
+        
+        # Préparation de la commande
+        tab = pack('B', 2 + calcsize('ffffffbb'))
+        tab += pack('B', Commands.GLOBAL_GOTO.value)
+        tab += pack('ffffff', 
+                    float(x), float(y), float(theta),
+                    float(rot_start_pct)/100, float(rot_end_pct)/100,
+                    float(trsl_start_pct)/100, float(trsl_end_pct)/100)
+        tab += pack('bb', int(rot_direction), int(get_boolean(avoid)))
+
+        # Mise à jour des variables d'état
+        self.destination = Point(x=float(x), y=float(y))
+        self.destination_theta = float(theta)
+
+        if avoid:
+            self.is_avoid_enabled.set()
+
+        # Envoi de la commande
+        self.command(bytes(tab))
+   
     @Service.action
     def free(self):
         print('[TRAJMAN] Free robot')
