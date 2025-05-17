@@ -3,11 +3,28 @@
     {
       "name": "go_to_end_area",
       "position": {
-        "x": 530,
+        "x": 630,
         "y": 330
       },
       "theta": "pi",
-      "actions": [],
+      "actions": [
+        {
+          "fct": "move_elevator_ex",
+          "handler": "robot",
+          "args": {
+            "id": "FRONT",
+            "position": "0.75"
+          }
+        },
+        {
+          "fct": "move_plank_arm",
+          "handler": "robot",
+          "args": {
+            "id": "FRONT",
+            "position": "ALMOST_EXPANDED"
+          }
+        }
+      ],
       "score": 10
     },
     {
@@ -43,8 +60,8 @@
     {
       "name": "place_banner_1",
       "position": {
-        "x": 1865,
-        "y": 1220
+        "x": 1860,
+        "y": 1225
       },
       "theta": "0",
       "actions": [
@@ -57,20 +74,10 @@
       "score": 10
     },
     {
-      "name": "place_banner_2",
-      "position": {
-        "x": 1750,
-        "y": 1220
-      },
-      "theta": "0",
-      "actions": [],
-      "score": 10
-    },
-    {
       "name": "grab_materials_1",
       "position": {
-        "x": 1500,
-        "y": 780
+        "x": 1480,
+        "y": 775
       },
       "theta": "0",
       "actions": [
@@ -102,7 +109,7 @@
       "name": "go_to_materials_1_1",
       "position": {
         "x": 1500,
-        "y": 1220
+        "y": 1225
       },
       "theta": "0",
       "actions": [],
@@ -111,7 +118,7 @@
     {
       "name": "grab_materials_2",
       "position": {
-        "x": 1250,
+        "x": 1330,
         "y": 1100
       },
       "theta": "pi",
@@ -128,7 +135,7 @@
       "name": "place_materials_2",
       "position": {
         "x": 1600,
-        "y": 1220
+        "y": 1225
       },
       "theta": "0",
       "actions": [
@@ -201,6 +208,29 @@
       "use_pathfinding": false,
       "config_actions": [
         {
+          "fct": "goto",
+          "handler": "robot",
+          "args": {
+            "x": "1800",
+            "y": "1310"
+          }
+        },
+        {
+          "fct": "goto",
+          "handler": "robot",
+          "args": {
+            "x": "1750",
+            "y": "1225"
+          }
+        },
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "args": {
+            "theta": "0"
+          }
+        },
+        {
           "fct": "prepare_banner",
           "handler": "robot",
           "args": {}
@@ -214,10 +244,10 @@
     {
       "name": "THE_ONLY_ONE",
       "position": {
-        "x": 1750,
-        "y": 1220
+        "x": 1880,
+        "y": 1310
       },
-      "theta": "0",
+      "theta": "pi",
       "recal_side": "x",
       "recal_sensor": "no"
     }

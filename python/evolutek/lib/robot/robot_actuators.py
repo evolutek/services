@@ -89,7 +89,7 @@ class PlankArmPosition(Enum):
 @async_task
 def move_plank_arm(self, id: PlankArmId, position: PlankArmPosition):
     if isinstance(id, str):
-        id = PlankArmPosition[id]
+        id = PlankArmId[id]
 
     if isinstance(position, str):
         position = PlankArmPosition[position]
@@ -207,6 +207,7 @@ class PumpsArmPosition(Enum):
     COLLAPSED       = {PumpsArmId.FRONT: 20}
     EXPANDED        = {PumpsArmId.FRONT: 105}
     ALMOST_EXPANDED = {PumpsArmId.FRONT: 90}
+    #MORE_EXPANDED   = {PumpsArmId.FRONT: 110}
 
 @if_enabled
 @async_task
