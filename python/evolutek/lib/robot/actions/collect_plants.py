@@ -1,7 +1,7 @@
 from evolutek.lib.robot.robot_actions_imports import *
 
+"""
 from evolutek.lib.robot.robot_actuators import ElevatorPosition, ClampsPosition
-
 
 @if_enabled
 @async_task
@@ -46,3 +46,4 @@ def place_plants(self, n=-1):
     sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
+"""

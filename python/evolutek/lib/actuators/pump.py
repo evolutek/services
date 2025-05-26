@@ -54,7 +54,7 @@ class PumpController(ComponentsHolder):
                 continue
             self.components[id].get()
 
-    def drops(self, ids, use_ev=True):
+    def drops(self, ids, use_ev = False):
         for id in ids:
             if self.components[id] is None:
                 continue

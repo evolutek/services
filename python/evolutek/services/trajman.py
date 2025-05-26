@@ -671,7 +671,7 @@ class TrajMan(Service):
                     })
                     self.travel_orientation = travel_theta
 
-                    self.log_serial("Travel: theta = %.2f" % speed)
+                    #self.log_serial("Travel: theta = %.2f" % travel_theta)
 
                 elif tab[1] == Commands.RECALAGE.value:
                     a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
@@ -706,7 +706,7 @@ class TrajMan(Service):
                         self.robot_orientation = theta
                         self.robot_speed = speed * 1000
         
-                    self.log_serial("Telemetry: xpos = %i, ypos = %i, theta = %.2f, speed = %i" % (xpos, ypos, theta, speed))
+                    #self.log_serial("Telemetry: xpos = %i, ypos = %i, theta = %.2f, speed = %i" % (xpos, ypos, theta, speed))
 
                     #telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
                     #self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)

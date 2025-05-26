@@ -123,8 +123,9 @@ class I2CAct(Component):
 
 
 class I2CActsHandler(ComponentsHolder):
-    def __init__(self, acts, frequency):
+    def __init__(self, acts, frequency, addr: int):
         self.frequency = frequency
+        self.addr = addr
         super().__init__('I2CActsHandler', acts, I2CAct)
 
     def _initialize(self):
@@ -133,7 +134,7 @@ class I2CActsHandler(ComponentsHolder):
             i2c = busio.I2C(board.SCL, board.SDA)
             PCA = PCA9685(
                 i2c,
-                address=0x40,
+                address=self.addr,
                 reference_clock_speed=25000000
             )
             PCA.frequency = self.frequency
