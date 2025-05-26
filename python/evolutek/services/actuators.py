@@ -56,8 +56,8 @@ class Actuators(Service):
         self.recal_sensors[1].calibrate(left_recal_points)
         self.recal_sensors[2].calibrate(right_recal_points)
 
-        self.bau = create_gpio(7, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
-        self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
+        self.bau = create_gpio(20, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.RPI)
+        #self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 0.25)
@@ -100,7 +100,7 @@ class Actuators(Service):
             ]
         )
 
-        self.i2c_acts = I2CActsHandler({
+        self.i2c_servos_1 = I2CActsHandler({
             3: [I2CActType.Servo, 180], # Left most magnet
             4: [I2CActType.Servo, 180], # Middle left magnet
             5: [I2CActType.Servo, 180], # Middle right magnet
@@ -108,7 +108,17 @@ class Actuators(Service):
             7: [I2CActType.Servo, 180], # Left plank arm
             8: [I2CActType.Servo, 180], # Right plank arm
             9: [I2CActType.Servo, 180], # Pump arm
-        }, frequency = 50)
+        }, frequency = 50, addr=0x40)
+
+        self.i2c_servos_2 = I2CActsHandler({
+            3: [I2CActType.Servo, 180], # Left most magnet
+            4: [I2CActType.Servo, 180], # Middle left magnet
+            5: [I2CActType.Servo, 180], # Middle right magnet
+            6: [I2CActType.Servo, 180], # Right most magnet
+            7: [I2CActType.Servo, 180], # Left plank arm
+            8: [I2CActType.Servo, 180], # Right plank arm
+            9: [I2CActType.Servo, 180], # Pump arm
+        }, frequency = 50, addr=0x42)
 
         self.pumps = PumpController({
             0: [
@@ -125,7 +135,8 @@ class Actuators(Service):
             self.proximity_sensors,
             self.recal_sensors,
             self.axs,
-            self.i2c_acts,
+            self.i2c_servos_1,
+            self.i2c_servos_2,
             self.pumps
         ]
 
@@ -169,7 +180,7 @@ class Actuators(Service):
         # TODO
         #self.magnets.free()
         #self.pumps.drops()
-        self.i2c_acts.free_all()
+        self.i2c_servos_1.free_all()
         #self.ax_free_all([1,2,3])
 
     # Disable Actuators
@@ -217,7 +228,7 @@ class Actuators(Service):
 
     def bau_callback(self, event, value, **kwargs):
         #print("BAU is {value}")
-        self.bau_led.write(value)
+        #self.bau_led.write(value)
         self.publish(event=event, value=value, **kwargs)
         if value:
             self.enable()
@@ -304,9 +315,9 @@ class Actuators(Service):
     ##########
     @Service.action
     def servo_set_angle(self, id, angle):
-        if self.i2c_acts[int(id)] == None:
+        if self.i2c_servos_1[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        if self.i2c_acts[int(id)].set_angle(int(angle)):
+        if self.i2c_servos_1[int(id)].set_angle(int(angle)):
             return RobotStatus.return_status(RobotStatus.Done)
         return RobotStatus.return_status(RobotStatus.Failed)
 
@@ -316,10 +327,10 @@ class Actuators(Service):
         angles = list(map(lambda x: float(x), angles))
 
         for i, id in enumerate(ids):
-            if self.i2c_acts[id] == None:
+            if self.i2c_servos_1[id] == None:
                 continue
 
-            if not self.i2c_acts[id].set_angle(angles[i]):
+            if not self.i2c_servos_1[id].set_angle(angles[i]):
                 return RobotStatus.return_status(RobotStatus.Failed)
 
         return RobotStatus.return_status(RobotStatus.Done)
