@@ -135,7 +135,15 @@ class Actuators(Service):
             1: [
                 create_gpio(8, 'pump2', dir=True, type=GpioType.MCP),
                 None
-            ]
+            ],
+            #2: [
+            #    create_gpio(8, 'pump3', dir=True, type=GpioType.MCP),
+            #    None
+            #],
+            #3: [
+            #    create_gpio(8, 'pump4', dir=True, type=GpioType.MCP),
+            #    None
+            #]
         })
 
         self.all_actuators = [
