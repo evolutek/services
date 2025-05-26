@@ -63,6 +63,8 @@ class Actuators(Service):
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 0.25)
 
+        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 1.0)
+    
         try:
             self.match_color_callback(self.cs.match.get_color())
         except Exception as e:
@@ -151,6 +153,8 @@ class Actuators(Service):
             self.enable()
             print("[ACTUATORS] Fully initialized")
 
+        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+
     def stop(self):
         print("[ACTUATORS] Stopping")
         self.rgb_led_strip.stop()
@@ -173,7 +177,7 @@ class Actuators(Service):
     # Free all actuators
     @Service.action
     def free(self):
-        # TODO
+        self.ax_free_all([1, 2, 3])
         pass
 
     # Disable Actuators

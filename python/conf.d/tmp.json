@@ -1,0 +1,97 @@
+{
+  "goals": [
+    {"name": "prepare_solar_panel","position":{"x": 1854,"y": 102},"actions":[
+        {"fct":"prepare_solar_panel","args":{"id":1},"handler":"robot"}
+    ]},
+    {"name": "align_solar_panels","position":{"x":1854,"y":102},"theta":"pi"},
+    {"name": "recal_solar_panels","position":{"x":1950,"y":100},"theta":"pi","actions":[
+        {"fct":"set_pos","args":{"x":1898,"y":147}}
+    ]},
+    {"name":"solar_panels","position":{"x":1898,"y":750},"theta":"pi"},
+    
+    {"name":"align_lower_1","position":{"x":1300,"y":700},"theta":"(5*pi)/6","actions":[
+        {"fct":"prepare_grab_all","handler":"robot"}
+    ]},
+    {"name":"grab_lower_1","position":{"x":1300,"y":850},"actions":[
+        {"fct":"grab","args":{"id":3},"handler":"robot"}
+    ]},
+    {"name":"align_lower_2","position":{"x":1300,"y":850},"theta":"pi/6"},
+    {"name":"grab_lower_2","position":{"x":1300,"y":1050},"actions":[
+        {"fct":"grab","args":{"id":2},"handler":"robot"}
+    ]},
+    {"name":"grab_lower_1_bis","position":{"x":1300,"y":850},"actions":[
+        {"fct":"grab","args":{"id":2},"handler":"robot"}
+    ]},
+    {"name":"align_lower_2_bis","position":{"x":1300,"y":850},"theta":"pi/6"},
+    {"name":"grab_lower_2","position":{"x":1300,"y":1050},"actions":[
+        {"fct":"grab","args":{"id":3},"handler":"robot"}
+    ]},
+    {"name":"align_left_pots","position":{"x":300,"y":300},"theta":"-pi/6"},
+    {"name":"goto_border","position":{"x":300,"y":100},"actions":[
+        {"fct":"set_pos","args":{"x":300,"y":147}}
+    ]},
+    {"name":"present_to_pot","position":{"x":550,"y":147},"actions":[
+        {"fct":"drop","args":{"id":3},"handler":"robot"}
+    ]},
+    {"name":"align_other_side","position":{"x":550,"y":300},"theta":"-(5*pi)/6"},
+    {"name":"present_to_other_side","position":{"x":550,"y":147},"actions":[
+        {"fct":"drop","args":{"id":2},"handler":"robot"}
+    ]},
+    {"name":"align_upper_1","position":{"x":700,"y":700},"theta":"(5*pi)/6","actions":[
+        {"fct":"prepare_grab_all","handler":"robot"}
+    ]},
+    {"name":"grab_upper_1","position":{"x":700,"y":850},"actions":[
+        {"fct":"grab","args":{"id":3},"handler":"robot"}
+    ]},
+    {"name":"align_upper_2","position":{"x":700,"y":850},"theta":"pi/6"},
+    {"name":"grab_upper_2","position":{"x":700,"y":1050},"actions":[
+        {"fct":"grab","args":{"id":2},"handler":"robot"}
+    ]}
+  ],
+
+  "strategies": [
+    {
+      "name": "bottom",
+      "starting_position": "ZONE_BOTTOM_CROOKED",
+      "goals": [
+        "prepare_solar_panel",
+        "align_solar_panels",
+        "recal_solar_panels",
+        "solar_panels",
+        "align_lower_1",
+        "grab_lower_1",
+        "align_lower_2",
+        "grab_lower_2",
+        "align_left_pots",
+        "goto_border",
+        "present_to_pot"
+      ],
+      "use_pathfinding": false
+    },
+    {
+      "name": "mini",
+      "starting_position": "ZONE_BOTTOM_CROOKED",
+      "goals": [
+        "align_left_pots",
+        "goto_border",
+        "present_to_pot"
+      ],
+      "use_pathfinding": false
+    },
+    {
+      "name": "homologation",
+      "starting_position": "ZONE_TOP",
+      "goals": [
+        "align_solar_panels"
+      ],
+      "use_pathfinding": false
+    }
+  ],
+
+  "starting_positions": [
+    {"name": "ZONE_MIDDLE","position": {"x": 1000,"y": 2775},"theta": "-pi/2"},
+	  {"name": "ZONE_BOTTOM","position": {"x": 1865,"y": 100},"theta": "pi/2"},
+	  {"name": "ZONE_TOP","position": {"x": 145,"y": 100},"theta": "pi/2"},
+    {"name": "ZONE_BOTTOM_CROOKED","position": {"x": 1854,"y": 102},"theta": "-(5*pi)/6"}
+  ]
+}

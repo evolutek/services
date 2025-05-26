@@ -30,7 +30,7 @@ def mirror_pos(self, x=None, y=None, theta=None):
         side = self.side
 
     if y is not None:
-        y = (y if side else 2000 - y)
+        y = (y if side else 3000 - y)
 
     if theta is not None:
         theta = (theta if side else -1 * theta)
@@ -74,6 +74,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
     self.set_y(y, mirror)
     if theta is not None:
         self.set_theta(theta, mirror)
+        
 
 #########
 # MOVES #
@@ -217,6 +218,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
         print('[ROBOT] Moving')
 
+        print(avoid)
         data = self.goto(x, y, avoid=avoid, mirror=False, async_task=False)
         status = RobotStatus.get_status(data)
 
