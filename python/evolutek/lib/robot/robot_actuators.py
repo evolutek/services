@@ -91,6 +91,46 @@ def sensor(self, id) :
 
     return self.actuators.proximity_sensor_read(self, sensor_to_mcp[id])
 
+#############
+#   ARMS    #
+#############
+
+# Ids des ax de chaque bras (premiere valeur pour le latéral, deuxieme pour le vertical)
+class ArmToAx(enum):
+    A = [0,0]
+    C = [0,0]
+
+class ArmPosition(Enum):
+    left = {ArmToAx.A.value[0] : 0, ArmToAx.C.value[0] : 0}
+    center = {ArmToAx.A.value[0] : 0, ArmToAx.C.value[0] : 0}
+    right = {ArmToAx.A.value[0] : 0, ArmToAx.C.value[0] : 0}
+
+class ArmHeight(Enum):
+    up = {ArmToAx.A.value[1] : 0, ArmToAx.C.value[1] : 0}
+    down = {ArmToAx.A.value[1] : 0, ArmToAx.C.value[1] : 0}
+
+def arm_height(self, arm : ArmToAx, height : ArmHeight):
+    
+    if(isinstance(arm, str)):
+        arm = ArmToAx[arm]
+
+    if(isinstance(height, str)):
+        height = ArmHeight[height]
+
+    return RobotStatus.check(self.actuators.ax_move(self, arm.value[1], height.value[arm.value[1]]))
+
+def arm_position(self, arm : ArmToAx, position : ArmPosition):
+
+    if(isinstance(arm, str)):
+        arm = ArmToAx[arm]
+
+    if(isinstance(height, str)):
+        position = ArmPosition[position]
+
+    return RobotStatus.check(self.actuators.ax_move(self, arm.value[0], position.value[arm.value[0]]))
+
+
+
 
 """
 class ArmPosition(Enum):
