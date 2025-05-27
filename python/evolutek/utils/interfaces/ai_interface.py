@@ -110,9 +110,6 @@ class StatusFrame(IFrame):
 	def cal_otos(self):
 		self.root.cs.trajman.cal_otos()
 
-	def otos_cal(self):
-		self.root.cs.trajman.otos_cal()
-
 	def init_interface(self):
 		tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 		tk.Button(self, text="Reset position", command=self.reset_position, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
