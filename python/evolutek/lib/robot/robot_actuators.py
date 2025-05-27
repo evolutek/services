@@ -6,9 +6,66 @@ from evolutek.lib.utils.wrappers import if_enabled
 from time import sleep
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 from evolutek.lib.actuators.ax12 import AX12Controller
+from evolutek.lib.indicators.lightning_mode import *
 
 
 
+servo_to_pca = [17,19,18,23,22,21,20,3,2,1,0,16]
+
+class ServoPositions(Enum):
+  grab = [40,50,160,145,30,20,160,160,40,20,170,165]
+  drop = [160,170,50,20,160,150,40,30,170,170,40,50]
+
+@if_enabled
+@async_task
+def magnet(self, ids: list[int], position: ServoPositions):
+  print(ids, type(ids))
+  if isinstance(position, str):
+    position = ServoPositions[position]
+  
+  if isinstance(ids, str):
+    ids = [int(i) for i in ids.split(',')]
+     
+  status = []
+  for i in ids:
+    status.append(self.actuators.servo_set_angle(servo_to_pca[i], position.value[i]))
+  
+  return RobotStatus.check(*status)
+
+'''
+class PumpsArmId(Enum):
+    FRONT = 9
+    #BACK = ?
+
+class PumpsArmPosition(Enum):
+    COLLAPSED       = {PumpsArmId.FRONT: 20}
+    EXPANDED        = {PumpsArmId.FRONT: 105}
+    ALMOST_EXPANDED = {PumpsArmId.FRONT: 90}
+    #MORE_EXPANDED   = {PumpsArmId.FRONT: 110}
+
+@if_enabled
+@async_task
+def move_pumps_arm(self, id: PumpsArmId, position: PumpsArmPosition):
+    if isinstance(id, str):
+        id = PumpsArmId[id]
+
+    if isinstance(position, str):
+        position = PumpsArmPosition[position]
+
+    angles = position.value[id]
+
+    status = RobotStatus.check(self.actuators.servo_set_angle(
+        id.value,
+        position.value[id]
+    ))
+
+    if RobotStatus.get_status(status) != RobotStatus.Done:
+        return status
+
+    #sleep(1)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+'''
 """
 class ArmPosition(Enum):
     OPEN = [45, 45]
