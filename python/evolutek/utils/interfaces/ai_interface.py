@@ -108,7 +108,7 @@ class StatusFrame(IFrame):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 	
 	def cal_otos(self):
-		self.root.cs.trajman.cal_otos()
+		self.root.cs.trajman[ROBOT].cal_otos()
 
 	def init_interface(self):
 		tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)

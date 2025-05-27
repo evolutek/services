@@ -424,9 +424,7 @@ class TrajMan(Service):
         # Envoi de la commande
         self.command(bytes(tab))
     
-    
     @Service.action
-    @if_enabled
     def cal_otos(self):
         print('[TRAJMAN] calibrate OTOS')
         tab = pack('B', 2)

@@ -21,7 +21,7 @@ class ElevatorPosition(Enum):
 
 @if_enabled
 @async_task
-def move_elevator(self, id, position: ElevatorPosition)
+def move_elevator(self, id, position: ElevatorPosition):
     id = int(id)
 
     if(isinstance(position, str)):
@@ -33,6 +33,30 @@ def move_elevator(self, id, position: ElevatorPosition)
 #  MAGNETS  #
 #############
 
+servo_to_pca = [17,19,18,23,22,21,20,3,2,1,0,16]
+
+class ServoPositions(Enum):
+  grab = [40,50,160,145,30,20,160,160,40,20,170,165]
+  drop = [160,170,50,20,160,150,40,30,170,170,40,50]
+
+@if_enabled
+@async_task
+def magnet(self, ids: list[int], position: ServoPositions):
+  print(ids, type(ids))
+  if isinstance(position, str):
+    position = ServoPositions[position]
+  
+  if isinstance(ids, str):
+    ids = [int(i) for i in ids.split(',')]
+     
+  status = []
+  for i in ids:
+    status.append(self.actuators.servo_set_angle(servo_to_pca[i], position.value[i]))
+  
+  return RobotStatus.check(*status)
+
+
+
 class MagnetGroups(Enum):
     outer_AB = [0,3]
     elevator_AB = [1,2]
@@ -40,6 +64,7 @@ class MagnetGroups(Enum):
     elevator_BC = [5,6]
     outer_CA = [8,11]
     elevator_CA = [9,10]
+    all = [0,1,2,3,4,5,6,7,8,9,10,11]
 
 @if_enabled
 @async_task
@@ -47,7 +72,7 @@ def grab(self, group: MagnetGroups):
     if(isinstance(group, str)):
         group = MagnetGroups[group]
 
-    magnet(group, grab)
+    return RobotStatus.check(self.magnet(ids=group.value, position=ServoPositions.grab, async_task=False))
 
 @if_enabled
 @async_task
@@ -55,7 +80,7 @@ def drop(self, group: MagnetGroups):
     if(isinstance(group, str)):
         group = MagnetGroups[group]
 
-    magnet(group, MagnetPosition.drop)
+    return RobotStatus.check(self.magnet(ids=group.value, position=ServoPositions.drop, async_task=False))
 
 #############
 #   TIPS    #
@@ -97,7 +122,7 @@ def sensor(self, id) :
 #############
 
 # Ids des ax de chaque bras (premiere valeur pour le latéral, deuxieme pour le vertical)
-class ArmToAx(enum):
+class ArmToAx(Enum):
     A = [0,0]
     C = [0,0]
 
@@ -130,30 +155,6 @@ def arm_position(self, arm : ArmToAx, position : ArmPosition):
 
     return RobotStatus.check(self.actuators.ax_move(self, arm.value[0], position.value[arm.value[0]]))
 
-
-
-
-servo_to_pca = [17,19,18,23,22,21,20,3,2,1,0,16]
-
-class ServoPositions(Enum):
-  grab = [40,50,160,145,30,20,160,160,40,20,170,165]
-  drop = [160,170,50,20,160,150,40,30,170,170,40,50]
-
-@if_enabled
-@async_task
-def magnet(self, ids: list[int], position: ServoPositions):
-  print(ids, type(ids))
-  if isinstance(position, str):
-    position = ServoPositions[position]
-  
-  if isinstance(ids, str):
-    ids = [int(i) for i in ids.split(',')]
-     
-  status = []
-  for i in ids:
-    status.append(self.actuators.servo_set_angle(servo_to_pca[i], position.value[i]))
-  
-  return RobotStatus.check(*status)
 
 '''
 class PumpsArmId(Enum):

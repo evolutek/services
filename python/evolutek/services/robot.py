@@ -16,6 +16,7 @@ from evolutek.utils.interfaces.debug_map import Interface
 
 from time import time, sleep
 from threading import Event, Lock, Thread
+import traceback
 
 DEBUG = False
 
@@ -52,6 +53,8 @@ class Robot(Service):
     #move_arm = Service.action(robot_actuators.move_arm)
     #move_claw = Service.action(robot_actuators.move_claw)
     magnet = Service.action(robot_actuators.magnet)
+    grab = Service.action(robot_actuators.grab)
+    drop = Service.action(robot_actuators.drop)
     
     # Imported from robot_actions
     #grab_plants = Service.action(robot_actions.grab_plants)
@@ -152,7 +155,7 @@ class Robot(Service):
             try:
                 r = task.run()
             except Exception as e:
-                print('[ROBOT] Task crashed due to %s' % str(e))
+                print('[ROBOT] Task crashed due to %s' % traceback.format_exc())
                 r = RobotStatus.return_status(RobotStatus.Failed)
 
             self.publish('%s_robot_stopped' % ROBOT, id=task.id, **r)
