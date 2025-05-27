@@ -75,6 +75,9 @@ class Commands(Enum):
     SET_DELTA_MAX_TRSL = 164
     SET_ROBOT_SIZE_X   = 165
     SET_ROBOT_SIZE_Y   = 166
+
+    OTOS_CAL           = 167
+
     SET_DEBUG          = 200
     ERROR              = 255
 
@@ -420,7 +423,16 @@ class TrajMan(Service):
 
         # Envoi de la commande
         self.command(bytes(tab))
-   
+    
+    
+    @Service.action
+    @if_enabled
+    def cal_otos(self):
+        print('[TRAJMAN] calibrate OTOS')
+        tab = pack('B', 2)
+        tab += pack('B', Commands.OTOS_CAL.value)
+        self.command(bytes(tab))
+
     @Service.action
     def free(self):
         print('[TRAJMAN] Free robot')
