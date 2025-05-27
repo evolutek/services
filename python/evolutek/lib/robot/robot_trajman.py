@@ -96,6 +96,23 @@ def goto(self, x, y, avoid=True, mirror=True):
 
     return self.goto_xy(x=x, y=y, avoid=avoid)
 
+@if_enabled
+@async_task
+def goto_global(self, x, y, theta, avoid=True, mirror=True):
+    mirror = get_boolean(mirror)
+    x = float(x)
+    y = float(y)
+    theta = float(theta)
+
+    if mirror:
+        y = self.mirror_pos(y=y)['y']
+
+    position = Point(dict=self.trajman.get_position())
+    if position.dist(Point(x=x, y=y)) < DELTA_POS:
+        print('[ROBOT] Already reached position')
+        return RobotStatus.return_status(RobotStatus.Reached)
+
+    return self.global_goto(x=x, y=y, theta=theta, avoid=avoid)
 
 @if_enabled
 @async_task
@@ -256,6 +273,78 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
             if watchdog is not None:
                 watchdog.stop()
+
+        elif status != RobotStatus.Reached:
+            break
+
+    return RobotStatus.return_status(status)
+
+@if_enabled
+@async_task
+def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, mirror=True,
+                       rot_start_pct=0, rot_end_pct=100, trsl_start_pct=0, trsl_end_pct=100,
+                       rot_direction=0):
+    """
+    Version de goto_avoid utilisant global_goto pour un contrôle plus précis
+    des rotations et translations pendant le déplacement.
+    
+    Args:
+        x, y (float): Coordonnées absolues de destination
+        theta (float): Angle absolu de destination en radians
+        avoid (bool): Active l'évitement d'obstacles
+        timeout (float): Timeout en secondes pour l'attente d'évitement
+        skip (bool): Si True, abandonne le déplacement en cas d'obstacle
+        mirror (bool): Applique l'effet miroir selon le côté du robot
+        rot_start_pct (int): Pourcentage du mouvement où la rotation commence (0-100)
+        rot_end_pct (int): Pourcentage du mouvement où la rotation se termine (0-100)
+        trsl_start_pct (int): Pourcentage du mouvement où la translation commence (0-100)
+        trsl_end_pct (int): Pourcentage du mouvement où la translation se termine (0-100)
+        rot_direction (int): Direction de rotation (0=auto, 1=sens horaire, -1=sens anti-horaire)
+    """
+
+    x = float(x)
+    y = float(y)
+    theta = float(theta)
+
+    mirror = get_boolean(mirror)
+    skip = get_boolean(skip)
+
+    if mirror:
+        _destination = self.mirror_pos(x, y, theta)
+        x = _destination['x']
+        y = _destination['y']
+        theta = _destination['theta']
+
+    destination = Point(x, y)
+    status = RobotStatus.NotReached
+    start = time()
+
+    while status != RobotStatus.Reached:
+
+        print('[ROBOT] Moving with global_goto')
+
+        data = self.goto_global_timed(x, y, theta, avoid=avoid, mirror=False, async_task=False)
+        status = RobotStatus.get_status(data)
+
+        if status == RobotStatus.HasAvoid:
+
+            if skip:
+                return RobotStatus.return_status(RobotStatus.NotReached)
+
+            side = get_boolean(data['avoid_side'])
+
+            pos = Point(dict=self.trajman.get_position())
+            dist = pos.dist(destination)
+
+            while get_boolean(self.trajman.need_to_avoid(dist, side)):
+                if self.check_abort() != RobotStatus.Ok:
+                    return RobotStatus.return_status(RobotStatus.Aborted)
+
+                if timeout is not None and time() - start >= timeout:
+                    return RobotStatus.return_status(RobotStatus.Timeout)
+
+                print('[ROBOT] Waiting')
+                sleep(0.1)
 
         elif status != RobotStatus.Reached:
             break
