@@ -59,9 +59,9 @@ class Actuators(Service):
         self.bau = create_gpio(20, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.RPI)
         #self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
         self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
-        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
-        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 0.25)
+        #self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 0.25)
 
         self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 1.0)
     
@@ -138,7 +138,6 @@ class Actuators(Service):
             self.axs,
             self.proximity_sensors,
             #self.recal_sensors,
-            self.axs,
             #self.magnets
         ]
 
