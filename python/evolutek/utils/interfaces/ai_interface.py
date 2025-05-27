@@ -106,6 +106,9 @@ class StatusFrame(IFrame):
 			self.root.cs.match.reset_match()
 		except Exception as e:
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
+	
+	def cal_otos(self):
+		self.root.cs.trajman.cal_otos()
 
 	def otos_cal(self):
 		self.root.cs.trajman.otos_cal()
@@ -115,7 +118,7 @@ class StatusFrame(IFrame):
 		tk.Button(self, text="Reset position", command=self.reset_position, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 		tk.Button(self, text="Reset match", command=self.reset_match, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 		tk.Button(self, text="Change color", command=self.change_color, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
-		tk.Button(self, text="OTOS Cal", command=self.otos_cal, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
+		tk.Button(self, text="Cal OTOS", command=self.cal_otos, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 
 	def change_color(self):
 		if self.root.cs.match.get_color() == self.color1:
