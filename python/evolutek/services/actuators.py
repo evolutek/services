@@ -56,51 +56,73 @@ class Actuators(Service):
         #self.recal_sensors[1].calibrate(left_recal_points)
         #self.recal_sensors[2].calibrate(right_recal_points)
 
-        #self.bau = create_gpio(4, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.MCP)
+        self.bau = create_gpio(20, 'bau', event='%s-bau' % ROBOT, dir=False, type=GpioType.RPI)
         #self.bau_led = create_gpio(20, 'bau led', dir=True, type=GpioType.RPI)
-        #self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
-        #self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
+        self.bau.auto_refresh(refresh=0.05, callback=self.bau_callback)
+        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
-        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 26, 0.25)
+        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 0.25)
 
+        self.rgb_led_strip = WS2812BLedStrip(42, board.D12, 36, 1.0)
+    
         try:
             self.match_color_callback(self.cs.match.get_color())
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
         # TODO: Set correct ports
-        #self.proximity_sensors = ProximitySensors(
-        #    {
-        #        1 : [create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)],
-        #        2 : [create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)],
-        #        2 : [create_gpio(1, 'proximity_sensors3', dir=False, type=GpioType.MCP)]
-        #    }
-        #)
-
-        # TODO: Set correct gpio
-        self.pumps = PumpController(
+        self.proximity_sensors = ProximitySensors(
             {
-                0: [
-                    create_gpio(0, 'pump1', dir=True, type=GpioType.MCP), None 
-                ],
-                1 : [
-                    create_gpio(2, 'pump2', dir=True, type=GpioType.MCP), None
-                ]
+                 1 : [create_gpio(0,  'proximity_sensors1',  dir=False, type=GpioType.MCP)],
+                 2 : [create_gpio(1,  'proximity_sensors2',  dir=False, type=GpioType.MCP)],
+                 3 : [create_gpio(2,  'proximity_sensors3',  dir=False, type=GpioType.MCP)],
+                 4 : [create_gpio(3,  'proximity_sensors4',  dir=False, type=GpioType.MCP)],
+                 5 : [create_gpio(4,  'proximity_sensors5',  dir=False, type=GpioType.MCP)],
+                 6 : [create_gpio(6,  'proximity_sensors6',  dir=False, type=GpioType.MCP)],
+                 7 : [create_gpio(7,  'proximity_sensors7',  dir=False, type=GpioType.MCP)],
+                 8 : [create_gpio(8,  'proximity_sensors8',  dir=False, type=GpioType.MCP)],
+                 9 : [create_gpio(9,  'proximity_sensors9',  dir=False, type=GpioType.MCP)],
+                10 : [create_gpio(10, 'proximity_sensors10', dir=False, type=GpioType.MCP)],
+                11 : [create_gpio(11, 'proximity_sensors11', dir=False, type=GpioType.MCP)],
+                12 : [create_gpio(12, 'proximity_sensors12', dir=False, type=GpioType.MCP)],
+                13 : [create_gpio(13, 'proximity_sensors13', dir=False, type=GpioType.MCP)],
+                14 : [create_gpio(14, 'proximity_sensors14', dir=False, type=GpioType.MCP)],
             }
         )
 
-        self.axs = AX12Controller(
-            [1, 2]
+        # TODO: Set correct gpio
+        self.pumps = PumpController(
+           {
+               0: [
+                   create_gpio(0, 'pump1', dir=True, type=GpioType.MCP), None 
+               ],
+               1 : [
+                   create_gpio(2, 'pump2', dir=True, type=GpioType.MCP), None
+               ]
+           }
         )
 
-        self.i2c_serv = I2CActsHandler({
-            0: [I2CActType.Servo, 180],
-            1: [I2CActType.Servo, 180],
-            2: [I2CActType.Servo, 180],
-            3: [I2CActType.Servo, 180],
-            4: [I2CActType.Servo, 180],
-        }, frequency=50)
+        self.axs = AX12Controller(
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        )
 
+        self.i2c_serv_1 = I2CActsHandler({
+           0: [I2CActType.Servo, 180],
+           1: [I2CActType.Servo, 180],
+           2: [I2CActType.Servo, 180],
+           3: [I2CActType.Servo, 180],
+        }, frequency=50, addr=0x40)
+
+        self.i2c_serv_2 = I2CActsHandler({
+           0: [I2CActType.Servo, 180],
+           1: [I2CActType.Servo, 180],
+           2: [I2CActType.Servo, 180],
+           3: [I2CActType.Servo, 180],
+           4: [I2CActType.Servo, 180],
+           5: [I2CActType.Servo, 180],
+           6: [I2CActType.Servo, 180],
+           7: [I2CActType.Servo, 180],
+        }, frequency=50, addr=0x41)
 
         self.i2c_mots = I2CMotorBoard({
             0: (I2CMotorBoardStepper, [0]),
@@ -109,14 +131,14 @@ class Actuators(Service):
         })
 
         self.all_actuators = [
-
             self.i2c_mots,
-            self.i2c_serv,
-            self.axs
-            #self.proximity_sensors,
+            self.i2c_serv_1,
+            self.i2c_serv_2,
+            self.pumps,
+            self.axs,
+            self.proximity_sensors,
             #self.recal_sensors,
-            #self.axs,
-            #self.i2c_acts,
+            self.axs,
             #self.magnets
         ]
 
@@ -127,9 +149,11 @@ class Actuators(Service):
                 self.is_initialized = False
 
         if self.is_initialized:
-            #self.rgb_led_strip.start()
+            self.rgb_led_strip.start()
             self.enable()
             print("[ACTUATORS] Fully initialized")
+
+        self.bau_callback(event=self.bau.event, value=self.bau.read(), name='bau', id=self.bau.id)
 
     def stop(self):
         print("[ACTUATORS] Stopping")
@@ -153,7 +177,7 @@ class Actuators(Service):
     # Free all actuators
     @Service.action
     def free(self):
-        # TODO
+        self.ax_free_all([1, 2, 3])
         pass
 
     # Disable Actuators
@@ -193,19 +217,18 @@ class Actuators(Service):
     #######
     # BAU #
     #######
-    #@Service.action
-    #def bau_read(self):
-    #    return 1
-    #     return self.bau.read()
+    @Service.action
+    def bau_read(self):
+        return self.bau.read()
 
-    #def bau_callback(self, event, value, **kwargs):
-    #    self.bau_led.write(value)
-    #    self.publish(event=event, value=value, **kwargs)
-    #    if value:
-    #        self.enable()
-    #    else:
-    #        self.free()
-    #        self.disable()
+    def bau_callback(self, event, value, **kwargs):
+        #self.bau_led.write(value)
+        self.publish(event=event, value=value, **kwargs)
+        if value:
+           self.enable()
+        else:
+            self.free()
+            self.disable()
 
     #################
     # RGB LED STRIP #
@@ -259,9 +282,47 @@ class Actuators(Service):
     ##########
     @Service.action
     def servo_set_angle(self, id, angle):
-        if self.i2c_serv[int(id)] == None:
+        id = int(id)
+        if id > 15:
+            i2c_serv = self.i2c_serv_2
+            id -= 16
+        else:
+            i2c_serv = self.i2c_serv_1
+
+        if i2c_serv[id] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        if self.i2c_serv[int(id)].set_angle(int(angle)):
+
+        if i2c_serv[id].set_angle(int(angle)):
+            return RobotStatus.return_status(RobotStatus.Done)
+
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    ############
+    # STEPPERS #
+    ############
+    @Service.action
+    def stepper_goto(self, id, position, speed):
+        speed = int(speed)
+        if self.i2c_mots[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_mots[int(id)].goto(int(position), speed):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    @Service.action
+    def stepper_move(self, id, delta, speed):
+        speed = int(speed)
+        if self.i2c_mots[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_mots[int(id)].move(int(delta), speed):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    @Service.action
+    def stepper_home(self, id):
+        if self.i2c_mots[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_mots[int(id)].home():
             return RobotStatus.return_status(RobotStatus.Done)
         return RobotStatus.return_status(RobotStatus.Failed)
     
@@ -311,7 +372,7 @@ class Actuators(Service):
         if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.pumps.on(_ids)
+        self.pumps.gets(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled
@@ -326,7 +387,7 @@ class Actuators(Service):
         if len(_ids) < 1:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        self.pumps.off(_ids)
+        self.pumps.drops(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
 def main():

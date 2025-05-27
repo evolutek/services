@@ -9,22 +9,15 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 
 
-
+"""
 class ArmPosition(Enum):
-     = [45, 45]
-    CLOSE = [0, q, 0]
+    OPEN = [45, 45]
+    CLOSE = [0, 0]
 
 
 @if_enabled
 @async_task
-def move_elevator(self, position: ElevatorPosition):
-
-
-
-
-@if_enabled
-@async_task
-def move_elevator(self, position: ElevatorPosition):
+def move_elevator(self, position: ArmPosition):
     # TODO: Use correct servo id
     status1 = self.actuators.servo_set_angle(1, position[0])
     status2 = self.actuators.servo_set_angle(2, position[1])
@@ -61,3 +54,4 @@ def magnets_on(self, magnet_ids: list[int]):
 @async_task
 def magnets_off(self, magnet_ids: list[int]):
     return RobotStatus.check(self.actuators.magnets_off(magnet_ids))
+"""

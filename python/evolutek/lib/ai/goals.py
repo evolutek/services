@@ -163,19 +163,15 @@ class Goal:
 # recal_sensor: used sensor during recal ("right" or "left")
 class StartingPosition:
 
-    def __init__(self, name, position, theta, recal_side, recal_sensor):
+    def __init__(self, name, position, theta):
         self.name = name
         self.position = position
         self.theta = theta
-        self.recal_side = recal_side
-        self.recal_sensor = recal_sensor
 
     def __str__(self):
         s = "--- %s ---\n" % self.name
         s += "posisiton: %s\n" % self.position
         s += "theta: %s\n" % self.theta
-        s += "recal side: %s\n" % self.recal_side
-        s += "recal sensor: %s" % self.recal_sensor
         return s
 
     # Static method
@@ -189,17 +185,7 @@ class StartingPosition:
         if isinstance(theta, str):
             theta = eval(theta)
 
-        recal_side = starting_point["recal_side"]
-        if not recal_side in ["x", "y"]:
-            print('[GOALS] No existing recal side %s' % recal_side)
-            return None
-
-        recal_sensor = starting_point["recal_sensor"]
-        if not recal_sensor in ["right", "left"]:
-            print('[GOALS] No existing recal sensor %s' % recal_sensor)
-            return None
-
-        return StartingPosition(starting_point["name"], position, theta, recal_side, recal_sensor)
+        return StartingPosition(starting_point["name"], position, theta)
 
 
 # Strategy Class
@@ -208,11 +194,11 @@ class StartingPosition:
 # available: robot list fro which the strategy is available
 # use_pathfinding: tell if the strategy use the pathfinding
 class Strategy:
-    def __init__(self, name, starting_position, goals=None, available=None, use_pathfinding=True):
+    def __init__(self, name, starting_position, goals=None, use_pathfinding=True):
         self.name = name
         self.starting_position = starting_position
         self.goals = [] if goals is None else goals
-        self.available = [] if available is None else available
+        self.available = []
         self.use_pathfinding = use_pathfinding
 
     def __str__(self):
@@ -248,7 +234,7 @@ class Strategy:
 
         use_pathfinding = strategy['use_pathfinding'] if 'use_pathfinding' in strategy else False
 
-        new = Strategy(strategy['name'], starting_position, _goals, strategy['available'], use_pathfinding)
+        new = Strategy(strategy['name'], starting_position, _goals, use_pathfinding)
 
         return new
 
@@ -340,9 +326,8 @@ class Goals:
             if new is None:
                 return False
 
-            if robot in new.available:
-                print('[GOALS] Adding %s strategy' % new.name)
-                self.strategies.append(new)
+            print('[GOALS] Adding %s strategy' % new.name)
+            self.strategies.append(new)
 
         # Parse critical goal
         if 'critical_goals' in goals and robot in goals['critical_goals']:
@@ -361,7 +346,7 @@ class Goals:
 
     def __str__(self):
         s = "[Goals manager]\n"
-        s += "Current Strategy: %s\n" % str(self.current_strategy.name)
+        s += "Current Strategy: %s\n" % (str(self.current_strategy.name) if self.current_strategy is not None else "None")
         s += "Number Current Strategy: %d\n" % self.current
         s += "Critical goal: %s\n" % str(self.critical_goal)
         s += "Timeout Critical goal: %s\n" % str(self.timeout_critical_goal)

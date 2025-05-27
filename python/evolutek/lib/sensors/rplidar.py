@@ -1,4 +1,4 @@
-from math import cos, sin, sqrt, pi, radians
+from math import cos, sin, sqrt, pi, radians, atan2, degrees
 from rplidar import RPLidar, RPLidarException
 from time import sleep, time
 from threading import Event, Thread, Lock
@@ -23,7 +23,7 @@ class Rplidar:
         self.callback = None
 
         self.position = Point(0, 0)
-        self.angle = -pi/2
+        self.angle = 0
 
         try:
             self.lidar = RPLidar(LIDAR_PATH)
@@ -67,7 +67,7 @@ class Rplidar:
             # TODO : put 1500 in a config variable
             if distance > 1500: continue
 
-            current_angle = radians(angle) + pi/2# - lidar_angle
+            current_angle = radians(angle)# - lidar_angle
             x = distance * sin(current_angle)# + self.position.y
             #if x < 0 or x > 2000: continue
             y = distance * cos(current_angle)# + self.position.y
@@ -120,9 +120,11 @@ class Rplidar:
             #t = time()
 
             robots = []
+            #print("--------------")
             for shape in shapes:
-                robots.append(self.compute_center(shape))
-
+                center = self.compute_center(shape)
+                robots.append(center)
+                #print(f"Robot see, theta: {int(degrees(atan2(center.y, center.x)))}, dist: {int((center.x**2 + center.y**2)**.5)}) (at {center})")
             #print(f"[RPLIDAR] Compute centers: {(time() - t) * 1000}ms")
             #print(f"[RPLIDAR] Total processing time: {(time() - process)*1000}ms")
 

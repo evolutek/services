@@ -118,7 +118,7 @@ class TrajMan(Service):
     #pidri = ConfigVariable(section=ROBOT, option="pidrot_i", coerc=float)
     #pidrd = ConfigVariable(section=ROBOT, option="pidrot_d", coerc=float)
     #trslacc = ConfigVariable(section=ROBOT, option="trsl_acc", coerc=float)
-    #trsldec = ConfigVariable(section=ROBOT, option="trsl_dec", coerc=float)
+    trsldec = ConfigVariable(section=ROBOT, option="trsl_dec", coerc=float)
     trslmax = ConfigVariable(section=ROBOT, option="trsl_max", coerc=float)
     #rotacc = ConfigVariable(section=ROBOT, option="rot_acc", coerc=float)
     #rotdec = ConfigVariable(section=ROBOT, option="rot_dec", coerc=float)
@@ -225,19 +225,22 @@ class TrajMan(Service):
         return robots
 
     @Service.action
-    def need_to_avoid(self, detection_dist):
+    def need_to_avoid(self, detection_dist, side):
         with self.lock:
+            print(f"travel direction: {self.travel_orientation}")
             for robot in self.detected_robots:
                 global_pos = robot.change_referencial(self.robot_position, self.robot_orientation)
-                dx = self.global_pos.x - self.robot_position.x
-                dy = self.global_pos.y - self.robot_position.y
+                dx = global_pos.x - self.robot_position.x
+                dy = global_pos.y - self.robot_position.y
                 vx = cos(self.travel_orientation)
                 vy = sin(self.travel_orientation)
-                cross_product = -vy * dx + vx * dy
-                if abs(cross_product) < self.robot_radius and Point(x=0, y=0).dist(Point(x=dx, y=dy)) < detection_dist:
+                cross_product = vy * dx - vx * dy
+                dot_product = dx * vx + dy * vy
+                if dot_product > 0 and abs(cross_product) < self.robot_radius() * 2 and Point(x=0, y=0).dist(Point(x=dx, y=dy)) < detection_dist:
                     # Check if it is located on the map
-                    if 0 < global_pos.x and global_pos.x < 3000 and 0 < global_pos.y and global_pos.y < 2000:
+                    if 0 < global_pos.x and global_pos.x < 2000 and 0 < global_pos.y and global_pos.y < 3000:
                         print('[ROBOT] Need to avoid robot at dist: %f' % Point(x=0, y=0).dist(robot))
+                        #print(f"cross_product: {cross_product}, travel_orientation: {self.travel_orientation}")
                         return True
                     else:
                         print('[ROBOT] Ignoring obstacle: %s' % str(global_pos))
@@ -246,8 +249,10 @@ class TrajMan(Service):
 
     @Service.action
     def stop_robot(self, dist=100):
-        if self.is_moving():
-            self.move_trsl(min(float(dist), 100), 0, 1000, self.robot_speed, int(self.robot_speed > 0))
+        #if self.is_moving():
+         self.stop_asap(0,0)
+         print('STOP TOI CONNARD')
+            #self.move_trsl(min(float(dist), 100), 0, 1000, self.robot_speed, int(self.robot_speed > 0))
 
     def avoid_loop(self):
         while True:
@@ -255,7 +260,7 @@ class TrajMan(Service):
 
             if not self.is_avoid_enabled.is_set():
                 continue
-
+                
             stop_distance = 0.0
             detection_dist = 0.0
 
@@ -263,10 +268,11 @@ class TrajMan(Service):
                 if self.robot_speed == 0.0:
                     continue
 
-                stop_distance = (self.robot_speed**2 / (2 * 1000))
-                detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + 50
+                stop_distance = (self.robot_speed**2 / (2 * self.trsldec())) * 2 # Oupsy un petit fois 2
+                print(f"robot_speed = {self.robot_speed}, stop_distance = {stop_distance}, dist to dst = {self.robot_position.dist(self.destination)}")
+                detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + self.robot_radius() * 2
 
-            if self.need_to_avoid(detection_dist):
+            if self.need_to_avoid(detection_dist, None):
                 with self.lock:
                     self.avoid_side = self.robot_speed > 0.0
 
@@ -545,10 +551,10 @@ class TrajMan(Service):
         while True:
             length = unpack('b', self.serial.read())[0]
             tab = [length]
-            # self.log_debug("Message length expected:", length)
+            # self.log_serial("Message length expected:", length)
             for i in range(length - 1):  # FIXME: use read(lenght)
                 tab += self.serial.read()
-            # self.log_debug("Received message with length:", len(tab))
+            # self.log_serial("Received message with length:", len(tab))
 
             if len(tab) > 1:
                 if tab[1] == Commands.ACKNOWLEDGE.value:
@@ -621,8 +627,8 @@ class TrajMan(Service):
                         'rtmax': rtmax,
                     })
 
-                    self.log_serial("Translation: Acc:", tracc, "\tDec:", trdec, "\tMax :", trmax, " (mm/(s*s) mm/(s*s) mm/s)")
-                    self.log_serial("Rotation:    Acc: {0:.3f}\tDec: {1:.3f}\tMax: {2:.3f} (rad/(s*s) rad/(s*s) rad/s)".format(rtacc, rtdec, rtmax))
+                    #self.log_serial("Translation: Acc:", tracc, "\tDec:", trdec, "\tMax :", trmax, " (mm/(s*s) mm/(s*s) mm/s)")
+                    #self.log_serial("Rotation:    Acc: {0:.3f}\tDec: {1:.3f}\tMax: {2:.3f} (rad/(s*s) rad/(s*s) rad/s)".format(rtacc, rtdec, rtmax))
 
                 elif tab[1] == Commands.GET_WHEELS.value:
                     a, b, spacing, left_diameter, right_diameter = unpack('=bbfff', bytes(tab))
@@ -652,7 +658,7 @@ class TrajMan(Service):
                         'trsl_vector': speed,
                     })
 
-                    self.log_serial("Translation vector: ", speed)
+                    #self.log_serial("Translation vector: ", speed)
 
                 elif tab[1] == Commands.GET_VECTOR_ROT.value:
                     a, b, speed = unpack('=bbf', bytes(tab))
@@ -661,7 +667,7 @@ class TrajMan(Service):
                         'rot_vector': speed,
                     })
 
-                    self.log_serial("Rotation vector: ", speed)
+                    #self.log_serial("Rotation vector: ", speed)
 
                 elif tab[1] == Commands.GET_TRAVEL_THETA.value:
                     a, b, travel_theta = unpack('=bbf', bytes(tab))
@@ -671,7 +677,7 @@ class TrajMan(Service):
                     })
                     self.travel_orientation = travel_theta
 
-                    self.log_serial("Travel: theta = %.2f" % speed)
+                    #self.log_serial("Travel: theta = %.2f" % travel_theta)
 
                 elif tab[1] == Commands.RECALAGE.value:
                     a, b, recal_xpos, recal_ypos, recal_theta = unpack('=bbfff', bytes(tab))
@@ -704,9 +710,9 @@ class TrajMan(Service):
                     with self.lock:
                         self.robot_position = Point(x=xpos, y=ypos)
                         self.robot_orientation = theta
-                        self.robot_speed = speed * 1000
+                        self.robot_speed = speed
         
-                    self.log_serial("Telemetry: xpos = %i, ypos = %i, theta = %.2f, speed = %i" % (xpos, ypos, theta, speed))
+                    #self.log_serial("Telemetry: xpos = %i, ypos = %i, theta = %.2f, speed = %i" % (xpos, ypos, theta, speed))
 
                     #telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}
                     #self.publish(ROBOT + '_telemetry', status='successful', telemetry=telemetry, robot=ROBOT)

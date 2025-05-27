@@ -28,8 +28,8 @@ class I2CMotorBoard(ComponentsHolder):
             return False
         return True
 
-    def send_command(self, id: int, data: bytes):
-        self.i2c.writeto(self.device_addr, bytes([id]) + data)
+    def send_command(self, cmd_id: int, stepper_id: int, data: bytes):
+        self.i2c.writeto(self.device_addr, bytes([cmd_id, stepper_id]) + data)
 
 
 class I2CMotorBoardStepper(I2CMotorBoardComponent):
@@ -47,17 +47,17 @@ class I2CMotorBoardStepper(I2CMotorBoardComponent):
         if speed < 0:
             return False
 
-        if steps < 0x7FFF or steps > 0x7FFF:
+        if steps < -0x7FFFFFFF or steps > 0x7FFFFFFF:
             return False
 
-        self.motor_board.send_command(0x02, struct.pack(">h>H", steps, speed))
+        self.motor_board.send_command(0x02, self.stepper_id, struct.pack(">iI", steps, speed))
 
         return True
 
     def move(self, steps: int, speed: int) -> bool:
-        self.motor_board.send_command(0x03, struct.pack(">h>H", steps, speed))
+        self.motor_board.send_command(0x03, self.stepper_id, struct.pack(">iI", steps, speed))
         return True
 
     def home(self) -> bool:
-        self.motor_board.send_command(0x01, bytes())
+        self.motor_board.send_command(0x01, self.stepper_id, bytes())
         return True
