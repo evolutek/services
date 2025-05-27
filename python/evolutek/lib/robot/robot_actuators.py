@@ -7,6 +7,89 @@ from time import sleep
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 from evolutek.lib.actuators.ax12 import AX12Controller
 
+#############
+# ELEVATORS #
+#############
+
+class ElevatorPosition(Enum):
+    down = [0,0,0]
+    second_approach = [0,0,0]
+    second_place = [0,0,0]
+    third_approach = [0,0,0]
+    third_place = [0,0,0]
+
+@if_enabled
+@async_task
+def move_elevator(self, id, position: ElevatorPosition)
+    id = int(id)
+
+    if(isinstance(position, str)):
+        position = ElevatorPosition[position]
+
+    return RobotStatus.check(self.actuators.stepper_goto(id, position.value[id]))
+
+#############
+#  MAGNETS  #
+#############
+
+class MagnetGroups(Enum):
+    outer_AB = [0,3]
+    elevator_AB = [1,2]
+    outer_BC = [4,7]
+    elevator_BC = [5,6]
+    outer_CA = [8,11]
+    elevator_CA = [9,10]
+
+@if_enabled
+@async_task
+def grab(self, group: MagnetGroups):
+    if(isinstance(group, str)):
+        group = MagnetGroups[group]
+
+    magnet(group, grab)
+
+@if_enabled
+@async_task
+def drop(self, group: MagnetGroups):
+    if(isinstance(group, str)):
+        group = MagnetGroups[group]
+
+    magnet(group, MagnetPosition.drop)
+
+#############
+#   TIPS    #
+#############
+
+class TipPositions(Enum):
+    stow = [0,0,0,0,0,0]
+    grab = [0,0,0,0,0,0]
+    inside = [0,0,0,0,0,0]
+
+@if_enabled
+@async_task
+def tip(self, group, position : TipPositions) :
+    group = int(group)
+    
+    if(isinstance(position, str)):
+        position = TipPositions[position]
+
+    status1 = self.actuators.ax_move(self, group*2, position.value[group*2])
+    status2 = self.actuators.ax_move(self, group*2 + 1, position.value[group*2 +1])
+
+    return RobotStatus.check(status1, status2)
+
+
+#############
+#  SENSORS  #
+#############
+
+sensor_to_mcp = [0,0,0,0,0,0,0,0,0,0,0,0] # Note, les ids 12 et 13 (avec premier id 0) sont ceux des pompes respectivement 0 et 1
+
+@async_task
+def sensor(self, id) :
+    id = int(id)
+
+    return self.actuators.proximity_sensor_read(self, sensor_to_mcp[id])
 
 
 """
