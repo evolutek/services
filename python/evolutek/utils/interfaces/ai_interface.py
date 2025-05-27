@@ -80,7 +80,6 @@ class ButtonSystem(IFrame):
 		tk.Button(self, text="Reboot", command=self.reboot, font=FONT_MEDIUM).grid(row=0, column=0, sticky=tk.N)
 		tk.Button(self, text="Shutdown", command=self.shutdown, font=FONT_MEDIUM).grid(row=0, column=1, sticky=tk.N)
 		tk.Button(self, text="Close", command=self.close, font=FONT_MEDIUM).grid(row=0, column=2, sticky=tk.N)
-
 	def init_interface(self):
 		self.create_buttons()
 
@@ -109,7 +108,10 @@ class StatusFrame(IFrame):
 			print('[IA INTERFACE] Failed to reset match : %s' % str(e))
 	
 	def cal_otos(self):
-		self.robot.cs.trajman.cal_otos()
+		self.root.cs.trajman.cal_otos()
+
+	def otos_cal(self):
+		self.root.cs.trajman.otos_cal()
 
 	def init_interface(self):
 		tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
