@@ -406,9 +406,9 @@ class TrajMan(Service):
         trsl_end_pct = max(trsl_start_pct, min(100, int(trsl_end_pct)))
         
         # Préparation de la commande
-        tab = pack('B', 2 + calcsize('ffffffbb'))
+        tab = pack('B', 2 + calcsize('fffffffbb'))
         tab += pack('B', Commands.GLOBAL_GOTO.value)
-        tab += pack('ffffff', 
+        tab += pack('fffffff', 
                     float(x), float(y), float(theta),
                     float(rot_start_pct)/100, float(rot_end_pct)/100,
                     float(trsl_start_pct)/100, float(trsl_end_pct)/100)
