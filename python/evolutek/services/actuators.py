@@ -17,6 +17,7 @@ from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
+from evolutek.lib.actuators.i2c_motor_board import I2CMotorBoard, I2CMotorBoardStepper
 
 # Other imports
 from evolutek.lib.settings import ROBOT
@@ -120,6 +121,12 @@ class Actuators(Service):
             9: [I2CActType.Servo, 180], # Pump arm
         }, frequency = 50, addr=0x42)
 
+        self.i2c_mots = I2CMotorBoard({
+            0: (I2CMotorBoardStepper, [0]),
+            1: (I2CMotorBoardStepper, [1]),
+            2: (I2CMotorBoardStepper, [2]),
+        })
+
         self.pumps = PumpController({
             0: [
                 create_gpio(9, 'pump1', dir=True, type=GpioType.MCP),
@@ -132,6 +139,7 @@ class Actuators(Service):
         })
 
         self.all_actuators = [
+            self.i2c_mots,
             self.proximity_sensors,
             self.recal_sensors,
             self.axs,
@@ -334,6 +342,35 @@ class Actuators(Service):
                 return RobotStatus.return_status(RobotStatus.Failed)
 
         return RobotStatus.return_status(RobotStatus.Done)
+
+    ############
+    # STEPPERS #
+    ############
+    @Service.action
+    def stepper_goto(self, id, position, speed):
+        speed = int(speed)
+        if self.i2c_mots[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_mots[int(id)].goto(int(position), speed):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    @Service.action
+    def stepper_move(self, id, delta, speed):
+        speed = int(speed)
+        if self.i2c_mots[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_mots[int(id)].move(int(delta), speed):
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    @Service.action
+    def stepper_home(self, id):
+        if self.i2c_mots[int(id)] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_mots[int(id)].home():
+            return RobotStatus.return_status(RobotStatus.Done)
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     #########
     # PUMPS #
