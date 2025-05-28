@@ -87,9 +87,9 @@ def drop(self, group: MagnetGroups):
 #############
 
 class TipPositions(Enum):
-    stow = [0,0,0,0,0,0]
-    grab = [0,0,0,0,0,0]
-    inside = [0,0,0,0,0,0]
+    stow = [400,910,400,910,400,910]
+    grab = [575,750,575,750,575,750]
+    inside = [850,470,850,470,850,470]
 
 @if_enabled
 @async_task
@@ -99,8 +99,8 @@ def tip(self, group, position : TipPositions) :
     if(isinstance(position, str)):
         position = TipPositions[position]
 
-    status1 = self.actuators.ax_move(self, group*2, position.value[group*2])
-    status2 = self.actuators.ax_move(self, group*2 + 1, position.value[group*2 +1])
+    status1 = self.actuators.ax_move(group*2 +1, position.value[group*2])
+    status2 = self.actuators.ax_move(group*2 +2, position.value[group*2 +1])
 
     return RobotStatus.check(status1, status2)
 
@@ -123,17 +123,17 @@ def sensor(self, id) :
 
 # Ids des ax de chaque bras (premiere valeur pour le latéral, deuxieme pour le vertical)
 class ArmToAx(Enum):
-    A = [0,0]
-    C = [0,0]
+    A = [7,8]
+    C = [9,10]
 
 class ArmPosition(Enum):
-    left = {ArmToAx.A.value[0] : 0, ArmToAx.C.value[0] : 0}
-    center = {ArmToAx.A.value[0] : 0, ArmToAx.C.value[0] : 0}
-    right = {ArmToAx.A.value[0] : 0, ArmToAx.C.value[0] : 0}
+    left = {ArmToAx.A.value[0] : 775, ArmToAx.C.value[0] : 710}
+    center = {ArmToAx.A.value[0] : 575, ArmToAx.C.value[0] : 505}
+    right = {ArmToAx.A.value[0] : 375, ArmToAx.C.value[0] : 300}
 
 class ArmHeight(Enum):
-    up = {ArmToAx.A.value[1] : 0, ArmToAx.C.value[1] : 0}
-    down = {ArmToAx.A.value[1] : 0, ArmToAx.C.value[1] : 0}
+    up = {ArmToAx.A.value[1] : 375, ArmToAx.C.value[1] : 325}
+    down = {ArmToAx.A.value[1] : 640, ArmToAx.C.value[1] : 575}
 
 def arm_height(self, arm : ArmToAx, height : ArmHeight):
     
@@ -143,18 +143,38 @@ def arm_height(self, arm : ArmToAx, height : ArmHeight):
     if(isinstance(height, str)):
         height = ArmHeight[height]
 
-    return RobotStatus.check(self.actuators.ax_move(self, arm.value[1], height.value[arm.value[1]]))
+    return RobotStatus.check(self.actuators.ax_move(arm.value[1], height.value[arm.value[1]]))
 
 def arm_position(self, arm : ArmToAx, position : ArmPosition):
 
     if(isinstance(arm, str)):
         arm = ArmToAx[arm]
 
-    if(isinstance(height, str)):
+    if(isinstance(position, str)):
         position = ArmPosition[position]
+        
+    self.actuators.ax_set_speed(arm.value[0], 200)
 
-    return RobotStatus.check(self.actuators.ax_move(self, arm.value[0], position.value[arm.value[0]]))
+    return RobotStatus.check(self.actuators.ax_move(arm.value[0], position.value[arm.value[0]]))
 
+def arm_grab(self, arm : ArmToAx):
+    if(isinstance(arm, str)):
+        arm = ArmToAx[arm]
+        
+    if(arm == ArmToAx.A):   
+        return RobotStatus.check(self.actuators.pumps_on([1]))
+    else:
+        return RobotStatus.check(self.actuators.pumps_on([0]))
+    
+def arm_drop(self, arm : ArmToAx):
+    if(isinstance(arm, str)):
+        arm = ArmToAx[arm]
+        
+    if(arm == ArmToAx.A):   
+        return RobotStatus.check(self.actuators.pumps_off([1]))
+    else:
+        return RobotStatus.check(self.actuators.pumps_off([0]))
+  
 
 '''
 class PumpsArmId(Enum):
