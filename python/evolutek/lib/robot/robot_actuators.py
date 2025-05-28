@@ -11,15 +11,17 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 # ====== Elevator ======
 
-# (Right ID, Left ID)
+ELEVATOR_SPEED = 100
+
+# (Stepper ID)
 class ElevatorId(Enum):
-    FRONT = (1, 2)
-    #BACK = (2, 3)
+    FRONT = (0)
+    #BACK = (2)
 
 class ElevatorPosition(Enum):
-    LOWEST = {ElevatorId.FRONT: (390, 630)}
-    MIDDLE = {ElevatorId.FRONT: (420, 600)}
-    HIGHEST = {ElevatorId.FRONT: (760, 260)}
+    LOWEST = {ElevatorId.FRONT: (0)}
+    MIDDLE = {ElevatorId.FRONT: (100)}
+    HIGHEST = {ElevatorId.FRONT: (200)}
 
 @if_enabled
 @async_task
@@ -32,10 +34,10 @@ def move_elevator(self, id: ElevatorId, position: ElevatorPosition):
 
     angles = position.value[id]
 
-    status = RobotStatus.check(self.actuators.axs_moves_ex(
-        [id.value[0], id.value[1]],
-        [angles[0], angles[1]],
-        [256, 256]
+    status = RobotStatus.check(self.actuators.stepper_goto(
+        id.value[0],
+        angles[0],
+        ELEVATOR_SPEED
     ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
@@ -55,14 +57,13 @@ def move_elevator_ex(self, id: ElevatorId, position: float, wait = True):
         position = float(position)
 
     angles = (
-        (ElevatorPosition.HIGHEST.value[id][0] - ElevatorPosition.LOWEST.value[id][0]) * position + ElevatorPosition.LOWEST.value[id][0],
-        (ElevatorPosition.HIGHEST.value[id][1] - ElevatorPosition.LOWEST.value[id][1]) * position + ElevatorPosition.LOWEST.value[id][1]
+        (ElevatorPosition.HIGHEST.value[id][0] - ElevatorPosition.LOWEST.value[id][0]) * position + ElevatorPosition.LOWEST.value[id][0]
     )
 
-    status = RobotStatus.check(self.actuators.axs_moves_ex(
-        [id.value[0], id.value[1]],
-        [angles[0], angles[1]],
-        [256, 256]
+    status = RobotStatus.check(self.actuators.stepper_goto(
+        id.value[0],
+        angles[0],
+        ELEVATOR_SPEED
     ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:

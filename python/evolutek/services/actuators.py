@@ -71,22 +71,22 @@ class Actuators(Service):
         self.proximity_sensors = ProximitySensors(
             {
                 0: [ # Bottom right sensor
-                    create_gpio(3, 'proximity_sensors1', dir=False, type=GpioType.MCP)
+                    create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)
                 ],
                 1: [ # Bottom middle sensor
-                    create_gpio(4,  'proximity_sensors2', dir=False, type=GpioType.MCP)
+                    create_gpio(1,  'proximity_sensors2', dir=False, type=GpioType.MCP)
                 ],
                 2: [ # Bottom left sensor
-                    create_gpio(5,  'proximity_sensors3', dir=False, type=GpioType.MCP)
+                    create_gpio(2,  'proximity_sensors3', dir=False, type=GpioType.MCP)
                 ],
                 3: [ # Clamp right sensor
-                    create_gpio(6, 'proximity_sensors4', dir=False, type=GpioType.MCP)
+                    create_gpio(3, 'proximity_sensors4', dir=False, type=GpioType.MCP)
                 ],
                 4: [ # Clamp middle sensor
-                    create_gpio(7, 'proximity_sensors5', dir=False, type=GpioType.MCP)
+                    create_gpio(4, 'proximity_sensors5', dir=False, type=GpioType.MCP)
                 ],
                 5: [ # Clamp left sensor
-                    create_gpio(8, 'proximity_sensors6', dir=False, type=GpioType.MCP)
+                    create_gpio(5, 'proximity_sensors6', dir=False, type=GpioType.MCP)
                 ]
             }
         )
@@ -102,23 +102,23 @@ class Actuators(Service):
         )
 
         self.i2c_servos_1 = I2CActsHandler({
-            3: [I2CActType.Servo, 180], # Left most magnet
-            4: [I2CActType.Servo, 180], # Middle left magnet
-            5: [I2CActType.Servo, 180], # Middle right magnet
-            6: [I2CActType.Servo, 180], # Right most magnet
-            7: [I2CActType.Servo, 180], # Left plank arm
-            8: [I2CActType.Servo, 180], # Right plank arm
-            9: [I2CActType.Servo, 180], # Pump arm
+            0: [I2CActType.Servo, 180], # Front Left most magnet
+            1: [I2CActType.Servo, 180], # Front Middle left magnet
+            2: [I2CActType.Servo, 180], # Front Middle right magnet
+            3: [I2CActType.Servo, 180], # Front Right most magnet
+            4: [I2CActType.Servo, 180], # Back Left most magnet
+            5: [I2CActType.Servo, 180], # Back Middle left magnet
+            6: [I2CActType.Servo, 180], # Back Middle right magnet
+            7: [I2CActType.Servo, 180], # Back Right most magnet
         }, frequency = 50, addr=0x40)
 
         self.i2c_servos_2 = I2CActsHandler({
-            3: [I2CActType.Servo, 180], # Left most magnet
-            4: [I2CActType.Servo, 180], # Middle left magnet
-            5: [I2CActType.Servo, 180], # Middle right magnet
-            6: [I2CActType.Servo, 180], # Right most magnet
-            7: [I2CActType.Servo, 180], # Left plank arm
-            8: [I2CActType.Servo, 180], # Right plank arm
-            9: [I2CActType.Servo, 180], # Pump arm
+            0: [I2CActType.Servo, 180], # Front Left plank arm
+            1: [I2CActType.Servo, 180], # Front Right plank arm
+            2: [I2CActType.Servo, 180], # Back Left plank arm
+            3: [I2CActType.Servo, 180], # Back Right plank arm
+            4: [I2CActType.Servo, 180], # Front Pump arm
+            5: [I2CActType.Servo, 180], # Back Pump arm
         }, frequency = 50, addr=0x42)
 
         self.i2c_mots = I2CMotorBoard({
@@ -129,20 +129,20 @@ class Actuators(Service):
 
         self.pumps = PumpController({
             0: [
-                create_gpio(9, 'pump1', dir=True, type=GpioType.MCP),
+                create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
                 None
             ],
             1: [
-                create_gpio(8, 'pump2', dir=True, type=GpioType.MCP),
+                create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
                 None
             ],
-            #2: [
-            #    create_gpio(8, 'pump3', dir=True, type=GpioType.MCP),
-            #    None
-            #],
-            #3: [
-            #    create_gpio(8, 'pump4', dir=True, type=GpioType.MCP),
-            #    None
+            # 2: [
+            #     create_gpio(10, 'pump1', dir=True, type=GpioType.MCP),
+            #     None
+            # ],
+            # 3: [
+            #     create_gpio(11, 'pump2', dir=True, type=GpioType.MCP),
+            #     None
             #]
         })
 
