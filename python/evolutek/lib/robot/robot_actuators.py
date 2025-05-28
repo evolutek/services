@@ -15,13 +15,13 @@ ELEVATOR_SPEED = 100
 
 # (Stepper ID)
 class ElevatorId(Enum):
-    FRONT = (0)
-    #BACK = (2)
+    FRONT = (0,)
+    #BACK = (2,)
 
 class ElevatorPosition(Enum):
-    LOWEST = {ElevatorId.FRONT: (0)}
-    MIDDLE = {ElevatorId.FRONT: (100)}
-    HIGHEST = {ElevatorId.FRONT: (200)}
+    LOWEST = {ElevatorId.FRONT: (0,)}
+    MIDDLE = {ElevatorId.FRONT: (-100,)}
+    HIGHEST = {ElevatorId.FRONT: (-200,)}
 
 @if_enabled
 @async_task
@@ -58,7 +58,7 @@ def move_elevator_ex(self, id: ElevatorId, position: float, wait = True):
 
     angles = (
         (ElevatorPosition.HIGHEST.value[id][0] - ElevatorPosition.LOWEST.value[id][0]) * position + ElevatorPosition.LOWEST.value[id][0]
-    )
+    ,)
 
     status = RobotStatus.check(self.actuators.stepper_goto(
         id.value[0],
@@ -201,13 +201,13 @@ def toggle_pumps(self, id: PumpsSetId, grab: bool):
 # ====== Pumps Arms ======
 
 class PumpsArmId(Enum):
-    FRONT = 9
+    FRONT = 0
     #BACK = ?
 
 class PumpsArmPosition(Enum):
     COLLAPSED       = {PumpsArmId.FRONT: 20}
-    EXPANDED        = {PumpsArmId.FRONT: 105}
-    ALMOST_EXPANDED = {PumpsArmId.FRONT: 90}
+    EXPANDED        = {PumpsArmId.FRONT: 90}
+    ALMOST_EXPANDED = {PumpsArmId.FRONT: 80}
     #MORE_EXPANDED   = {PumpsArmId.FRONT: 110}
 
 @if_enabled

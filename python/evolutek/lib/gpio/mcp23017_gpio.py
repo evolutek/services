@@ -19,9 +19,12 @@ class Gpio(BaseGpio):
         if id < 0 or id > 31:
             raise Exception('[GPIO] Invalid pin ID for mcp')
 
+        self.pin = None
         if id > 15:
+            if mcp_2 is None: return
             self.pin = mcp_2.get_pin(id - 16)
         else:
+            if mcp_1 is None: return
             self.pin = mcp_1.get_pin(id)
 
         if dir:
@@ -32,12 +35,13 @@ class Gpio(BaseGpio):
 
     # Read the gpio
     def read(self):
+        if self.pin is None: False
         self.last_value = self.pin.value
         return self.last_value
 
     # Write on the gpio
     def write(self, value):
-        if not self.dir:
+        if not self.dir or self.pin is None:
             return
 
         self.pin.value = get_boolean(value)

@@ -70,24 +70,24 @@ class Actuators(Service):
 
         self.proximity_sensors = ProximitySensors(
             {
-                0: [ # Bottom right sensor
-                    create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)
-                ],
-                1: [ # Bottom middle sensor
-                    create_gpio(1,  'proximity_sensors2', dir=False, type=GpioType.MCP)
-                ],
-                2: [ # Bottom left sensor
-                    create_gpio(2,  'proximity_sensors3', dir=False, type=GpioType.MCP)
-                ],
-                3: [ # Clamp right sensor
-                    create_gpio(3, 'proximity_sensors4', dir=False, type=GpioType.MCP)
-                ],
-                4: [ # Clamp middle sensor
-                    create_gpio(4, 'proximity_sensors5', dir=False, type=GpioType.MCP)
-                ],
-                5: [ # Clamp left sensor
-                    create_gpio(5, 'proximity_sensors6', dir=False, type=GpioType.MCP)
-                ]
+                # 0: [ # Bottom right sensor
+                #     create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)
+                # ],
+                # 1: [ # Bottom middle sensor
+                #     create_gpio(1,  'proximity_sensors2', dir=False, type=GpioType.MCP)
+                # ],
+                # 2: [ # Bottom left sensor
+                #     create_gpio(2,  'proximity_sensors3', dir=False, type=GpioType.MCP)
+                # ],
+                # 3: [ # Clamp right sensor
+                #     create_gpio(3, 'proximity_sensors4', dir=False, type=GpioType.MCP)
+                # ],
+                # 4: [ # Clamp middle sensor
+                #     create_gpio(4, 'proximity_sensors5', dir=False, type=GpioType.MCP)
+                # ],
+                # 5: [ # Clamp left sensor
+                #     create_gpio(5, 'proximity_sensors6', dir=False, type=GpioType.MCP)
+                # ]
             }
         )
 
@@ -130,11 +130,11 @@ class Actuators(Service):
         self.pumps = PumpController({
             0: [
                 create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
-                None
+                create_gpio(10, 'pump1_ev', dir=True, type=GpioType.MCP),
             ],
             1: [
                 create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
-                None
+                create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
             ],
             # 2: [
             #     create_gpio(10, 'pump1', dir=True, type=GpioType.MCP),
@@ -331,10 +331,19 @@ class Actuators(Service):
     ##########
     @Service.action
     def servo_set_angle(self, id, angle):
-        if self.i2c_servos_1[int(id)] == None:
+        id = int(id)
+        if id > 15:
+            servos = self.i2c_servos_2
+            id -= 16
+        else:
+            servos = self.i2c_servos_1
+
+        if servos[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        if self.i2c_servos_1[int(id)].set_angle(int(angle)):
+
+        if servos[int(id)].set_angle(int(angle)):
             return RobotStatus.return_status(RobotStatus.Done)
+
         return RobotStatus.return_status(RobotStatus.Failed)
 
     @Service.action

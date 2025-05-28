@@ -3,29 +3,22 @@
     {
       "name": "go_to_end_area",
       "position": {
-        "x": 630,
-        "y": 330
+        "x": 440,
+        "y": 390
       },
       "theta": "pi",
-      "actions": [
-        {
-          "fct": "move_elevator_ex",
-          "handler": "robot",
-          "args": {
-            "id": "FRONT",
-            "position": "0.75"
-          }
-        },
-        {
-          "fct": "move_plank_arm",
-          "handler": "robot",
-          "args": {
-            "id": "FRONT",
-            "position": "ALMOST_EXPANDED"
-          }
-        }
-      ],
+      "actions": [],
       "score": 10
+    },
+    {
+      "name": "homologation_goto_1",
+      "position": {
+        "x": 1700,
+        "y": 1225
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 0
     },
     {
       "name": "just_push_move_1",
@@ -60,7 +53,7 @@
     {
       "name": "place_banner_1",
       "position": {
-        "x": 1860,
+        "x": 1875,
         "y": 1225
       },
       "theta": "0",
@@ -155,10 +148,40 @@
       "starting_position": "THE_ONLY_ONE",
       "goals": [
         "place_banner_1",
+        "homologation_goto_1",
         "go_to_end_area"
 		  ],
       "use_pathfinding": false,
-      "config_actions": [],
+      "config_actions": [
+        {
+          "fct": "goto",
+          "handler": "robot",
+          "args": {
+            "x": "1800",
+            "y": "1310"
+          }
+        },
+        {
+          "fct": "goto",
+          "handler": "robot",
+          "args": {
+            "x": "1750",
+            "y": "1225"
+          }
+        },
+        {
+          "fct": "goth",
+          "handler": "robot",
+          "args": {
+            "theta": "0"
+          }
+        },
+        {
+          "fct": "prepare_banner",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
       "available": ["pal"]
     },
     {
