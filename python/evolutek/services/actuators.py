@@ -68,6 +68,7 @@ class Actuators(Service):
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
+        # 
         self.proximity_sensors = ProximitySensors(
             {
                 # 0: [ # Bottom right sensor
@@ -102,23 +103,29 @@ class Actuators(Service):
         )
 
         self.i2c_servos_1 = I2CActsHandler({
-            0: [I2CActType.Servo, 180], # Front Left most magnet
-            1: [I2CActType.Servo, 180], # Front Middle left magnet
-            2: [I2CActType.Servo, 180], # Front Middle right magnet
-            3: [I2CActType.Servo, 180], # Front Right most magnet
-            4: [I2CActType.Servo, 180], # Back Left most magnet
-            5: [I2CActType.Servo, 180], # Back Middle left magnet
-            6: [I2CActType.Servo, 180], # Back Middle right magnet
-            7: [I2CActType.Servo, 180], # Back Right most magnet
+            0: [I2CActType.Servo, 180], # 
+            1: [I2CActType.Servo, 180], # 
+            2: [I2CActType.Servo, 180], # 
+            3: [I2CActType.Servo, 180], # Plank arm
+            4: [I2CActType.Servo, 180], # Plank arm
+            5: [I2CActType.Servo, 180], # Left
+            6: [I2CActType.Servo, 180], # Mid-left
+            7: [I2CActType.Servo, 180], # Mid-right
+            8: [I2CActType.Servo, 180], # Right
+            9: [I2CActType.Servo, 180], # Front pumps arm
         }, frequency = 50, addr=0x40)
 
         self.i2c_servos_2 = I2CActsHandler({
-            0: [I2CActType.Servo, 180], # Front Left plank arm
-            1: [I2CActType.Servo, 180], # Front Right plank arm
-            2: [I2CActType.Servo, 180], # Back Left plank arm
-            3: [I2CActType.Servo, 180], # Back Right plank arm
-            4: [I2CActType.Servo, 180], # Front Pump arm
-            5: [I2CActType.Servo, 180], # Back Pump arm
+            0: [I2CActType.Servo, 180], # 
+            1: [I2CActType.Servo, 180], # 
+            2: [I2CActType.Servo, 180], # 
+            3: [I2CActType.Servo, 180], # 
+            4: [I2CActType.Servo, 180], # 
+            5: [I2CActType.Servo, 180], # 
+            6: [I2CActType.Servo, 180], # 
+            7: [I2CActType.Servo, 180], # 
+            8: [I2CActType.Servo, 180], # 
+            9: [I2CActType.Servo, 180], # 
         }, frequency = 50, addr=0x42)
 
         self.i2c_mots = I2CMotorBoard({
