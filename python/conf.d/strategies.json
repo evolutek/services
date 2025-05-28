@@ -1,165 +1,33 @@
 {
   "goals": [
-    {"name": "prepare_solar_panel","position":{"x": 1854,"y": 102},"score":10,"actions":[
-        {"fct":"prepare_solar_panel","args":{"id":1},"handler":"robot"}
+    {"name": "drop_banner","position":{"x":1875,"y":1225},"theta":"-pi/2","actions":[
+        {"fct":"drop","args":{"group":"elevator_AB"},"handler":"robot"},
+        {"fct":"grab","args":{"group":"outer_CA"},"handler":"robot"},
+        {"fct":"grab","args":{"group":"elevator_CA"},"handler":"robot"}
     ]},
-    {"name": "align_solar_panels","position":{"x":1854,"y":102},"theta":"pi"},
-    {"name": "recal_solar_panels","position":{"x":1950,"y":100},"theta":"pi","actions":[
-        {"fct":"set_pos","args":{"x":1898,"y":147}}
+    {"name": "grab_first","position":{"x":1100,"y":1100},"theta":"-pi/6"},
+    {"name": "drop_first","position":{"x":1700,"y":1225},"theta":"2*pi/3","actions":[
+        {"fct":"drop","args":{"group":"elevator_CA"},"handler":"robot"},
+        {"fct":"drop","args":{"group":"outer_CA"},"handler":"robot"}
     ]},
-    {"name":"solar_panels","position":{"x":1898,"y":750},"theta":"pi","score":15},
-    {"name":"further_solar_panels","position":{"x":1898,"y":1800},"theta":"pi","score":15},
-    {"name":"go_away_solar_panels","position":{"x":1850,"y":1800},"theta":"(4*pi)/10"},
-    {"name":"transition_solar_panel","position":{"x":1700,"y":750},"theta":"(4*pi)/10"},
-    {"name":"align_lower_1","position":{"x":1300,"y":700},"theta":"(5*pi)/6","actions":[
-        {"fct":"prepare_grab_all","handler":"robot"},
-        {"fct":"move_claw","args":{"id":1,"position":"CLOSE"},"handler":"robot"}
-    ]},
-    {"name":"grab_lower_1","position":{"x":1300,"y":850},"actions":[
-        {"fct":"grab","args":{"id":3},"handler":"robot"}
-    ]},
-    {"name":"grab_lower_1_y","position":{"x":1300,"y":850},"actions":[
-        {"fct":"grab","args":{"id":2},"handler":"robot"}
-    ]},
-    {"name":"align_lower_2","position":{"x":1300,"y":850},"theta":"pi/6"},
-    {"name":"grab_lower_2","position":{"x":1300,"y":970},"actions":[
-        {"fct":"grab","args":{"id":2},"handler":"robot"}
-    ]},
-    {"name":"grab_lower_2_y","position":{"x":1300,"y":970},"actions":[
-        {"fct":"grab","args":{"id":3},"handler":"robot"}
-    ]},
-    {"name":"align_left_pots","position":{"x":300,"y":300},"theta":"-pi/6"},
-    {"name":"goto_left_border","position":{"x":300,"y":70},"actions":[
-        {"fct":"set_pos","args":{"x":300,"y":147}}
-    ]},
-    {"name":"present_to_pot","position":{"x":550,"y":100},"score":6,"actions":[
-        {"fct":"set_pos","args":{"x":550,"y":147}},
-        {"fct":"drop","args":{"id":3},"handler":"robot"}
-    ]},
-    {"name":"present_to_pot_y","position":{"x":550,"y":100},"score":6,"actions":[
-        {"fct":"set_pos","args":{"x":550,"y":147}},
-        {"fct":"drop","args":{"id":2},"handler":"robot"}
-    ]},
-    {"name":"align_upper_1","position":{"x":700,"y":650},"theta":"(5*pi)/6","actions":[
-        {"fct":"prepare_grab","args":{"id":3},"handler":"robot"}
-    ]},
-    {"name":"align_upper_1_y","position":{"x":700,"y":700},"theta":"(5*pi)/6","actions":[
-        {"fct":"prepare_grab","args":{"id":2},"handler":"robot"}
-    ]},
-    {"name":"grab_upper_1","position":{"x":700,"y":850},"actions":[
-        {"fct":"grab","args":{"id":3},"handler":"robot"}
-    ]},
-    {"name":"grab_upper_1_y","position":{"x":700,"y":850},"actions":[
-        {"fct":"grab","args":{"id":2},"handler":"robot"}
-    ]},
-    {"name":"align_upper_2","position":{"x":700,"y":850},"theta":"pi/6"},
-    {"name":"grab_upper_2","position":{"x":700,"y":1000},"actions":[
-        {"fct":"grab","args":{"id":3},"handler":"robot"}
-    ]},
-    {"name":"grab_upper_2_y","position":{"x":700,"y":1000},"actions":[
-        {"fct":"grab","args":{"id":2},"handler":"robot"}
-    ]},
-    {"name":"align_upper_pots","position":{"x":300,"y":750},"theta":"-(2*pi)/3"},
-    {"name":"goto_upper_border","position":{"x":50,"y":750},"score":6,"actions":[
-        {"fct":"set_pos","args":{"x":147,"y":750}},
-        {"fct":"drop","args":{"id":3},"handler":"robot"}
-    ]},
-    {"name":"goto_upper_border_y","position":{"x":50,"y":750},"score":6,"actions":[
-        {"fct":"set_pos","args":{"x":147,"y":750}},
-        {"fct":"drop","args":{"id":2},"handler":"robot"}
-    ]},
-    {"name":"go_zone","position":{"x":200,"y":200},"score":10},
-    {"name":"drop_area_pami","position":{"x":200,"y":200},"theta":"(2*pi)/6","actions":[
-        {"fct":"drop","args":{"id":2},"handler":"robot"},
-        {"fct":"prepare_grab","args":{"id":2},"handler":"robot"}
-
-    ]},
-    {"name":"drop_area_pami_y","position":{"x":200,"y":200},"theta":"(2*pi)/6","actions":[
-        {"fct":"drop","args":{"id":3},"handler":"robot"},
-        {"fct":"prepare_grab","args":{"id":3},"handler":"robot"}
-    ]}
+    {"name": "return_home","position":{"x":400,"y":400},"theta":"-pi/6"}
   ],
 
   "strategies": [
     {
-      "name": "bottom_blue",
-      "starting_position": "ZONE_BOTTOM_CROOKED",
-      "goals": [
-        "prepare_solar_panel",
-        "align_solar_panels",
-        "recal_solar_panels",
-        "solar_panels",
-        "further_solar_panels",
-        "go_away_solar_panels",
-        "transition_solar_panel",
-        "align_lower_1",
-        "grab_lower_1",
-        "align_lower_2",
-        "grab_lower_2",
-        "align_left_pots",
-        "goto_left_border",
-        "present_to_pot",
-        "align_upper_1",
-        "grab_upper_1",
-        "align_upper_pots",
-        "goto_upper_border",
-        "go_zone",
-        "drop_area_pami"
-      ],
-      "use_pathfinding": false
-    },
-    {
-      "name": "bottom_yellow",
-      "starting_position": "ZONE_BOTTOM_CROOKED",
-      "goals": [
-        "prepare_solar_panel",
-        "align_solar_panels",
-        "recal_solar_panels",
-        "solar_panels",
-        "further_solar_panels",
-        "go_away_solar_panels",
-        "transition_solar_panel",
-        "align_lower_1",
-        "grab_lower_1_y",
-        "align_lower_2",
-        "grab_lower_2_y",
-        "align_left_pots",
-        "goto_left_border",
-        "present_to_pot_y",
-        "align_upper_1_y",
-        "grab_upper_1_y",
-        "align_upper_pots",
-        "goto_upper_border_y",
-        "go_zone",
-        "drop_area_pami_y"
-      ],
-      "use_pathfinding": false
-    },
-    {
-      "name": "mini",
-      "starting_position": "ZONE_BOTTOM_CROOKED",
-      "goals": [
-        "align_left_pots",
-        "goto_left_border",
-        "present_to_pot_y",
-        "align_upper_1_y"
-      ],
-      "use_pathfinding": false
-    },
-    {
       "name": "homologation",
-      "starting_position": "ZONE_TOP",
+      "starting_position": "zone_bottom",
       "goals": [
-        "align_solar_panels"
+        "drop_banner",
+        "grab_first",
+        "drop_first",
+        "return_home"
       ],
       "use_pathfinding": false
     }
   ],
 
   "starting_positions": [
-    {"name": "ZONE_MIDDLE","position": {"x": 1000,"y": 2775},"theta": "-pi/2"},
-	  {"name": "ZONE_BOTTOM","position": {"x": 1865,"y": 100},"theta": "pi/2"},
-	  {"name": "ZONE_TOP","position": {"x": 145,"y": 100},"theta": "pi/2"},
-    {"name": "ZONE_BOTTOM_CROOKED","position": {"x": 1854,"y": 102},"theta": "-(5*pi)/6"}
+    {"name": "zone_bottom","position": {"x": 1875,"y": 1225 },"theta": "-pi/2"}
   ]
 }

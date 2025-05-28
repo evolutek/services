@@ -216,6 +216,8 @@ class TrajMan(Service):
     def lidar_callback(self, cloud, shapes, robots):
         with self.lock:
             self.detected_robots = robots
+            #for i,robots in enumerate(self.detected_robots):
+            #  print(f"Robot detected {i}, dist {self.detected_robots[i]}")
 
     def lidar_stop(self):
         self.lidar.__del__()
@@ -399,6 +401,12 @@ class TrajMan(Service):
             rot_direction (int): Direction de rotation (0=auto, 1=sens horaire, -1=sens anti-horaire)
             avoid (bool): Active l'évitement d'obstacles
         """
+        
+        print("Global goto")
+        print(x, y, theta, rot_start_pct, rot_end_pct,
+                            trsl_start_pct, trsl_end_pct,
+                            rot_direction, avoid)
+        
         # Validation des pourcentages
         rot_start_pct = max(0, min(100, int(rot_start_pct)))
         rot_end_pct = max(rot_start_pct, min(100, int(rot_end_pct)))

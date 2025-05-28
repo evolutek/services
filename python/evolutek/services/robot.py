@@ -40,6 +40,8 @@ class Robot(Service):
     goto_avoid = Service.action(robot_trajman.goto_avoid)
     goto_avoid_extend = Service.action(robot_trajman.goto_avoid_extend)
     goto_with_path = Service.action(robot_trajman.goto_with_path)
+    global_goto = Service.action(robot_trajman.global_goto)
+    global_goto_avoid = Service.action(robot_trajman.global_goto_avoid)
     move_back = Service.action(robot_trajman.move_back)
     recalibration = Service.action(robot_trajman.recalibration)
     recalibration_sensors = robot_trajman.recalibration_sensors
@@ -97,7 +99,7 @@ class Robot(Service):
         self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
-        self.goto_global = event_waiter(self.trajman.goto_global, self.start_event, self.stop_event, callback=self.check_abort)
+        self.gotog = event_waiter(self.trajman.global_goto, self.start_event, self.stop_event, callback=self.check_abort)
         self.goto_global_timed = event_waiter(self.trajman.goto_global_timed, self.start_event, self.stop_event, callback=self.check_abort)
         self.recal = event_waiter(self.trajman.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 

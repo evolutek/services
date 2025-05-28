@@ -9,6 +9,7 @@ from enum import Enum
 from math import pi, cos, sin
 from threading import Event
 from time import sleep
+import traceback
 
 DELTA_POS = 5
 DELTA_ANGLE = 0.075
@@ -99,7 +100,7 @@ def goto(self, x, y, avoid=True, mirror=True):
 
 @if_enabled
 @async_task
-def goto_global(self, x, y, theta, avoid=True, mirror=True):
+def global_goto(self, x, y, theta, avoid=True, mirror=True):
     mirror = get_boolean(mirror)
     x = float(x)
     y = float(y)
@@ -107,14 +108,86 @@ def goto_global(self, x, y, theta, avoid=True, mirror=True):
 
     if mirror:
         y = self.mirror_pos(y=y)['y']
+        theta = self.mirror_pos(theta=theta)['theta']
 
     position = Point(dict=self.trajman.get_position())
     if position.dist(Point(x=x, y=y)) < DELTA_POS:
         print('[ROBOT] Already reached position')
         return RobotStatus.return_status(RobotStatus.Reached)
 
-    return self.global_goto(x=x, y=y, theta=theta, avoid=avoid)
+    return self.gotog(x=x, y=y, theta=theta, avoid=avoid)
 
+@if_enabled
+@async_task
+def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, mirror=True):
+    try:
+        x = float(x)
+        y = float(y)
+        theta = float(theta)
+    
+        mirror = get_boolean(mirror)
+        skip = get_boolean(skip)
+    
+        if mirror:
+            _destination = self.mirror_pos(x, y)
+            x = _destination['x']
+            y = _destination['y']
+    
+        destination = Point(x, y)
+        status = RobotStatus.NotReached
+    
+        while status != RobotStatus.Reached:
+    
+            print('[ROBOT] Moving')
+    
+            print(avoid)
+            data = self.global_goto(x, y, theta, avoid=avoid, mirror=False, async_task=False)
+            status = RobotStatus.get_status(data)
+    
+            if status == RobotStatus.HasAvoid:
+    
+                if skip:
+                    return RobotStatus.return_status(RobotStatus.NotReached)
+    
+                side = get_boolean(data['avoid_side'])
+    
+                # TODO : check if a robot is in front of our robot before move back
+                # _status = RobotStatus.get_status(self.move_back(side=(not side), async_task=False))
+    
+                #if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                #    return RobotStatus.return_status(_status)
+    
+                pos = Point(dict=self.trajman.get_position())
+                dist = pos.dist(destination)
+    
+                global timeout_event
+                timeout_event.clear()
+    
+                watchdog = None
+                if timeout is not None:
+                    watchdog = Watchdog(float(timeout), timeout_handler)
+                    watchdog.reset()
+    
+                while get_boolean(self.trajman.need_to_avoid(dist, side)):
+                    if self.check_abort() != RobotStatus.Ok:
+                        return RobotStatus.return_status(RobotStatus.Aborted)
+    
+                    if timeout_event.is_set():
+                        return RobotStatus.return_status(RobotStatus.Timeout)
+    
+                    print('[ROBOT] Waiting')
+                    sleep(0.1)
+    
+                if watchdog is not None:
+                    watchdog.stop()
+    
+            elif status != RobotStatus.Reached:
+                break
+    
+        return RobotStatus.return_status(status)
+    except:
+      traceback.print_exc()
+    
 @if_enabled
 @async_task
 def forward(self, distance, avoid=True):
@@ -303,55 +376,72 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
         trsl_end_pct (int): Pourcentage du mouvement où la translation se termine (0-100)
         rot_direction (int): Direction de rotation (0=auto, 1=sens horaire, -1=sens anti-horaire)
     """
+    try:
+        x = float(x)
+        y = float(y)
 
-    x = float(x)
-    y = float(y)
-    theta = float(theta)
+        mirror = get_boolean(mirror)
+        skip = get_boolean(skip)
 
-    mirror = get_boolean(mirror)
-    skip = get_boolean(skip)
+        if mirror:
+            _destination = self.mirror_pos(x, y)
+            x = _destination['x']
+            y = _destination['y']
 
-    if mirror:
-        _destination = self.mirror_pos(x, y, theta)
-        x = _destination['x']
-        y = _destination['y']
-        theta = _destination['theta']
+        destination = Point(x, y)
+        status = RobotStatus.NotReached
 
-    destination = Point(x, y)
-    status = RobotStatus.NotReached
-    start = time()
+        while status != RobotStatus.Reached:
 
-    while status != RobotStatus.Reached:
+            print('[ROBOT] Moving')
 
-        print('[ROBOT] Moving with global_goto')
+            print(avoid)
+            data = self.global_goto(x, y, theta, avoid=avoid, mirror=False, async_task=False)
+            status = RobotStatus.get_status(data)
 
-        data = self.goto_global_timed(x, y, theta, avoid=avoid, mirror=False, async_task=False)
-        status = RobotStatus.get_status(data)
+            if status == RobotStatus.HasAvoid:
 
-        if status == RobotStatus.HasAvoid:
+                if skip:
+                    return RobotStatus.return_status(RobotStatus.NotReached)
 
-            if skip:
-                return RobotStatus.return_status(RobotStatus.NotReached)
+                side = get_boolean(data['avoid_side'])
 
-            side = get_boolean(data['avoid_side'])
+                # TODO : check if a robot is in front of our robot before move back
+                # _status = RobotStatus.get_status(self.move_back(side=(not side), async_task=False))
 
-            pos = Point(dict=self.trajman.get_position())
-            dist = pos.dist(destination)
+                #if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                #    return RobotStatus.return_status(_status)
 
-            while get_boolean(self.trajman.need_to_avoid(dist, side)):
-                if self.check_abort() != RobotStatus.Ok:
-                    return RobotStatus.return_status(RobotStatus.Aborted)
+                pos = Point(dict=self.trajman.get_position())
+                dist = pos.dist(destination)
 
-                if timeout is not None and time() - start >= timeout:
-                    return RobotStatus.return_status(RobotStatus.Timeout)
+                global timeout_event
+                timeout_event.clear()
 
-                print('[ROBOT] Waiting')
-                sleep(0.1)
+                watchdog = None
+                if timeout is not None:
+                    watchdog = Watchdog(float(timeout), timeout_handler)
+                    watchdog.reset()
 
-        elif status != RobotStatus.Reached:
-            break
+                while get_boolean(self.trajman.need_to_avoid(dist, side)):
+                    if self.check_abort() != RobotStatus.Ok:
+                        return RobotStatus.return_status(RobotStatus.Aborted)
 
-    return RobotStatus.return_status(status)
+                    if timeout_event.is_set():
+                        return RobotStatus.return_status(RobotStatus.Timeout)
+
+                    print('[ROBOT] Waiting')
+                    sleep(0.1)
+
+                if watchdog is not None:
+                    watchdog.stop()
+
+            elif status != RobotStatus.Reached:
+                break
+
+        return RobotStatus.return_status(status)
+    except:
+      traceback.print_exc()
 
 @if_enabled
 @async_task

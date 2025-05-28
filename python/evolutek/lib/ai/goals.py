@@ -129,7 +129,10 @@ class Goal:
 
         score = goal['score'] if 'score' in goal else 0
 
-        position = Point(x=goal['position']['x'], y=goal['position']['y'])
+        if 'position' in goal:
+            position = Point(x=goal['position']['x'], y=goal['position']['y'])
+        else:
+            position = None
 
         actions = []
         if 'actions' in goal:

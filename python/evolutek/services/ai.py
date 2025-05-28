@@ -52,6 +52,7 @@ class AI(Service):
 
         self.goth = event_waiter(self.robot.goth, self.start_event, self.stop_event, callback=self.check_abort)
         self.goto = event_waiter(self.robot.goto_avoid, self.start_event, self.stop_event, callback=self.check_abort)
+        self.global_goto = event_waiter(self.robot.global_goto_avoid, self.start_event, self.stop_event, callback=self.check_abort)
         self.goto_with_path = event_waiter(self.robot.goto_with_path, self.start_event, self.stop_event, callback=self.check_abort)
         self.recalibration = event_waiter(self.robot.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
@@ -417,37 +418,51 @@ class AI(Service):
                     timer.cancel()
 
             else:
-
                 print('[AI] Going without pathfinding')
 
-                status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y, timeout=current_goal.timeout))
+                if current_goal.position is None:
+                    if current_goal.theta is not None:
+                        status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
 
-                if status == RobotStatus.Timeout:
-                    print('[AI] Timeout, selecting secondary goal')
+                        if status == RobotStatus.Aborted:
+                            return States.Selecting
 
-                    with self.lock:
-                        self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+                        if status != RobotStatus.Reached:
+                            return States.Error
 
-                    return States.Making
+                else:
+                    if current_goal.theta is not None:
+                        status = RobotStatus.get_status(self.global_goto(x=current_goal.position.x, y=current_goal.position.y, theta=current_goal.theta))
+                    else:
+                        status = RobotStatus.get_status(self.goto(x=current_goal.position.x, y=current_goal.position.y, timeout=current_goal.timeout))
 
-                if status == RobotStatus.Aborted:
-                    return States.Selecting
+                    if status == RobotStatus.Timeout:
+                        print('[AI] Timeout, selecting secondary goal')
 
-                if status != RobotStatus.Reached:
-                    return States.Error
+                        with self.lock:
+                            self.current_goal = self.goals.get_secondary_goal(current_goal.secondary_goal)
+
+                        return States.Making
+
+                    if status == RobotStatus.Aborted:
+                        return States.Selecting
+
+                    if status != RobotStatus.Reached:
+                        print(f'Pos not reached ! ({status})')
+                        return States.Error
 
             with self.lock:
                 print('[AI] Reach goal position in %fs' % round(time() - goal_starting_time, 2))
 
-        if not current_goal.theta is None:
+        # if not current_goal.theta is None:
 
-            status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
+        #     status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
 
-            if status == RobotStatus.Aborted:
-                return States.Selecting
+        #     if status == RobotStatus.Aborted:
+        #         return States.Selecting
 
-            if status != RobotStatus.Reached:
-                return States.Error
+        #     if status != RobotStatus.Reached:
+        #         return States.Error
 
         for action in current_goal.actions:
 
