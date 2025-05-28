@@ -190,12 +190,14 @@ def toggle_pumps(self, id: PumpsSetId, grab: bool):
     if isinstance(id, str):
         id = PumpsSetId[id]
 
+    drop_delay = 0.5 # TODO: Do not hardcode
+
     grab = get_boolean(grab)
 
     if grab:
         return RobotStatus.check(self.actuators.pumps_grab(id.value))
     else:
-        return RobotStatus.check(self.actuators.pumps_drop(id.value))
+        return RobotStatus.check(self.actuators.pumps_drop(id.value, drop_delay))
 
 
 # ====== Pumps Arms ======
@@ -238,13 +240,19 @@ def move_pumps_arm(self, id: PumpsArmId, position: PumpsArmPosition):
 
 # (Right, Left)
 class SideArmsId(Enum):
-    FRONT = (3, 4)
-    #BACK = (?, ?)
+    FRONT = (1, 2)
+    BACK = (3, 4)
 
 # TODO: Set angles
 class SideArmPosition(Enum):
-    NORMAL   = {SideArmsId.FRONT: (200, 830)}
-    SPREADED = {SideArmsId.FRONT: (600, 430)}
+    NORMAL   = {
+        SideArmsId.FRONT: (205, 820),
+        SideArmsId.BACK: (205, 820)
+    }
+    SPREADED = {
+        SideArmsId.FRONT: (615, 410),
+        SideArmsId.BACK: (615, 410)
+    }
 
 @if_enabled
 @async_task

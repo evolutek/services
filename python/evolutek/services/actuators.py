@@ -103,16 +103,16 @@ class Actuators(Service):
         )
 
         self.i2c_servos_1 = I2CActsHandler({
-            0: [I2CActType.Servo, 180], # 
-            1: [I2CActType.Servo, 180], # 
-            2: [I2CActType.Servo, 180], # 
-            3: [I2CActType.Servo, 180], # Plank arm
-            4: [I2CActType.Servo, 180], # Plank arm
-            5: [I2CActType.Servo, 180], # Left
-            6: [I2CActType.Servo, 180], # Mid-left
-            7: [I2CActType.Servo, 180], # Mid-right
-            8: [I2CActType.Servo, 180], # Right
-            9: [I2CActType.Servo, 180], # Front pumps arm
+            0: [I2CActType.Servo, 180], # Front pumps arm
+            1: [I2CActType.Servo, 180], # Right
+            2: [I2CActType.Servo, 180], # Mid-right
+            3: [I2CActType.Servo, 180], # Mid-left
+            4: [I2CActType.Servo, 180], # Left
+            5: [I2CActType.Servo, 180], # Plank arm
+            6: [I2CActType.Servo, 180], # Plank arm
+            7: [I2CActType.Servo, 180],
+            8: [I2CActType.Servo, 180],
+            9: [I2CActType.Servo, 180],
         }, frequency = 50, addr=0x40)
 
         self.i2c_servos_2 = I2CActsHandler({
@@ -143,14 +143,14 @@ class Actuators(Service):
                 create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
                 create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
             ],
-            # 2: [
-            #     create_gpio(10, 'pump1', dir=True, type=GpioType.MCP),
-            #     None
-            # ],
-            # 3: [
-            #     create_gpio(11, 'pump2', dir=True, type=GpioType.MCP),
-            #     None
-            #]
+            2: [
+                create_gpio(8 + 16, 'pump3', dir=True, type=GpioType.MCP),
+                create_gpio(10 + 16, 'pump3_ev', dir=True, type=GpioType.MCP),
+            ],
+            3: [
+                create_gpio(9 + 16, 'pump4', dir=True, type=GpioType.MCP),
+                create_gpio(11 + 16, 'pump4_ev', dir=True, type=GpioType.MCP),
+            ],
         })
 
         self.all_actuators = [
@@ -415,6 +415,27 @@ class Actuators(Service):
 
     @if_enabled
     @Service.action
+    def pumps_drop(self, ids: list[int], drop_delay: float):
+        drop_delay = float(drop_delay)
+        
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
+                continue
+            _ids.append(int(id))
+
+        if len(_ids) < 1:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        self.pumps.drops(_ids)
+        if drop_delay > 0:
+            sleep(drop_delay)
+            self.pumps.stop_evs(_ids)
+    
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @if_enabled
+    @Service.action
     def pumps_drop(self, ids: list[int]):
         _ids = []
         for id in ids:
@@ -426,6 +447,21 @@ class Actuators(Service):
             return RobotStatus.return_status(RobotStatus.Failed)
 
         self.pumps.drops(_ids)
+        return RobotStatus.return_status(RobotStatus.Done)
+
+    @if_enabled
+    @Service.action
+    def pumps_stop_evs(self, ids: list[int]):
+        _ids = []
+        for id in ids:
+            if self.pumps[int(id)] == None:
+                continue
+            _ids.append(int(id))
+
+        if len(_ids) < 1:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        self.pumps.stop_evs(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
 
 def main():
