@@ -434,6 +434,7 @@ class Actuators(Service):
     
         return RobotStatus.return_status(RobotStatus.Done)
 
+    """
     @if_enabled
     @Service.action
     def pumps_drop(self, ids: list[int]):
@@ -448,6 +449,7 @@ class Actuators(Service):
 
         self.pumps.drops(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
+    """
 
     @if_enabled
     @Service.action
