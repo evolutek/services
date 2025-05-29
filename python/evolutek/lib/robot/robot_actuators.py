@@ -147,11 +147,27 @@ class MagnetsSetId(Enum):
         MagnetId.FRONT_MAGNET_3,
         MagnetId.FRONT_MAGNET_4
     ]
+    FRONT_EXTERIOR = [
+        MagnetId.FRONT_MAGNET_1,
+        MagnetId.FRONT_MAGNET_4
+    ]
+    FRONT_INTERIOR = [
+        MagnetId.FRONT_MAGNET_2,
+        MagnetId.FRONT_MAGNET_3
+    ]
     BACK = [
         MagnetId.BACK_MAGNET_1,
         MagnetId.BACK_MAGNET_2,
         MagnetId.BACK_MAGNET_3,
         MagnetId.BACK_MAGNET_4
+    ]
+    BACK_EXTERIOR = [
+        MagnetId.BACK_MAGNET_1,
+        MagnetId.BACK_MAGNET_4
+    ]
+    BACK_INTERIOR = [
+        MagnetId.BACK_MAGNET_2,
+        MagnetId.BACK_MAGNET_3
     ]
 
 # TODO: Set angles

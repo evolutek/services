@@ -86,6 +86,15 @@ class Actuators(Service):
                 4: [ # Clamp middle sensor
                     create_gpio(4, 'pressure_sensor1', dir=False, type=GpioType.MCP)
                 ],
+                5: [ # Clamp middle sensor
+                    create_gpio(5, 'pressure_sensor1.1', dir=False, type=GpioType.MCP)
+                ],
+                6: [ # Clamp middle sensor
+                    create_gpio(6, 'pressure_sensor1.2', dir=False, type=GpioType.MCP)
+                ],
+                7: [ # Clamp middle sensor
+                    create_gpio(7, 'pressure_sensor1.3', dir=False, type=GpioType.MCP)
+                ],
 
                 5: [ # Clamp left sensor
                     create_gpio(0 + 16, 'proximity_sensors5', dir=False, type=GpioType.MCP)
