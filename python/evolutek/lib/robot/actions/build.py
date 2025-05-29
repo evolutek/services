@@ -95,8 +95,6 @@ def place_materials(self, side):
     if RobotStatus.get_status(self.toggle_magnets(magnets, MagnetState.DISABLE, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.5)
-
     if RobotStatus.get_status(self.move_elevator_ex(elevator, 0.85, async_task=False)) != RobotStatus.Done:
        return RobotStatus.return_status(RobotStatus.Failed)
 

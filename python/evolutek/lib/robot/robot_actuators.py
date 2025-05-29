@@ -11,7 +11,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 # ====== Elevator ======
 
-ELEVATOR_SPEED = 700
+ELEVATOR_SPEED = 1000
 
 # (Stepper ID)
 class ElevatorId(Enum):
@@ -96,8 +96,8 @@ class PlankArmPosition(Enum):
         PlankArmId.BACK: (108, 90)
     }
     EXPANDED = {
-        PlankArmId.FRONT: (80, 120),
-        PlankArmId.BACK: (80, 120)
+        PlankArmId.FRONT: (90, 110),
+        PlankArmId.BACK: (90, 110)
     }
     COLLAPSED = {
         PlankArmId.FRONT: (180, 20),

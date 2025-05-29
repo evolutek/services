@@ -128,7 +128,7 @@
     {
       "name": "place_materials_2",
       "position": {
-        "x": 1600,
+        "x": 1790,
         "y": 1225
       },
       "theta": "0",
@@ -141,12 +141,22 @@
       ],
       "score": 0
     },
+    {
+      "name": "go_to_materials_2_1",
+      "position": {
+        "x": 1600,
+        "y": 1225
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 0
+    },
 
     {
       "name": "grab_materials_3",
       "position": {
         "x": 1600,
-        "y": 360
+        "y": 380
       },
       "theta": "pi/2",
       "actions": [
@@ -164,12 +174,12 @@
         "x": 1600,
         "y": 1225
       },
-      "theta": "0",
+      "theta": "pi",
       "actions": [
         {
           "fct": "place_materials",
           "handler": "robot",
-          "args": {}
+          "args": {"side": "back"}
         }
       ],
       "score": 0
@@ -178,7 +188,7 @@
     {
       "name": "grab_materials_4",
       "position": {
-        "x": 450,
+        "x": 600,
         "y": 825
       },
       "theta": "pi",
@@ -192,9 +202,19 @@
       "score": 0
     },
     {
+      "name": "go_to_materials_4_1",
+      "position": {
+        "x": 800,
+        "y": 825
+      },
+      "theta": "pi",
+      "actions": [],
+      "score": 0
+    },
+    {
       "name": "place_materials_4",
       "position": {
-        "x": 1550,
+        "x": 1410,
         "y": 1225
       },
       "theta": "0",
@@ -294,11 +314,13 @@
         "grab_materials_1",
         "place_materials_1",
         "grab_materials_3",
-        "place_materials_3",
+        "go_to_materials_2_1",
         "place_materials_2",
+        "place_materials_3",
         //"grab_materials_5",
         //"place_materials_5",
         "grab_materials_4",
+        "go_to_materials_4_1",
         "place_materials_4",
         "go_to_end_area"
 		  ],
