@@ -8,3 +8,4 @@ adafruit-circuitpython-pca9685>=3.4.1
 geos>=0.2
 rplidar-roboticia==0.9.5
 shapely==1.8.5
+json5==0.12.0

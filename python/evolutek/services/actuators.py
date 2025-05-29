@@ -104,12 +104,12 @@ class Actuators(Service):
 
         self.i2c_servos_1 = I2CActsHandler({
             0: [I2CActType.Servo, 180], # Front pumps arm
-            1: [I2CActType.Servo, 180], # Right
-            2: [I2CActType.Servo, 180], # Mid-right
-            3: [I2CActType.Servo, 180], # Mid-left
-            4: [I2CActType.Servo, 180], # Left
-            5: [I2CActType.Servo, 180], # Plank arm
-            6: [I2CActType.Servo, 180], # Plank arm
+            1: [I2CActType.Servo, 180], # Front Right
+            2: [I2CActType.Servo, 180], # Front Mid-right
+            3: [I2CActType.Servo, 180], # Front Mid-left
+            4: [I2CActType.Servo, 180], # Front Left
+            5: [I2CActType.Servo, 180], # Front Plank arm
+            6: [I2CActType.Servo, 180], # Front Plank arm
             7: [I2CActType.Servo, 180],
             8: [I2CActType.Servo, 180],
             9: [I2CActType.Servo, 180],
@@ -204,6 +204,7 @@ class Actuators(Service):
         #self.magnets.free()
         #self.pumps.drops()
         self.i2c_servos_1.free_all()
+        self.i2c_servos_2.free_all()
         #self.ax_free_all([1,2,3])
 
     # Disable Actuators
@@ -359,10 +360,17 @@ class Actuators(Service):
         angles = list(map(lambda x: float(x), angles))
 
         for i, id in enumerate(ids):
-            if self.i2c_servos_1[id] == None:
+            id = int(id)
+            if id > 15:
+                servos = self.i2c_servos_2
+                id -= 16
+            else:
+                servos = self.i2c_servos_1
+
+            if servos[id] == None:
                 continue
 
-            if not self.i2c_servos_1[id].set_angle(angles[i]):
+            if not servos[id].set_angle(angles[i]):
                 return RobotStatus.return_status(RobotStatus.Failed)
 
         return RobotStatus.return_status(RobotStatus.Done)
@@ -389,12 +397,19 @@ class Actuators(Service):
         return RobotStatus.return_status(RobotStatus.Failed)
 
     @Service.action
-    def stepper_home(self, id):
-        if self.i2c_mots[int(id)] == None:
+    def stepper_home(self, id, speed):
+        id = int(id)
+        speed = int(speed)
+
+        if self.i2c_mots[id] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
-        if self.i2c_mots[int(id)].home():
-            return RobotStatus.return_status(RobotStatus.Done)
-        return RobotStatus.return_status(RobotStatus.Failed)
+
+        # Currently do not support homing to a different direction
+        # if self.i2c_mots[id].home():
+        #     return RobotStatus.return_status(RobotStatus.Done)
+        # return RobotStatus.return_status(RobotStatus.Failed)
+
+        return self.stepper_move(id, 1000 if speed > 0 else -1000, abs(speed))
 
     #########
     # PUMPS #

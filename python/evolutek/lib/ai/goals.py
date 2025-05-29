@@ -1,5 +1,5 @@
 from enum import Enum
-import json
+import json5 as json
 from math import pi
 
 from evolutek.lib.map.point import Point

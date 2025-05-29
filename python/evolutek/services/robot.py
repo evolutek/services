@@ -215,19 +215,31 @@ class Robot(Service):
     def reset(self):
         if not self.bau_state:
             return
+
         self.enable()
 
-        self.move_elevator_ex(robot_actuators.ElevatorId.FRONT, 0)
-        self.move_plank_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PlankArmPosition.COLLAPSED)
-        self.toggle_magnets(robot_actuators.MagnetsSetId.FRONT, robot_actuators.MagnetState.DISABLE)
-        self.toggle_pumps(robot_actuators.PumpsSetId.FRONT, False)
-        self.move_side_arms(robot_actuators.SideArmsId.FRONT, robot_actuators.SideArmPosition.NORMAL)
+        self.toggle_magnets(robot_actuators.MagnetsSetId.FRONT, robot_actuators.MagnetState.DISABLE, async_task = False)
+        self.toggle_magnets(robot_actuators.MagnetsSetId.BACK, robot_actuators.MagnetState.DISABLE, async_task = False)
+
+        self.toggle_pumps(robot_actuators.PumpsSetId.FRONT, False, async_task = False)
+        self.toggle_pumps(robot_actuators.PumpsSetId.BACK, False, async_task = False)
+
+        # self.move_elevator_ex(robot_actuators.ElevatorId.FRONT, 0, async_task = False)
+        # self.move_elevator_ex(robot_actuators.ElevatorId.BACK, 0, async_task = False)
+
+        #self.actuators.stepper_home(0, -60)
+        #self.actuators.stepper_home(2, -60)
+
+        self.move_plank_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
+        self.move_plank_arm(robot_actuators.PlankArmId.BACK, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
+
+        self.move_side_arms(robot_actuators.SideArmsId.FRONT, robot_actuators.SideArmPosition.NORMAL, async_task = False)
+        self.move_side_arms(robot_actuators.SideArmsId.BACK, robot_actuators.SideArmPosition.NORMAL, async_task = False)
+
+        self.move_pumps_arm(robot_actuators.PumpsArmId.FRONT, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
+        self.move_pumps_arm(robot_actuators.PumpsArmId.BACK, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
 
         sleep(1.5)
-
-        self.move_pumps_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PumpsArmPosition.COLLAPSED)
-
-        sleep(0.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

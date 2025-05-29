@@ -53,10 +53,10 @@
     {
       "name": "place_banner_1",
       "position": {
-        "x": 1875,
+        "x": 1868,
         "y": 1225
       },
-      "theta": "0",
+      "theta": "pi",
       "actions": [
         {
           "fct": "place_banner",
@@ -72,12 +72,12 @@
         "x": 1480,
         "y": 775
       },
-      "theta": "0",
+      "theta": "pi",
       "actions": [
         {
           "fct": "grab_materials",
           "handler": "robot",
-          "args": {}
+          "args": {"side": "back"}
         }
       ],
       "score": 0
@@ -88,12 +88,12 @@
         "x": 1750,
         "y": 780
       },
-      "theta": "0",
+      "theta": "pi",
       "actions": [
         {
           "fct": "place_materials",
           "handler": "robot",
-          "args": {}
+          "args": {"side": "back"}
         }
       ],
       "score": 0
@@ -108,6 +108,7 @@
       "actions": [],
       "score": 10
     },
+
     {
       "name": "grab_materials_2",
       "position": {
@@ -119,7 +120,7 @@
         {
           "fct": "grab_materials",
           "handler": "robot",
-          "args": {}
+          "args": {"side": "front"}
         }
       ],
       "score": 0
@@ -135,7 +136,106 @@
         {
           "fct": "place_materials",
           "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+
+    {
+      "name": "grab_materials_3",
+      "position": {
+        "x": 1600,
+        "y": 360
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "grab_materials",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "place_materials_3",
+      "position": {
+        "x": 1600,
+        "y": 1225
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "place_materials",
+          "handler": "robot",
           "args": {}
+        }
+      ],
+      "score": 0
+    },
+
+    {
+      "name": "grab_materials_4",
+      "position": {
+        "x": 450,
+        "y": 825
+      },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "grab_materials",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "place_materials_4",
+      "position": {
+        "x": 1550,
+        "y": 1225
+      },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "place_materials",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+
+    {
+      "name": "grab_materials_5",
+      "position": {
+        "x": 675,
+        "y": 222
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "grab_materials",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "place_materials_5",
+      "position": {
+        "x": 1430,
+        "y": 1200
+      },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "place_materials",
+          "handler": "robot",
+          "args": {"side": "back"}
         }
       ],
       "score": 0
@@ -154,7 +254,7 @@
       "use_pathfinding": false,
       "config_actions": [
         {
-          "fct": "goto",
+          "fct": "goto_avoid",
           "handler": "robot",
           "args": {
             "x": "1800",
@@ -162,7 +262,7 @@
           }
         },
         {
-          "fct": "goto",
+          "fct": "goto_avoid",
           "handler": "robot",
           "args": {
             "x": "1750",
@@ -176,39 +276,6 @@
             "theta": "0"
           }
         },
-        {
-          "fct": "prepare_banner",
-          "handler": "robot",
-          "args": {}
-        }
-      ],
-      "available": ["pal"]
-    },
-    {
-      "name": "Just Push",
-      "starting_position": "THE_ONLY_ONE",
-      "goals": [
-        "just_push_move_1",
-        "just_push_move_2",
-        "just_push_move_3",
-        "go_to_end_area"
-		  ],
-      "use_pathfinding": false,
-      "config_actions": [],
-      "available": ["pal"]
-    },
-    {
-      "name": "Banner",
-      "starting_position": "THE_ONLY_ONE",
-      "goals": [
-        "place_banner_1",
-        "just_push_move_1",
-        "just_push_move_2",
-        "just_push_move_3",
-        "go_to_end_area"
-		  ],
-      "use_pathfinding": false,
-      "config_actions": [
         {
           "fct": "prepare_banner",
           "handler": "robot",
@@ -222,17 +289,23 @@
       "starting_position": "THE_ONLY_ONE",
       "goals": [
         "place_banner_1",
-        "go_to_materials_1_1",
+        "grab_materials_2",
+        //"go_to_materials_1_1",
         "grab_materials_1",
         "place_materials_1",
-        "grab_materials_2",
+        "grab_materials_3",
+        "place_materials_3",
         "place_materials_2",
+        //"grab_materials_5",
+        //"place_materials_5",
+        "grab_materials_4",
+        "place_materials_4",
         "go_to_end_area"
 		  ],
       "use_pathfinding": false,
       "config_actions": [
         {
-          "fct": "goto",
+          "fct": "goto_avoid",
           "handler": "robot",
           "args": {
             "x": "1800",
@@ -240,7 +313,7 @@
           }
         },
         {
-          "fct": "goto",
+          "fct": "goto_avoid",
           "handler": "robot",
           "args": {
             "x": "1750",
@@ -251,7 +324,7 @@
           "fct": "goth",
           "handler": "robot",
           "args": {
-            "theta": "0"
+            "theta": "pi"
           }
         },
         {
