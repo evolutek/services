@@ -6,10 +6,7 @@ RESET_GPIO = 40
 
 def restartAll():
     print("let's fucking go for a reset lmao")
-    system("sudo systemctl restart trajman")
-    system("sudo systemctl restart actuators")
-    system("sudo systemctl restart robot")
-    system("sudo systemctl restart ai")
+    system("sudo systemctl restart trajman actuators robot ai match config")
 
 def main():
 

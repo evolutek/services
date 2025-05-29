@@ -3,6 +3,22 @@ from evolutek.lib.robot.robot_actions_imports import *
 from evolutek.lib.robot.robot_actuators import *
 
 
+FRONT_PROXIMITY_SENSORS = [0, 1, 2, 3]
+BACK_PROXIMITY_SENSORS = [5, 6, 7, 8]
+
+
+@async_task
+def detect_materials(self, side):
+    has_all_materials = True
+    for i in FRONT_PROXIMITY_SENSORS:
+        if not self.actuators.proximity_sensor_read(i):
+            has_all_materials = False
+            break
+    
+    #if not has_all_materials:
+    #    self.environment[""]
+
+
 @if_enabled
 @async_task
 def grab_materials(self, side):

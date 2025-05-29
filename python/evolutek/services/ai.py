@@ -88,6 +88,8 @@ class AI(Service):
         self.critical_timer = None
         self.critical_timeout = Event()
 
+        self.environment: dict[str,] = dict()
+
         self.goals = Goals(file='/etc/conf.d/strategies.json', ai=self, robot=ROBOT)
         if not self.goals.parsed:
             print('[AI] Failed to parse goals')
