@@ -128,6 +128,47 @@ def move_plank_arm(self, id: PlankArmId, position: PlankArmPosition):
     return RobotStatus.return_status(RobotStatus.Done)
 
 
+# ====== Pilar Arm ======
+
+# (Right, Left)
+class PilarArmId(Enum):
+    FRONT = (7, 8)
+    BACK = (7 + 16, 8 + 16)
+
+class PilarArmPosition(Enum):
+    COLLAPSED = {
+        PilarArmId.FRONT: (16, 180),
+        PilarArmId.BACK: (16, 180)
+    }
+    SPREADED = {
+        PilarArmId.FRONT: (180, 24),
+        PilarArmId.BACK: (180, 24)
+    }
+
+@if_enabled
+@async_task
+def move_pilar_arm(self, id: PilarArmId, position: PilarArmPosition):
+    if isinstance(id, str):
+        id = PilarArmId[id]
+
+    if isinstance(position, str):
+        position = PilarArmPosition[position]
+
+    angles = position.value[id]
+
+    status = RobotStatus.check(self.actuators.servos_set_angles(
+        [id.value[0], id.value[1]],
+        [angles[0], angles[1]]
+    ))
+
+    if RobotStatus.get_status(status) != RobotStatus.Done:
+        return status
+
+    #sleep(1)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
 # ====== Magnets ======
 
 class MagnetId(Enum):

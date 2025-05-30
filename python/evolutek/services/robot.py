@@ -48,6 +48,7 @@ class Robot(Service):
     move_elevator  = Service.action(robot_actuators.move_elevator)
     move_elevator_ex = Service.action(robot_actuators.move_elevator_ex)
     move_plank_arm = Service.action(robot_actuators.move_plank_arm)
+    move_pilar_arm = Service.action(robot_actuators.move_pilar_arm)
     toggle_magnets = Service.action(robot_actuators.toggle_magnets)
     toggle_pumps   = Service.action(robot_actuators.toggle_pumps)
     move_pumps_arm = Service.action(robot_actuators.move_pumps_arm)
@@ -227,8 +228,8 @@ class Robot(Service):
         # self.move_elevator_ex(robot_actuators.ElevatorId.FRONT, 0, async_task = False)
         # self.move_elevator_ex(robot_actuators.ElevatorId.BACK, 0, async_task = False)
 
-        #self.actuators.stepper_home(0, 80)
-        #self.actuators.stepper_home(2, 80)
+        async_task(self.actuators.stepper_home)(0, 80, async_task = False)
+        async_task(self.actuators.stepper_home)(2, 80, async_task = False)
 
         self.move_plank_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
         self.move_plank_arm(robot_actuators.PlankArmId.BACK, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)

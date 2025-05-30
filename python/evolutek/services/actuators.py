@@ -133,8 +133,8 @@ class Actuators(Service):
             4: [I2CActType.Servo, 180], # Front Left
             5: [I2CActType.Servo, 180], # Front Plank arm
             6: [I2CActType.Servo, 180], # Front Plank arm
-            7: [I2CActType.Servo, 180],
-            8: [I2CActType.Servo, 180],
+            7: [I2CActType.Servo, 180], # Front Pilar arm
+            8: [I2CActType.Servo, 180], # Front Pilar arm
             9: [I2CActType.Servo, 180],
         }, frequency = 50, addr=0x40)
 
