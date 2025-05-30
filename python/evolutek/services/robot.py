@@ -61,7 +61,7 @@ class Robot(Service):
     place_banner = Service.action(robot_actions.place_banner)
     grab_materials = Service.action(robot_actions.grab_materials)
     prepare_second_layer = Service.action(robot_actions.prepare_second_layer)
-    build_2_layers = Service.action(robot_actions.build_2_layers)
+    place_materials = Service.action(robot_actions.place_materials)
     build_3_layers = Service.action(robot_actions.build_3_layers)
 
     def __init__(self):
@@ -246,7 +246,7 @@ class Robot(Service):
         self.move_pumps_arm(robot_actuators.PumpsArmId.FRONT, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
         self.move_pumps_arm(robot_actuators.PumpsArmId.BACK, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
 
-        sleep(0.5)
+        sleep(8)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

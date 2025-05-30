@@ -199,7 +199,7 @@ def place_second_layer(self, side):
 
 @if_enabled
 @async_task
-def build_2_layers(self, side):
+def place_materials(self, side):
     if side == "front":
         side_arms = SideArmsId.FRONT
         plank_arms = PlankArmId.FRONT
@@ -226,7 +226,7 @@ def build_2_layers(self, side):
     if RobotStatus.get_status(self.move_elevator_ex(elevator, 1, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(1.2)
+    sleep(1.4)
 
     if RobotStatus.get_status(self.move_side_arms(side_arms, SideArmPosition.NORMAL, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
