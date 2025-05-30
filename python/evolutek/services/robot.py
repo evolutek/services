@@ -60,6 +60,7 @@ class Robot(Service):
     prepare_banner = Service.action(robot_actions.prepare_banner)
     place_banner = Service.action(robot_actions.place_banner)
     grab_materials = Service.action(robot_actions.grab_materials)
+    prepare_second_layer = Service.action(robot_actions.prepare_second_layer)
     build_2_layers = Service.action(robot_actions.build_2_layers)
     build_3_layers = Service.action(robot_actions.build_3_layers)
 
@@ -230,12 +231,14 @@ class Robot(Service):
         # self.move_elevator_ex(robot_actuators.ElevatorId.FRONT, 0, async_task = False)
         # self.move_elevator_ex(robot_actuators.ElevatorId.BACK, 0, async_task = False)
 
-        self.actuators.stepper_home(0, 80)
-        #sleep(10)
-        self.actuators.stepper_home(2, 80)
-
         self.move_plank_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
         self.move_plank_arm(robot_actuators.PlankArmId.BACK, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
+
+        sleep(0.5)
+
+        self.actuators.stepper_home(0, 80)
+        sleep(0.05)
+        self.actuators.stepper_home(2, 80)
 
         self.move_side_arms(robot_actuators.SideArmsId.FRONT, robot_actuators.SideArmPosition.NORMAL, async_task = False)
         self.move_side_arms(robot_actuators.SideArmsId.BACK, robot_actuators.SideArmPosition.NORMAL, async_task = False)
@@ -243,7 +246,7 @@ class Robot(Service):
         self.move_pumps_arm(robot_actuators.PumpsArmId.FRONT, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
         self.move_pumps_arm(robot_actuators.PumpsArmId.BACK, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
 
-        sleep(1.5)
+        sleep(0.5)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

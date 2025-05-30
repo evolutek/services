@@ -100,8 +100,8 @@ class PlankArmPosition(Enum):
         PlankArmId.BACK: (90, 110)
     }
     COLLAPSED = {
-        PlankArmId.FRONT: (175, 15),
-        PlankArmId.BACK: (180, 20)
+        PlankArmId.FRONT: (170, 30),
+        PlankArmId.BACK: (170, 30)
     }
 
 @if_enabled
@@ -293,6 +293,10 @@ class PumpsArmPosition(Enum):
     ALMOST_EXPANDED = {
         PumpsArmId.FRONT: 80,
         PumpsArmId.BACK: 80
+    }
+    OVER_EXPANDED = {
+        PumpsArmId.FRONT: 102,
+        PumpsArmId.BACK: 102
     }
 
 @if_enabled
