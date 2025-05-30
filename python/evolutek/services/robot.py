@@ -58,8 +58,9 @@ class Robot(Service):
     # Imported from robot_actions
     prepare_banner = Service.action(robot_actions.prepare_banner)
     place_banner = Service.action(robot_actions.place_banner)
-    place_materials = Service.action(robot_actions.place_materials)
     grab_materials = Service.action(robot_actions.grab_materials)
+    build_2_layers = Service.action(robot_actions.build_2_layers)
+    build_3_layers = Service.action(robot_actions.build_3_layers)
 
     def __init__(self):
         super().__init__(ROBOT)

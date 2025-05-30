@@ -1,6 +1,7 @@
 from evolutek.lib.robot.robot_actions_imports import *
-
 from evolutek.lib.robot.robot_actuators import *
+
+import math
 
 
 FRONT_PROXIMITY_SENSORS = [0, 1, 2, 3]
@@ -14,7 +15,7 @@ def detect_materials(self, side):
         if not self.actuators.proximity_sensor_read(i):
             has_all_materials = False
             break
-    
+
     #if not has_all_materials:
     #    self.environment[""]
 
@@ -106,7 +107,7 @@ def separate_and_place_first_layer(self, side):
     sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done)
-    
+
 
 def move_back_after_first_layer_build(self, side):
     if side == "front":
@@ -263,6 +264,10 @@ def build_2_layers(self, side):
     return RobotStatus.return_status(RobotStatus.Done, score=12)
 
 
+def dbg():
+    input("...")
+
+
 @if_enabled
 @async_task
 def build_3_layers(self, side):
@@ -273,61 +278,173 @@ def build_3_layers(self, side):
         pumps_arm = PumpsArmId.FRONT
         pumps = PumpsSetId.FRONT
         magnets = MagnetsSetId.FRONT
+        inner_magnets = MagnetsSetId.FRONT_INTERIOR
         elevator = ElevatorId.FRONT
-    else:
+    elif side == "back":
         side_arms = SideArmsId.BACK
         plank_arms = PlankArmId.BACK
         pilar_arms = PilarArmId.BACK
         pumps_arm = PumpsArmId.BACK
         pumps = PumpsSetId.BACK
         magnets = MagnetsSetId.BACK
+        inner_magnets = MagnetsSetId.BACK_INTERIOR
         elevator = ElevatorId.BACK
+    else:
+        raise Exception(f"Bad side '{side}'")
 
+    # Move pilar aside and lift them up and spread the two center pilar
+
+    dbg()
     if RobotStatus.get_status(self.move_side_arms(side_arms, SideArmPosition.SPREADED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.8)
-
-    if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.EXPANDED, async_task=False)) != RobotStatus.Done:
+    dbg()
+    if RobotStatus.get_status(self.toggle_magnets(inner_magnets, MagnetState.DISABLE, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
+    sleep(0.5)
+
+    dbg()
     if RobotStatus.get_status(self.move_elevator_ex(elevator, 1, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(1.2)
+    dbg()
+    if RobotStatus.get_status(self.move_pilar_arm(pilar_arms, PilarArmPosition.SPREADED, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
 
+    sleep(0.2)
+
+    dbg()
+    if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.EXPANDED, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.2)
+
+    dbg()
+    if RobotStatus.get_status(self.move_pilar_arm(pilar_arms, PilarArmPosition.COLLAPSED, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(1) # Wait for the elevator
+
+    dbg()
     if RobotStatus.get_status(self.move_side_arms(side_arms, SideArmPosition.NORMAL, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     sleep(0.5)
 
-    if RobotStatus.get_status(self.toggle_pumps(pumps, False, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
+    # Place layer 2 on top of layer 1
 
-    sleep(0.5)
-
+    dbg()
     if RobotStatus.get_status(self.toggle_magnets(magnets, MagnetState.DISABLE, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    if RobotStatus.get_status(self.move_elevator_ex(elevator, 0.85, async_task=False)) != RobotStatus.Done:
-       return RobotStatus.return_status(RobotStatus.Failed)
+    sleep(0.2)
 
-    if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.ALMOST_EXPANDED, async_task=False)) != RobotStatus.Done:
+    dbg()
+    if RobotStatus.get_status(self.toggle_pumps(pumps, False, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.8)
+    sleep(0.2)
 
-    if RobotStatus.get_status(self.forward(-180 if side == "front" else 180, async_task=False)) != RobotStatus.Reached:
+    # Prepare the elevator to go down
+
+    dbg()
+    if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.COLLAPSED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    if RobotStatus.get_status(self.move_elevator_ex(elevator, 0, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
-
-    if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.COLLAPSED, async_task=False)) != RobotStatus.Done:
+    dbg()
+    if RobotStatus.get_status(self.move_side_arms(side_arms, SideArmPosition.SPREADED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
     sleep(0.5)
 
+    # Elevator going down and slightly going back
+
+    dbg()
+    if RobotStatus.get_status(self.forward(-20 if side == "front" else 20, async_task=False)) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    dbg()
+    if RobotStatus.get_status(self.move_elevator_ex(elevator, 0, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(2)
+
+    # Prepare to grab lower layer of the two ones
+
+    dbg()
+    if RobotStatus.get_status(self.move_side_arms(side_arms, SideArmPosition.NORMAL, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    dbg()
+    if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.EXPANDED, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.5)
+
+    dbg()
+    if RobotStatus.get_status(self.forward(20 if side == "front" else -20, async_task=False)) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    # Grab the lower layer of the two ones
+
+    dbg()
+    if RobotStatus.get_status(self.toggle_pumps(pumps, False, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    dbg()
+    if RobotStatus.get_status(self.toggle_magnets(magnets, MagnetState.ENABLE, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.2)
+
+    dbg()
+    if RobotStatus.get_status(self.move_elevator_ex(elevator, 1, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(1)
+
+    dbg()
+    if RobotStatus.get_status(self.move_rot(math.pi, 200, 200, 500, 0)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    # Drop the layer 2 & 3 on top of layer 1
+
+    dbg()
+    if RobotStatus.get_status(self.toggle_magnets(magnets, MagnetState.ENABLE, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    dbg()
+    if RobotStatus.get_status(self.move_elevator_ex(elevator, 0.85, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.5)
+
+    dbg()
+    if RobotStatus.get_status(self.toggle_pumps(pumps, False, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    # Going back
+
+    dbg()
+    if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.ALMOST_EXPANDED, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    sleep(0.2)
+
+    dbg()
+    if RobotStatus.get_status(self.forward(-180 if side == "front" else 180, async_task=False)) != RobotStatus.Reached:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    dbg()
+    if RobotStatus.get_status(self.move_elevator_ex(elevator, 0, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    dbg()
+    if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.COLLAPSED, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
+    dbg()
     if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.COLLAPSED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
