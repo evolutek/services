@@ -230,8 +230,9 @@ class Robot(Service):
         # self.move_elevator_ex(robot_actuators.ElevatorId.FRONT, 0, async_task = False)
         # self.move_elevator_ex(robot_actuators.ElevatorId.BACK, 0, async_task = False)
 
-        async_task(self.actuators.stepper_home)(0, 80, async_task = False)
-        async_task(self.actuators.stepper_home)(2, 80, async_task = False)
+        self.actuators.stepper_home(0, 80)
+        #sleep(10)
+        self.actuators.stepper_home(2, 80)
 
         self.move_plank_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
         self.move_plank_arm(robot_actuators.PlankArmId.BACK, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)

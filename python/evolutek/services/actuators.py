@@ -427,12 +427,10 @@ class Actuators(Service):
         if self.i2c_mots[id] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        # Currently do not support homing to a different direction
-        # if self.i2c_mots[id].home():
-        #     return RobotStatus.return_status(RobotStatus.Done)
-        # return RobotStatus.return_status(RobotStatus.Failed)
+        if self.i2c_mots[int(id)].move(1000 if speed > 0 else -1000, abs(speed)):
+            return RobotStatus.return_status(RobotStatus.Done)
 
-        return self.stepper_move(id, 1000 if speed > 0 else -1000, abs(speed))
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     #########
     # PUMPS #
