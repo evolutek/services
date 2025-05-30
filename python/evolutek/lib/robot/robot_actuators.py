@@ -100,7 +100,7 @@ class PlankArmPosition(Enum):
         PlankArmId.BACK: (90, 110)
     }
     COLLAPSED = {
-        PlankArmId.FRONT: (180, 20),
+        PlankArmId.FRONT: (175, 15),
         PlankArmId.BACK: (180, 20)
     }
 
@@ -176,10 +176,10 @@ class MagnetId(Enum):
     FRONT_MAGNET_2 = 2
     FRONT_MAGNET_3 = 3
     FRONT_MAGNET_4 = 4
-    BACK_MAGNET_1 = 1 + 16
+    BACK_MAGNET_1 = 4 + 16
     BACK_MAGNET_2 = 2 + 16
     BACK_MAGNET_3 = 3 + 16
-    BACK_MAGNET_4 = 4 + 16
+    BACK_MAGNET_4 = 1 + 16
 
 class MagnetsSetId(Enum):
     FRONT = [
