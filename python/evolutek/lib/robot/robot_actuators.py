@@ -140,6 +140,10 @@ class PilarArmPosition(Enum):
         PilarArmId.FRONT: (16, 180),
         PilarArmId.BACK: (16, 180)
     }
+    ALMOST_COLLAPSED = {
+        PilarArmId.FRONT: (40, 160),
+        PilarArmId.BACK: (40, 160)
+    }
     SPREADED = {
         PilarArmId.FRONT: (180, 24),
         PilarArmId.BACK: (180, 24)
