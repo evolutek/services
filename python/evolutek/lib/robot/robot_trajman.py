@@ -10,8 +10,8 @@ from math import pi, cos, sin
 from threading import Event
 from time import sleep, time
 
-DELTA_POS = 5
-DELTA_ANGLE = 0.075
+DELTA_POS = 2 #5
+DELTA_ANGLE = 0.01 #0.075
 HOMEMADE_RECAL = True
 
 class RecalSensor(Enum):

@@ -427,7 +427,7 @@ class Actuators(Service):
         if self.i2c_mots[id] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        if self.i2c_mots[int(id)].move(1000 if speed > 0 else -1000, abs(speed)):
+        if self.i2c_mots[int(id)].home(speed):
             return RobotStatus.return_status(RobotStatus.Done)
 
         return RobotStatus.return_status(RobotStatus.Failed)

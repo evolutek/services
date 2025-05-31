@@ -47,7 +47,7 @@ def grab_materials(self, side):
     if RobotStatus.get_status(self.toggle_magnets(magnets, MagnetState.ENABLE, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(1)
+    sleep(0.2)
 
     if RobotStatus.get_status(self.toggle_pumps(pumps, True, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -58,12 +58,10 @@ def grab_materials(self, side):
     if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.LIFT, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.5)
-
     if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.EXPANDED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.5)
+    sleep(0.2)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
 
@@ -218,7 +216,7 @@ def place_materials(self, side):
     if RobotStatus.get_status(self.move_side_arms(side_arms, SideArmPosition.SPREADED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.8)
+    sleep(0.3)
 
     if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.EXPANDED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -231,12 +229,7 @@ def place_materials(self, side):
     if RobotStatus.get_status(self.move_side_arms(side_arms, SideArmPosition.NORMAL, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.5)
-
-    if RobotStatus.get_status(self.toggle_pumps(pumps, False, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
-
-    sleep(0.5)
+    sleep(0.3)
 
     if RobotStatus.get_status(self.toggle_magnets(magnets, MagnetState.DISABLE, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -244,10 +237,15 @@ def place_materials(self, side):
     if RobotStatus.get_status(self.move_elevator_ex(elevator, 0.85, async_task=False)) != RobotStatus.Done:
        return RobotStatus.return_status(RobotStatus.Failed)
 
+    sleep(0.3)
+
+    if RobotStatus.get_status(self.toggle_pumps(pumps, False, async_task=False)) != RobotStatus.Done:
+        return RobotStatus.return_status(RobotStatus.Failed)
+
     if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.ALMOST_EXPANDED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.8)
+    sleep(0.2)
 
     if RobotStatus.get_status(self.forward(-180 if side == "front" else 180, async_task=False)) != RobotStatus.Reached:
         return RobotStatus.return_status(RobotStatus.Failed)
@@ -258,7 +256,7 @@ def place_materials(self, side):
     if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.COLLAPSED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)
 
-    sleep(0.5)
+    #sleep(0.5)
 
     if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.COLLAPSED, async_task=False)) != RobotStatus.Done:
         return RobotStatus.return_status(RobotStatus.Failed)

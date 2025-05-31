@@ -246,7 +246,7 @@ class Robot(Service):
         self.move_pumps_arm(robot_actuators.PumpsArmId.FRONT, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
         self.move_pumps_arm(robot_actuators.PumpsArmId.BACK, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
 
-        sleep(8)
+        sleep(4)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

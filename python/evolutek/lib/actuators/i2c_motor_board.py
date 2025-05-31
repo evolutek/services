@@ -58,6 +58,6 @@ class I2CMotorBoardStepper(I2CMotorBoardComponent):
         self.motor_board.send_command(0x03, self.stepper_id, struct.pack(">iI", steps, speed))
         return True
 
-    def home(self) -> bool:
-        self.motor_board.send_command(0x01, self.stepper_id, bytes())
+    def home(self, speed) -> bool:
+        self.motor_board.send_command(0x01, self.stepper_id, struct.pack(">i", speed))
         return True

@@ -24,11 +24,11 @@ robot_size = 200
 
 [pal]
 wheel_diam = 48.58
-wheel_diam1 = 48.81030256462097
-wheel_diam2 = 48.34969728279114
+wheel_diam1 = 48.761722564697266
+wheel_diam2 = 48.398277282714844
 #wheel_diam1 = 48.39494395027162
 #wheel_diam2 = 48.76505589714049
-wheels_spacing = 265.8476973931258
+wheels_spacing = 265.37887186482703
 pidtrsl_p = 220
 pidtrsl_i = 10000000
 #pidtrsl_i = 9000000000000000000000

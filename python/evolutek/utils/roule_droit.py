@@ -17,23 +17,23 @@ def adjust_gains(w1, w2, avg):
     cs.trajman[robot].recalibration(sens=0)
     sleep(3)
 
-    measure1 = cs.actuators[robot].recal_sensor_read(id=sensor, repetitions=10)
-    print("### MEASURE")
-    print(f"Measure: {measure1}")
+    #measure1 = cs.actuators[robot].recal_sensor_read(id=sensor, repetitions=10)
+    #print("### MEASURE")
+    #print(f"Measure: {measure1}")
 
     cs.trajman[robot].move_trsl(dest=dist, acc=ACC, dec=ACC,
                                 maxspeed=SPEED, sens=1)
     # ACC = DEC => T = D/S + S/ACC
     sleep(dist/SPEED + SPEED/ACC + 0.5)
 
-    measure2 = cs.actuators[robot].recal_sensor_read(id=sensor, repetitions=10)
-    print("### MEASURE")
-    print(f"Measured: {measure2}")
+    #measure2 = cs.actuators[robot].recal_sensor_read(id=sensor, repetitions=10)
+    #print("### MEASURE")
+    #print(f"Measured: {measure2}")
 
-    side = measure1 > measure2
+    side = True #measure1 > measure2
     if sensor == 1: side = not side
     print(f"### {'Right' if side else 'Left'} drift")
-    print(f"Diff: {measure1-measure2}")
+    #print(f"Diff: {measure1-measure2}")
 
     adjust = float(input("Scale of the adjustment: "))/1000
     print("Received: ", adjust*1000)
