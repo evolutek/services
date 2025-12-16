@@ -62,8 +62,13 @@ class Robot(Service):
     arm_grab = Service.action(robot_actuators.arm_grab)
     arm_drop = Service.action(robot_actuators.arm_drop)
     tip = Service.action(robot_actuators.tip)
+    move_elevator = Service.action(robot_actuators.move_elevator)
     
     # Imported from robot_actions
+    grab_stack = Service.action(robot_actions.grab_stack)
+    build = Service.action(robot_actions.build)
+    drop_banner = Service.action(robot_actions.drop_banner)
+    setup = Service.action(robot_actions.setup)
     #grab_plants = Service.action(robot_actions.grab_plants)
     #place_plants = Service.action(robot_actions.place_plants)
     

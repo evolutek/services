@@ -13,6 +13,7 @@ from evolutek.lib.indicators.lightning_mode import *
 #############
 
 class ElevatorPosition(Enum):
+    banner = [200,200,200]
     down = [0,0,0]
     second_approach = [0,0,0]
     second_place = [0,0,0]
@@ -21,13 +22,13 @@ class ElevatorPosition(Enum):
 
 @if_enabled
 @async_task
-def move_elevator(self, id, position: ElevatorPosition):
+def move_elevator(self, id, position: ElevatorPosition, speed):
     id = int(id)
 
     if(isinstance(position, str)):
         position = ElevatorPosition[position]
 
-    return RobotStatus.check(self.actuators.stepper_goto(id, position.value[id]))
+    return RobotStatus.check(self.actuators.stepper_goto(id, position.value[id], speed))
 
 #############
 #  MAGNETS  #
@@ -162,18 +163,18 @@ def arm_grab(self, arm : ArmToAx):
         arm = ArmToAx[arm]
         
     if(arm == ArmToAx.A):   
-        return RobotStatus.check(self.actuators.pumps_on([1]))
+        return RobotStatus.check(self.actuators.pumps_on([1], async_task=False))
     else:
-        return RobotStatus.check(self.actuators.pumps_on([0]))
+        return RobotStatus.check(self.actuators.pumps_on([0], async_task=False))
     
 def arm_drop(self, arm : ArmToAx):
     if(isinstance(arm, str)):
         arm = ArmToAx[arm]
         
     if(arm == ArmToAx.A):   
-        return RobotStatus.check(self.actuators.pumps_off([1]))
+        return RobotStatus.check(self.actuators.pumps_off([1], async_task=False))
     else:
-        return RobotStatus.check(self.actuators.pumps_off([0]))
+        return RobotStatus.check(self.actuators.pumps_off([0], async_task=False))
   
 
 '''
