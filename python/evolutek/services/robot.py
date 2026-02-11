@@ -94,6 +94,7 @@ class Robot(Service):
         self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_trsl = event_waiter(self.trajman.move_trsl, self.start_event, self.stop_event, callback=self.check_abort)
         self.move_rot = event_waiter(self.trajman.move_rot, self.start_event, self.stop_event, callback=self.check_abort)
+        self.goto_global = event_waiter(self.trajman.goto_global, self.start_event, self.stop_event, callback=self.check_abort)
         self.recal = event_waiter(self.trajman.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
 
         self.robot_size = float(self.cs.config.get(section='match', option='robot_size'))
