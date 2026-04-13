@@ -28,6 +28,9 @@ class TCS34725(Component):
 
         try:
             self.sensor = adafruit_tcs34725.TCS34725(TCA[self.channel - 1])
+            self.sensor.integration_time = 160
+            self.sensor.gain = 60
+
         except Exception as e:
             print('[%s] Failed to initialize TCS34725 %d: %s' % (self.name, self.id, str(e)))
             return False
@@ -43,10 +46,15 @@ class TCS34725(Component):
 
     def read(self):
         rgb = RGBColor.from_tupple(self.sensor.color_rgb_bytes)
+        #rgb.r = pow(rgb.r, 1/2.5)
+        #rgb.g = pow(rgb.g, 1/2.5)
+        #rgb.b = pow(rgb.b, 1/2.5)
         rgb -= self.calibration
         color = Color.get_closest_color(rgb, self.color_to_detect if self.color_to_detect is not None else Color.__members__.values())
 
-        print(f"[{self.name}] Sensor {self.id} detect color {color.name} with {color.value}")
+        print(f"[{self.name}] Sensor {self.id} detect color {color.name} with {color.value} from rgb value {rgb}")
+        #print(f"[{self.name}] Sensor got {self.sensor.color}")
+        #print(f"[{self.name}] Sensor got {self.sensor.raw_color} raw color and {self.sensor.color_rgb_bytes} rgb bytes")
         return color
 
     def __str__(self):

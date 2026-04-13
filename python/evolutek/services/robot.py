@@ -48,21 +48,12 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    #move_elevator = Service.action(robot_actuators.move_elevator)
-    #move_clamps = Service.action(robot_actuators.move_clamps)
-    #magnets_on = Service.action(robot_actuators.magnets_on)
-    #magnets_off = Service.action(robot_actuators.magnets_off)
-    #move_arm = Service.action(robot_actuators.move_arm)
-    #move_claw = Service.action(robot_actuators.move_claw)
-    magnet = Service.action(robot_actuators.magnet)
-    grab = Service.action(robot_actuators.grab)
-    drop = Service.action(robot_actuators.drop)
-    arm_position = Service.action(robot_actuators.arm_position)
-    arm_height = Service.action(robot_actuators.arm_height)
-    arm_grab = Service.action(robot_actuators.arm_grab)
-    arm_drop = Service.action(robot_actuators.arm_drop)
-    tip = Service.action(robot_actuators.tip)
-    move_elevator = Service.action(robot_actuators.move_elevator)
+    move_arm = Service.action(robot_actuators.move_arm)
+    move_servo = Service.action(robot_actuators.move_servo)
+    move_tip = Service.action(robot_actuators.move_tip)
+    move_flipper = Service.action(robot_actuators.move_flipper)
+    move_barrier = Service.action(robot_actuators.move_barrier)
+    move_tips = Service.action(robot_actuators.move_tips)
     
     # Imported from robot_actions
     grab_stack = Service.action(robot_actions.grab_stack)

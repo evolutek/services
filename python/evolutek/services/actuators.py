@@ -74,15 +74,27 @@ class Actuators(Service):
         self.axs = AX12Controller([11,12,13,14,21,22,23,24,31,32,33,34])
 
         self.i2c_serv_1 = I2CActsHandler({
-           15 : [I2CActType.Servo, 180],
-           14 : [I2CActType.Servo, 205, 500, 2800],
-           13 : [I2CActType.Servo, 205, 500, 2800],
+            15 : [I2CActType.Servo, 180], # 113
+            14 : [I2CActType.Servo, 205, 500, 2800], #112
+            13 : [I2CActType.Servo, 205, 500, 2800], # 111
+
+            10 : [I2CActType.Servo, 205, 500, 2800], # 121
+            9 : [I2CActType.Servo, 205, 500, 2800], # 122
+            #8 : [I2CActType.Servo, 205, 500, 2800],
+
+            #6 : [I2CActType.Servo, 205, 500, 2800],
+            5 : [I2CActType.Servo, 205, 500, 2800], # 131
+            4 : [I2CActType.Servo, 205, 500, 2800], # 132
+
+            3 : [I2CActType.Servo, 180], # 143
+            2 : [I2CActType.Servo, 205, 500, 2800], # 142
+            1 : [I2CActType.Servo, 205, 500, 2800], # 141
 
 
-           12 : [I2CActType.Servo, 1, 0, 2048],
-           11 : [I2CActType.Servo, 1, 0, 2048],
-           7 : [I2CActType.Servo, 1, 0, 2048],
-           0 : [I2CActType.Servo, 1, 0, 2048],
+            12 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 1
+            11 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 2
+            7 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 3
+            0 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 4
         }, frequency=333, addr=0x40)
 
         #self.i2c_serv_1 = I2CActsHandler({
@@ -92,10 +104,10 @@ class Actuators(Service):
         #}, frequency=333, addr=0x42)
 
         self.sensors = RGBSensors({
-            1: [1],  # id 1, channel 1
+            #1: [1],  # id 1, channel 1
             #2: [2],
             #3: [3],
-            4: [4],
+            #4: [4],
         })
         self.all_actuators = [
             #self.i2c_serv_3,
@@ -192,7 +204,7 @@ class Actuators(Service):
         else:
             i2c_serv = self.i2c_serv_1
 
-        pca_channels = [12, 11, 0, 7]
+        pca_channels = [12, 11, 7, 0]
 
         if i2c_serv[pca_channels[id]] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
@@ -211,7 +223,7 @@ class Actuators(Service):
         if self.sensors[id] == None:
             return None
 
-        self.color_sensor_set(id, 1)
+        #self.color_sensor_set(id, 1)
 
         ret = self.sensors[id].read()
 
