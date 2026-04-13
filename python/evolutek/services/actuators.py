@@ -16,6 +16,7 @@ from evolutek.lib.actuators.magnet import MagnetController
 from evolutek.lib.indicators.ws2812b import WS2812BLedStrip, LightningMode
 from evolutek.lib.sensors.proximity_sensors import ProximitySensors
 from evolutek.lib.sensors.recal_sensors import RecalSensors
+from evolutek.lib.sensors.rgb_sensors import RGBSensors, TCS34725
 from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVariation
 from evolutek.lib.actuators.i2c_motor_board import I2CMotorBoard, I2CMotorBoardStepper
 
@@ -70,75 +71,38 @@ class Actuators(Service):
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
-        # TODO: Set correct ports
-        self.proximity_sensors = ProximitySensors(
-            {
-                 1 : [create_gpio(0,  'proximity_sensors1',  dir=False, type=GpioType.MCP)],
-                 2 : [create_gpio(1,  'proximity_sensors2',  dir=False, type=GpioType.MCP)],
-                 3 : [create_gpio(2,  'proximity_sensors3',  dir=False, type=GpioType.MCP)],
-                 4 : [create_gpio(3,  'proximity_sensors4',  dir=False, type=GpioType.MCP)],
-                 5 : [create_gpio(4,  'proximity_sensors5',  dir=False, type=GpioType.MCP)],
-                 6 : [create_gpio(6,  'proximity_sensors6',  dir=False, type=GpioType.MCP)],
-                 7 : [create_gpio(7,  'proximity_sensors7',  dir=False, type=GpioType.MCP)],
-                 8 : [create_gpio(8,  'proximity_sensors8',  dir=False, type=GpioType.MCP)],
-                 9 : [create_gpio(9,  'proximity_sensors9',  dir=False, type=GpioType.MCP)],
-                10 : [create_gpio(10, 'proximity_sensors10', dir=False, type=GpioType.MCP)],
-                11 : [create_gpio(11, 'proximity_sensors11', dir=False, type=GpioType.MCP)],
-                12 : [create_gpio(12, 'proximity_sensors12', dir=False, type=GpioType.MCP)],
-                13 : [create_gpio(13, 'proximity_sensors13', dir=False, type=GpioType.MCP)],
-                14 : [create_gpio(14, 'proximity_sensors14', dir=False, type=GpioType.MCP)],
-            }
-        )
-
-        # TODO: Set correct gpio
-        self.pumps = PumpController(
-           {
-               0: [
-                   create_gpio(0, 'pump1', dir=True, type=GpioType.MCP), None 
-               ],
-               1 : [
-                   create_gpio(2, 'pump2', dir=True, type=GpioType.MCP), None
-               ]
-           }
-        )
-
-        self.axs = AX12Controller(
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        )
+        self.axs = AX12Controller([11,12,13,14,21,22,23,24,31,32,33,34])
 
         self.i2c_serv_1 = I2CActsHandler({
-           0: [I2CActType.Servo, 180],
-           1: [I2CActType.Servo, 180],
-           2: [I2CActType.Servo, 180],
-           3: [I2CActType.Servo, 180],
-        }, frequency=50, addr=0x40)
+           15 : [I2CActType.Servo, 180],
+           14 : [I2CActType.Servo, 205, 500, 2800],
+           13 : [I2CActType.Servo, 205, 500, 2800],
 
-        self.i2c_serv_2 = I2CActsHandler({
-           0: [I2CActType.Servo, 180],
-           1: [I2CActType.Servo, 180],
-           2: [I2CActType.Servo, 180],
-           3: [I2CActType.Servo, 180],
-           4: [I2CActType.Servo, 180],
-           5: [I2CActType.Servo, 180],
-           6: [I2CActType.Servo, 180],
-           7: [I2CActType.Servo, 180],
-        }, frequency=50, addr=0x41)
 
-        self.i2c_mots = I2CMotorBoard({
-            0: (I2CMotorBoardStepper, [0]),
-            1: (I2CMotorBoardStepper, [1]),
-            2: (I2CMotorBoardStepper, [2]),
+           12 : [I2CActType.Servo, 1, 0, 2048],
+           11 : [I2CActType.Servo, 1, 0, 2048],
+           7 : [I2CActType.Servo, 1, 0, 2048],
+           0 : [I2CActType.Servo, 1, 0, 2048],
+        }, frequency=333, addr=0x40)
+
+        #self.i2c_serv_1 = I2CActsHandler({
+        #}, frequency=333, addr=0x41)
+
+        #self.i2c_serv_1 = I2CActsHandler({
+        #}, frequency=333, addr=0x42)
+
+        self.sensors = RGBSensors({
+            1: [1],  # id 1, channel 1
+            #2: [2],
+            #3: [3],
+            4: [4],
         })
-
         self.all_actuators = [
-            self.i2c_mots,
+            #self.i2c_serv_3,
+            #self.i2c_serv_2,
             self.i2c_serv_1,
-            self.i2c_serv_2,
-            self.pumps,
+            self.sensors,
             self.axs,
-            self.proximity_sensors,
-            #self.recal_sensors,
-            #self.magnets
         ]
 
         self.is_initialized = True
@@ -176,7 +140,7 @@ class Actuators(Service):
     # Free all actuators
     @Service.action
     def free(self):
-        self.ax_free_all([1, 2, 3])
+        self.ax_free_all([11,12,13,14,21,22,23,24,31,32,33,34])
         pass
 
     # Disable Actuators
@@ -212,6 +176,49 @@ class Actuators(Service):
         if self.recal_sensors[int(id)] == None:
             return None
         return self.recal_sensors[int(id)].read(repetitions=int(repetitions), raw=bool(int(raw)))
+
+    #################
+    # COLOR SENSORS #
+    #################
+    @Service.action
+    def color_sensor_set(self, id, status):
+        id = int(id)
+        if id > 31:
+            i2c_serv = self.i2c_serv_3
+            id -= 32
+        elif id > 15:
+            i2c_serv = self.i2c_serv_2
+            id -= 16
+        else:
+            i2c_serv = self.i2c_serv_1
+
+        pca_channels = [12, 11, 0, 7]
+
+        if i2c_serv[pca_channels[id]] == None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        if not i2c_serv[pca_channels[id]].set_angle(int(status)):
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        return RobotStatus.return_status(RobotStatus.Done)
+    
+
+    @Service.action
+    def color_sensor_read(self, id):
+        # led is controlled by the same PCA as the servos, so we need to enable the right channel on it before reading the sensor
+        id = int(id)
+
+        if self.sensors[id] == None:
+            return None
+
+        self.color_sensor_set(id, 1)
+
+        ret = self.sensors[id].read()
+
+        #self.color_sensor_set(id, 0)
+
+        return ret.name
+
 
     #######
     # BAU #
@@ -282,7 +289,10 @@ class Actuators(Service):
     @Service.action
     def servo_set_angle(self, id, angle):
         id = int(id)
-        if id > 15:
+        if id > 31:
+            i2c_serv = self.i2c_serv_3
+            id -= 32
+        elif id > 15:
             i2c_serv = self.i2c_serv_2
             id -= 16
         else:
@@ -388,6 +398,43 @@ class Actuators(Service):
 
         self.pumps.drops(_ids)
         return RobotStatus.return_status(RobotStatus.Done)
+
+
+    @if_enabled
+    @Service.action
+    def grab_seq(self):
+        # setup
+        self.ax_move(2, 0)
+        self.servo_set_angle(1, 0)
+        self.servo_set_angle(0, 0)
+        sleep(3)
+        self.servo_set_angle(1, 180)
+        sleep(1)
+        self.ax_move(2, 0)
+        sleep(1)
+        self.ax_move(2, 200)
+        sleep(1)
+        self.servo_set_angle(0, 180)
+        sleep(2)
+        self.ax_move(2, 0)
+        return
+        sleep(2) # grab
+        self.servo_set_angle(1, 0)
+        self.servo_set_angle(0, 180)
+        sleep(1) # lever
+        #self.ax_move(1, 263)
+        #self.stepper_move(0, 800, 100000)
+        sleep(1) # retourner
+        self.servo_set_angle(1, 180)
+        sleep(2)
+        #self.ax_move(1, 568)
+        self.servo_set_angle(0, 0)
+        sleep(2)
+        #self.stepper_move(0, -800, 100000)
+        sleep(2)
+        self.servo_set_angle(0, 0)
+
+
 
 def main():
     actuators = Actuators()
