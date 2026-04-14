@@ -106,10 +106,10 @@ class Actuators(Service):
         #}, frequency=333, addr=0x42)
 
         self.sensors = RGBSensors({
-            #1: [1],  # id 1, channel 1
-            #2: [2],
-            #3: [3],
-            #4: [4],
+            1: [3],  # id 1, channel 1
+            2: [2],
+            3: [0],
+            4: [1],
         })
         self.all_actuators = [
             #self.i2c_serv_3,
@@ -195,8 +195,8 @@ class Actuators(Service):
     # COLOR SENSORS #
     #################
     @Service.action
-    def color_sensor_set(self, id, status):
-        id = int(id)
+    def color_enable(self, id, en = 1):
+        id = int(id) - 1
         if id > 31:
             i2c_serv = self.i2c_serv_3
             id -= 32
@@ -211,25 +211,25 @@ class Actuators(Service):
         if i2c_serv[pca_channels[id]] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
 
-        if not i2c_serv[pca_channels[id]].set_angle(int(status)):
+        if not i2c_serv[pca_channels[id]].set_angle(int(en)):
             return RobotStatus.return_status(RobotStatus.Failed)
 
         return RobotStatus.return_status(RobotStatus.Done)
     
 
     @Service.action
-    def color_sensor_read(self, id):
+    def color_read(self, id):
         # led is controlled by the same PCA as the servos, so we need to enable the right channel on it before reading the sensor
         id = int(id)
 
         if self.sensors[id] == None:
             return None
 
-        #self.color_sensor_set(id, 1)
+        #self.color_enable(id, 1)
 
         ret = self.sensors[id].read()
 
-        #self.color_sensor_set(id, 0)
+        #self.color_enable(id, 0)
 
         return ret.name
 

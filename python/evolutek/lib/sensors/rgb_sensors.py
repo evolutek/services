@@ -27,7 +27,7 @@ class TCS34725(Component):
             return False
 
         try:
-            self.sensor = adafruit_tcs34725.TCS34725(TCA[self.channel - 1])
+            self.sensor = adafruit_tcs34725.TCS34725(TCA[self.channel])
             self.sensor.integration_time = 160
             self.sensor.gain = 60
 
@@ -88,6 +88,14 @@ class RGBSensors(ComponentsHolder):
     def _initialize(self):
         try:
             i2c = busio.I2C(board.SCL, board.SDA)
+            # Deselect all channels on init to avoid conflicts
+            # Lock I2C before writing to TCA
+            while not i2c.try_lock():
+                sleep(0.001)
+            try:
+                i2c.writeto(0x70, bytes([0x00]))
+            finally:
+                i2c.unlock()
         except:
             print('[%s] Failed to open I2C bus' % self.name)
             return False
