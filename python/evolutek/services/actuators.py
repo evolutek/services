@@ -72,6 +72,8 @@ class Actuators(Service):
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
         self.axs = AX12Controller([11,12,13,14,21,22,23,24,31,32,33,34])
+        for ax in self.axs:
+            self.ax_set_speed(ax, 300)
 
         self.i2c_serv_1 = I2CActsHandler({
             15 : [I2CActType.Servo, 180], # 113
