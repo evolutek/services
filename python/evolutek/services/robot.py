@@ -55,6 +55,9 @@ class Robot(Service):
     move_barrier = Service.action(robot_actuators.move_barrier)
     move_tips = Service.action(robot_actuators.move_tips)
     move_arms = Service.action(robot_actuators.move_arms)
+    move_barriers = Service.action(robot_actuators.move_barriers)
+    move_flippers = Service.action(robot_actuators.move_flippers)
+    move = Service.action(robot_actuators.move)
     
     # Imported from robot_actions
     grab_stack = Service.action(robot_actions.grab_stack)

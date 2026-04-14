@@ -9,7 +9,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 ARM_SERVOS = {
     11: {
-        "ax12": {"up": 270, "flip": 450,"down": 587},
+        "ax12": {"up": 270, "half": 450,"down": 587},
         "servos": {
             "tip": {
                 "id": 13,
@@ -21,13 +21,13 @@ ARM_SERVOS = {
             },
             "barrier": {
                 "id": 15,
-                "positions": {"stored": 168, "near": 120, "mid": 100, "far": 80},
+                "positions": {"stored": 168, "near": 120, "mid": 100, "far": 70},
             },
         },
     },
 
     12: {
-        "ax12": {"up": 520, "flip": 740, "down": 910},
+        "ax12": {"up": 520, "half": 740, "down": 910},
         "servos": {
             "tip": {
                 "id": 10,
@@ -41,7 +41,7 @@ ARM_SERVOS = {
     },
 
     13: {
-        "ax12": {"up": 510, "flip": 290, "down": 113},
+        "ax12": {"up": 510, "half": 290, "down": 113},
         "servos": {
             "tip": {
                 "id": 5,
@@ -55,7 +55,7 @@ ARM_SERVOS = {
     },
 
     14: {
-        "ax12": {"up": 680, "flip": 496, "down": 378},
+        "ax12": {"up": 680, "half": 496, "down": 378},
         "servos": {
             "tip": {
                 "id": 2,
@@ -87,7 +87,6 @@ ARM_STATE = {
 }
 
 @if_enabled
-@async_task
 def move_servo(self, id, type: str, pos: str):
     id = int(id)
 
@@ -100,6 +99,16 @@ def move_servo(self, id, type: str, pos: str):
         return RobotStatus.error(f"{type} not on arm {id}")
 
     servo = servos[type]
+
+    # Handle common typos
+    if pos == "openned" or pos == "open":
+        pos = "opened"
+
+    if pos == "close":
+        pos = "closed"
+
+    if pos == "stow" or pos == "store":
+        pos = "stored"
 
     if pos not in servo["positions"]:
         return RobotStatus.error(f"Unknown position {pos}")
@@ -118,7 +127,6 @@ def move_servo(self, id, type: str, pos: str):
 # =========================================================
 
 @if_enabled
-@async_task
 def move_arm(self, id, pos: str):
     id = int(id)
 
@@ -172,6 +180,40 @@ def move_barrier(self, id, pos: str):
     return self.move_servo(id, "barrier", pos)
 
 
+@if_enabled
+def move_barriers(self, id: int, pos: str):
+    results = []
+
+    for arm_id, arm in ARM_SERVOS.items():
+        if arm_id // 10 != int(id) % 10:
+            continue
+
+        if "barrier" not in arm["servos"]:
+            continue
+
+        res = self.move_barrier(arm_id, pos)
+        results.append(res)
+
+    return RobotStatus.check(all(results))
+
+
+@if_enabled
+def move_flippers(self, id: int, pos: str):
+    results = []
+
+    for arm_id, arm in ARM_SERVOS.items():
+        if arm_id // 10 != int(id) % 10:
+            continue
+
+        if "flipper" not in arm["servos"]:
+            continue
+
+        res = self.move_flipper(arm_id, pos)
+        results.append(res)
+
+    return RobotStatus.check(all(results))
+
+
 # =========================================================
 # MOVE WHOLE FACE
 # =========================================================
@@ -181,21 +223,13 @@ def move_tips(self, id: int, pos: str):
     results = []
 
     for arm_id, arm in ARM_SERVOS.items():
-        if arm_id // 10 != int(id):
+        if arm_id // 10 != int(id) % 10:
             continue
 
         if "tip" not in arm["servos"]:
             continue
 
-        tip = arm["servos"]["tip"]
-
-        if pos not in tip["positions"]:
-            return RobotStatus.error(f"Unknown position {pos}")
-
-        angle = tip["positions"][pos]
-        servo_id = tip["id"]
-
-        res = self.actuators.servo_set_angle(servo_id, angle)
+        res = self.move_tip(arm_id, pos)
         results.append(res)
 
     return RobotStatus.check(all(results))
@@ -207,41 +241,57 @@ def move_arms(self, id: int, pos: str):
 
     for arm_id, arm in ARM_SERVOS.items():
         # filtre par face (11/12/13/14 → face 1)
-        if arm_id // 10 != int(id):
+        if arm_id // 10 != int(id) % 10:
             continue
 
-        # vérifie position AX12
-        if pos not in arm["ax12"]:
-            return RobotStatus.error(
-                f"Unknown ax12 position {pos} for arm {arm_id}"
-            )
-
-        angle = arm["ax12"][pos]
-
-        res = self.actuators.ax_move(arm_id, angle)
+        res = self.move_arm(arm_id, pos)
         results.append(res)
 
-        # update state
-        ARM_STATE[arm_id]["pos"] = pos
-
-        # SAFE BEHAVIOR identique à move_arm
-        servos = arm["servos"]
-
-        if pos == "up":
-            # force tip closed
-            if "tip" in servos:
-                tip = servos["tip"]
-                self.actuators.servo_set_angle(
-                    tip["id"],
-                    tip["positions"]["closed"]
-                )
-
-            # force barrier stored
-            if "barrier" in servos:
-                barrier = servos["barrier"]
-                self.actuators.servo_set_angle(
-                    barrier["id"],
-                    barrier["positions"]["stored"]
-                )
-
     return RobotStatus.check(all(results))
+
+
+@if_enabled
+def move(self, id, pos: str):
+    id = int(id)
+    id_str = str(id)
+
+    arm_positions = {"up", "half", "down"}
+    tip_positions = {"flipped", "open", "closed", "close", "openned", "opened"}
+    barrier_positions = {"stored", "near", "mid", "far", "stow", "store"}
+    flipper_positions = {"a", "b"}
+
+    if len(id_str) == 1:
+        # face: depending on pos, move arms, tips, barriers, or flippers
+        if pos in arm_positions:
+            return self.move_arms(id, pos)
+        elif pos in tip_positions:
+            return self.move_tips(id, pos)
+        elif pos in barrier_positions:
+            return self.move_barriers(id, pos)
+        elif pos in flipper_positions:
+            return self.move_flippers(id, pos)
+        else:
+            return RobotStatus.error(f"Unknown position {pos} for face")
+    elif len(id_str) == 2:
+        # arm: depending on pos, move arm, tip, barrier, or flipper
+        if pos in arm_positions:
+            return self.move_arm(id, pos)
+        elif pos in tip_positions:
+            return self.move_tip(id, pos)
+        elif pos in barrier_positions:
+            return self.move_barrier(id, pos)
+        elif pos in flipper_positions:
+            return self.move_flipper(id, pos)
+        else:
+            return RobotStatus.error(f"Unknown position {pos} for arm")
+    elif len(id_str) == 3:
+        # servo: move the specific servo on the arm
+        arm_id = id // 10
+        servo_digit = id % 10
+        servo_types = {1: "tip", 2: "flipper", 3: "barrier"}
+        if servo_digit not in servo_types:
+            return RobotStatus.error(f"Unknown servo type {servo_digit}")
+        servo_type = servo_types[servo_digit]
+        return self.move_servo(arm_id, servo_type, pos)
+    else:
+        return RobotStatus.error("Invalid id: must be 1, 2, or 3 digits")
