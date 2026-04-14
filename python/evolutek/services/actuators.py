@@ -106,10 +106,10 @@ class Actuators(Service):
         #}, frequency=333, addr=0x42)
 
         self.sensors = RGBSensors({
-            1: [3],  # id 1, channel 1
+            #1: [3],  # id 1, channel 1
             2: [2],
             3: [0],
-            4: [1],
+            #4: [1],
         })
         self.all_actuators = [
             #self.i2c_serv_3,
