@@ -76,6 +76,32 @@ class RGBColor:
             abs(percentages_a[2] - percentages_b[2])
         ) / 3)
 
+
+    def to_hsv(self):
+        r, g, b = self.r / 255.0, self.g / 255.0, self.b / 255.0
+
+        cmax = max(r, g, b)
+        cmin = min(r, g, b)
+        delta = cmax - cmin
+
+        # Hue
+        if delta == 0:
+            h = 0
+        elif cmax == r:
+            h = (60 * ((g - b) / delta)) % 360
+        elif cmax == g:
+            h = (60 * ((b - r) / delta)) + 120
+        else:
+            h = (60 * ((r - g) / delta)) + 240
+
+        # Saturation
+        s = 0 if cmax == 0 else delta / cmax
+
+        # Value
+        v = cmax
+
+        return (h, s, v)
+
 class Color(Enum):
     Black =     RGBColor(0, 0, 0)
     Blue =      RGBColor(0, 0, 255)
@@ -112,4 +138,3 @@ class Color(Enum):
                 min_dist = dist
                 closest = color
         return closest
-

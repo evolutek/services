@@ -46,14 +46,24 @@ class RGBSensorScanner:
         return True
 
     def scan_channels(self):
-        """Scan all 8 channels of TCA9548A for color sensors."""
-        print("\nScanning TCA9548A channels for color sensors\n")
+        """Scan all 8 channels of TCA9548A for all I2C devices."""
+        print("\nScanning TCA9548A channels for I2C devices (all addresses)\n")
+
+        # Known device types by address
+        known_devices = {
+            0x29: "TCS34725 (RGB color sensor)",
+            0x39: "TCS3400 or TSL2561 (color/light sensor)",
+            0x49: "TSL2561 variant",
+            0x44: "SHT31 (temp/humidity)",
+            0x68: "DS3231 (RTC)",
+            0x70: "TCA9548A (multiplexer)",
+        }
 
         for channel in range(8):
             print(f"Channel {channel}:")
-            found_on_channel = False
+            found_on_channel = []
 
-            # Try TCS34725 at 0x29
+            # Try TCS34725 at 0x29 first (main sensor)
             try:
                 sensor = adafruit_tcs34725.TCS34725(self.tca[channel])
                 try:
@@ -64,27 +74,32 @@ class RGBSensorScanner:
                         'sensor': sensor,
                         'type': 'TCS34725 (0x29)'
                     })
-                    print(f"  [OK] TCS34725 (0x29) - RGB: {color_rgb}")
-                    found_on_channel = True
-                except Exception as e:
+                    found_on_channel.append(f"0x29: TCS34725 - RGB: {color_rgb}")
+                except Exception:
                     pass
-            except Exception as e:
+            except Exception:
                 pass
 
-            # Try TCS3400 at 0x39 (variant)
-            if not found_on_channel:
+            # Scan all other I2C addresses
+            from adafruit_bus_device.i2c_device import I2CDevice
+            for addr in range(0x00, 0xFF):
+                if addr == 0x29:  # Already tried
+                    continue
+                
                 try:
-                    # Create a custom I2C device at 0x39
-                    from adafruit_bus_device.i2c_device import I2CDevice
-                    i2c_dev = I2CDevice(self.tca[channel], 0x39)
+                    i2c_dev = I2CDevice(self.tca[channel], addr)
                     buf = bytearray(1)
                     i2c_dev.readinto(buf)
-                    print(f"  [OK] TCS3400/variant (0x39) detected")
-                    found_on_channel = True
-                except Exception as e:
+                    
+                    device_name = known_devices.get(addr, f"Unknown device")
+                    found_on_channel.append(f"0x{addr:02x}: {device_name}")
+                except Exception:
                     pass
 
-            if not found_on_channel:
+            if found_on_channel:
+                for device in found_on_channel:
+                    print(f"  [OK] {device}")
+            else:
                 print(f"  [EMPTY]")
 
         return len(self.found_sensors) > 0

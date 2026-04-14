@@ -1,6 +1,50 @@
 from evolutek.lib.robot.robot_actions_imports import *
 from evolutek.lib.robot.robot_actuators import *
 
+@if_enabled
+@async_task
+def initial(self):
+    status = []
+    status.append(self.move(1, "up"))
+    return RobotStatus.check(*status)
+
+@if_enabled
+@async_task
+def prepare_grab(self, face):
+    face = int(face)
+    status = []
+    status.append(self.move(face, "down"))
+    status.append(self.move(face, "opened"))
+    status.append(self.move(face, "a"))
+    return RobotStatus.check(*status)
+
+@if_enabled
+@async_task
+def grab(self, face):
+    goal_color = "BLUE"
+
+    face = int(face)
+    status = []
+    status.append(self.move(face, "closed"))
+    sleep(0.5)
+    status.append(self.move(face * 10 + 1, "up"))
+    status.append(self.move(face * 10 + 2, "half"))
+    status.append(self.move(face * 10 + 3, "up"))
+    status.append(self.move(face * 10 + 4, "half"))
+    sleep(0.5)
+    for i in range(1, 5):
+        color = self.actuators.color_read(i)
+        if (color != goal_color):
+            status.append(self.move(face * 10 + i, "b"))
+    sleep(0.5)
+    status.append(self.move(face, "up"))
+
+
+    return RobotStatus.check(*status)
+
+
+
+'''
 #########
 # RESET #
 #########
@@ -25,7 +69,6 @@ def setup(self):
 
     print("TODO")
     return RobotStatus.check(*status)
-
 
 ##############
 # DROP BANER #
@@ -211,3 +254,4 @@ def build(self, zone: Zone):
             return RobotStatus.Failed
         if(RobotStatus.check(self.drop(MagnetGroups.outer_CA)) != RobotStatus.Done):
             return RobotStatus.Failed
+'''

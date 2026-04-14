@@ -60,23 +60,10 @@ class Robot(Service):
     move = Service.action(robot_actuators.move)
     
     # Imported from robot_actions
-    grab_stack = Service.action(robot_actions.grab_stack)
-    build = Service.action(robot_actions.build)
-    drop_banner = Service.action(robot_actions.drop_banner)
-    setup = Service.action(robot_actions.setup)
-    #grab_plants = Service.action(robot_actions.grab_plants)
-    #place_plants = Service.action(robot_actions.place_plants)
-    
-    #prepare_grab_all = Service.action(robot_actions.prepare_grab_all)
-    #prepare_grab = Service.action(robot_actions.prepare_grab)
-    #grab = Service.action(robot_actions.grab)
-    #drop = Service.action(robot_actions.drop)
-    #prepare_solar_panel = Service.action(robot_actions.prepare_solar_panel)
-    
-    #initial_position = Service.action(robot_actions.initial_position)
-    #promo_video = Service.action(robot_actions.promo_video)
-    #deploy_all = Service.action(robot_actions.deploy_all)
-    #arms_test = Service.action(robot_actions.arms_test)
+    initial = Service.action(robot_actions.initial)
+    prepare_grab = Service.action(robot_actions.prepare_grab)
+    grab = Service.action(robot_actions.grab)
+
     
  
     def __init__(self):

@@ -120,7 +120,7 @@ def move_servo(self, id, type: str, pos: str):
     angle = servo["positions"][pos]
     servo_id = servo["id"]
 
-    return self.actuators.servo_set_angle(servo_id, angle)
+    return RobotStatus.get_status(self.actuators.servo_set_angle(servo_id, angle))
 
 # =========================================================
 # MOVE SINGLE SERVOS
@@ -146,7 +146,7 @@ def move_arm(self, id, pos: str):
     # AUTO SAFE BEHAVIOR
     arm = ARM_SERVOS[id]["servos"]
 
-    if pos == "up":
+    if pos != "down":
         # force tip closed
         if "tip" in arm:
             tip = arm["tip"]
@@ -194,7 +194,7 @@ def move_barriers(self, id: int, pos: str):
         res = self.move_barrier(arm_id, pos)
         results.append(res)
 
-    return RobotStatus.check(all(results))
+    return RobotStatus.check(*results)
 
 
 @if_enabled
@@ -211,7 +211,7 @@ def move_flippers(self, id: int, pos: str):
         res = self.move_flipper(arm_id, pos)
         results.append(res)
 
-    return RobotStatus.check(all(results))
+    return RobotStatus.check(*results)
 
 
 # =========================================================
@@ -232,7 +232,7 @@ def move_tips(self, id: int, pos: str):
         res = self.move_tip(arm_id, pos)
         results.append(res)
 
-    return RobotStatus.check(all(results))
+    return RobotStatus.check(*results)
 
 
 @if_enabled
@@ -247,7 +247,7 @@ def move_arms(self, id: int, pos: str):
         res = self.move_arm(arm_id, pos)
         results.append(res)
 
-    return RobotStatus.check(all(results))
+    return RobotStatus.check(*results)
 
 
 @if_enabled

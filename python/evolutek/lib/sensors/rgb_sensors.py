@@ -10,7 +10,7 @@ from evolutek.lib.utils.color import RGBColor, Color
 
 TCA = None
 CALIBRATION_NB_VALUES = 10
-DELTA_FOR_COLOR = 50
+DELTA_FOR_COLOR = 10
 
 class TCS34725(Component):
 
@@ -28,8 +28,8 @@ class TCS34725(Component):
 
         try:
             self.sensor = adafruit_tcs34725.TCS34725(TCA[self.channel])
-            self.sensor.integration_time = 160
-            self.sensor.gain = 60
+            self.sensor.integration_time = 200
+            self.sensor.gain = 1
 
         except Exception as e:
             print('[%s] Failed to initialize TCS34725 %d: %s' % (self.name, self.id, str(e)))
@@ -44,18 +44,37 @@ class TCS34725(Component):
         self.calibration = RGBColor.mean(calibration)
         print(f"[{self.name}] Sensor {self.id} calibrated with {self.calibration}")
 
+    '''
     def read(self):
-        rgb = RGBColor.from_tupple(self.sensor.color_rgb_bytes)
-        #rgb.r = pow(rgb.r, 1/2.5)
-        #rgb.g = pow(rgb.g, 1/2.5)
-        #rgb.b = pow(rgb.b, 1/2.5)
+        raw = self.sensor.color_rgb_bytes
+        rgb = RGBColor.from_tupple(raw)
         rgb -= self.calibration
         color = Color.get_closest_color(rgb, self.color_to_detect if self.color_to_detect is not None else Color.__members__.values())
 
         print(f"[{self.name}] Sensor {self.id} detect color {color.name} with {color.value} from rgb value {rgb}")
         #print(f"[{self.name}] Sensor got {self.sensor.color}")
         #print(f"[{self.name}] Sensor got {self.sensor.raw_color} raw color and {self.sensor.color_rgb_bytes} rgb bytes")
-        return color
+        return raw
+    '''      
+    def read(self):
+        r, g, b, c = self.sensor.color_raw
+
+        rgb = RGBColor(r, g, b)
+        h, s, v = rgb.to_hsv()
+        '''
+        if s < 0.15:
+            print(f"[TCS] HSV=({h:.1f},{s:.2f},{v:.2f}) -> UNKNOWN (background)")
+            return "UNKNOWN"
+        '''
+        if h < 65 or h > 300:
+            detected = "YELLOW"
+        elif 150 < h < 220:
+            detected = "BLUE"
+        else:
+            detected = "UNKNOWN"
+
+        print(f"[TCS] HSV=({h:.1f},{s:.2f},{v:.2f}) -> {detected}")
+        return detected
 
     def __str__(self):
         s = "----------\n"

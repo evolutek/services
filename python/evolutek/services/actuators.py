@@ -72,8 +72,9 @@ class Actuators(Service):
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
         self.axs = AX12Controller([11,12,13,14,21,22,23,24,31,32,33,34])
+        self.axs_speed = 300
         for ax in self.axs:
-            self.ax_set_speed(ax, 300)
+            self.ax_set_speed(ax, self.axs_speed)
 
         self.i2c_serv_1 = I2CActsHandler({
             15 : [I2CActType.Servo, 180], # 113
@@ -106,10 +107,10 @@ class Actuators(Service):
         #}, frequency=333, addr=0x42)
 
         self.sensors = RGBSensors({
-            #1: [3],  # id 1, channel 1
+            1: [3],  # id, channel
             2: [2],
             3: [0],
-            #4: [1],
+            4: [1],
         })
         self.all_actuators = [
             #self.i2c_serv_3,
@@ -169,9 +170,16 @@ class Actuators(Service):
         if not self.disabled.is_set():
             return
 
+        for ax in self.axs:
+            self.ax_set_speed(ax, self.axs_speed)
+
+
         if self.bau.read():
             self.disabled.clear()
+
       #      self.i2c_acts.init_escs()
+            
+
 
     #####################
     # PROXIMITY SENSORS #
@@ -225,14 +233,13 @@ class Actuators(Service):
         if self.sensors[id] == None:
             return None
 
-        #self.color_enable(id, 1)
+        self.color_enable(id, 1)
 
         ret = self.sensors[id].read()
 
-        #self.color_enable(id, 0)
+        self.color_enable(id, 0)
 
-        return ret.name
-
+        return ret
 
     #######
     # BAU #
