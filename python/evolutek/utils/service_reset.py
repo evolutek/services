@@ -17,9 +17,10 @@ def restartAll(channel):
     #system("sudo systemctl restart cellaserv")
 
 def shutDown(channel):
-    print("Turning off robot")
-    GPIO.output(POWER_HOLD, GPIO.LOW)
-    system("sudo poweroff")
+    print("Shutdown requested")
+    #print("Turning off robot")
+    #GPIO.output(POWER_HOLD, GPIO.LOW)
+    #system("sudo poweroff")
 
 def init():
     GPIO.setmode(GPIO.BCM)
@@ -30,7 +31,7 @@ def init():
     GPIO.setup(POWER_HOLD, GPIO.OUT, initial=GPIO.HIGH)
     GPIO.setup(POWER_INT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     #GPIO.add_event_detect(POWER_INT, GPIO.FALLING, callback=shutDown, bouncetime=1000)
-    
+
     system("sudo systemctl restart cellaserv")
 
 def main():
