@@ -127,6 +127,60 @@ def move_compacting_arm(self, id: CompactingArmId, position: CompactingArmPositi
     return RobotStatus.return_status(RobotStatus.Done)
 
 
+# ====== Reversing Arm ======
+
+class ReversingArmId(Enum):
+    RIGHT = 3
+    LEFT = 4
+
+class ReversingArmPosition(Enum):
+    OPENED = {
+        ReversingArmId.RIGHT: 155,
+        ReversingArmId.LEFT: 870
+    }
+    CRATE1 = {
+        ReversingArmId.RIGHT: 720,
+        ReversingArmId.LEFT: None
+    }
+    CRATE2 = {
+        ReversingArmId.RIGHT: 820,
+        ReversingArmId.LEFT: 104
+    }
+    CRATE3 = {
+        ReversingArmId.RIGHT: 920,
+        ReversingArmId.LEFT: 204
+    }
+    CRATE4 = {
+        ReversingArmId.RIGHT: None,
+        ReversingArmId.LEFT: 304
+    }
+    CLOSED = {
+        ReversingArmId.RIGHT: 512,
+        ReversingArmId.LEFT: 512
+    }
+
+@if_enabled
+@async_task
+def move_reversing_arm(self, id: ReversingArmId, position: ReversingArmPosition):
+    if isinstance(id, str):
+        id = ReversingArmId[id]
+
+    if isinstance(position, str):
+        position = ReversingArmPosition[position]
+
+    angle = position.value[id]
+
+    status = RobotStatus.check(self.actuators.servos_set_angles(
+        [id.value],
+        [angle]
+    ))
+
+    if RobotStatus.get_status(status) != RobotStatus.Done:
+        return status
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
 """
 
 # ====== Pilar Arm ======
