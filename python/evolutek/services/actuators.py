@@ -100,11 +100,53 @@ class Actuators(Service):
             0 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 4
         }, frequency=333, addr=0x40)
 
-        #self.i2c_serv_1 = I2CActsHandler({
-        #}, frequency=333, addr=0x41)
+        self.i2c_serv_2 = I2CActsHandler({
+            15 : [I2CActType.Servo, 180], # 113
+            14 : [I2CActType.Servo, 205, 500, 2800], # 112
+            13 : [I2CActType.Servo, 205, 500, 2800], # 111
 
-        #self.i2c_serv_1 = I2CActsHandler({
-        #}, frequency=333, addr=0x42)
+            10 : [I2CActType.Servo, 205, 500, 2800], # 121
+            9 : [I2CActType.Servo, 205, 500, 2800], # 122
+            #8 : [I2CActType.Servo, 205, 500, 2800],
+
+            #6 : [I2CActType.Servo, 205, 500, 2800],
+            5 : [I2CActType.Servo, 205, 500, 2800], # 131
+            4 : [I2CActType.Servo, 205, 500, 2800], # 132
+
+            3 : [I2CActType.Servo, 180], # 143
+            2 : [I2CActType.Servo, 205, 500, 2800], # 142
+            1 : [I2CActType.Servo, 205, 500, 2800], # 141
+
+
+            12 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 1
+            11 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 2
+            7 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 3
+            0 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 4
+        }, frequency=333, addr=0x41)
+
+        self.i2c_serv_3 = I2CActsHandler({
+            15 : [I2CActType.Servo, 180], # 113
+            14 : [I2CActType.Servo, 205, 500, 2800], # 112
+            13 : [I2CActType.Servo, 205, 500, 2800], # 111
+
+            10 : [I2CActType.Servo, 205, 500, 2800], # 121
+            9 : [I2CActType.Servo, 205, 500, 2800], # 122
+            #8 : [I2CActType.Servo, 205, 500, 2800],
+
+            #6 : [I2CActType.Servo, 205, 500, 2800],
+            5 : [I2CActType.Servo, 205, 500, 2800], # 131
+            4 : [I2CActType.Servo, 205, 500, 2800], # 132
+
+            3 : [I2CActType.Servo, 180], # 143
+            2 : [I2CActType.Servo, 205, 500, 2800], # 142
+            1 : [I2CActType.Servo, 205, 500, 2800], # 141
+
+
+            12 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 1
+            11 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 2
+            7 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 3
+            0 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 4
+        }, frequency=333, addr=0x42)
 
         self.sensors = RGBSensors({
             1: [3],  # id, channel
@@ -113,8 +155,8 @@ class Actuators(Service):
             4: [1],
         })
         self.all_actuators = [
-            #self.i2c_serv_3,
-            #self.i2c_serv_2,
+            self.i2c_serv_3,
+            self.i2c_serv_2,
             self.i2c_serv_1,
             self.sensors,
             self.axs,

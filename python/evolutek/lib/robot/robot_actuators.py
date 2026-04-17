@@ -71,6 +71,134 @@ ARM_SERVOS = {
             },
         },
     },
+
+    21: {
+        "ax12": {"up": 350, "half": 530,"down": 655},
+        "servos": {
+            "tip": {
+                "id": 13 + 16,
+                "positions": {"flipped": 0, "opened": 85, "closed": 185},
+            },
+            "flipper": {
+                "id": 14 + 16,
+                "positions": {"a": 0, "b": 170},
+            },
+            "barrier": {
+                "id": 15 + 16,
+                "positions": {"stored": 162, "near": 120, "mid": 100, "far": 70},
+            },
+        },
+    },
+
+    22: {
+        "ax12": {"up": 525, "half": 740, "down": 910},
+        "servos": {
+            "tip": {
+                "id": 10 + 16,
+                "positions": {"flipped": 15, "opened": 100, "closed": 195},
+            },
+            "flipper": {
+                "id": 9 + 16,
+                "positions": {"a": 0, "b": 180},
+            },
+        },
+    },
+
+    23: {
+        "ax12": {"up": 500, "half": 280, "down": 110},
+        "servos": {
+            "tip": {
+                "id": 5 + 16,
+                "positions": {"flipped": 10, "opened": 95, "closed": 190},
+            },
+            "flipper": {
+                "id": 4 + 16,
+                "positions": {"a": 0, "b": 180},
+            },
+        },
+    },
+
+    24: {
+        "ax12": {"up": 670, "half": 496, "down": 365},
+        "servos": {
+            "tip": {
+                "id": 2 + 16,
+                "positions": {"flipped": 21, "opened": 105, "closed": 195},
+            },
+            "flipper": {
+                "id": 1 + 16,
+                "positions": {"a": 0, "b": 180},
+            },
+            "barrier": {
+                "id": 3 + 16,
+                "positions": {"stored": 0, "near": 50, "mid": 70, "far": 100},
+            },
+        },
+    },
+
+    31: {
+        "ax12": {"up": 350, "half": 530,"down": 660},
+        "servos": {
+            "tip": {
+                "id": 13 + 32,
+                "positions": {"flipped": 10, "opened": 100, "closed": 195},
+            },
+            "flipper": {
+                "id": 14 + 32,
+                "positions": {"a": 0, "b": 186},
+            },
+            "barrier": {
+                "id": 15 + 32,
+                "positions": {"stored": 165, "near": 120, "mid": 100, "far": 70},
+            },
+        },
+    },
+
+    32: {
+        "ax12": {"up": 530, "half": 740, "down": 915},
+        "servos": {
+            "tip": {
+                "id": 10 + 32,
+                "positions": {"flipped": 15, "opened": 100, "closed": 195},
+            },
+            "flipper": {
+                "id": 9 + 32,
+                "positions": {"a": 0, "b": 170},
+            },
+        },
+    },
+
+    33: {
+        "ax12": {"up": 555, "half": 348, "down": 175},
+        "servos": {
+            "tip": {
+                "id": 5 + 32,
+                "positions": {"flipped": 15, "opened": 95, "closed": 190},
+            },
+            "flipper": {
+                "id": 4 + 32,
+                "positions": {"a": 0, "b": 186},
+            },
+        },
+    },
+
+    34: {
+        "ax12": {"up": 680, "half": 496, "down": 375},
+        "servos": {
+            "tip": {
+                "id": 2 + 32,
+                "positions": {"flipped": 10, "opened": 85, "closed": 195},
+            },
+            "flipper": {
+                "id": 1 + 32,
+                "positions": {"a": 0, "b": 170},
+            },
+            "barrier": {
+                "id": 3 + 32,
+                "positions": {"stored": 5, "near": 50, "mid": 70, "far": 100},
+            },
+        },
+    },
 }
 
 
@@ -84,6 +212,14 @@ ARM_STATE = {
     12: {"pos": "down"},
     13: {"pos": "down"},
     14: {"pos": "down"},
+    21: {"pos": "down"},
+    22: {"pos": "down"},
+    23: {"pos": "down"},
+    24: {"pos": "down"},
+    31: {"pos": "down"},
+    32: {"pos": "down"},
+    33: {"pos": "down"},
+    34: {"pos": "down"},
 }
 
 @if_enabled
