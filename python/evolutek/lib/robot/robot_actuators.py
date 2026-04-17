@@ -11,6 +11,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 # ====== Elevator ======
 
+"""
 ELEVATOR_SPEED = 1000
 
 # (Stepper ID)
@@ -81,52 +82,52 @@ def move_elevator_ex(self, id: ElevatorId, position: float, wait = True):
     #sleep(2)
 
     return RobotStatus.return_status(RobotStatus.Done)
+"""
 
 
-# ====== Plank Arm ======
+# ====== Compacting Arm ======
 
-# (Right, Left)
-class PlankArmId(Enum):
-    FRONT = (5, 6)
-    BACK = (5 + 16, 6 + 16)
+class CompactingArmId(Enum):
+    RIGHT = 1
+    LEFT = 2
 
-class PlankArmPosition(Enum):
-    LIFT = {
-        PlankArmId.FRONT: (108, 90),
-        PlankArmId.BACK: (108, 90)
+class CompactingArmPosition(Enum):
+    OPENED = {
+        CompactingArmId.RIGHT: 155,
+        CompactingArmId.LEFT: 870
     }
-    EXPANDED = {
-        PlankArmId.FRONT: (90, 110),
-        PlankArmId.BACK: (90, 110)
+    TASSED = {
+        CompactingArmId.RIGHT: 295,
+        CompactingArmId.LEFT: 730
     }
-    COLLAPSED = {
-        PlankArmId.FRONT: (170, 30),
-        PlankArmId.BACK: (170, 30)
+    CLOSED = {
+        CompactingArmId.RIGHT: 600,
+        CompactingArmId.LEFT: 425
     }
 
 @if_enabled
 @async_task
-def move_plank_arm(self, id: PlankArmId, position: PlankArmPosition):
+def move_compacting_arm(self, id: CompactingArmId, position: CompactingArmPosition):
     if isinstance(id, str):
-        id = PlankArmId[id]
+        id = CompactingArmId[id]
 
     if isinstance(position, str):
-        position = PlankArmPosition[position]
+        position = CompactingArmPosition[position]
 
-    angles = position.value[id]
+    angle = position.value[id]
 
     status = RobotStatus.check(self.actuators.servos_set_angles(
-        [id.value[0], id.value[1]],
-        [angles[0], angles[1]]
+        [id.value],
+        [angle]
     ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
         return status
 
-    #sleep(1)
-
     return RobotStatus.return_status(RobotStatus.Done)
 
+
+"""
 
 # ====== Pilar Arm ======
 
@@ -367,3 +368,4 @@ def move_side_arms(self, id: SideArmsId, position: SideArmPosition):
     #sleep(1)
 
     return RobotStatus.return_status(RobotStatus.Done)
+"""

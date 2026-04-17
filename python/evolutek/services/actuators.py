@@ -110,19 +110,18 @@ class Actuators(Service):
         #         9: [ # Clamp left sensor
         #             create_gpio(4 + 16, 'pressure_sensor2', dir=False, type=GpioType.MCP)
         #         ]
-                
         #     }
         # )
 
         # # TODO: Check if numbers here are correct
-        # self.axs = AX12Controller(
-        #     [
-        #         1, # Front elevator right arm
-        #         2, # Front elevator left arm
-        #         3, # Front right can arm
-        #         4, # Front left can arm
-        #     ]
-        # )
+        self.axs = AX12Controller(
+            [
+                1, # Bras tasseur droit
+                2, # Bras tasseur gauche
+                3, # Bras retourneur droit
+                4, # Bras retourneur gauche
+            ]
+        )
 
         # self.i2c_servos_1 = I2CActsHandler({
         #     0: [I2CActType.Servo, 180], # Front pumps arm
@@ -179,7 +178,7 @@ class Actuators(Service):
             # self.i2c_mots,
             # self.proximity_sensors,
             # self.recal_sensors,
-            # self.axs,
+            self.axs,
             # self.i2c_servos_1,
             # self.i2c_servos_2,
             # self.pumps
@@ -225,8 +224,8 @@ class Actuators(Service):
         pass
         #self.magnets.free()
         #self.pumps.drops()
-        # self.i2c_servos_1.free_all()
-        # self.i2c_servos_2.free_all()
+        #self.i2c_servos_1.free_all()
+        #self.i2c_servos_2.free_all()
         #self.ax_free_all([1,2,3])
 
     # Disable Actuators
