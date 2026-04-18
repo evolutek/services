@@ -59,6 +59,34 @@ def move_elevator(self, id: ElevatorId, pos: float):
     return RobotStatus.return_status(RobotStatus.Done)
 
 
+# ====== Lifting Arm ======
+
+class LiftingArmId(Enum):
+    FRONT_1 = 6
+    FRONT_2 = 7
+    FRONT_3 = 8
+    FRONT_4 = 9
+
+class LiftingArmPosition(Enum):
+    OPENED = 820
+    GRAB = 512
+    CLOSED = 335
+
+@if_enabled
+@async_task
+def move_lifting_arm(self, id: LiftingArmId, pos: LiftingArmPosition):
+    if isinstance(id, str):
+        id = LiftingArmId[id]
+
+    if isinstance(pos, str):
+        pos = LiftingArmPosition[pos]
+
+    return RobotStatus.check(self.actuators.axs_moves(
+        [id.value],
+        [pos.value]
+    ))
+
+
 # ====== Compacting Arm ======
 
 class CompactingArmId(Enum):

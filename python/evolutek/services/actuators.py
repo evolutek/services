@@ -84,12 +84,12 @@ class Actuators(Service):
         """
 
         # Dictionary key are the ids of the components, the the values are the channel id on TCA9548A
-        # self.color_sensors_1 = RGBSensors({
-        #     1: 1,
-        #     2: 2,
-        #     3: 3,
-        #     4: 4,
-        # }, address=0x70)
+        self.color_sensors_1 = RGBSensors({
+            1: 0,
+            2: 1,
+            3: 2,
+            4: 3,
+        }, address=0x71)
 
         # self.color_sensors_2 = RGBSensors({
         #     1: 1,
@@ -151,6 +151,10 @@ class Actuators(Service):
                 3, # Bras retourneur droit
                 4, # Bras retourneur gauche
                 5, # Bielle bras retourneurs
+                6, # Bras stoquage droite
+                7, # Bras stoquage droite milieu
+                8, # Bras stoquage gauche milieu
+                9, # Bras stoquage gauche
             ]
         )
 
@@ -179,6 +183,22 @@ class Actuators(Service):
             1: [
                 create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
                 create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
+            ],
+            2: [
+                create_gpio(8 + 16, 'pump3', dir=True, type=GpioType.MCP),
+                create_gpio(10 + 16, 'pump3_ev', dir=True, type=GpioType.MCP),
+            ],
+            3: [
+                create_gpio(9 + 16, 'pump4', dir=True, type=GpioType.MCP),
+                create_gpio(11 + 16, 'pump4_ev', dir=True, type=GpioType.MCP),
+            ],
+            4: [
+                create_gpio(12 + 16, 'pump5', dir=True, type=GpioType.MCP),
+                create_gpio(14 + 16, 'pump5_ev', dir=True, type=GpioType.MCP),
+            ],
+            5: [
+                create_gpio(13 + 16, 'pump6', dir=True, type=GpioType.MCP),
+                create_gpio(15 + 16, 'pump6_ev', dir=True, type=GpioType.MCP),
             ],
         })
 
@@ -334,13 +354,13 @@ class Actuators(Service):
     @Service.action
     def axs_moves(self, ids: list[int] | str, positions: list[int] | str, speeds: list[int] | str = None):
         if isinstance(ids, str):
-            ids = ids.split(",")    
+            ids = ids.split(",")
 
         if isinstance(positions, str):
             positions = positions.split(",")
 
         if isinstance(speeds, str):
-            speeds = speeds.split(",")    
+            speeds = speeds.split(",")
 
         for i, id in enumerate(ids):
             id = int(id)
@@ -477,7 +497,7 @@ class Actuators(Service):
     def pumps_grab(self, ids: list[int] | str):
         if isinstance(ids, str):
             ids = ids.split(",")
-            
+
         _ids = []
         for id in ids:
             if self.pumps[int(id)] == None:

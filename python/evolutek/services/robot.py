@@ -56,6 +56,7 @@ class Robot(Service):
     move_reversing_arm = Service.action(robot_actuators.move_reversing_arm)
     move_reversing_arm_high = Service.action(robot_actuators.move_reversing_arm_high)
     move_reversing_head = Service.action(robot_actuators.move_reversing_head)
+    move_lifting_arm = Service.action(robot_actuators.move_lifting_arm)
 
     # Imported from robot_actions
     grab_crates = Service.action(robot_actions.grab_crates)
