@@ -34,7 +34,7 @@
       "name": "grab_area_1",
       "position": {
         "x": 795,
-        "y": 390
+        "y": 440
       },
       "theta": "-pi/2",
       "actions": [

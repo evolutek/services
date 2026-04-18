@@ -169,11 +169,11 @@ class Actuators(Service):
             # 7: [I2CActType.Servo, 180, 500, 2700], #
         }, frequency = 50, addr=0x40)
 
-        # self.i2c_mots = I2CMotorBoard({
-        #     0: (I2CMotorBoardStepper, [0]),
-        #     1: (I2CMotorBoardStepper, [1]),
-        #     2: (I2CMotorBoardStepper, [2]),
-        # })
+        self.i2c_mots = I2CMotorBoard({
+            0: (I2CMotorBoardStepper, [0]),
+            1: (I2CMotorBoardStepper, [1]),
+            2: (I2CMotorBoardStepper, [2]),
+        })
 
         self.pumps = PumpController({
             0: [
@@ -203,7 +203,7 @@ class Actuators(Service):
         })
 
         self.all_actuators = [
-            # self.i2c_mots,
+            self.i2c_mots,
             # self.proximity_sensors,
             # self.recal_sensors,
             self.axs,
