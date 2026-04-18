@@ -17,6 +17,11 @@ from evolutek.utils.interfaces.debug_map import Interface
 
 from time import time, sleep
 from threading import Event, Lock, Thread
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from evolutek.services.actuators import Actuators
+    from evolutek.services.trajman import TrajMan
 
 DEBUG = False
 
@@ -46,23 +51,13 @@ class Robot(Service):
     homemade_recal = Service.action(robot_trajman.homemade_recal)
 
     # Imported from robot_actuators
-    move_elevator  = Service.action(robot_actuators.move_elevator)
-    move_elevator_ex = Service.action(robot_actuators.move_elevator_ex)
-    move_plank_arm = Service.action(robot_actuators.move_plank_arm)
-    move_pilar_arm = Service.action(robot_actuators.move_pilar_arm)
-    toggle_magnets = Service.action(robot_actuators.toggle_magnets)
-    toggle_pumps   = Service.action(robot_actuators.toggle_pumps)
-    move_pumps_arm = Service.action(robot_actuators.move_pumps_arm)
-    move_side_arms = Service.action(robot_actuators.move_side_arms)
-
+    move_elevator = Service.action(robot_actuators.move_elevator)
+    move_compacting_arm = Service.action(robot_actuators.move_compacting_arm)
+    move_reversing_arm = Service.action(robot_actuators.move_reversing_arm)
 
     # Imported from robot_actions
-    prepare_banner = Service.action(robot_actions.prepare_banner)
-    place_banner = Service.action(robot_actions.place_banner)
-    grab_materials = Service.action(robot_actions.grab_materials)
-    prepare_second_layer = Service.action(robot_actions.prepare_second_layer)
-    place_materials = Service.action(robot_actions.place_materials)
-    build_3_layers = Service.action(robot_actions.build_3_layers)
+    grab_crates = Service.action(robot_actions.grab_crates)
+    drop_crates = Service.action(robot_actions.drop_crates)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -87,8 +82,8 @@ class Robot(Service):
         # TODO: rename
         self.dist = ((self.size_x ** 2 + self.size_y ** 2) ** (1 / 2.0))
 
-        self.actuators = self.cs.actuators[ROBOT]
-        self.trajman = self.cs.trajman[ROBOT]
+        self.actuators: Actuators = self.cs.actuators[ROBOT]
+        self.trajman: TrajMan = self.cs.trajman[ROBOT]
 
         self.goto_xy = event_waiter(self.trajman.goto_xy, self.start_event, self.stop_event, callback=self.check_abort)
         self.goto_theta = event_waiter(self.trajman.goto_theta, self.start_event, self.stop_event, callback=self.check_abort)

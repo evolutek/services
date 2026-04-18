@@ -2,68 +2,72 @@ import adafruit_tca9548a
 import adafruit_tcs34725
 import board
 import busio
-import time
 
-from enum import Enum
 from time import sleep
 
 from evolutek.lib.component import Component, ComponentsHolder
 from evolutek.lib.utils.color import Color
 
-TCA = None
-CALIBRATE = 10
+NB_CALIBRATE_MEASURES = 10
 
 # Up -> More perturbations (more false positives)
 # Down -> Better detection (more false negatives)
-SENSITIVITY = 1.25
+#SENSITIVITY = 1.25
 
 class TCS34725(Component):
 
-    def __init__(self, id, channel):
-        self.calibration = [0, 0, 0]
+    def __init__(self, tca: adafruit_tca9548a.TCA9548A, id: int, channel: int):
+        self.calibration = [1, 1, 1]
         self.sensor = None
         self.channel = channel
+        self.tca = tca
         super().__init__('TCS34725', id)
 
     def _initialize(self):
-        if self.id < 1 or self.id > 8:
-            print('[%s] %s bad id %d' % (self.name, self.name, self.id))
+        if self.channel < 1 or self.channel > 8:
+            print('[%s] %s bad channel %d' % (self.name, self.name, self.channel))
             return False
 
         try:
-            self.sensor = adafruit_tcs34725.TCS34725(TCA[self.channel - 1])
+            self.sensor = adafruit_tcs34725.TCS34725(self.tca[self.channel - 1])
         except Exception as e:
             print('[%s] Failed to initialize TCS34725 %d: %s' % (self.name, self.id, str(e)))
             return False
         return True
 
     def calibrate(self):
-        for i in range(CALIBRATE):
+        for i in range(NB_CALIBRATE_MEASURES):
             rgb = self.sensor.color_rgb_bytes
             self.calibration[0] += rgb[0]
             self.calibration[1] += rgb[1]
             self.calibration[2] += rgb[2]
             sleep(0.1)
-        self.calibration[0] /= CALIBRATE
-        self.calibration[1] /= CALIBRATE
-        self.calibration[2] /= CALIBRATE
+        self.calibration[0] /= NB_CALIBRATE_MEASURES
+        self.calibration[1] /= NB_CALIBRATE_MEASURES
+        self.calibration[2] /= NB_CALIBRATE_MEASURES
         # print('Setup: R = %i - G = %i - B = %i' % (self.calibration[0],self.calibration[1],self.calibration[2]))
 
-    def read(self):
+    def read(self) -> tuple[float, float, float]:
         if not self.is_initialized:
             print('[%s] %s %d not initialized' % (self.name, self.name, self.id))
             return None
 
         rgb = self.sensor.color_rgb_bytes
-        values = [rgb[0] - self.calibration[0], rgb[1] - self.calibration[1], rgb[2] - self.calibration[2]]
-        index = values.index(max(values))
+        values = [rgb[0] / self.calibration[0], rgb[1] / self.calibration[1], rgb[2] / self.calibration[2]]
 
-        if rgb[index] < self.calibration[index] * SENSITIVITY:
-            return Color.Unknown
+        return values
 
-        res = [Color.Red, Color.Green, Color.Blue][index]
-        if res == Color.Blue: return Color.Green
-        return res
+    # def detect(self, palette: list[Color]) -> Color:
+    #     values = self.read()
+
+    #     index = values.index(max(values))
+
+    #     if rgb[index] < self.calibration[index] * SENSITIVITY:
+    #         return Color.Unknown
+
+    #     res = [Color.Red, Color.Green, Color.Blue][index]
+    #     if res == Color.Blue: return Color.Green
+    #     return res
 
     def __str__(self):
         s = "----------\n"
@@ -81,15 +85,19 @@ class TCS34725(Component):
             "color": self.read().name
         }
 
-class RGBSensors(ComponentsHolder):
+class RGBSensors(Component): #(ComponentsHolder):
 
-    def __init__(self, sensors):
+    def __init__(self, sensors: dict[int, int]):
 
-        if isinstance(sensors, list):
-            tmp = {}
-            for sensor in sensors:
-                tmp[sensor] = [sensor]
-            sensors = tmp
+        # if isinstance(sensors, list):
+        #     tmp = {}
+        #     for sensor in sensors:
+        #         tmp[sensor] = [sensor]
+        #     sensors = tmp
+
+        self.sensors = sensors
+        self.tca = None
+        self.components: dict[int, TCS34725] = {}
 
         super().__init__('RGB sensors', sensors, TCS34725)
 
@@ -100,17 +108,22 @@ class RGBSensors(ComponentsHolder):
             print('[%s] Failed to open I2C bus' % self.name)
             return False
 
+        for id, channel in self.sensors.items():
+            self.components[id] = TCS34725(self.tca, id, channel)
+
         try:
-            global TCA
-            TCA = adafruit_tca9548a.TCA9548A(i2c)
+            self.tca = adafruit_tca9548a.TCA9548A(i2c)
         except:
             print('[%s] Failed to initialize TCA' % self.name)
             return False
 
         return True
 
-    def read_all_sensors(self):
-        results = {}
-        for sensor in self.components:
-            results[sensor] = self.components[sensor].read()
-        return results
+    def __getitem__(self, key: int):
+        if not isinstance(key, int):
+            print('[%s] bad key id' % self.name)
+            return None
+        if key not in self:
+            print('[%s] %s %d not registered' % (self.name, self.name, key))
+            return None
+        return self.components[key]

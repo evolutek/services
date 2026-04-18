@@ -11,7 +11,6 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 # ====== Elevator ======
 
-"""
 ELEVATOR_SPEED = 1000
 
 # (Stepper ID)
@@ -35,31 +34,7 @@ class ElevatorPosition(Enum):
 
 @if_enabled
 @async_task
-def move_elevator(self, id: ElevatorId, position: ElevatorPosition):
-    if isinstance(id, str):
-        id = ElevatorId[id]
-
-    if isinstance(position, str):
-        position = ElevatorPosition[position]
-
-    angles = position.value[id]
-
-    status = RobotStatus.check(self.actuators.stepper_goto(
-        id.value[0],
-        angles[0],
-        ELEVATOR_SPEED
-    ))
-
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return status
-
-    #sleep(1)
-
-    return RobotStatus.return_status(RobotStatus.Done)
-
-@if_enabled
-@async_task
-def move_elevator_ex(self, id: ElevatorId, position: float, wait = True):
+def move_elevator(self, id: ElevatorId, position: float):
     if isinstance(id, str):
         id = ElevatorId[id]
 
@@ -82,27 +57,26 @@ def move_elevator_ex(self, id: ElevatorId, position: float, wait = True):
     #sleep(2)
 
     return RobotStatus.return_status(RobotStatus.Done)
-"""
 
 
 # ====== Compacting Arm ======
 
 class CompactingArmId(Enum):
-    RIGHT = 1
-    LEFT = 2
+    FRONT_RIGHT = 1
+    FRONT_LEFT = 2
 
 class CompactingArmPosition(Enum):
     OPENED = {
-        CompactingArmId.RIGHT: 155,
-        CompactingArmId.LEFT: 870
+        CompactingArmId.FRONT_RIGHT: 155,
+        CompactingArmId.FRONT_LEFT: 870
     }
     TASSED = {
-        CompactingArmId.RIGHT: 295,
-        CompactingArmId.LEFT: 730
+        CompactingArmId.FRONT_RIGHT: 295,
+        CompactingArmId.FRONT_LEFT: 730
     }
     CLOSED = {
-        CompactingArmId.RIGHT: 600,
-        CompactingArmId.LEFT: 425
+        CompactingArmId.FRONT_RIGHT: 600,
+        CompactingArmId.FRONT_LEFT: 425
     }
 
 @if_enabled
@@ -130,33 +104,33 @@ def move_compacting_arm(self, id: CompactingArmId, position: CompactingArmPositi
 # ====== Reversing Arm ======
 
 class ReversingArmId(Enum):
-    RIGHT = 3
-    LEFT = 4
+    FRONT_RIGHT = 3
+    FRONT_LEFT = 4
 
 class ReversingArmPosition(Enum):
     OPENED = {
-        ReversingArmId.RIGHT: 155,
-        ReversingArmId.LEFT: 870
+        ReversingArmId.FRONT_RIGHT: 155,
+        ReversingArmId.FRONT_LEFT: 870
     }
     CRATE1 = {
-        ReversingArmId.RIGHT: 720,
-        ReversingArmId.LEFT: None
+        ReversingArmId.FRONT_RIGHT: 720,
+        ReversingArmId.FRONT_LEFT: None
     }
     CRATE2 = {
-        ReversingArmId.RIGHT: 820,
-        ReversingArmId.LEFT: 104
+        ReversingArmId.FRONT_RIGHT: 820,
+        ReversingArmId.FRONT_LEFT: 104
     }
     CRATE3 = {
-        ReversingArmId.RIGHT: 920,
-        ReversingArmId.LEFT: 204
+        ReversingArmId.FRONT_RIGHT: 920,
+        ReversingArmId.FRONT_LEFT: 204
     }
     CRATE4 = {
-        ReversingArmId.RIGHT: None,
-        ReversingArmId.LEFT: 304
+        ReversingArmId.FRONT_RIGHT: None,
+        ReversingArmId.FRONT_LEFT: 304
     }
     CLOSED = {
-        ReversingArmId.RIGHT: 512,
-        ReversingArmId.LEFT: 512
+        ReversingArmId.FRONT_RIGHT: 512,
+        ReversingArmId.FRONT_LEFT: 512
     }
 
 @if_enabled

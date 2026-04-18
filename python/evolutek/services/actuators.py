@@ -20,6 +20,7 @@ from evolutek.lib.actuators.i2c_acts import I2CActsHandler, I2CActType, ESCVaria
 from evolutek.lib.actuators.i2c_motor_board import I2CMotorBoard, I2CMotorBoardStepper
 
 # Other imports
+from evolutek.lib.sensors.rgb_sensors import RGBSensors
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
 from evolutek.lib.utils.boolean import get_boolean
@@ -67,6 +68,14 @@ class Actuators(Service):
             self.match_color_callback(self.cs.match.get_color())
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
+
+        # Dictionary key are the ids of the components, the the values are the channel id on TCA9548A
+        self.color_sensors = RGBSensors({
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 4,
+        })
 
         # self.proximity_sensors = ProximitySensors(
         #     {
@@ -249,6 +258,15 @@ class Actuators(Service):
     # PROXIMITY SENSORS #
     #####################
     @Service.action
+    def color_sensor_read(self, id: str | int):
+        if self.color_sensors[int(id)] == None:
+            return None
+        return self.color_sensors[int(id)].read()
+
+    #####################
+    # PROXIMITY SENSORS #
+    #####################
+    @Service.action
     def proximity_sensor_read(self, id):
         if self.proximity_sensors[int(id)] == None:
             return None
@@ -302,16 +320,20 @@ class Actuators(Service):
     #######
     @if_enabled
     @Service.action
-    def ax_move(self, id, pos):
+    def ax_move(self, id, pos, speed: int = None):
         if self.axs[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
+
+        if speed is not None:
+            self.axs[int(id)].moving_speed(int(speed))
+
         self.axs[int(id)].move(int(pos))
         print(f"Move servo id {int(id)} to {pos}")
         return RobotStatus.return_status(RobotStatus.Done)
 
     @if_enabled
     @Service.action
-    def axs_moves_ex(self, ids: list[int], positions: list[int], speeds: list[int] = None):
+    def axs_moves(self, ids: list[int], positions: list[int], speeds: list[int] = None):
         for i, id in enumerate(ids):
             id = int(id)
             if self.axs[id] == None:
@@ -327,7 +349,7 @@ class Actuators(Service):
         return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action
-    def ax_free_all(self, ids):
+    def ax_free_all(self, ids: list[int]):
         if isinstance(ids, str):
             ids = ids.split(",")
 
@@ -404,8 +426,10 @@ class Actuators(Service):
         speed = int(speed)
         if self.i2c_mots[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
+
         if self.i2c_mots[int(id)].goto(int(position), speed):
             return RobotStatus.return_status(RobotStatus.Done)
+
         return RobotStatus.return_status(RobotStatus.Failed)
 
     @Service.action
@@ -413,8 +437,10 @@ class Actuators(Service):
         speed = int(speed)
         if self.i2c_mots[int(id)] == None:
             return RobotStatus.return_status(RobotStatus.Failed)
+
         if self.i2c_mots[int(id)].move(int(delta), speed):
             return RobotStatus.return_status(RobotStatus.Done)
+
         return RobotStatus.return_status(RobotStatus.Failed)
 
     @Service.action
@@ -451,7 +477,7 @@ class Actuators(Service):
     @Service.action
     def pumps_drop(self, ids: list[int], drop_delay: float):
         drop_delay = float(drop_delay)
-        
+
         _ids = []
         for id in ids:
             if self.pumps[int(id)] == None:
@@ -465,25 +491,8 @@ class Actuators(Service):
         if drop_delay > 0:
             sleep(drop_delay)
             self.pumps.stop_evs(_ids)
-    
+
         return RobotStatus.return_status(RobotStatus.Done)
-
-    """
-    @if_enabled
-    @Service.action
-    def pumps_drop(self, ids: list[int]):
-        _ids = []
-        for id in ids:
-            if self.pumps[int(id)] == None:
-                continue
-            _ids.append(int(id))
-
-        if len(_ids) < 1:
-            return RobotStatus.return_status(RobotStatus.Failed)
-
-        self.pumps.drops(_ids)
-        return RobotStatus.return_status(RobotStatus.Done)
-    """
 
     @if_enabled
     @Service.action
