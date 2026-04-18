@@ -186,18 +186,18 @@ class Actuators(Service):
             ],
             2: [
                 create_gpio(8 + 16, 'pump3', dir=True, type=GpioType.MCP),
-                create_gpio(10 + 16, 'pump3_ev', dir=True, type=GpioType.MCP),
+                create_gpio(9 + 16, 'pump3_ev', dir=True, type=GpioType.MCP),
             ],
             3: [
-                create_gpio(9 + 16, 'pump4', dir=True, type=GpioType.MCP),
+                create_gpio(10 + 16, 'pump4', dir=True, type=GpioType.MCP),
                 create_gpio(11 + 16, 'pump4_ev', dir=True, type=GpioType.MCP),
             ],
             4: [
                 create_gpio(12 + 16, 'pump5', dir=True, type=GpioType.MCP),
-                create_gpio(14 + 16, 'pump5_ev', dir=True, type=GpioType.MCP),
+                create_gpio(13 + 16, 'pump5_ev', dir=True, type=GpioType.MCP),
             ],
             5: [
-                create_gpio(13 + 16, 'pump6', dir=True, type=GpioType.MCP),
+                create_gpio(14 + 16, 'pump6', dir=True, type=GpioType.MCP),
                 create_gpio(15 + 16, 'pump6_ev', dir=True, type=GpioType.MCP),
             ],
         })

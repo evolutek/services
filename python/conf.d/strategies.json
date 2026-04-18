@@ -1,7 +1,7 @@
 {
   "goals": [
     {
-      "name": "go_to_end_area",
+      "name": "go_to_end",
       "position": {
         "x": 440,
         "y": 200
