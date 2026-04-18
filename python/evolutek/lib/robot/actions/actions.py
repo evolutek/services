@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 @if_enabled
 @async_task
-def grab_crates(self: Robot, side: str):
+def grab_crates(self, side: str):
     if side == "front":
         compacting_arms = [CompactingArmId.FRONT_LEFT, CompactingArmId.FRONT_RIGHT]
         reversing_arms = [ReversingArmId.FRONT_LEFT, ReversingArmId.FRONT_RIGHT]
@@ -40,7 +40,7 @@ def grab_crates(self: Robot, side: str):
 
 @if_enabled
 @async_task
-def drop_crates(self: Robot, side: str):
+def drop_crates(self, side: str):
     if side == "front":
         compacting_arms = [CompactingArmId.FRONT_LEFT, CompactingArmId.FRONT_RIGHT]
         reversing_arms = [ReversingArmId.FRONT_LEFT, ReversingArmId.FRONT_RIGHT]

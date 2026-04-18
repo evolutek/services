@@ -34,15 +34,15 @@ class ElevatorPosition(Enum):
 
 @if_enabled
 @async_task
-def move_elevator(self, id: ElevatorId, position: float):
+def move_elevator(self, id: ElevatorId, pos: float):
     if isinstance(id, str):
         id = ElevatorId[id]
 
-    if isinstance(position, str):
-        position = float(position)
+    if isinstance(pos, str):
+        pos = float(pos)
 
     angles = (
-        (ElevatorPosition.HIGHEST.value[id][0] - ElevatorPosition.LOWEST.value[id][0]) * position + ElevatorPosition.LOWEST.value[id][0]
+        (ElevatorPosition.HIGHEST.value[id][0] - ElevatorPosition.LOWEST.value[id][0]) * pos + ElevatorPosition.LOWEST.value[id][0]
     ,)
 
     status = RobotStatus.check(self.actuators.stepper_goto(
@@ -67,62 +67,53 @@ class CompactingArmId(Enum):
 
 class CompactingArmPosition(Enum):
     OPENED = {
-        CompactingArmId.FRONT_RIGHT: 155,
-        CompactingArmId.FRONT_LEFT: 870
+        CompactingArmId.FRONT_RIGHT: (155, 800),
+        CompactingArmId.FRONT_LEFT: (870, 800)
     }
     TASSED = {
-        CompactingArmId.FRONT_RIGHT: 295,
-        CompactingArmId.FRONT_LEFT: 730
+        CompactingArmId.FRONT_RIGHT: (295, 200),
+        CompactingArmId.FRONT_LEFT: (730, 200)
     }
     CLOSED = {
-        CompactingArmId.FRONT_RIGHT: 600,
-        CompactingArmId.FRONT_LEFT: 425
+        CompactingArmId.FRONT_RIGHT: (600, 800),
+        CompactingArmId.FRONT_LEFT: (425, 800)
     }
 
 @if_enabled
 @async_task
-def move_compacting_arm(self, id: CompactingArmId, position: CompactingArmPosition):
+def move_compacting_arm(self, id: CompactingArmId, pos: CompactingArmPosition):
     if isinstance(id, str):
         id = CompactingArmId[id]
 
-    if isinstance(position, str):
-        position = CompactingArmPosition[position]
+    if isinstance(pos, str):
+        pos = CompactingArmPosition[pos]
 
-    angle = position.value[id]
+    angle, speed = pos.value[id]
 
-    status = RobotStatus.check(self.actuators.servos_set_angles(
+    return RobotStatus.check(self.actuators.axs_moves(
         [id.value],
-        [angle]
+        [angle],
+        [speed]
     ))
-
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return status
-
-    return RobotStatus.return_status(RobotStatus.Done)
 
 
 # ====== Reversing Arm High ======
 
+class ReversingArmHighPosition(Enum):
+    TOP = 545
+    CLOSED = 840
+    GROUND = 970
+
 @if_enabled
 @async_task
-def move_reversing_arm_high(self, id: CompactingArmId, position: CompactingArmPosition):
-    if isinstance(id, str):
-        id = CompactingArmId[id]
+def move_reversing_arm_high(self, pos: ReversingArmHighPosition):
+    if isinstance(pos, str):
+        pos = ReversingArmHighPosition[pos]
 
-    if isinstance(position, str):
-        position = CompactingArmPosition[position]
-
-    angle = position.value[id]
-
-    status = RobotStatus.check(self.actuators.servos_set_angles(
-        [id.value],
-        [angle]
+    return RobotStatus.check(self.actuators.axs_moves(
+        [5],
+        [pos.value]
     ))
-
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return status
-
-    return RobotStatus.return_status(RobotStatus.Done)
 
 
 # ====== Reversing Arm ======
@@ -132,10 +123,6 @@ class ReversingArmId(Enum):
     FRONT_LEFT = 4
 
 class ReversingArmPosition(Enum):
-    OPENED = {
-        ReversingArmId.FRONT_RIGHT: 155,
-        ReversingArmId.FRONT_LEFT: 870
-    }
     CRATE1 = {
         ReversingArmId.FRONT_RIGHT: 720,
         ReversingArmId.FRONT_LEFT: None
@@ -159,265 +146,49 @@ class ReversingArmPosition(Enum):
 
 @if_enabled
 @async_task
-def move_reversing_arm(self, id: ReversingArmId, position: ReversingArmPosition):
+def move_reversing_arm(self, id: ReversingArmId, pos: ReversingArmPosition):
     if isinstance(id, str):
         id = ReversingArmId[id]
 
-    if isinstance(position, str):
-        position = ReversingArmPosition[position]
+    if isinstance(pos, str):
+        pos = ReversingArmPosition[pos]
 
-    angle = position.value[id]
+    angle = pos.value[id]
 
-    status = RobotStatus.check(self.actuators.servos_set_angles(
+    return RobotStatus.check(self.actuators.axs_moves(
         [id.value],
         [angle]
     ))
 
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return status
 
-    return RobotStatus.return_status(RobotStatus.Done)
+# ====== Reversing Head ======
 
+class ReversingHeadId(Enum):
+    FRONT_RIGHT = 0
+    FRONT_LEFT = 1
 
-"""
-
-# ====== Pilar Arm ======
-
-# (Right, Left)
-class PilarArmId(Enum):
-    FRONT = (7, 8)
-    BACK = (7 + 16, 8 + 16)
-
-class PilarArmPosition(Enum):
-    COLLAPSED = {
-        PilarArmId.FRONT: (16, 180),
-        PilarArmId.BACK: (16, 180)
+class ReversingHeadPosition(Enum):
+    NORMAL = {
+        ReversingHeadId.FRONT_RIGHT: 0,
+        ReversingHeadId.FRONT_LEFT: 180
     }
-    ALMOST_COLLAPSED = {
-        PilarArmId.FRONT: (40, 160),
-        PilarArmId.BACK: (40, 160)
-    }
-    SPREADED = {
-        PilarArmId.FRONT: (180, 24),
-        PilarArmId.BACK: (180, 24)
+    REVERSED = {
+        ReversingHeadId.FRONT_RIGHT: 180,
+        ReversingHeadId.FRONT_LEFT: 32
     }
 
 @if_enabled
 @async_task
-def move_pilar_arm(self, id: PilarArmId, position: PilarArmPosition):
+def move_reversing_head(self, id: ReversingHeadId, pos: ReversingHeadPosition):
     if isinstance(id, str):
-        id = PilarArmId[id]
+        id = ReversingHeadId[id]
 
-    if isinstance(position, str):
-        position = PilarArmPosition[position]
+    if isinstance(pos, str):
+        pos = ReversingHeadPosition[pos]
 
-    angles = position.value[id]
+    angle = pos.value[id]
 
-    status = RobotStatus.check(self.actuators.servos_set_angles(
-        [id.value[0], id.value[1]],
-        [angles[0], angles[1]]
+    return RobotStatus.check(self.actuators.servos_set_angles(
+        [id.value],
+        [angle]
     ))
-
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return status
-
-    #sleep(1)
-
-    return RobotStatus.return_status(RobotStatus.Done)
-
-
-# ====== Magnets ======
-
-class MagnetId(Enum):
-    FRONT_MAGNET_1 = 1
-    FRONT_MAGNET_2 = 2
-    FRONT_MAGNET_3 = 3
-    FRONT_MAGNET_4 = 4
-    BACK_MAGNET_1 = 4 + 16
-    BACK_MAGNET_2 = 2 + 16
-    BACK_MAGNET_3 = 3 + 16
-    BACK_MAGNET_4 = 1 + 16
-
-class MagnetsSetId(Enum):
-    FRONT = [
-        MagnetId.FRONT_MAGNET_1,
-        MagnetId.FRONT_MAGNET_2,
-        MagnetId.FRONT_MAGNET_3,
-        MagnetId.FRONT_MAGNET_4
-    ]
-    FRONT_EXTERIOR = [
-        MagnetId.FRONT_MAGNET_1,
-        MagnetId.FRONT_MAGNET_4
-    ]
-    FRONT_INTERIOR = [
-        MagnetId.FRONT_MAGNET_2,
-        MagnetId.FRONT_MAGNET_3
-    ]
-    BACK = [
-        MagnetId.BACK_MAGNET_1,
-        MagnetId.BACK_MAGNET_2,
-        MagnetId.BACK_MAGNET_3,
-        MagnetId.BACK_MAGNET_4
-    ]
-    BACK_EXTERIOR = [
-        MagnetId.BACK_MAGNET_1,
-        MagnetId.BACK_MAGNET_4
-    ]
-    BACK_INTERIOR = [
-        MagnetId.BACK_MAGNET_2,
-        MagnetId.BACK_MAGNET_3
-    ]
-
-# TODO: Set angles
-class MagnetState(Enum):
-    DISABLE = {
-        MagnetId.FRONT_MAGNET_1: 180,
-        MagnetId.FRONT_MAGNET_2: 0,
-        MagnetId.FRONT_MAGNET_3: 180,
-        MagnetId.FRONT_MAGNET_4: 0,
-        MagnetId.BACK_MAGNET_1: 180,
-        MagnetId.BACK_MAGNET_2: 180,
-        MagnetId.BACK_MAGNET_3: 180,
-        MagnetId.BACK_MAGNET_4: 0
-    }
-    ENABLE = {
-        MagnetId.FRONT_MAGNET_1: 0,
-        MagnetId.FRONT_MAGNET_2: 180,
-        MagnetId.FRONT_MAGNET_3: 0,
-        MagnetId.FRONT_MAGNET_4: 180,
-        MagnetId.BACK_MAGNET_1: 0,
-        MagnetId.BACK_MAGNET_2: 0,
-        MagnetId.BACK_MAGNET_3: 0,
-        MagnetId.BACK_MAGNET_4: 180
-    }
-
-@if_enabled
-@async_task
-def toggle_magnets(self, id: MagnetsSetId, state: MagnetState):
-    if isinstance(id, str):
-        id = MagnetsSetId[id]
-
-    if isinstance(state, str):
-        state = MagnetState[state]
-
-    ids = list(map(lambda x: x.value, id.value))
-    angles = list(map(lambda x: state.value[x], id.value))
-
-    status = RobotStatus.check(self.actuators.servos_set_angles(ids, angles))
-    # TODO: Wait if status is OK ?
-
-    return status
-
-
-# ====== Pumps ======
-
-# TODO
-class PumpsSetId(Enum):
-    FRONT = [0, 1]
-    BACK = [2, 3]
-
-@if_enabled
-@async_task
-def toggle_pumps(self, id: PumpsSetId, grab: bool):
-    if isinstance(id, str):
-        id = PumpsSetId[id]
-
-    drop_delay = 0.5 # TODO: Do not hardcode
-
-    grab = get_boolean(grab)
-
-    if grab:
-        return RobotStatus.check(self.actuators.pumps_grab(id.value))
-    else:
-        return RobotStatus.check(self.actuators.pumps_drop(id.value, drop_delay))
-
-
-# ====== Pumps Arms ======
-
-class PumpsArmId(Enum):
-    FRONT = 0
-    BACK = 16
-
-class PumpsArmPosition(Enum):
-    COLLAPSED = {
-        PumpsArmId.FRONT: 20,
-        PumpsArmId.BACK: 20
-    }
-    EXPANDED = {
-        PumpsArmId.FRONT: 92,
-        PumpsArmId.BACK: 92
-    }
-    ALMOST_EXPANDED = {
-        PumpsArmId.FRONT: 80,
-        PumpsArmId.BACK: 80
-    }
-    OVER_EXPANDED = {
-        PumpsArmId.FRONT: 102,
-        PumpsArmId.BACK: 102
-    }
-
-@if_enabled
-@async_task
-def move_pumps_arm(self, id: PumpsArmId, position: PumpsArmPosition):
-    if isinstance(id, str):
-        id = PumpsArmId[id]
-
-    if isinstance(position, str):
-        position = PumpsArmPosition[position]
-
-    angles = position.value[id]
-
-    status = RobotStatus.check(self.actuators.servo_set_angle(
-        id.value,
-        position.value[id]
-    ))
-
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return status
-
-    #sleep(1)
-
-    return RobotStatus.return_status(RobotStatus.Done)
-
-
-# ====== Side Arms ======
-
-# (Right, Left)
-class SideArmsId(Enum):
-    FRONT = (1, 2)
-    BACK = (3, 4)
-
-# TODO: Set angles
-class SideArmPosition(Enum):
-    NORMAL   = {
-        SideArmsId.FRONT: (205, 820),
-        SideArmsId.BACK: (205, 820)
-    }
-    SPREADED = {
-        SideArmsId.FRONT: (615, 410),
-        SideArmsId.BACK: (615, 410)
-    }
-
-@if_enabled
-@async_task
-def move_side_arms(self, id: SideArmsId, position: SideArmPosition):
-    if isinstance(id, str):
-        id = SideArmsId[id]
-
-    if isinstance(position, str):
-        position = SideArmPosition[position]
-
-    angles = position.value[id]
-
-    status = RobotStatus.check(
-        self.actuators.ax_move(id.value[0], angles[0]), # Right servo
-        self.actuators.ax_move(id.value[1], angles[1])  # Left servo
-    )
-
-    if RobotStatus.get_status(status) != RobotStatus.Done:
-        return status
-
-    #sleep(1)
-
-    return RobotStatus.return_status(RobotStatus.Done)
-"""

@@ -84,12 +84,12 @@ class Actuators(Service):
         """
 
         # Dictionary key are the ids of the components, the the values are the channel id on TCA9548A
-        self.color_sensors_1 = RGBSensors({
-            1: 1,
-            2: 2,
-            3: 3,
-            4: 4,
-        }, address=0x70)
+        # self.color_sensors_1 = RGBSensors({
+        #     1: 1,
+        #     2: 2,
+        #     3: 3,
+        #     4: 4,
+        # }, address=0x70)
 
         # self.color_sensors_2 = RGBSensors({
         #     1: 1,
@@ -155,8 +155,14 @@ class Actuators(Service):
         )
 
         self.i2c_servos_1 = I2CActsHandler({
-            0: [I2CActType.Servo, 180], # Retourneur droit
-            1: [I2CActType.Servo, 180], # Retourneur gauche
+            0: [I2CActType.Servo, 180, 500, 2700], # Retourneur droit
+            1: [I2CActType.Servo, 180, 500, 2700], # Retourneur gauche
+            2: [I2CActType.Servo, 180, 500, 2700], #
+            3: [I2CActType.Servo, 180, 500, 2700], #
+            4: [I2CActType.Servo, 180, 500, 2700], #
+            5: [I2CActType.Servo, 180, 500, 2700], #
+            6: [I2CActType.Servo, 180, 500, 2700], #
+            7: [I2CActType.Servo, 180, 500, 2700], #
         }, frequency = 50, addr=0x40)
 
         # self.i2c_mots = I2CMotorBoard({
@@ -181,9 +187,9 @@ class Actuators(Service):
             # self.proximity_sensors,
             # self.recal_sensors,
             self.axs,
-            # self.i2c_servos_1,
+            self.i2c_servos_1,
             # self.i2c_servos_2,
-            # self.pumps
+            self.pumps
         ]
 
         self.free()
@@ -326,7 +332,16 @@ class Actuators(Service):
 
     @if_enabled
     @Service.action
-    def axs_moves(self, ids: list[int], positions: list[int], speeds: list[int] = None):
+    def axs_moves(self, ids: list[int] | str, positions: list[int] | str, speeds: list[int] | str = None):
+        if isinstance(ids, str):
+            ids = ids.split(",")    
+
+        if isinstance(positions, str):
+            positions = positions.split(",")
+
+        if isinstance(speeds, str):
+            speeds = speeds.split(",")    
+
         for i, id in enumerate(ids):
             id = int(id)
             if self.axs[id] == None:
@@ -391,7 +406,13 @@ class Actuators(Service):
         return RobotStatus.return_status(RobotStatus.Failed)
 
     @Service.action
-    def servos_set_angles(self, ids, angles):
+    def servos_set_angles(self, ids: list[int] | str, angles: list[float] | str):
+        if isinstance(ids, str):
+            ids = ids.split(",")
+
+        if isinstance(angles, str):
+            angles = angles.split(",")
+
         ids = list(map(lambda x: int(x), ids))
         angles = list(map(lambda x: float(x), angles))
 
@@ -453,7 +474,10 @@ class Actuators(Service):
     # PUMPS #
     #########
     @Service.action
-    def pumps_grab(self, ids: list[int]):
+    def pumps_grab(self, ids: list[int] | str):
+        if isinstance(ids, str):
+            ids = ids.split(",")
+            
         _ids = []
         for id in ids:
             if self.pumps[int(id)] == None:
@@ -468,7 +492,10 @@ class Actuators(Service):
 
     @if_enabled
     @Service.action
-    def pumps_drop(self, ids: list[int], drop_delay: float):
+    def pumps_drop(self, ids: list[int] | str, drop_delay: float = 0):
+        if isinstance(ids, str):
+            ids = ids.split(",")
+
         drop_delay = float(drop_delay)
 
         _ids = []
