@@ -24,12 +24,15 @@ class TCS34725(Component):
         super().__init__('TCS34725', id)
 
     def _initialize(self):
-        if self.channel < 1 or self.channel > 8:
+        if self.channel < 0 or self.channel > 7:
             print('[%s] %s bad channel %d' % (self.name, self.name, self.channel))
             return False
 
         try:
-            self.sensor = adafruit_tcs34725.TCS34725(self.tca[self.channel - 1])
+            self.sensor = adafruit_tcs34725.TCS34725(self.tca[self.channel])
+            self.sensor.integration_time = 100
+            self.sensor.gain = 4
+            self.sensor.active = True
         except Exception as e:
             print('[%s] Failed to initialize TCS34725 %d: %s' % (self.name, self.id, str(e)))
             return False
@@ -87,7 +90,7 @@ class TCS34725(Component):
 
 class RGBSensors(Component): #(ComponentsHolder):
 
-    def __init__(self, sensors: dict[int, int]):
+    def __init__(self, sensors: dict[int, int], address: int = 0x70):
 
         # if isinstance(sensors, list):
         #     tmp = {}
@@ -95,11 +98,12 @@ class RGBSensors(Component): #(ComponentsHolder):
         #         tmp[sensor] = [sensor]
         #     sensors = tmp
 
+        self.address = address
         self.sensors = sensors
         self.tca = None
         self.components: dict[int, TCS34725] = {}
 
-        super().__init__('RGB sensors', sensors, TCS34725)
+        super().__init__('RGB sensors', 0)
 
     def _initialize(self):
         try:
@@ -108,14 +112,14 @@ class RGBSensors(Component): #(ComponentsHolder):
             print('[%s] Failed to open I2C bus' % self.name)
             return False
 
-        for id, channel in self.sensors.items():
-            self.components[id] = TCS34725(self.tca, id, channel)
-
         try:
-            self.tca = adafruit_tca9548a.TCA9548A(i2c)
+            self.tca = adafruit_tca9548a.TCA9548A(i2c, address=self.address)
         except:
             print('[%s] Failed to initialize TCA' % self.name)
             return False
+
+        for id, channel in self.sensors.items():
+            self.components[id] = TCS34725(self.tca, id, channel)
 
         return True
 
@@ -123,7 +127,7 @@ class RGBSensors(Component): #(ComponentsHolder):
         if not isinstance(key, int):
             print('[%s] bad key id' % self.name)
             return None
-        if key not in self:
+        if key not in self.components:
             print('[%s] %s %d not registered' % (self.name, self.name, key))
             return None
         return self.components[key]

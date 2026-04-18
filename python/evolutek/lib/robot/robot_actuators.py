@@ -101,6 +101,30 @@ def move_compacting_arm(self, id: CompactingArmId, position: CompactingArmPositi
     return RobotStatus.return_status(RobotStatus.Done)
 
 
+# ====== Reversing Arm High ======
+
+@if_enabled
+@async_task
+def move_reversing_arm_high(self, id: CompactingArmId, position: CompactingArmPosition):
+    if isinstance(id, str):
+        id = CompactingArmId[id]
+
+    if isinstance(position, str):
+        position = CompactingArmPosition[position]
+
+    angle = position.value[id]
+
+    status = RobotStatus.check(self.actuators.servos_set_angles(
+        [id.value],
+        [angle]
+    ))
+
+    if RobotStatus.get_status(status) != RobotStatus.Done:
+        return status
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
 # ====== Reversing Arm ======
 
 class ReversingArmId(Enum):

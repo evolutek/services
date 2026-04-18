@@ -69,13 +69,34 @@ class Actuators(Service):
         except Exception as e:
             print('[ACTUATORS] Failed to set color: %s' % str(e))
 
+        """
+        Bielle bras retourneurs - AX5 [545 (top) -  860 (closed) - 975 (prise au sol)]
+
+        Pompe 1 -> p1
+        Pompe 2 -> p2
+
+        retourneurs:
+        - PCA:0
+        - PCA:1
+
+        Stepper asscenceur:
+        - Moteur 1 (premier port)
+        """
+
         # Dictionary key are the ids of the components, the the values are the channel id on TCA9548A
-        self.color_sensors = RGBSensors({
+        self.color_sensors_1 = RGBSensors({
             1: 1,
             2: 2,
             3: 3,
             4: 4,
-        })
+        }, address=0x70)
+
+        # self.color_sensors_2 = RGBSensors({
+        #     1: 1,
+        #     2: 2,
+        #     3: 3,
+        #     4: 4,
+        # }, address = 0x71)
 
         # self.proximity_sensors = ProximitySensors(
         #     {
@@ -129,34 +150,14 @@ class Actuators(Service):
                 2, # Bras tasseur gauche
                 3, # Bras retourneur droit
                 4, # Bras retourneur gauche
+                5, # Bielle bras retourneurs
             ]
         )
 
-        # self.i2c_servos_1 = I2CActsHandler({
-        #     0: [I2CActType.Servo, 180], # Front pumps arm
-        #     1: [I2CActType.Servo, 180], # Front Right
-        #     2: [I2CActType.Servo, 180], # Front Mid-right
-        #     3: [I2CActType.Servo, 180], # Front Mid-left
-        #     4: [I2CActType.Servo, 180], # Front Left
-        #     5: [I2CActType.Servo, 180], # Front Plank arm
-        #     6: [I2CActType.Servo, 180], # Front Plank arm
-        #     7: [I2CActType.Servo, 180], # Front Pilar arm
-        #     8: [I2CActType.Servo, 180], # Front Pilar arm
-        #     9: [I2CActType.Servo, 180],
-        # }, frequency = 50, addr=0x40)
-
-        # self.i2c_servos_2 = I2CActsHandler({
-        #     0: [I2CActType.Servo, 180], # 
-        #     1: [I2CActType.Servo, 180], # 
-        #     2: [I2CActType.Servo, 180], # 
-        #     3: [I2CActType.Servo, 180], # 
-        #     4: [I2CActType.Servo, 180], # 
-        #     5: [I2CActType.Servo, 180], # 
-        #     6: [I2CActType.Servo, 180], # 
-        #     7: [I2CActType.Servo, 180], # 
-        #     8: [I2CActType.Servo, 180], # 
-        #     9: [I2CActType.Servo, 180], # 
-        # }, frequency = 50, addr=0x42)
+        self.i2c_servos_1 = I2CActsHandler({
+            0: [I2CActType.Servo, 180], # Retourneur droit
+            1: [I2CActType.Servo, 180], # Retourneur gauche
+        }, frequency = 50, addr=0x40)
 
         # self.i2c_mots = I2CMotorBoard({
         #     0: (I2CMotorBoardStepper, [0]),
@@ -164,24 +165,16 @@ class Actuators(Service):
         #     2: (I2CMotorBoardStepper, [2]),
         # })
 
-        # self.pumps = PumpController({
-        #     0: [
-        #         create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
-        #         create_gpio(10, 'pump1_ev', dir=True, type=GpioType.MCP),
-        #     ],
-        #     1: [
-        #         create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
-        #         create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
-        #     ],
-        #     2: [
-        #         create_gpio(8 + 16, 'pump3', dir=True, type=GpioType.MCP),
-        #         create_gpio(10 + 16, 'pump3_ev', dir=True, type=GpioType.MCP),
-        #     ],
-        #     3: [
-        #         create_gpio(9 + 16, 'pump4', dir=True, type=GpioType.MCP),
-        #         create_gpio(11 + 16, 'pump4_ev', dir=True, type=GpioType.MCP),
-        #     ],
-        # })
+        self.pumps = PumpController({
+            0: [
+                create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
+                create_gpio(10, 'pump1_ev', dir=True, type=GpioType.MCP),
+            ],
+            1: [
+                create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
+                create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
+            ],
+        })
 
         self.all_actuators = [
             # self.i2c_mots,
@@ -254,9 +247,9 @@ class Actuators(Service):
         if self.bau.read():
             self.disabled.clear()
 
-    #####################
-    # PROXIMITY SENSORS #
-    #####################
+    #################
+    # COLOR SENSORS #
+    #################
     @Service.action
     def color_sensor_read(self, id: str | int):
         if self.color_sensors[int(id)] == None:
