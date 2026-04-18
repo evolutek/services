@@ -8,6 +8,7 @@ from evolutek.lib.utils.task import async_task
 from evolutek.lib.map.point import Point
 import evolutek.lib.robot.robot_actions as robot_actions
 import evolutek.lib.robot.robot_actuators as robot_actuators
+from evolutek.lib.robot.robot_actuators import *
 import evolutek.lib.robot.robot_trajman as robot_trajman
 from evolutek.lib.settings import ROBOT
 from evolutek.lib.status import RobotStatus
@@ -220,31 +221,23 @@ class Robot(Service):
 
         self.enable()
 
-        self.toggle_magnets(robot_actuators.MagnetsSetId.FRONT, robot_actuators.MagnetState.DISABLE, async_task = False)
-        self.toggle_magnets(robot_actuators.MagnetsSetId.BACK, robot_actuators.MagnetState.DISABLE, async_task = False)
+        self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.OPENED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.OPENED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.OPENED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.OPENED, async_task=False)
 
-        self.toggle_pumps(robot_actuators.PumpsSetId.FRONT, False, async_task = False)
-        self.toggle_pumps(robot_actuators.PumpsSetId.BACK, False, async_task = False)
+        self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.CLOSED, async_task=False)
+        self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.CLOSED, async_task=False)
 
-        # self.move_elevator_ex(robot_actuators.ElevatorId.FRONT, 0, async_task = False)
-        # self.move_elevator_ex(robot_actuators.ElevatorId.BACK, 0, async_task = False)
+        self.move_reversing_arm_high(ReversingArmHighPosition.CLOSED)
+        sleep(1)
 
-        self.move_plank_arm(robot_actuators.PlankArmId.FRONT, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
-        self.move_plank_arm(robot_actuators.PlankArmId.BACK, robot_actuators.PlankArmPosition.COLLAPSED, async_task = False)
+        self.move_reversing_head(ReversingHeadId.FRONT_RIGHT, ReversingHeadPosition.NORMAL)
+        self.move_reversing_head(ReversingHeadId.FRONT_LEFT, ReversingHeadPosition.NORMAL)
+        sleep(1)
 
-        sleep(0.5)
-
-        self.actuators.stepper_home(0, 80)
-        sleep(0.05)
-        self.actuators.stepper_home(2, 80)
-
-        self.move_side_arms(robot_actuators.SideArmsId.FRONT, robot_actuators.SideArmPosition.NORMAL, async_task = False)
-        self.move_side_arms(robot_actuators.SideArmsId.BACK, robot_actuators.SideArmPosition.NORMAL, async_task = False)
-
-        self.move_pumps_arm(robot_actuators.PumpsArmId.FRONT, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
-        self.move_pumps_arm(robot_actuators.PumpsArmId.BACK, robot_actuators.PumpsArmPosition.COLLAPSED, async_task = False)
-
-        sleep(4)
+        self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED)
+        self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

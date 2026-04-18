@@ -161,12 +161,12 @@ class Actuators(Service):
         self.i2c_servos_1 = I2CActsHandler({
             0: [I2CActType.Servo, 180, 500, 2700], # Retourneur droit
             1: [I2CActType.Servo, 180, 500, 2700], # Retourneur gauche
-            2: [I2CActType.Servo, 180, 500, 2700], #
-            3: [I2CActType.Servo, 180, 500, 2700], #
-            4: [I2CActType.Servo, 180, 500, 2700], #
-            5: [I2CActType.Servo, 180, 500, 2700], #
-            6: [I2CActType.Servo, 180, 500, 2700], #
-            7: [I2CActType.Servo, 180, 500, 2700], #
+            2: [I2CActType.Servo, 180, 500, 2700], # Bras cursor droite
+            3: [I2CActType.Servo, 180, 500, 2700], # Bras cursor gauche
+            # 4: [I2CActType.Servo, 180, 500, 2700], #
+            # 5: [I2CActType.Servo, 180, 500, 2700], #
+            # 6: [I2CActType.Servo, 180, 500, 2700], #
+            # 7: [I2CActType.Servo, 180, 500, 2700], #
         }, frequency = 50, addr=0x40)
 
         # self.i2c_mots = I2CMotorBoard({
@@ -278,9 +278,9 @@ class Actuators(Service):
     #################
     @Service.action
     def color_sensor_read(self, id: str | int):
-        if self.color_sensors[int(id)] == None:
+        if self.color_sensors_1[int(id)] == None:
             return None
-        return self.color_sensors[int(id)].read()
+        return self.color_sensors_1[int(id)].read()
 
     #####################
     # PROXIMITY SENSORS #
