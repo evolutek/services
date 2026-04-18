@@ -230,12 +230,12 @@ class CursorArmSide(Enum):
 
 class CursorArmPosition(Enum):
     DEPLOYED = {
-        CursorArmSide.RIGHT: 0,
-        CursorArmSide.LEFT: 45
+        CursorArmSide.RIGHT: 60,
+        CursorArmSide.LEFT: 120
     }
     CLOSED = {
-        CursorArmSide.RIGHT: 45,
-        CursorArmSide.LEFT: 0
+        CursorArmSide.RIGHT: 0,
+        CursorArmSide.LEFT: 180
     }
 
 @if_enabled
