@@ -222,6 +222,8 @@ class Robot(Service):
 
         self.enable()
 
+        self.actuators.stepper_home(2, 200)
+
         self.move_cursor_arm(CursorArmSide.RIGHT, CursorArmPosition.CLOSED, async_task=False)
         self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
 
@@ -242,6 +244,10 @@ class Robot(Service):
 
         self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED, async_task=False)
         self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED, async_task=False)
+
+        sleep(6)
+        self.move_elevator(ElevatorId.FRONT, ElevatorPosition.MIDDLE)
+        sleep(1)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

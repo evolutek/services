@@ -65,8 +65,8 @@
     {
       "name": "do_cursor",
       "position": {
-        "x": 1800,
-        "y": 330
+        "x": 1820,
+        "y": 200
       },
       "theta": "pi/2",
       "actions": [
@@ -78,7 +78,7 @@
         {
           "fct": "goto_avoid",
           "handler": "robot",
-          "args": {"x": 1800, "y": 700}
+          "args": {"x": 1820, "y": 710}
         },
         {
           "fct": "move_cursor_arm",
