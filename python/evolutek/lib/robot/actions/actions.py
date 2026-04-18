@@ -23,7 +23,7 @@ def grab_crates(self, side: str):
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.OPENED, async_task=False)
     sleep(0.75)
 
-    self.forward(200, avoid=True, async_task=False)
+    self.forward(100, avoid=True, async_task=False)
 
     self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.TASSED, async_task=False)
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.TASSED, async_task=False)
@@ -32,6 +32,9 @@ def grab_crates(self, side: str):
     self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.OPENED, async_task=False)
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.OPENED, async_task=False)
     sleep(0.5)
+
+    self.move_elevator(ElevatorId.FRONT, ElevatorPosition.LOWEST, async_task=False)
+    sleep(1)
 
     self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.GRAB, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.GRAB, async_task=False)
@@ -96,6 +99,18 @@ def drop_crates(self, side: str):
     self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.OPENED, async_task=False)
     sleep(0.5)
 
-    self.forward(-200, avoid=True, async_task=False)
+    self.forward(-100, avoid=True, async_task=False)
 
     return RobotStatus.return_status(RobotStatus.Done)
+
+
+@if_enabled
+@async_task
+def do_cursor(self):
+    self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.DEPLOYED, async_task=False)
+    sleep(0.5)
+    self.goto_avoid(1750, 710, async_task=False)
+    self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
+    sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done, score=0)

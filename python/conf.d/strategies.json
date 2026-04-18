@@ -6,7 +6,6 @@
         "x": 440,
         "y": 200
       },
-      "theta": "pi",
       "actions": [],
       "score": 0
     },
@@ -47,6 +46,22 @@
       "score": 0
     },
     {
+      "name": "grab_area_2",
+      "position": {
+        "x": 1600,
+        "y": 440
+      },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "grab_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+    {
       "name": "place_area_1",
       "position": {
         "x": 1200,
@@ -63,27 +78,51 @@
       "score": 0
     },
     {
-      "name": "do_cursor",
+      "name": "place_area_2",
       "position": {
-        "x": 1820,
-        "y": 200
+        "x": 1200,
+        "y": 560
       },
       "theta": "pi/2",
       "actions": [
         {
-          "fct": "move_cursor_arm",
+          "fct": "drop_crates",
           "handler": "robot",
-          "args": {"side": "LEFT", "pos": "DEPLOYED"}
-        },
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "goto_do_cursor_1",
+      "position": {
+        "x": 1480,
+        "y": 465
+      },
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "goto_do_cursor_2",
+      "position": {
+        "x": 1750,
+        "y": 440
+      },
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "do_cursor",
+      "position": {
+        "x": 1810,
+        "y": 170
+      },
+      "theta": "pi/2",
+      "actions": [
         {
-          "fct": "goto_avoid",
+          "fct": "do_cursor",
           "handler": "robot",
-          "args": {"x": 1820, "y": 710}
-        },
-        {
-          "fct": "move_cursor_arm",
-          "handler": "robot",
-          "args": {"side": "LEFT", "pos": "CLOSED"}
+          "args": {}
         }
       ],
       "score": 0
@@ -109,6 +148,8 @@
       "goals": [
         "grab_area_1",
         "place_area_1",
+        "goto_do_cursor_1",
+        "goto_do_cursor_2",
         "do_cursor",
         "go_to_end"
 		  ],

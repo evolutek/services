@@ -20,7 +20,7 @@ class ElevatorId(Enum):
 
 class ElevatorPosition(Enum):
     LOWEST = {
-        ElevatorId.FRONT: (-905,),
+        ElevatorId.FRONT: (-920,),
         #ElevatorId.BACK: (0,)
     }
     MIDDLE = {
@@ -71,7 +71,7 @@ class LiftingArmId(Enum):
 
 class LiftingArmPosition(Enum):
     OPENED = 820
-    GRAB = 512
+    GRAB = 500 #512
     CLOSED = 335
 
 @if_enabled

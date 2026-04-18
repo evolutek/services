@@ -63,6 +63,7 @@ class Robot(Service):
     # Imported from robot_actions
     grab_crates = Service.action(robot_actions.grab_crates)
     drop_crates = Service.action(robot_actions.drop_crates)
+    do_cursor = Service.action(robot_actions.do_cursor)
 
     def __init__(self):
         super().__init__(ROBOT)
