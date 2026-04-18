@@ -58,6 +58,7 @@ class Robot(Service):
     move_reversing_arm_high = Service.action(robot_actuators.move_reversing_arm_high)
     move_reversing_head = Service.action(robot_actuators.move_reversing_head)
     move_lifting_arm = Service.action(robot_actuators.move_lifting_arm)
+    move_cursor_arm = Service.action(robot_actuators.move_cursor_arm)
 
     # Imported from robot_actions
     grab_crates = Service.action(robot_actions.grab_crates)
@@ -220,6 +221,9 @@ class Robot(Service):
             return
 
         self.enable()
+
+        self.move_cursor_arm(CursorArmSide.RIGHT, CursorArmPosition.CLOSED, async_task=False)
+        self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
 
         self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.OPENED, async_task=False)
         self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.OPENED, async_task=False)

@@ -220,3 +220,40 @@ def move_reversing_head(self, id: ReversingHeadId, pos: ReversingHeadPosition):
         [id.value],
         [angle]
     ))
+
+
+# ====== Cursor Arm Side ======
+
+class CursorArmSide(Enum):
+    RIGHT = 2
+    LEFT = 3
+
+class CursorArmPosition(Enum):
+    DEPLOYED = {
+        CursorArmSide.RIGHT: 0,
+        CursorArmSide.LEFT: 45
+    }
+    CLOSED = {
+        CursorArmSide.RIGHT: 45,
+        CursorArmSide.LEFT: 0
+    }
+
+@if_enabled
+@async_task
+def move_cursor_arm(self, side: str, pos: CursorArmPosition):
+    if isinstance(side, str):
+        side = ReversingHeadId[side]
+
+    if isinstance(pos, str):
+        pos = ReversingHeadPosition[pos]
+
+    angle = pos.value[side]
+
+    s = RobotStatus.check(self.actuators.servos_set_angles(
+        [side.value],
+        [angle]
+    ))
+
+    sleep(0.5)
+
+    return s
