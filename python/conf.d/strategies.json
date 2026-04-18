@@ -1,10 +1,19 @@
 {
   "goals": [
     {
+      "name": "go_to_initial",
+      "position": {
+        "x": 340,
+        "y": 400
+      },
+      "actions": [],
+      "score": 0
+    },
+    {
       "name": "go_to_end",
       "position": {
-        "x": 440,
-        "y": 200
+        "x": 250,
+        "y": 400
       },
       "actions": [],
       "score": 0
@@ -33,7 +42,7 @@
       "name": "grab_area_1",
       "position": {
         "x": 795,
-        "y": 440
+        "y": 480
       },
       "theta": "-pi/2",
       "actions": [
@@ -49,7 +58,7 @@
       "name": "grab_area_2",
       "position": {
         "x": 1600,
-        "y": 440
+        "y": 480
       },
       "theta": "-pi/2",
       "actions": [
@@ -65,7 +74,7 @@
       "name": "place_area_1",
       "position": {
         "x": 1200,
-        "y": 390
+        "y": 330
       },
       "theta": "-pi/2",
       "actions": [
@@ -114,7 +123,7 @@
     {
       "name": "do_cursor",
       "position": {
-        "x": 1810,
+        "x": 1790,
         "y": 170
       },
       "theta": "pi/2",
@@ -125,6 +134,15 @@
           "args": {}
         }
       ],
+      "score": 0
+    },
+    {
+      "name": "goto_after_cursor",
+      "position": {
+        "x": 1700,
+        "y": 400
+      },
+      "actions": [],
       "score": 0
     }
   ],
@@ -146,11 +164,13 @@
       "name": "Match 1",
       "starting_position": "THE_ONLY_ONE",
       "goals": [
+        "go_to_initial",
         "grab_area_1",
         "place_area_1",
-        "goto_do_cursor_1",
-        "goto_do_cursor_2",
+        "grab_area_2",
+        "place_area_2",
         "do_cursor",
+        "goto_after_cursor",
         "go_to_end"
 		  ],
       "use_pathfinding": false,

@@ -11,7 +11,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 # ====== Elevator ======
 
-ELEVATOR_SPEED = 700
+ELEVATOR_SPEED = 500
 
 # (Stepper ID)
 class ElevatorId(Enum):
@@ -71,7 +71,8 @@ class LiftingArmId(Enum):
 
 class LiftingArmPosition(Enum):
     OPENED = 820
-    GRAB = 500 #512
+    GRAB = 493 #512
+    DROP = 512
     CLOSED = 335
 
 @if_enabled
@@ -101,8 +102,8 @@ class CompactingArmPosition(Enum):
         CompactingArmId.FRONT_LEFT: (870, 800)
     }
     TASSED = {
-        CompactingArmId.FRONT_RIGHT: (295, 200),
-        CompactingArmId.FRONT_LEFT: (730, 200)
+        CompactingArmId.FRONT_RIGHT: (305, 120),
+        CompactingArmId.FRONT_LEFT: (720, 120)
     }
     CLOSED = {
         CompactingArmId.FRONT_RIGHT: (600, 800),
@@ -232,7 +233,7 @@ class CursorArmSide(Enum):
 
 class CursorArmPosition(Enum):
     DEPLOYED = {
-        CursorArmSide.RIGHT: 60,
+        CursorArmSide.RIGHT: 65,
         CursorArmSide.LEFT: 120
     }
     CLOSED = {

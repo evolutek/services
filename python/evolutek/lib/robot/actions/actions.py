@@ -23,15 +23,11 @@ def grab_crates(self, side: str):
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.OPENED, async_task=False)
     sleep(0.75)
 
-    self.forward(100, avoid=True, async_task=False)
+    self.forward(130, avoid=True, async_task=False)
 
     self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.TASSED, async_task=False)
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.TASSED, async_task=False)
-    sleep(1)
-
-    self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.OPENED, async_task=False)
-    self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.OPENED, async_task=False)
-    sleep(0.5)
+    sleep(1.5)
 
     self.move_elevator(ElevatorId.FRONT, ElevatorPosition.LOWEST, async_task=False)
     sleep(1)
@@ -44,6 +40,10 @@ def grab_crates(self, side: str):
 
     self.actuators.pumps_grab(ids = [2, 3, 4, 5])
     sleep(0.2)
+
+    self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.OPENED, async_task=False)
+    self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.OPENED, async_task=False)
+    sleep(0.5)
 
     self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.OPENED, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.OPENED, async_task=False)
@@ -84,11 +84,11 @@ def drop_crates(self, side: str):
     else:
         raise RuntimeError("Invalid side: %s" % side)
 
-    self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.GRAB, async_task=False)
-    self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.GRAB, async_task=False)
-    self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.GRAB, async_task=False)
-    self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.GRAB, async_task=False)
-    sleep(1)
+    self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.DROP, async_task=False)
+    self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.DROP, async_task=False)
+    self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.DROP, async_task=False)
+    self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.DROP, async_task=False)
+    sleep(0.5)
 
     self.actuators.pumps_drop(ids = [2, 3, 4, 5])
     sleep(0.2)
@@ -99,7 +99,7 @@ def drop_crates(self, side: str):
     self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.OPENED, async_task=False)
     sleep(0.5)
 
-    self.forward(-100, avoid=True, async_task=False)
+    self.forward(-130, avoid=True, async_task=False)
 
     return RobotStatus.return_status(RobotStatus.Done)
 
@@ -109,7 +109,7 @@ def drop_crates(self, side: str):
 def do_cursor(self):
     self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.DEPLOYED, async_task=False)
     sleep(0.5)
-    self.goto_avoid(1750, 710, async_task=False)
+    self.goto_avoid(1790, 710, async_task=False)
     self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
     sleep(0.5)
 
