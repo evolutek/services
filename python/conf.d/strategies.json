@@ -11,12 +11,22 @@
       "score": 0
     },
     {
-      "name": "homologation_push",
+      "name": "homologation_push_1",
+      "position": {
+        "x": 500,
+        "y": 200
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "homologation_push_2",
       "position": {
         "x": 950,
         "y": 200
       },
-      "theta": "pi",
+      "theta": "0",
       "actions": [],
       "score": 0
     },
@@ -85,7 +95,8 @@
       "name": "Homologation",
       "starting_position": "THE_ONLY_ONE",
       "goals": [
-        "homologation_push",
+        "homologation_push_1",
+        "homologation_push_2",
         "go_to_end"
 		  ],
       "use_pathfinding": false,
