@@ -233,15 +233,15 @@ class Robot(Service):
         self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.CLOSED, async_task=False)
         self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.CLOSED, async_task=False)
 
-        self.move_reversing_arm_high(ReversingArmHighPosition.CLOSED)
+        self.move_reversing_arm_high(ReversingArmHighPosition.CLOSED, async_task=False)
         sleep(1)
 
-        self.move_reversing_head(ReversingHeadId.FRONT_RIGHT, ReversingHeadPosition.NORMAL)
-        self.move_reversing_head(ReversingHeadId.FRONT_LEFT, ReversingHeadPosition.NORMAL)
+        self.move_reversing_head(ReversingHeadId.FRONT_RIGHT, ReversingHeadPosition.NORMAL, async_task=False)
+        self.move_reversing_head(ReversingHeadId.FRONT_LEFT, ReversingHeadPosition.NORMAL, async_task=False)
         sleep(1)
 
-        self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED)
-        self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED)
+        self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED, async_task=False)
+        self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED, async_task=False)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):
