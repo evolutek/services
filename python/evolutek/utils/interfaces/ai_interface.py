@@ -110,12 +110,16 @@ class StatusFrame(IFrame):
 	def cal_otos(self):
 		self.root.cs.trajman[ROBOT].cal_otos()
 
+	def initial(self):
+		self.root.cs.robot[ROBOT].initial()
+
 	def init_interface(self):
-		tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
+		#tk.Button(self, text="Recalibrate", command=self.recalibration, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 		tk.Button(self, text="Reset position", command=self.reset_position, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 		tk.Button(self, text="Reset match", command=self.reset_match, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 		tk.Button(self, text="Change color", command=self.change_color, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 		tk.Button(self, text="Cal OTOS", command=self.cal_otos, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
+		tk.Button(self, text="Initial", command=self.initial, font=FONT_MEDIUM).pack(fill=tk.X, side=tk.TOP, pady=4)
 
 	def change_color(self):
 		if self.root.cs.match.get_color() == self.color1:
@@ -147,7 +151,7 @@ class HomeInterface(IFrame):
 		# Display coordinates on the interface
 		self.coords = self.root.cs.trajman[ROBOT].get_position()
 		self.coords_text = tk.Label(self, text=self.coords, font=("Helvetica", 18))
-		self.coords_text.grid(row=2, column=1, sticky="nsew")
+		#self.coords_text.grid(row=2, column=1, sticky="nsew")
 		self.coords_text.configure(text=f"X: {int(self.coords.get('x'))}  Y: {int(self.coords.get('y'))}  Theta: {round(degrees(self.coords.get('theta')), 2)}")
 	
 	def update_interface(self):

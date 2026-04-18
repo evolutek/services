@@ -223,16 +223,17 @@ ARM_STATE = {
 }
 
 @if_enabled
+@async_task
 def move_servo(self, id, type: str, pos: str):
     id = int(id)
 
     if id not in ARM_SERVOS:
-        return RobotStatus.error(f"Unknown arm {id}")
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     servos = ARM_SERVOS[id]["servos"]
 
     if type not in servos:
-        return RobotStatus.error(f"{type} not on arm {id}")
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     servo = servos[type]
 
@@ -247,30 +248,31 @@ def move_servo(self, id, type: str, pos: str):
         pos = "stored"
 
     if pos not in servo["positions"]:
-        return RobotStatus.error(f"Unknown position {pos}")
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     # SAFETY RULE
     if type == "tip" and ARM_STATE[id]["pos"] == "up" and pos != "closed":
-        return RobotStatus.error("Tip must stay closed when arm is up")
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     angle = servo["positions"][pos]
     servo_id = servo["id"]
 
-    return RobotStatus.get_status(self.actuators.servo_set_angle(servo_id, angle))
+    return self.actuators.servo_set_angle(servo_id, angle)
 
 # =========================================================
 # MOVE SINGLE SERVOS
 # =========================================================
 
 @if_enabled
+@async_task
 def move_arm(self, id, pos: str):
     id = int(id)
 
     if id not in ARM_SERVOS:
-        return RobotStatus.error(f"Unknown arm {id}")
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     if pos not in ARM_SERVOS[id]["ax12"]:
-        return RobotStatus.error(f"Unknown position {pos}")
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     angle = ARM_SERVOS[id]["ax12"][pos]
 
@@ -302,21 +304,25 @@ def move_arm(self, id, pos: str):
     return res
 
 @if_enabled
+@async_task
 def move_tip(self, id, pos: str):
-    return self.move_servo(id, "tip", pos)
+    return self.move_servo(id, "tip", pos, async_task=False)
 
 
 @if_enabled
+@async_task
 def move_flipper(self, id, pos: str):
-    return self.move_servo(id, "flipper", pos)
+    return self.move_servo(id, "flipper", pos, async_task=False)
 
 
 @if_enabled
+@async_task
 def move_barrier(self, id, pos: str):
-    return self.move_servo(id, "barrier", pos)
+    return self.move_servo(id, "barrier", pos, async_task=False)
 
 
 @if_enabled
+@async_task
 def move_barriers(self, id: int, pos: str):
     results = []
 
@@ -327,13 +333,14 @@ def move_barriers(self, id: int, pos: str):
         if "barrier" not in arm["servos"]:
             continue
 
-        res = self.move_barrier(arm_id, pos)
+        res = self.move_barrier(arm_id, pos, async_task=False)
         results.append(res)
 
     return RobotStatus.check(*results)
 
 
 @if_enabled
+@async_task
 def move_flippers(self, id: int, pos: str):
     results = []
 
@@ -344,7 +351,7 @@ def move_flippers(self, id: int, pos: str):
         if "flipper" not in arm["servos"]:
             continue
 
-        res = self.move_flipper(arm_id, pos)
+        res = self.move_flipper(arm_id, pos, async_task=False)
         results.append(res)
 
     return RobotStatus.check(*results)
@@ -355,6 +362,7 @@ def move_flippers(self, id: int, pos: str):
 # =========================================================
 
 @if_enabled
+@async_task
 def move_tips(self, id: int, pos: str):
     results = []
 
@@ -365,13 +373,14 @@ def move_tips(self, id: int, pos: str):
         if "tip" not in arm["servos"]:
             continue
 
-        res = self.move_tip(arm_id, pos)
+        res = self.move_tip(arm_id, pos, async_task=False)
         results.append(res)
 
     return RobotStatus.check(*results)
 
 
 @if_enabled
+@async_task
 def move_arms(self, id: int, pos: str):
     results = []
 
@@ -380,13 +389,14 @@ def move_arms(self, id: int, pos: str):
         if arm_id // 10 != int(id) % 10:
             continue
 
-        res = self.move_arm(arm_id, pos)
+        res = self.move_arm(arm_id, pos, async_task=False)
         results.append(res)
 
     return RobotStatus.check(*results)
 
 
 @if_enabled
+@async_task
 def move(self, id, pos: str):
     id = int(id)
     id_str = str(id)
@@ -399,35 +409,35 @@ def move(self, id, pos: str):
     if len(id_str) == 1:
         # face: depending on pos, move arms, tips, barriers, or flippers
         if pos in arm_positions:
-            return self.move_arms(id, pos)
+            return self.move_arms(id, pos, async_task=False)
         elif pos in tip_positions:
-            return self.move_tips(id, pos)
+            return self.move_tips(id, pos, async_task=False)
         elif pos in barrier_positions:
-            return self.move_barriers(id, pos)
+            return self.move_barriers(id, pos, async_task=False)
         elif pos in flipper_positions:
-            return self.move_flippers(id, pos)
+            return self.move_flippers(id, pos, async_task=False)
         else:
-            return RobotStatus.error(f"Unknown position {pos} for face")
+            return RobotStatus.return_status(RobotStatus.Failed)
     elif len(id_str) == 2:
         # arm: depending on pos, move arm, tip, barrier, or flipper
         if pos in arm_positions:
-            return self.move_arm(id, pos)
+            return self.move_arm(id, pos, async_task=False)
         elif pos in tip_positions:
-            return self.move_tip(id, pos)
+            return self.move_tip(id, pos, async_task=False)
         elif pos in barrier_positions:
-            return self.move_barrier(id, pos)
+            return self.move_barrier(id, pos, async_task=False)
         elif pos in flipper_positions:
-            return self.move_flipper(id, pos)
+            return self.move_flipper(id, pos, async_task=False)
         else:
-            return RobotStatus.error(f"Unknown position {pos} for arm")
+            return RobotStatus.return_status(RobotStatus.Failed)
     elif len(id_str) == 3:
         # servo: move the specific servo on the arm
         arm_id = id // 10
         servo_digit = id % 10
         servo_types = {1: "tip", 2: "flipper", 3: "barrier"}
         if servo_digit not in servo_types:
-            return RobotStatus.error(f"Unknown servo type {servo_digit}")
+            return RobotStatus.return_status(RobotStatus.Failed)
         servo_type = servo_types[servo_digit]
-        return self.move_servo(arm_id, servo_type, pos)
+        return self.move_servo(arm_id, servo_type, pos, async_task=False)
     else:
-        return RobotStatus.error("Invalid id: must be 1, 2, or 3 digits")
+        return RobotStatus.return_status(RobotStatus.Failed)

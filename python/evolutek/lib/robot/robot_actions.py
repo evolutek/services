@@ -5,7 +5,12 @@ from evolutek.lib.robot.robot_actuators import *
 @async_task
 def initial(self):
     status = []
-    status.append(self.move(1, "up"))
+    status.append(self.move(1, "up", async_task=False))
+    status.append(self.move(2, "up", async_task=False))
+    status.append(self.move(3, "up", async_task=False))
+    status.append(self.move(1, "a", async_task=False))
+    status.append(self.move(2, "a", async_task=False))
+    status.append(self.move(3, "a", async_task=False))
     return RobotStatus.check(*status)
 
 @if_enabled
@@ -13,31 +18,34 @@ def initial(self):
 def prepare_grab(self, face):
     face = int(face)
     status = []
-    status.append(self.move(face, "down"))
-    status.append(self.move(face, "opened"))
-    status.append(self.move(face, "a"))
+    status.append(self.move(face, "down", async_task=False))
+    status.append(self.move(face, "opened", async_task=False))
+    status.append(self.move(face, "a", async_task=False))
     return RobotStatus.check(*status)
 
 @if_enabled
 @async_task
 def grab(self, face):
-    goal_color = "BLUE"
+    if self.side:
+        goal_color = "BLUE"
+    else :
+        goal_color = "YELLOW"
 
     face = int(face)
     status = []
-    status.append(self.move(face, "closed"))
+    status.append(self.move(face, "closed", async_task=False))
     sleep(0.5)
-    status.append(self.move(face * 10 + 1, "up"))
-    status.append(self.move(face * 10 + 2, "half"))
-    status.append(self.move(face * 10 + 3, "up"))
-    status.append(self.move(face * 10 + 4, "half"))
+    status.append(self.move(face * 10 + 1, "up", async_task=False))
+    status.append(self.move(face * 10 + 2, "half", async_task=False))
+    status.append(self.move(face * 10 + 3, "up", async_task=False))
+    status.append(self.move(face * 10 + 4, "half", async_task=False))
     sleep(0.5)
     for i in range(1, 5):
         color = self.actuators.color_read(i)
         if (color != goal_color):
-            status.append(self.move(face * 10 + i, "b"))
+            status.append(self.move(face * 10 + i, "b", async_task=False))
     sleep(0.5)
-    status.append(self.move(face, "up"))
+    status.append(self.move(face, "up", async_task=False))
 
 
     return RobotStatus.check(*status)
