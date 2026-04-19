@@ -117,6 +117,20 @@ def do_cursor(self):
 
 @if_enabled
 @async_task
+def do_cursor_bis(self):
+    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
+
+    self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
+    sleep(0.5)
+    self.goto_avoid_extend(1800, 710 + 300, async_task=False, acc=1000)
+    self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
+    sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
+@if_enabled
+@async_task
 def reverse_and_drop_crates(self, side: str):
     if side == "front":
         reversing_arms = [ReversingArmId.FRONT_RIGHT, ReversingArmId.FRONT_LEFT]

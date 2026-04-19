@@ -28,7 +28,7 @@ class ElevatorPosition(Enum):
         #ElevatorId.BACK: (-330,)
     }
     REVERSE_DOWN = {
-        ElevatorId.FRONT: (-320,),
+        ElevatorId.FRONT: (-360,),
         #ElevatorId.BACK: (-700,)
     }
     REVERSE_UP = {

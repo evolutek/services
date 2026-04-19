@@ -1,3 +1,4 @@
+
 {
   "goals": [
     {
@@ -130,10 +131,36 @@
       "score": 0
     },
     {
+      "name": "goto_do_cursor_2_bis",
+      "position": {
+        "x": 1750,
+        "y": 440
+      },
+      "theta": 1.3,
+      "actions": [],
+      "score": 0
+    },
+    {
       "name": "do_cursor",
       "position": {
         "x": 1800,
         "y": 170
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "do_cursor",
+          "handler": "robot",
+          "args": {}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "do_cursor_bis",
+      "position": {
+        "x": 1800,
+        "y": 1750
       },
       "theta": "pi/2",
       "actions": [
@@ -180,6 +207,25 @@
         "grab_area_2",
         "place_area_2",
         "do_cursor",
+        "goto_after_cursor",
+        "go_to_end"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [],
+      "available": ["pal"]
+    },
+    {
+      "name": "Match 2",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "go_to_initial",
+        "grab_area_1",
+        "place_area_1",
+        "before_grab_area_2",
+        "grab_area_2",
+        "place_area_2",
+        "goto_do_cursor_2_bis",
+        "do_cursor_bis",
         "goto_after_cursor",
         "go_to_end"
 		  ],

@@ -66,6 +66,7 @@ class Robot(Service):
     drop_crates = Service.action(robot_actions.drop_crates)
     do_cursor = Service.action(robot_actions.do_cursor)
     reverse_and_drop_crates = Service.action(robot_actions.reverse_and_drop_crates)
+    do_cursor_bis = Service.action(robot_actions.do_cursor_bis)
 
     def __init__(self):
         super().__init__(ROBOT)
