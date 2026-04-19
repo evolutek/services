@@ -99,7 +99,7 @@
       "name": "place_area_2",
       "position": {
         "x": 1200,
-        "y": 560
+        "y": 610
       },
       "theta": "pi/2",
       "actions": [
@@ -132,7 +132,7 @@
     {
       "name": "do_cursor",
       "position": {
-        "x": 1790,
+        "x": 1800,
         "y": 170
       },
       "theta": "pi/2",
