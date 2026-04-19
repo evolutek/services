@@ -44,7 +44,7 @@ def barrier(self, id, pos):
     id = int(id)
     new_id = id
     if not self.side :
-        new_id = id // 10
+        new_id = (id // 10) * 10
         if id % 10 == 1:
             new_id += 4
         else :
