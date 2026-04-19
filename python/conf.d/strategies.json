@@ -12,7 +12,7 @@
     {
       "name": "go_to_end",
       "position": {
-        "x": 250,
+        "x": 270,
         "y": 400
       },
       "actions": [],
@@ -55,6 +55,15 @@
       "score": 0
     },
     {
+      "name": "before_grab_area_2",
+      "position": {
+        "x": 1200,
+        "y": 400
+      },
+      "actions": [],
+      "score": 0
+    },
+    {
       "name": "grab_area_2",
       "position": {
         "x": 1600,
@@ -73,10 +82,10 @@
     {
       "name": "place_area_1",
       "position": {
-        "x": 1200,
-        "y": 330
+        "x": 450,
+        "y": 400
       },
-      "theta": "-pi/2",
+      "theta": "pi",
       "actions": [
         {
           "fct": "drop_crates",
@@ -95,7 +104,7 @@
       "theta": "pi/2",
       "actions": [
         {
-          "fct": "drop_crates",
+          "fct": "reverse_and_drop_crates",
           "handler": "robot",
           "args": {"side": "front"}
         }
@@ -167,6 +176,7 @@
         "go_to_initial",
         "grab_area_1",
         "place_area_1",
+        "before_grab_area_2",
         "grab_area_2",
         "place_area_2",
         "do_cursor",

@@ -27,8 +27,12 @@ class ElevatorPosition(Enum):
         ElevatorId.FRONT: (-700,),
         #ElevatorId.BACK: (-330,)
     }
-    REVERSE = {
-        ElevatorId.FRONT: (-200,),
+    REVERSE_DOWN = {
+        ElevatorId.FRONT: (-320,),
+        #ElevatorId.BACK: (-700,)
+    }
+    REVERSE_UP = {
+        ElevatorId.FRONT: (-150,),
         #ElevatorId.BACK: (-700,)
     }
     HIGHEST = {
@@ -266,10 +270,9 @@ def move_cursor_arm(self, side: str, pos: CursorArmPosition):
 
     return s
 
-
 @if_enabled
 @async_task
-def get_color(self, id: LiftingArmId) -> True:
+def get_color(self, id: LiftingArmId) -> bool:
     if isinstance(id, str):
         id = LiftingArmId[id]
 

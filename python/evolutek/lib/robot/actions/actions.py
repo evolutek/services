@@ -104,7 +104,7 @@ def drop_crates(self, side: str):
 @if_enabled
 @async_task
 def do_cursor(self):
-    arm = CursorArmSide.LEFT if self.side else CursorArmSide.RIGHT
+    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
 
     self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
     sleep(0.5)
@@ -132,7 +132,7 @@ def reverse_and_drop_crates(self, side: str):
 
     # Read color sensors
     for arm in lifting_arms:
-        colors.append(self.get_color(arm))
+        colors.append(self.get_color(arm, async_task=False))
 
     is_all_right = all(colors)
     if is_all_right:
@@ -144,7 +144,7 @@ def reverse_and_drop_crates(self, side: str):
         self.move_lifting_arm(arm, LiftingArmPosition.DROP, async_task=False)
     sleep(0.5)
 
-    self.move_elevator(elevator, ElevatorPosition.REVERSE, async_task=False)
+    self.move_elevator(elevator, ElevatorPosition.REVERSE_UP, async_task=False)
     sleep(1.5)
 
     self.move_reversing_arm_high(ReversingArmHighPosition.TOP, async_task=False)
@@ -159,7 +159,13 @@ def reverse_and_drop_crates(self, side: str):
         ReversingArmPosition.CRATE4
     ]
 
-    for _ in range(2): # Max 3 iterations
+    for _ in range(2): # Max 2 iterations
+        is_all_right = all(colors)
+        if is_all_right:
+            break
+
+        print(colors)
+
         # (right lifting arm crate pos, left lifting arm crate pos)
         left_crate_index = None
         right_crate_index = None
@@ -195,8 +201,9 @@ def reverse_and_drop_crates(self, side: str):
         if right_crate_index is not None:
             self.move_lifting_arm(lifting_arms[right_crate_index], LiftingArmPosition.GRAB, async_task=False)
         if left_crate_index is not None:
-            self.move_lifting_arm(lifting_arms[left_crate_index], LiftingArmPosition.GRAB, async_task=False)
-        sleep(0.5)
+            self.move_lifting_arm(lifting_arms[left_crate_index], LiftingArmPosition.GRAB, async_task=False)        
+        self.move_elevator(elevator, ElevatorPosition.REVERSE_DOWN, async_task=False)
+        sleep(1)
 
         # Enable reversing arm pumps
         if right_crate_index is not None:
@@ -217,7 +224,8 @@ def reverse_and_drop_crates(self, side: str):
             self.move_lifting_arm(lifting_arms[right_crate_index], LiftingArmPosition.DROP, async_task=False)
         if left_crate_index is not None:
             self.move_lifting_arm(lifting_arms[left_crate_index], LiftingArmPosition.DROP, async_task=False)
-        sleep(0.5)
+        self.move_elevator(elevator, ElevatorPosition.REVERSE_UP, async_task=False)
+        sleep(1)
 
         # Reverse
         if right_crate_index is not None:
@@ -232,7 +240,7 @@ def reverse_and_drop_crates(self, side: str):
         if right_crate_index is not None:
             self.move_reversing_arm(reversing_arms[0], ReversingArmPosition.CRATE2, async_task=False)
         if left_crate_index is not None:
-            pass # TO TEST BEFORE #self.move_reversing_arm(reversing_arms[1], ReversingArmPosition.CRATE3, async_task=False)
+            self.move_reversing_arm(reversing_arms[1], ReversingArmPosition.CRATE3, async_task=False)
         sleep(1)
 
         # Disable reversing arm pumps (drop)
