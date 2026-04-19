@@ -61,10 +61,11 @@ class Robot(Service):
     
     # Imported from robot_actions
     initial = Service.action(robot_actions.initial)
+    cursor = Service.action(robot_actions.cursor)
+    cursor_stow = Service.action(robot_actions.cursor_stow)
     prepare_grab = Service.action(robot_actions.prepare_grab)
     grab = Service.action(robot_actions.grab)
-
-    
+    barrier = Service.action(robot_actions.barrier)
  
     def __init__(self):
         super().__init__(ROBOT)

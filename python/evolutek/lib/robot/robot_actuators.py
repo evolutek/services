@@ -9,7 +9,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 ARM_SERVOS = {
     11: {
-        "ax12": {"up": 270, "half": 450,"down": 587},
+        "ax12": {"up": 270, "half": 450, "cursor": 530, "down": 587},
         "servos": {
             "tip": {
                 "id": 13,
@@ -55,7 +55,7 @@ ARM_SERVOS = {
     },
 
     14: {
-        "ax12": {"up": 680, "half": 496, "down": 378},
+        "ax12": {"up": 680, "half": 496, "cursor": 420, "down": 378},
         "servos": {
             "tip": {
                 "id": 2,
@@ -95,7 +95,7 @@ ARM_SERVOS = {
         "servos": {
             "tip": {
                 "id": 10 + 16,
-                "positions": {"flipped": 15, "opened": 100, "closed": 195},
+                "positions": {"flipped": 15, "opened": 100, "closed": 198},
             },
             "flipper": {
                 "id": 9 + 16,
@@ -401,7 +401,7 @@ def move(self, id, pos: str):
     id = int(id)
     id_str = str(id)
 
-    arm_positions = {"up", "half", "down"}
+    arm_positions = {"up", "half", "down", "cursor"}
     tip_positions = {"flipped", "open", "closed", "close", "openned", "opened"}
     barrier_positions = {"stored", "near", "mid", "far", "stow", "store"}
     flipper_positions = {"a", "b"}

@@ -15,6 +15,48 @@ def initial(self):
 
 @if_enabled
 @async_task
+def cursor(self):
+    if not self.side :
+        id = 14
+    else :
+        id = 11
+
+    status = []
+    status.append(self.move(id, "cursor", async_task=False))
+    status.append(self.move(id, "open", async_task=False))
+    return RobotStatus.check(*status)
+
+@if_enabled
+@async_task
+def cursor_stow(self):
+    if not self.side :
+        id = 14
+    else :
+        id = 11
+
+    status = []
+    status.append(self.move(id, "up", async_task=False))
+    return RobotStatus.check(*status)
+
+@if_enabled
+@async_task
+def barrier(self, id, pos):
+    id = int(id)
+    new_id = id
+    if not self.side :
+        new_id = id // 10
+        if id % 10 == 1:
+            new_id += 4
+        else :
+            new_id += 1
+
+    status = []
+    status.append(self.move(new_id, pos, async_task=False))
+    return RobotStatus.check(*status)
+
+
+@if_enabled
+@async_task
 def prepare_grab(self, face):
     face = int(face)
     status = []
@@ -26,7 +68,7 @@ def prepare_grab(self, face):
 @if_enabled
 @async_task
 def grab(self, face):
-    if self.side:
+    if not self.side:
         goal_color = "BLUE"
     else :
         goal_color = "YELLOW"
@@ -35,18 +77,33 @@ def grab(self, face):
     status = []
     status.append(self.move(face, "closed", async_task=False))
     sleep(0.5)
+
+    for i in range(1, 5):
+        self.actuators.color_enable(i + face * 10, 1)
+
+    sleep(0.1)
+
+    colors = []
+    for i in range(1, 5):
+        color = self.actuators.color_read(i + face * 10)
+        print(f"Color sensor {i + face * 10} reads {color}")
+        colors.append(color)
+
+    for i in range(1, 5):
+        self.actuators.color_enable(i + face * 10, 0)
+
     status.append(self.move(face * 10 + 1, "up", async_task=False))
     status.append(self.move(face * 10 + 2, "half", async_task=False))
     status.append(self.move(face * 10 + 3, "up", async_task=False))
     status.append(self.move(face * 10 + 4, "half", async_task=False))
     sleep(0.5)
+
     for i in range(1, 5):
-        color = self.actuators.color_read(i)
-        if (color != goal_color):
+        if (colors[i - 1] != goal_color):
             status.append(self.move(face * 10 + i, "b", async_task=False))
     sleep(0.5)
-    status.append(self.move(face, "up", async_task=False))
 
+    status.append(self.move(face, "up", async_task=False))
 
     return RobotStatus.check(*status)
 

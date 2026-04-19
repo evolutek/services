@@ -148,17 +148,34 @@ class Actuators(Service):
             0 : [I2CActType.Servo, 1, 0, 2048], # led for sensor 4
         }, frequency=333, addr=0x42)
 
-        self.sensors = RGBSensors({
-            1: [3],  # id, channel
-            2: [2],
-            3: [0],
-            4: [1],
-        })
+        self.sensors1 = RGBSensors({
+            11: 3,  # id, channel
+            12: 2,
+            13: 0,
+            14: 1,
+        }, address=0x70)
+
+        self.sensors2 = RGBSensors({
+            21: 3,  # id, channel
+            22: 2,
+            23: 0,
+            24: 1,
+        }, address=0x71)
+
+        self.sensors3 = RGBSensors({
+            31: 3,  # id, channel
+            32: 2,
+            33: 0,
+            34: 1,
+        }, address=0x72)
+    
         self.all_actuators = [
             self.i2c_serv_3,
             self.i2c_serv_2,
             self.i2c_serv_1,
-            self.sensors,
+            self.sensors1,
+            self.sensors2,
+            self.sensors3,
             self.axs,
         ]
 
@@ -247,14 +264,15 @@ class Actuators(Service):
     @Service.action
     def color_enable(self, id, en = 1):
         id = int(id) - 1
-        if id > 31:
+        if id >= 30:
             i2c_serv = self.i2c_serv_3
-            id -= 32
-        elif id > 15:
+            id -= 30
+        elif id >= 20:
             i2c_serv = self.i2c_serv_2
-            id -= 16
+            id -= 20
         else:
             i2c_serv = self.i2c_serv_1
+            id -= 10
 
         pca_channels = [12, 11, 7, 0]
 
@@ -272,14 +290,17 @@ class Actuators(Service):
         # led is controlled by the same PCA as the servos, so we need to enable the right channel on it before reading the sensor
         id = int(id)
 
-        if self.sensors[id] == None:
+        sensor = None
+        for s in [self.sensors1, self.sensors2, self.sensors3]:
+            if s[id] is not None:
+                sensor = s
+
+        if sensor is None:
             return None
 
-        self.color_enable(id, 1)
-
-        ret = self.sensors[id].read()
-
-        self.color_enable(id, 0)
+        #self.color_enable(id, 1)
+        ret = sensor[id].read()
+        #self.color_enable(id, 0)
 
         return ret
 
