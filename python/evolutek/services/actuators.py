@@ -277,7 +277,7 @@ class Actuators(Service):
     # COLOR SENSORS #
     #################
     @Service.action
-    def color_sensor_read(self, id: str | int):
+    def color_sensor_read(self, id: str | int) -> tuple[float, float, float]:
         if self.color_sensors_1[int(id)] == None:
             return None
         return self.color_sensors_1[int(id)].read()

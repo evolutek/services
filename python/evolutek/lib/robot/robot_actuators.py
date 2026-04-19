@@ -27,6 +27,10 @@ class ElevatorPosition(Enum):
         ElevatorId.FRONT: (-700,),
         #ElevatorId.BACK: (-330,)
     }
+    REVERSE = {
+        ElevatorId.FRONT: (-200,),
+        #ElevatorId.BACK: (-700,)
+    }
     HIGHEST = {
         ElevatorId.FRONT: (-5,),
         #ElevatorId.BACK: (-700,)
@@ -63,11 +67,12 @@ def move_elevator(self, id: ElevatorId, pos: ElevatorPosition):
 
 # ====== Lifting Arm ======
 
+# Pair (AX20 id, color sensor id)
 class LiftingArmId(Enum):
-    FRONT_1 = 6
-    FRONT_2 = 7
-    FRONT_3 = 8
-    FRONT_4 = 9
+    FRONT_1 = (6, 1)
+    FRONT_2 = (7, 2)
+    FRONT_3 = (8, 3)
+    FRONT_4 = (9, 4)
 
 class LiftingArmPosition(Enum):
     OPENED = 820
@@ -85,7 +90,7 @@ def move_lifting_arm(self, id: LiftingArmId, pos: LiftingArmPosition):
         pos = LiftingArmPosition[pos]
 
     return RobotStatus.check(self.actuators.axs_moves(
-        [id.value],
+        [id.value[0]],
         [pos.value]
     ))
 
@@ -260,3 +265,15 @@ def move_cursor_arm(self, side: str, pos: CursorArmPosition):
     sleep(0.5)
 
     return s
+
+
+@if_enabled
+@async_task
+def get_color(self, id: LiftingArmId) -> True:
+    if isinstance(id, str):
+        id = LiftingArmId[id]
+
+    color = self.actuators.color_sensor_read(id.value[1])
+    k = color[0] / color[2]
+
+    return (k > 1.5) == self.side
