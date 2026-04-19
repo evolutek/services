@@ -59,11 +59,13 @@ class Robot(Service):
     move_reversing_head = Service.action(robot_actuators.move_reversing_head)
     move_lifting_arm = Service.action(robot_actuators.move_lifting_arm)
     move_cursor_arm = Service.action(robot_actuators.move_cursor_arm)
+    get_color = Service.action(robot_actuators.get_color)
 
     # Imported from robot_actions
     grab_crates = Service.action(robot_actions.grab_crates)
     drop_crates = Service.action(robot_actions.drop_crates)
     do_cursor = Service.action(robot_actions.do_cursor)
+    reverse_and_drop_crates = Service.action(robot_actions.reverse_and_drop_crates)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -223,7 +225,9 @@ class Robot(Service):
 
         self.enable()
 
-        self.actuators.stepper_home(2, 100)
+        self.actuators.pumps_drop(ids = [0, 1, 2, 3, 4, 5])
+
+        self.actuators.stepper_home(2, 200)
 
         self.move_cursor_arm(CursorArmSide.RIGHT, CursorArmPosition.CLOSED, async_task=False)
         self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
@@ -243,7 +247,7 @@ class Robot(Service):
         self.move_reversing_head(ReversingHeadId.FRONT_LEFT, ReversingHeadPosition.NORMAL, async_task=False)
         sleep(1)
 
-        self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED, async_task=False)
+        self.move_reversing_arm(ReversingArmId.FRONT_RIGHT, ReversingArmPosition.CLOSED, async_task=False)
         self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED, async_task=False)
 
         sleep(4)

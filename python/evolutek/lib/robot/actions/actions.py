@@ -117,7 +117,7 @@ def do_cursor(self):
 
 @if_enabled
 @async_task
-def drop_and_sort_crates(self, side: str):
+def reverse_and_drop_crates(self, side: str):
     if side == "front":
         reversing_arms = [ReversingArmId.FRONT_RIGHT, ReversingArmId.FRONT_LEFT]
         reversing_heads = [ReversingHeadId.FRONT_RIGHT, ReversingHeadId.FRONT_LEFT]
@@ -144,10 +144,10 @@ def drop_and_sort_crates(self, side: str):
         self.move_lifting_arm(arm, LiftingArmPosition.DROP, async_task=False)
     sleep(0.5)
 
-    self.move_elevator(elevator, ElevatorPosition.REVERSE)
+    self.move_elevator(elevator, ElevatorPosition.REVERSE, async_task=False)
     sleep(1.5)
 
-    self.move_reversing_arm_high(ReversingArmHighPosition.TOP)
+    self.move_reversing_arm_high(ReversingArmHighPosition.TOP, async_task=False)
     sleep(0.5)
 
     # Start reversing colors
@@ -184,6 +184,13 @@ def drop_and_sort_crates(self, side: str):
             self.move_reversing_arm(reversing_arms[1], reversing_arm_positions[left_crate_index], async_task=False)
         sleep(0.5)
 
+        # Turn head of reversing arm upward
+        if right_crate_index is not None:
+            self.move_reversing_head(reversing_heads[0], ReversingHeadPosition.REVERSED, async_task=False)
+        if left_crate_index is not None:
+            self.move_reversing_head(reversing_heads[1], ReversingHeadPosition.REVERSED, async_task=False)
+        sleep(0.5)
+
         # Stick lifting arms on reversing arms
         if right_crate_index is not None:
             self.move_lifting_arm(lifting_arms[right_crate_index], LiftingArmPosition.GRAB, async_task=False)
@@ -214,10 +221,10 @@ def drop_and_sort_crates(self, side: str):
 
         # Reverse
         if right_crate_index is not None:
-            self.move_reversing_head(reversing_heads[0], ReversingHeadPosition.REVERSED, async_task=False)
+            self.move_reversing_head(reversing_heads[0], ReversingHeadPosition.NORMAL, async_task=False)
             colors[right_crate_index] = True # Reversed to the right color
         if left_crate_index is not None:
-            self.move_reversing_head(reversing_heads[1], ReversingHeadPosition.REVERSED, async_task=False)
+            self.move_reversing_head(reversing_heads[1], ReversingHeadPosition.NORMAL, async_task=False)
             colors[left_crate_index] = True # Reversed to the right color
         sleep(1)
 
@@ -235,25 +242,23 @@ def drop_and_sort_crates(self, side: str):
             self.actuators.pumps_drop(ids = [reversing_arms_pumps[1]])
         sleep(0.2)
 
-        # Put reversing head in normal position
-        if right_crate_index is not None:
-            self.move_reversing_head(reversing_heads[0], ReversingHeadPosition.NORMAL, async_task=False)
-        if left_crate_index is not None:
-            self.move_reversing_head(reversing_heads[1], ReversingHeadPosition.NORMAL, async_task=False)
-        sleep(0.5)
-
         # Go back to drop the rest
         self.forward(-160, avoid=True, async_task=False)
 
-    # Drop the rest
+    # Put reversing head in normal position
+    for i in range(2):
+        self.move_reversing_head(reversing_heads[i], ReversingHeadPosition.NORMAL, async_task=False)
+    sleep(0.5)
+
+    # Put reversing arm in closed position
     for i in range(2):
         self.move_reversing_arm(reversing_arms[i], ReversingArmPosition.CLOSED, async_task=False)
     sleep(0.5)
 
-    self.move_reversing_arm_high(ReversingArmHighPosition.CLOSED)
+    self.move_reversing_arm_high(ReversingArmHighPosition.CLOSED, async_task=False)
     sleep(0.5)
 
-    self.move_elevator(elevator, ElevatorPosition.LOWEST)
+    self.move_elevator(elevator, ElevatorPosition.LOWEST, async_task=False)
     sleep(1.5)
 
     # Drop the rest
