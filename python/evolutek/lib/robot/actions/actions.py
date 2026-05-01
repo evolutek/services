@@ -8,6 +8,34 @@ if TYPE_CHECKING:
 
 @if_enabled
 @async_task
+def do_cursor(self):
+    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
+
+    self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
+    sleep(0.5)
+    self.goto_avoid(1800, 710, async_task=False)
+    self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
+    sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
+@if_enabled
+@async_task
+def do_cursor_bis(self):
+    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
+
+    self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
+    sleep(0.5)
+    self.goto_avoid_extend(1800, 710 + 300, async_task=False, acc=1000)
+    self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
+    sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
+@if_enabled
+@async_task
 def grab_crates(self, side: str):
     if side == "front":
         compacting_arms = [CompactingArmId.FRONT_LEFT, CompactingArmId.FRONT_RIGHT]
@@ -16,57 +44,47 @@ def grab_crates(self, side: str):
     else:
         raise RuntimeError("Invalid side: %s" % side)
 
+    self.move_elevator(ElevatorId.FRONT, ElevatorPosition.LOWEST, async_task=False)
+
+    self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.PRE_GRAB, async_task=False)
+    self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.PRE_GRAB, async_task=False)
+    self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.PRE_GRAB, async_task=False)
+    self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.PRE_GRAB, async_task=False)
+
     self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.OPENED, async_task=False)
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.OPENED, async_task=False)
-    sleep(0.75)
+    sleep(0.2)
 
     self.forward(130, avoid=True, async_task=False)
 
+    self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.PRE_TASSED, async_task=False)
+    self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.PRE_TASSED, async_task=False)
+    sleep(0.15)
     self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.TASSED, async_task=False)
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.TASSED, async_task=False)
-    sleep(1.5)
+    sleep(0.5)
 
-    self.move_elevator(ElevatorId.FRONT, ElevatorPosition.LOWEST, async_task=False)
-    sleep(1)
+    self.actuators.pumps_grab(ids = [2, 3, 4, 5])
 
     self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.GRAB, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.GRAB, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.GRAB, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.GRAB, async_task=False)
-    sleep(1)
-
-    self.actuators.pumps_grab(ids = [2, 3, 4, 5])
-    sleep(0.2)
+    sleep(0.15)
 
     self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.OPENED, async_task=False)
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.OPENED, async_task=False)
-    sleep(0.5)
+    sleep(0.06)
 
     self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.OPENED, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.OPENED, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.OPENED, async_task=False)
     self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.OPENED, async_task=False)
-    sleep(1)
+    sleep(0.2)
 
     self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.CLOSED, async_task=False)
     self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.CLOSED, async_task=False)
-    sleep(0.5)
-
-    """
-    if RobotStatus.get_status(self.toggle_pumps(pumps, True, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
-
-    if RobotStatus.get_status(self.forward(180 if side == "front" else -180, async_task=False)) != RobotStatus.Reached:
-        return RobotStatus.return_status(RobotStatus.Failed)
-
-    if RobotStatus.get_status(self.move_plank_arm(plank_arms, PlankArmPosition.LIFT, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
-
-    if RobotStatus.get_status(self.move_pumps_arm(pumps_arm, PumpsArmPosition.EXPANDED, async_task=False)) != RobotStatus.Done:
-        return RobotStatus.return_status(RobotStatus.Failed)
-
-    sleep(0.2)
-    """
+    sleep(0.3)
 
     return RobotStatus.return_status(RobotStatus.Done, score=0)
 
@@ -103,34 +121,6 @@ def drop_crates(self, side: str):
 
 @if_enabled
 @async_task
-def do_cursor(self):
-    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
-
-    self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
-    sleep(0.5)
-    self.goto_avoid(1800, 710, async_task=False)
-    self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
-    sleep(0.5)
-
-    return RobotStatus.return_status(RobotStatus.Done)
-
-
-@if_enabled
-@async_task
-def do_cursor_bis(self):
-    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
-
-    self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
-    sleep(0.5)
-    self.goto_avoid_extend(1800, 710 + 300, async_task=False, acc=1000)
-    self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
-    sleep(0.5)
-
-    return RobotStatus.return_status(RobotStatus.Done)
-
-
-@if_enabled
-@async_task
 def reverse_and_drop_crates(self, side: str):
     if side == "front":
         reversing_arms = [ReversingArmId.FRONT_RIGHT, ReversingArmId.FRONT_LEFT]
@@ -156,13 +146,12 @@ def reverse_and_drop_crates(self, side: str):
 
     for arm in lifting_arms:
         self.move_lifting_arm(arm, LiftingArmPosition.DROP, async_task=False)
-    sleep(0.5)
 
     self.move_elevator(elevator, ElevatorPosition.REVERSE_UP, async_task=False)
-    sleep(1.5)
+    sleep(1.4)
 
     self.move_reversing_arm_high(ReversingArmHighPosition.TOP, async_task=False)
-    sleep(0.5)
+    sleep(0.35)
 
     # Start reversing colors
 
@@ -178,7 +167,7 @@ def reverse_and_drop_crates(self, side: str):
         if is_all_right:
             break
 
-        print(colors)
+        #print(colors)
 
         # (right lifting arm crate pos, left lifting arm crate pos)
         left_crate_index = None
@@ -202,44 +191,48 @@ def reverse_and_drop_crates(self, side: str):
             self.move_reversing_arm(reversing_arms[0], reversing_arm_positions[right_crate_index], async_task=False)
         if left_crate_index is not None:
             self.move_reversing_arm(reversing_arms[1], reversing_arm_positions[left_crate_index], async_task=False)
-        sleep(0.5)
 
         # Turn head of reversing arm upward
         if right_crate_index is not None:
             self.move_reversing_head(reversing_heads[0], ReversingHeadPosition.REVERSED, async_task=False)
         if left_crate_index is not None:
             self.move_reversing_head(reversing_heads[1], ReversingHeadPosition.REVERSED, async_task=False)
-        sleep(0.5)
 
-        # Stick lifting arms on reversing arms
-        if right_crate_index is not None:
-            self.move_lifting_arm(lifting_arms[right_crate_index], LiftingArmPosition.GRAB, async_task=False)
-        if left_crate_index is not None:
-            self.move_lifting_arm(lifting_arms[left_crate_index], LiftingArmPosition.GRAB, async_task=False)        
-        self.move_elevator(elevator, ElevatorPosition.REVERSE_DOWN, async_task=False)
-        sleep(0.8)
+        sleep(0.6)
 
         # Enable reversing arm pumps
         if right_crate_index is not None:
             self.actuators.pumps_grab(ids = [reversing_arms_pumps[0]])
         if left_crate_index is not None:
             self.actuators.pumps_grab(ids = [reversing_arms_pumps[1]])
-        sleep(0.2)
+
+        # Stick lifting arms on reversing arms
+        if right_crate_index is not None:
+            self.move_lifting_arm(lifting_arms[right_crate_index], LiftingArmPosition.GRAB, async_task=False)
+        if left_crate_index is not None:
+            self.move_lifting_arm(lifting_arms[left_crate_index], LiftingArmPosition.GRAB, async_task=False)        
+
+        self.move_elevator(elevator, ElevatorPosition.REVERSE_DOWN, async_task=False)
+
+        sleep(0.7)
 
         # Disable lifting arm pumps
         if right_crate_index is not None:
             self.actuators.pumps_drop(ids = [lifting_arms_pumps[right_crate_index]])
         if left_crate_index is not None:
             self.actuators.pumps_drop(ids = [lifting_arms_pumps[left_crate_index]])
-        sleep(0.2)
+
+        sleep(0.1)
 
         # Detach lifting arms from reversing arms
         if right_crate_index is not None:
             self.move_lifting_arm(lifting_arms[right_crate_index], LiftingArmPosition.DROP, async_task=False)
         if left_crate_index is not None:
             self.move_lifting_arm(lifting_arms[left_crate_index], LiftingArmPosition.DROP, async_task=False)
+
         self.move_elevator(elevator, ElevatorPosition.REVERSE_UP, async_task=False)
-        sleep(1)
+
+        sleep(0.65)
 
         # Reverse
         if right_crate_index is not None:
@@ -248,21 +241,24 @@ def reverse_and_drop_crates(self, side: str):
         if left_crate_index is not None:
             self.move_reversing_head(reversing_heads[1], ReversingHeadPosition.NORMAL, async_task=False)
             colors[left_crate_index] = True # Reversed to the right color
-        sleep(0.5)
+
+        sleep(0.55)
 
         # Put reversing arms at at position 2 and 3 (there natural position)
         if right_crate_index is not None:
             self.move_reversing_arm(reversing_arms[0], ReversingArmPosition.CRATE2, async_task=False)
         if left_crate_index is not None:
             self.move_reversing_arm(reversing_arms[1], ReversingArmPosition.CRATE3, async_task=False)
-        sleep(0.5)
+
+        sleep(0.25)
 
         # Disable reversing arm pumps (drop)
         if right_crate_index is not None:
             self.actuators.pumps_drop(ids = [reversing_arms_pumps[0]])
         if left_crate_index is not None:
             self.actuators.pumps_drop(ids = [reversing_arms_pumps[1]])
-        sleep(0.2)
+
+        sleep(0.1)
 
         # Go back to drop the rest
         self.forward(-160, avoid=True, async_task=False)

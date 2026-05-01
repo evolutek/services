@@ -28,7 +28,7 @@ class ElevatorPosition(Enum):
         #ElevatorId.BACK: (-330,)
     }
     REVERSE_DOWN = {
-        ElevatorId.FRONT: (-350,),
+        ElevatorId.FRONT: (-340,),
         #ElevatorId.BACK: (-700,)
     }
     REVERSE_UP = {
@@ -80,6 +80,7 @@ class LiftingArmId(Enum):
 
 class LiftingArmPosition(Enum):
     OPENED = 820
+    PRE_GRAB = 593
     GRAB = 493 #512
     DROP = 512
     CLOSED = 335
@@ -109,6 +110,10 @@ class CompactingArmPosition(Enum):
     OPENED = {
         CompactingArmId.FRONT_RIGHT: (155, 800),
         CompactingArmId.FRONT_LEFT: (870, 800)
+    }
+    PRE_TASSED = {
+        CompactingArmId.FRONT_RIGHT: (255, 800),
+        CompactingArmId.FRONT_LEFT: (770, 800)
     }
     TASSED = {
         CompactingArmId.FRONT_RIGHT: (305, 120),
