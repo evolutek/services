@@ -1,6 +1,7 @@
 {
   "goals": [
-    {"name": "drop_banner","position":{"x":1875,"y":1225},"theta":"-pi/2","actions":[
+    {"name": "drop_banner","position":{"x":1875,"y":1225},"theta":"-pi/2"},
+    {"name": "drop_banner2","position":{"x":1875,"y":1225},"theta":"-pi/2","actions":[
         {"fct":"drop","args":{"group":"elevator_AB"},"handler":"robot"},
         {"fct":"grab","args":{"group":"outer_CA"},"handler":"robot"},
         {"fct":"grab","args":{"group":"elevator_CA"},"handler":"robot"}
@@ -15,6 +16,10 @@
 
     {"name": "exit_home_yellow","position":{"x":800,"y":450},"theta":"0"},
     {"name": "exit_home_blue","position":{"x":800,"y":450},"theta":"pi"},
+    
+    
+    
+    
     
     {"name": "present_upper_zone","position":{"x":950,"y":1100},"theta":"pi/6","actions":[
         {"fct":"prepare_grab","args":{"face":"2"},"handler":"robot"},
@@ -47,6 +52,9 @@
     {"name": "exit_lower","position":{"x":1500,"y":700},"theta":"5*pi/6","actions":[
         {"fct":"move","args":{"id":"3", "pos":"up"},"handler":"robot"}
     ]},
+
+
+
 
     {"name": "present_left_lower","position":{"x":1500,"y":450},"theta":"pi/3","actions":[
         {"fct":"prepare_grab","args":{"face":"3"},"handler":"robot"},
@@ -84,7 +92,55 @@
 
     {"name": "return_home","position":{"x":250,"y":300},"theta":"-5*pi/6"},
 
-    {"name": "drop_home","position":{"x":250,"y":300},"theta":"-pi/pi/2","actions":[
+    {"name": "drop_home","position":{"x":250,"y":300},"theta":"-5*pi/6","actions":[
+        {"fct":"move","args":{"id":"3", "pos":"down"},"handler":"robot"},
+        {"fct":"sleep","args":{"time":"1"}},
+        {"fct":"move","args":{"id":"3", "pos":"open"},"handler":"robot"},
+        {"fct":"sleep","args":{"time":"1"}},
+        {"fct":"move","args":{"id":"3", "pos":"up"},"handler":"robot"}
+
+    ]},
+    
+    
+    
+
+    {"name": "present_left_lower_b","position":{"x":1500,"y":450},"theta":"-2*pi/3","actions":[
+        {"fct":"prepare_grab","args":{"face":"3"},"handler":"robot"},
+        {"fct":"barrier","args":{"id":"34", "pos":"far"},"handler":"robot"}
+    ]},
+    {"name": "grab_left_lower_b","position":{"x":1600,"y":400},"theta":"-2*pi/3","actions":[
+        {"fct":"grab","args":{"face":"3"},"handler":"robot"}
+    ]},
+
+    {"name": "drop_left_b","position":{"x":1200,"y":400},"theta":"-2*pi/3","actions":[
+        {"fct":"move","args":{"id":"3", "pos":"down"},"handler":"robot"},
+        {"fct":"sleep","args":{"time":"1"}},
+        {"fct":"move","args":{"id":"3", "pos":"open"},"handler":"robot"}
+    ]},
+    {"name": "exit_left_b","position":{"x":1200,"y":500},"theta":"-2*pi/3","actions":[
+        {"fct":"move","args":{"id":"3", "pos":"up"},"handler":"robot"}
+    ]},
+
+    {"name": "present_left_upper_b","position":{"x":900,"y":500},"theta":"-2*pi/3","actions":[
+        {"fct":"prepare_grab","args":{"face":"3"},"handler":"robot"},
+        {"fct":"barrier","args":{"id":"31", "pos":"far"},"handler":"robot"}
+    ]},
+    {"name": "grab_left_upper_b","position":{"x":700,"y":440},"theta":"-2*pi/3","actions":[
+        {"fct":"grab","args":{"face":"3"},"handler":"robot"}
+    ]},
+
+    {"name": "drop_middle_b","position":{"x":1100,"y":600},"theta":"0","actions":[
+        {"fct":"move","args":{"id":"2", "pos":"down"},"handler":"robot"},
+        {"fct":"sleep","args":{"time":"1"}},
+        {"fct":"move","args":{"id":"2", "pos":"open"},"handler":"robot"}
+    ]},
+    {"name": "exit_middle_b","position":{"x":950,"y":450},"theta":"0","actions":[
+        {"fct":"move","args":{"id":"2", "pos":"up"},"handler":"robot"}
+    ]},
+
+    {"name": "return_home_b","position":{"x":250,"y":300},"theta":"5*pi/6"},
+
+    {"name": "drop_home_b","position":{"x":250,"y":300},"theta":"5*pi/6","actions":[
         {"fct":"move","args":{"id":"3", "pos":"down"},"handler":"robot"},
         {"fct":"sleep","args":{"time":"1"}},
         {"fct":"move","args":{"id":"3", "pos":"open"},"handler":"robot"},
@@ -133,16 +189,16 @@
         "go_cursor",
         "drop_lower",
         "exit_lower",
-        "present_left_lower",
-        "grab_left_lower",
-        "drop_left",
-        "exit_left",
-        "present_left_upper",
-        "grab_left_upper",
-        "drop_middle",
-        "exit_middle",
-        "return_home",
-        "drop_home"
+        "present_left_lower_b",
+        "grab_left_lower_b",
+        "drop_left_b",
+        "exit_left_b",
+        "present_left_upper_b",
+        "grab_left_upper_b",
+        "drop_middle_b",
+        "exit_middle_b",
+        "return_home_b",
+        "drop_home_b"
       ],
       "use_pathfinding": false
     }
