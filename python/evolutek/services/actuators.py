@@ -8,6 +8,7 @@ from cellaserv.proxy import CellaservProxy
 import board
 from evolutek.lib.gpio.gpio_factory import AdcType, create_adc, GpioType, create_gpio
 from evolutek.lib.gpio.gpio import Edge
+from evolutek.lib.gpio.pca9685_gpio import PcaGpio
 
 # Components
 from evolutek.lib.actuators.ax12 import AX12Controller
@@ -159,30 +160,43 @@ class Actuators(Service):
         )
 
         self.i2c_servos_1 = I2CActsHandler({
-            0: [I2CActType.Servo, 180, 500, 2700], # Retourneur droit
-            1: [I2CActType.Servo, 180, 500, 2700], # Retourneur gauche
-            2: [I2CActType.Servo, 180, 500, 2700], # Bras cursor droite
-            3: [I2CActType.Servo, 180, 500, 2700], # Bras cursor gauche
-            # 4: [I2CActType.Servo, 180, 500, 2700], #
-            # 5: [I2CActType.Servo, 180, 500, 2700], #
-            # 6: [I2CActType.Servo, 180, 500, 2700], #
-            # 7: [I2CActType.Servo, 180, 500, 2700], #
+             0: [I2CActType.Servo, 180, 500, 2700], # EV4
+             1: [I2CActType.Servo, 180, 500, 2700], # PUMP4
+             2: [I2CActType.Servo, 180, 500, 2700], # EV3
+             3: [I2CActType.Servo, 180, 500, 2700], # PUMP3
+             4: [I2CActType.Servo, 180, 500, 2700], # Retourneur droit
+             5: [I2CActType.Servo, 180, 500, 2700], # Retourneur gauche
+             6: [I2CActType.Servo, 180, 500, 2700], # Bras cursor droite
+             7: [I2CActType.Servo, 180, 500, 2700], # Bras cursor gauche
+             8: [I2CActType.Servo, 180, 500, 2700], # PUMP2
+             9: [I2CActType.Servo, 180, 500, 2700], # EV2
+            10: [I2CActType.Servo, 180, 500, 2700], # PUMP1
+            11: [I2CActType.Servo, 180, 500, 2700], # EV1
+            12: [I2CActType.Servo, 180, 500, 2700], #
+            13: [I2CActType.Servo, 180, 500, 2700], #
         }, frequency = 50, addr=0x40)
 
         self.i2c_mots = I2CMotorBoard({
             0: (I2CMotorBoardStepper, [0]),
-            1: (I2CMotorBoardStepper, [1]),
-            2: (I2CMotorBoardStepper, [2]),
+            1: (I2CMotorBoardStepper, [1])
         })
 
         self.pumps = PumpController({
+            # 0: [
+            #     create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
+            #     create_gpio(10, 'pump1_ev', dir=True, type=GpioType.MCP),
+            # ],
+            # 1: [
+            #     create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
+            #     create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
+            # ],
             0: [
-                create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
-                create_gpio(10, 'pump1_ev', dir=True, type=GpioType.MCP),
+                PcaGpio(self.i2c_servos_1[10]), # Pump
+                PcaGpio(self.i2c_servos_1[11]), # EV
             ],
             1: [
-                create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
-                create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
+                PcaGpio(self.i2c_servos_1[8]),
+                PcaGpio(self.i2c_servos_1[9]),
             ],
             2: [
                 create_gpio(8 + 16, 'pump3', dir=True, type=GpioType.MCP),

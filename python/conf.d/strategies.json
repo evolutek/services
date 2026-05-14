@@ -224,9 +224,6 @@
         "before_grab_area_2",
         "grab_area_2",
         "place_area_2",
-        "goto_do_cursor_2_bis",
-        "do_cursor_bis",
-        "goto_after_cursor",
         "go_to_end"
 		  ],
       "use_pathfinding": false,

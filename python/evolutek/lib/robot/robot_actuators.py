@@ -209,8 +209,8 @@ def move_reversing_arm(self, id: ReversingArmId, pos: ReversingArmPosition):
 # ====== Reversing Head ======
 
 class ReversingHeadId(Enum):
-    FRONT_RIGHT = 0
-    FRONT_LEFT = 1
+    FRONT_RIGHT = 12
+    FRONT_LEFT = 13
 
 class ReversingHeadPosition(Enum):
     NORMAL = {
