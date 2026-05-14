@@ -9,7 +9,7 @@ class State:
 
     def __init__(self, state, fct):
 
-        self. state = state
+        self.state = state
         self.fct = fct
 
     # Run the state

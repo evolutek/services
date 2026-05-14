@@ -97,7 +97,7 @@ class TCS34725(Component):
         # else:
         #     detected = "UNKNOWN"
 
-        if kb < 20:
+        if kb < 100:
             detected = "YELLOW"
         else:
             detected = "BLUE"

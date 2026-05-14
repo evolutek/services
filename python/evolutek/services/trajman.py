@@ -77,6 +77,8 @@ class Commands(Enum):
     SET_ROBOT_SIZE_Y   = 166
 
     OTOS_CAL           = 167
+    LIDAR_ENABLE       = 115
+    LIDAR_DISABLE      = 116
 
     SET_DEBUG          = 200
     ERROR              = 255
@@ -168,6 +170,10 @@ class TrajMan(Service):
         self.robot_speed = 0.0
         self.travel_orientation = 0.0
 
+        self.offset_x = 0
+        self.offset_y = 1500
+        self.offset_theta = 0
+
         self.serial = serial.Serial(TRAJMAN_PORT, TRAJMAN_BAUDRATE)
 
         self.thread = Thread(target=self.async_read)
@@ -211,6 +217,11 @@ class TrajMan(Service):
             print('[TRAJMAN] Failed to get BAU status: %s' % str(e))
 
         self.set_telemetry(self.telemetry_refresh())
+
+    def set_offset(x=0, y=0, theta=0):
+        self.offset_x = x
+        self.offset_y = y  
+        self.offset_theta = theta
 
     """ AVOID """
     def lidar_callback(self, cloud, shapes, robots):
@@ -343,13 +354,19 @@ class TrajMan(Service):
     @Service.action
     @if_enabled
     def goto_xy(self, x, y, avoid=True):
+        x = float(x)
+        y = float(y)
+
+        x -= self.offset_x
+        y -= self.offset_y
+
         tab = pack('B', 2 + calcsize('ff'))
         tab += pack('B', Commands.GOTO_XY.value)
-        tab += pack('ff', float(x), float(y))
+        tab += pack('ff', x, y)
 
         avoid = get_boolean(avoid)
 
-        self.destination = Point(x=float(x), y=float(y))
+        self.destination = Point(x=x, y=y)
 
         if avoid:
             self.is_avoid_enabled.set()
@@ -359,9 +376,14 @@ class TrajMan(Service):
     @Service.action
     @if_enabled
     def goto_theta(self, theta):
+
+        theta = float(theta)
+
+        theta -= self.offset_theta
+
         tab = pack('B', 6)
         tab += pack('B', Commands.GOTO_THETA.value)
-        tab += pack('f', float(theta))
+        tab += pack('f', theta)
         self.command(bytes(tab))
 
     @Service.action
@@ -401,7 +423,15 @@ class TrajMan(Service):
             rot_direction (int): Direction de rotation (0=auto, 1=sens horaire, -1=sens anti-horaire)
             avoid (bool): Active l'évitement d'obstacles
         """
+
+        x = float(x)
+        y = float(y)
+        theta = float(theta)
         
+        x -= self.offset_x
+        y -= self.offset_y
+        theta -= self.offset_theta
+
         print("Global goto")
         print(x, y, theta, rot_start_pct, rot_end_pct,
                             trsl_start_pct, trsl_end_pct,
@@ -417,14 +447,14 @@ class TrajMan(Service):
         tab = pack('B', 2 + calcsize('fffffffbb'))
         tab += pack('B', Commands.GLOBAL_GOTO.value)
         tab += pack('fffffff', 
-                    float(x), float(y), float(theta),
+                    x, y, theta,
                     float(rot_start_pct)/100, float(rot_end_pct)/100,
                     float(trsl_start_pct)/100, float(trsl_end_pct)/100)
         tab += pack('bb', int(rot_direction), int(get_boolean(avoid)))
 
         # Mise à jour des variables d'état
-        self.destination = Point(x=float(x), y=float(y))
-        self.destination_theta = float(theta)
+        self.destination = Point(x=x, y=y)
+        self.destination_theta = theta
 
         if avoid:
             self.is_avoid_enabled.set()
@@ -488,25 +518,34 @@ class TrajMan(Service):
 
     @Service.action
     def set_x(self, x):
+        x = float(x)
+        x -= self.offset_x
+
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_X.value)
-        tab += pack('f', float(x))
+        tab += pack('f', x)
         #self.log("Send set x")
         self.command(bytes(tab))
 
     @Service.action
     def set_y(self, y):
+        y = float(y)
+        y -= self.offset_y
+
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_Y.value)
-        tab += pack('f', float(y))
+        tab += pack('f', y)
         #self.log("Send set y")
         self.command(bytes(tab))
 
     @Service.action
     def set_theta(self, theta):
+        theta = float(theta)
+        theta -= self.offset_theta
+
         tab = pack('B', 6)
         tab += pack('B', Commands.SET_THETA.value)
-        tab += pack('f', float(theta))
+        tab += pack('f', theta)
         #self.log("Send set theta")
         self.command(bytes(tab))
 
@@ -533,6 +572,22 @@ class TrajMan(Service):
         tab = pack('B', 10)
         tab += pack('B', Commands.STOP_ASAP.value)
         tab += pack('ff', float(trsldec), float(rotdec))
+        self.command(bytes(tab))
+
+    @Service.action
+    @Service.event('match_start')
+    def lidar_enable(self):
+        print("Lidar enable")
+        tab = pack('B', 2)
+        tab += pack('B', Commands.LIDAR_ENABLE.value)
+        self.command(bytes(tab))
+
+    @Service.action
+    @Service.event('match_end')
+    def lidar_disable(self):
+        print("Lidar disable")
+        tab = pack('B', 2)
+        tab += pack('B', Commands.LIDAR_DISABLE.value)
         self.command(bytes(tab))
 
     #######
@@ -600,6 +655,10 @@ class TrajMan(Service):
 
                     _, _, x, y, theta = unpack('=bbfff', bytes(tab))
                     self.log_serial("Position is x:", x, "y:", y, "th:", theta)
+                    x += self.offset_x
+                    y += self.offset_y
+                    theta += self.offset_theta
+                    self.log_serial("Position after offset is x:", x, "y:", y, "th:", theta)
 
                     self.queue.put({
                         'x': x,
@@ -690,6 +749,8 @@ class TrajMan(Service):
                 elif tab[1] == Commands.GET_TRAVEL_THETA.value:
                     a, b, travel_theta = unpack('=bbf', bytes(tab))
 
+                    travel_theta += self.offset_theta
+
                     self.queue.put({
                         'travel_theta': travel_theta,
                     })
@@ -724,6 +785,10 @@ class TrajMan(Service):
 
                 elif tab[1] == Commands.TELEMETRY_MESSAGE.value:
                     counter, commandid, xpos, ypos, theta, speed = unpack('=bbffff', bytes(tab))
+
+                    xpos += self.offset_x
+                    ypos += self.offset_y
+                    theta += self.offset_theta
 
                     with self.lock:
                         self.robot_position = Point(x=xpos, y=ypos)
