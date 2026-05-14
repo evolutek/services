@@ -73,11 +73,18 @@ class TCS34725(Component):
         g /= 0.3385012919896641
         b /= 0.2351421188630491
 
+        temp = self.sensor.color_temperature
+        lux = self.sensor.lux
+
+        kb = temp/lux
+                
         print(f"[TCS] RGB=({r:.2f},{g:.2f},{b:.2f})")
+        print(f"[TCS] Temp: {temp}K Lux: {lux}, k: {kb}")
+
 
         rgb = RGBColor(r, g, b)
         h, s, v = rgb.to_hsv()
-        k = r / b
+        ka = r / b
         '''
         if s < 0.15:
             print(f"[TCS] HSV=({h:.1f},{s:.2f},{v:.2f}) -> UNKNOWN (background)")
@@ -90,7 +97,7 @@ class TCS34725(Component):
         # else:
         #     detected = "UNKNOWN"
 
-        if k > 1.1:
+        if kb < 20:
             detected = "YELLOW"
         else:
             detected = "BLUE"

@@ -15,7 +15,7 @@ from cellaserv.service import Service, ConfigVariable
 from cellaserv.settings import make_setting
 
 make_setting('TRAJMAN_PORT', '/dev/serial0', 'trajman', 'port', 'TRAJMAN_PORT')
-make_setting('TRAJMAN_BAUDRATE', 38400, 'trajman', 'baudrate',
+make_setting('TRAJMAN_BAUDRATE', 256000, 'trajman', 'baudrate',
              'TRAJMAN_BAUDRATE', int)
 from cellaserv.settings import TRAJMAN_PORT, TRAJMAN_BAUDRATE
 
@@ -273,7 +273,7 @@ class TrajMan(Service):
                 if self.robot_speed == 0.0:
                     continue
 
-                stop_distance = (self.robot_speed**2 / (2 * self.trsldec())) * 2 # Oupsy un petit fois 2
+                stop_distance = (self.robot_speed**2 / (2 * self.trsldec())) * 4 # Oupsy un petit fois 2
                 print(f"robot_speed = {self.robot_speed}, stop_distance = {stop_distance}, dist to dst = {self.robot_position.dist(self.destination)}")
                 detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + self.robot_radius() * 2
 

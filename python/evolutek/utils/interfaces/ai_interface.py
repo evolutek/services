@@ -64,7 +64,7 @@ class ButtonSystem(IFrame):
 
 	@staticmethod
 	def shutdown():
-		os.system("sudo reboot -p")
+		os.system("sudo shutdown 0")
 
 	@staticmethod
 	def reboot():
