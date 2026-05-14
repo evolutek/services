@@ -2,7 +2,7 @@ from evolutek.lib.robot.robot_actions_imports import *
 from evolutek.lib.robot.robot_actuators import *
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def initial(self):
     status = []
     status.append(self.move(1, "up", async_task=False))
@@ -14,7 +14,7 @@ def initial(self):
     return RobotStatus.check(*status)
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def cursor(self):
     if not self.side :
         id = 14
@@ -27,7 +27,7 @@ def cursor(self):
     return RobotStatus.check(*status)
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def cursor_stow(self):
     if not self.side :
         id = 14
@@ -39,7 +39,7 @@ def cursor_stow(self):
     return RobotStatus.check(*status)
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def barrier(self, id, pos):
     id = int(id)
     new_id = id
@@ -56,7 +56,7 @@ def barrier(self, id, pos):
 
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def prepare_grab(self, face):
     face = int(face)
     status = []
@@ -66,7 +66,7 @@ def prepare_grab(self, face):
     return RobotStatus.check(*status)
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def grab(self, face):
     if not self.side:
         goal_color = "BLUE"
@@ -115,7 +115,7 @@ def grab(self, face):
 #########
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def setup(self):
     print("Reset")
     status = []
@@ -139,7 +139,7 @@ def setup(self):
 # DROP BANER #
 ##############
 @if_enabled
-@async_task
+@async_task('actuator')
 def drop_banner(self):
     status = RobotStatus.check(self.drop(MagnetGroups.elevator_AB))
     sleep(1);
@@ -155,7 +155,7 @@ class Zone(Enum):
     CA = 2,
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def grab_stack(self, zone: Zone):
     status = []
 
@@ -179,7 +179,7 @@ def grab_stack(self, zone: Zone):
     return RobotStatus.check(*status)
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def drop_stack(self, zone: Zone):
     status = []
 
@@ -208,7 +208,7 @@ def drop_stack(self, zone: Zone):
 #########
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def build(self, zone: Zone):
     if(isinstance(zone, str)):
         zone = Zone[zone]

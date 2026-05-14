@@ -82,7 +82,7 @@ def set_pos(self, x, y, theta=None, mirror=True):
 #########
 
 @if_enabled
-@async_task
+@async_task('move')
 def goto(self, x, y, avoid=True, mirror=True):
     mirror = get_boolean(mirror)
     x = float(x)
@@ -99,7 +99,7 @@ def goto(self, x, y, avoid=True, mirror=True):
     return self.goto_xy(x=x, y=y, avoid=avoid)
 
 @if_enabled
-@async_task
+@async_task('move')
 def global_goto(self, x, y, theta, avoid=True, mirror=True):
     mirror = get_boolean(mirror)
     x = float(x)
@@ -118,7 +118,7 @@ def global_goto(self, x, y, theta, avoid=True, mirror=True):
     return self.gotog(x=x, y=y, theta=theta, avoid=avoid)
 
 @if_enabled
-@async_task
+@async_task('move')
 def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, mirror=True):
     try:
         x = float(x)
@@ -193,7 +193,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
       traceback.print_exc()
     
 @if_enabled
-@async_task
+@async_task('move')
 def forward(self, distance, avoid=True):
     distance = float(distance)
 
@@ -217,7 +217,7 @@ def forward(self, distance, avoid=True):
 
 
 @if_enabled
-@async_task
+@async_task('move')
 def goth(self, theta, mirror=True):
     mirror = get_boolean(mirror)
     theta = float(theta)
@@ -233,7 +233,7 @@ def goth(self, theta, mirror=True):
     return self.goto_theta(theta)
 
 @if_enabled
-@async_task
+@async_task('move')
 def move_back(self, side):
 
     side = get_boolean(side)
@@ -269,7 +269,7 @@ def timeout_handler():
 
 
 @if_enabled
-@async_task
+@async_task('move')
 def goto_avoid_extend(self, x, y, avoid=True, timeout=None, skip=False, mirror=True, dec=None, acc=None):
     speeds = self.trajman.get_speeds()
 
@@ -291,7 +291,7 @@ def goto_avoid_extend(self, x, y, avoid=True, timeout=None, skip=False, mirror=T
 
 
 @if_enabled
-@async_task
+@async_task('move')
 def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 
     x = float(x)
@@ -359,7 +359,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
     return RobotStatus.return_status(status)
 
 @if_enabled
-@async_task
+@async_task('move')
 def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, mirror=True,
                        rot_start_pct=0, rot_end_pct=100, trsl_start_pct=0, trsl_end_pct=100,
                        rot_direction=0):
@@ -452,7 +452,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
       traceback.print_exc()
 
 @if_enabled
-@async_task
+@async_task('move')
 def goto_with_path(self, x, y, mirror=True):
 
     x = float(x)
@@ -512,7 +512,7 @@ def goto_with_path(self, x, y, mirror=True):
 #################
 
 @if_enabled
-@async_task
+@async_task('move')
 def homemade_recal(self, decal=0):
 
     decal = float(decal)
@@ -581,7 +581,7 @@ def recalibration_sensors(self, axis_x, side, sensor, mirror=True, init=False):
 
 
 @if_enabled
-@async_task
+@async_task('move')
 def recalibration(self,
         x=True,
         y=True,

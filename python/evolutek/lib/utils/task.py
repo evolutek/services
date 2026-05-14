@@ -32,29 +32,36 @@ class Task:
         s += '----------'
         return s
 
-def async_task(method):
+# Decorator factory: routes the produced Task into self.current_tasks[category]
+# so trajman moves ('move') and actuator actions ('actuator') run on separate
+# slots and can execute concurrently.
+def async_task(category):
 
-    @wraps(method)
-    def wrapped(self, *args, **kwargs):
+    def decorator(method):
 
-        async_task = True
-        if 'async_task' in kwargs:
-            async_task = get_boolean(kwargs['async_task'])
+        @wraps(method)
+        def wrapped(self, *args, **kwargs):
 
-            del kwargs['async_task']
+            run_async = True
+            if 'async_task' in kwargs:
+                run_async = get_boolean(kwargs['async_task'])
 
-        args = [self] + list(args)
-        global CURRENT_TASK_ID
-        task = Task(method, args, kwargs, id=CURRENT_TASK_ID)
-        CURRENT_TASK_ID = (CURRENT_TASK_ID + 1) % (MAX_TASK_ID + 1)
+                del kwargs['async_task']
 
-        if async_task:
-            with self.lock:
-                if self.current_task is None:
-                    self.current_task = task
-                else:
-                    print('[TASK] Already a current task running/to run')
-        else:
-            return task.run()
+            args = [self] + list(args)
+            global CURRENT_TASK_ID
+            task = Task(method, args, kwargs, id=CURRENT_TASK_ID)
+            CURRENT_TASK_ID = (CURRENT_TASK_ID + 1) % (MAX_TASK_ID + 1)
 
-    return wrapped
+            if run_async:
+                with self.lock:
+                    if self.current_tasks[category] is None:
+                        self.current_tasks[category] = task
+                    else:
+                        print('[TASK][%s] Already a current task running/to run' % category)
+            else:
+                return task.run()
+
+        return wrapped
+
+    return decorator

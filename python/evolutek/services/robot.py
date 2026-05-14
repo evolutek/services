@@ -110,8 +110,11 @@ class Robot(Service):
         self.robots = []
         self.robots_tags = []
 
-        self.current_task = None
-        Thread(target=self.run_tasks).start()
+        # Per-category task slots so a trajman move and an actuator action
+        # can run concurrently. One run_tasks thread polls each slot.
+        self.current_tasks = {'move': None, 'actuator': None}
+        for category in self.current_tasks:
+            Thread(target=self.run_tasks, args=[category], daemon=True).start()
 
         try:
             cs = CellaservProxy()
@@ -127,21 +130,21 @@ class Robot(Service):
         if DEBUG:
             Thread(target=Interface, args=[self]).start()
 
-    def run_tasks(self):
+    def run_tasks(self, category):
         while True:
             sleep(0.1)
 
             if self.disabled.is_set():
                 continue
 
-            if self.current_task is None:
+            if self.current_tasks[category] is None:
                 continue
 
             task = None
             with self.lock:
-                task = self.current_task
+                task = self.current_tasks[category]
 
-            print('[ROBOT] Running task:')
+            print('[ROBOT][%s] Running task:' % category)
             print(task)
 
             self.need_to_abort.clear()
@@ -150,13 +153,13 @@ class Robot(Service):
             try:
                 r = task.run()
             except Exception as e:
-                print('[ROBOT] Task crashed due to %s' % traceback.format_exc())
+                print('[ROBOT][%s] Task crashed due to %s' % (category, traceback.format_exc()))
                 r = RobotStatus.return_status(RobotStatus.Failed)
 
             self.publish('%s_robot_stopped' % ROBOT, id=task.id, **r)
 
             with self.lock:
-                self.current_task = None
+                self.current_tasks[category] = None
 
     @Service.event("match_color")
     def color_callback(self, color):

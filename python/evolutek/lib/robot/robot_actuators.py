@@ -223,7 +223,7 @@ ARM_STATE = {
 }
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_servo(self, id, type: str, pos: str):
     id = int(id)
 
@@ -264,7 +264,7 @@ def move_servo(self, id, type: str, pos: str):
 # =========================================================
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_arm(self, id, pos: str):
     id = int(id)
 
@@ -304,25 +304,25 @@ def move_arm(self, id, pos: str):
     return res
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_tip(self, id, pos: str):
     return self.move_servo(id, "tip", pos, async_task=False)
 
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_flipper(self, id, pos: str):
     return self.move_servo(id, "flipper", pos, async_task=False)
 
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_barrier(self, id, pos: str):
     return self.move_servo(id, "barrier", pos, async_task=False)
 
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_barriers(self, id: int, pos: str):
     results = []
 
@@ -340,7 +340,7 @@ def move_barriers(self, id: int, pos: str):
 
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_flippers(self, id: int, pos: str):
     results = []
 
@@ -362,7 +362,7 @@ def move_flippers(self, id: int, pos: str):
 # =========================================================
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_tips(self, id: int, pos: str):
     results = []
 
@@ -380,7 +380,7 @@ def move_tips(self, id: int, pos: str):
 
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move_arms(self, id: int, pos: str):
     results = []
 
@@ -396,7 +396,7 @@ def move_arms(self, id: int, pos: str):
 
 
 @if_enabled
-@async_task
+@async_task('actuator')
 def move(self, id, pos: str):
     id = int(id)
     id_str = str(id)
