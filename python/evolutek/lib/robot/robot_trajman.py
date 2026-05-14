@@ -147,6 +147,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
             if status == RobotStatus.HasAvoid:
     
                 if skip:
+                    print("Skipped")
                     return RobotStatus.return_status(RobotStatus.NotReached)
     
                 side = get_boolean(data['avoid_side'])
@@ -170,9 +171,11 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
     
                 while get_boolean(self.trajman.need_to_avoid(dist, side)):
                     if self.check_abort() != RobotStatus.Ok:
+                        print("Abort")
                         return RobotStatus.return_status(RobotStatus.Aborted)
     
                     if timeout_event.is_set():
+			print("Timeout")
                         return RobotStatus.return_status(RobotStatus.Timeout)
     
                     print('[ROBOT] Waiting')
@@ -182,6 +185,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
                     watchdog.stop()
     
             elif status != RobotStatus.Reached:
+		print("Reached")
                 break
     
         return RobotStatus.return_status(status)
@@ -393,7 +397,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 
         while status != RobotStatus.Reached:
 
-            print('[ROBOT] Moving')
+            print('[ROBOT] Moving global goto 2')
 
             print(avoid)
             data = self.global_goto(x, y, theta, avoid=avoid, mirror=False, async_task=False)
@@ -402,6 +406,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
             if status == RobotStatus.HasAvoid:
 
                 if skip:
+		    print("Skipped")
                     return RobotStatus.return_status(RobotStatus.NotReached)
 
                 side = get_boolean(data['avoid_side'])
@@ -425,9 +430,11 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 
                 while get_boolean(self.trajman.need_to_avoid(dist, side)):
                     if self.check_abort() != RobotStatus.Ok:
+			print("Abort")
                         return RobotStatus.return_status(RobotStatus.Aborted)
 
                     if timeout_event.is_set():
+			print("Timeout")
                         return RobotStatus.return_status(RobotStatus.Timeout)
 
                     print('[ROBOT] Waiting')
@@ -437,6 +444,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
                     watchdog.stop()
 
             elif status != RobotStatus.Reached:
+		print("Reached")
                 break
 
         return RobotStatus.return_status(status)

@@ -273,7 +273,7 @@ class TrajMan(Service):
                 if self.robot_speed == 0.0:
                     continue
 
-                stop_distance = (self.robot_speed**2 / (2 * self.trsldec())) * 4 # Oupsy un petit fois 2
+                stop_distance = (self.robot_speed**2 / (2 * self.trsldec())) * 2 # Oupsy un petit fois 2
                 print(f"robot_speed = {self.robot_speed}, stop_distance = {stop_distance}, dist to dst = {self.robot_position.dist(self.destination)}")
                 detection_dist = min(stop_distance, self.robot_position.dist(self.destination)) + self.robot_radius() * 2
 
