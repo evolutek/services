@@ -110,8 +110,7 @@ class Robot(Service):
         self.robots = []
         self.robots_tags = []
 
-        # Per-category task slots so a trajman move and an actuator action
-        # can run concurrently. One run_tasks thread polls each slot.
+        # One slot + one polling thread per category, so a move and an actuator action can run in parallel.
         self.current_tasks = {'move': None, 'actuator': None}
         for category in self.current_tasks:
             Thread(target=self.run_tasks, args=[category], daemon=True).start()
@@ -148,7 +147,7 @@ class Robot(Service):
             print(task)
 
             self.need_to_abort.clear()
-            self.publish('%s_robot_started' % ROBOT, id=task.id)
+            self.publish('%s_%s_started' % (ROBOT, category), id=task.id)
             r = None
             try:
                 r = task.run()
@@ -156,7 +155,7 @@ class Robot(Service):
                 print('[ROBOT][%s] Task crashed due to %s' % (category, traceback.format_exc()))
                 r = RobotStatus.return_status(RobotStatus.Failed)
 
-            self.publish('%s_robot_stopped' % ROBOT, id=task.id, **r)
+            self.publish('%s_%s_stopped' % (ROBOT, category), id=task.id, **r)
 
             with self.lock:
                 self.current_tasks[category] = None

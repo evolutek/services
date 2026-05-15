@@ -36,8 +36,11 @@ class States(Enum):
 @Service.require('robot', ROBOT)
 class AI(Service):
 
-    start_event = CellaservEvent('%s_robot_started' % ROBOT)
-    stop_event = CellaservEvent('%s_robot_stopped' % ROBOT)
+    # One event pair per category so concurrent flows do not race on shared events.
+    move_started = CellaservEvent('%s_move_started' % ROBOT)
+    move_stopped = CellaservEvent('%s_move_stopped' % ROBOT)
+    actuator_started = CellaservEvent('%s_actuator_started' % ROBOT)
+    actuator_stopped = CellaservEvent('%s_actuator_stopped' % ROBOT)
 
     def __init__(self):
 
@@ -50,11 +53,11 @@ class AI(Service):
         self.trajman = self.cs.trajman[ROBOT]
         self.robot = self.cs.robot[ROBOT]
 
-        self.goth = event_waiter(self.robot.goth, self.start_event, self.stop_event, callback=self.check_abort)
-        self.goto = event_waiter(self.robot.goto_avoid, self.start_event, self.stop_event, callback=self.check_abort)
-        self.global_goto = event_waiter(self.robot.global_goto_avoid, self.start_event, self.stop_event, callback=self.check_abort)
-        self.goto_with_path = event_waiter(self.robot.goto_with_path, self.start_event, self.stop_event, callback=self.check_abort)
-        self.recalibration = event_waiter(self.robot.recalibration, self.start_event, self.stop_event, callback=self.check_abort)
+        self.goth = event_waiter(self.robot.goth, self.move_started, self.move_stopped, callback=self.check_abort)
+        self.goto = event_waiter(self.robot.goto_avoid, self.move_started, self.move_stopped, callback=self.check_abort)
+        self.global_goto = event_waiter(self.robot.global_goto_avoid, self.move_started, self.move_stopped, callback=self.check_abort)
+        self.goto_with_path = event_waiter(self.robot.goto_with_path, self.move_started, self.move_stopped, callback=self.check_abort)
+        self.recalibration = event_waiter(self.robot.recalibration, self.move_started, self.move_stopped, callback=self.check_abort)
 
         self.red_led = create_gpio(23, 'red led', dir=True, type=GpioType.RPI)
         self.green_led = create_gpio(24, 'green led', dir=True, type=GpioType.RPI)

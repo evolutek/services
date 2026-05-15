@@ -66,7 +66,8 @@ class Action:
                 fct = getattr(getattr(ai, action['handler']), action['fct'])
 
                 if action['handler'] == 'robot':
-                    fct = event_waiter(fct, ai.start_event, ai.stop_event, callback=ai.check_abort)
+                    # Legacy `handler: robot` only ever wrapped trajman calls; actuator routing comes in step 5.
+                    fct = event_waiter(fct, ai.move_started, ai.move_stopped, callback=ai.check_abort)
 
 
         except Exception as e:

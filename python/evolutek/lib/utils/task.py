@@ -32,9 +32,6 @@ class Task:
         s += '----------'
         return s
 
-# Decorator factory: routes the produced Task into self.current_tasks[category]
-# so trajman moves ('move') and actuator actions ('actuator') run on separate
-# slots and can execute concurrently.
 def async_task(category):
 
     def decorator(method):
