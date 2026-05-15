@@ -58,7 +58,7 @@ class Robot(Service):
     move_barriers = Service.action(robot_actuators.move_barriers)
     move_flippers = Service.action(robot_actuators.move_flippers)
     move = Service.action(robot_actuators.move)
-    
+
     # Imported from robot_actions
     initial = Service.action(robot_actions.initial)
     cursor = Service.action(robot_actions.cursor)
@@ -66,7 +66,8 @@ class Robot(Service):
     prepare_grab = Service.action(robot_actions.prepare_grab)
     grab = Service.action(robot_actions.grab)
     barrier = Service.action(robot_actions.barrier)
- 
+    lidar_disable = Service.action(robot_actions.lidar_disable)
+
     def __init__(self):
         super().__init__(ROBOT)
 

@@ -25,7 +25,7 @@
         {"fct":"prepare_grab","args":{"face":"2"},"handler":"robot"},
         {"fct":"barrier","args":{"id":"24", "pos":"far"},"handler":"robot"}
     ]},
-    {"name": "grab_upper_zone","position":{"x":1025,"y":1175},"theta":"pi/6","actions":[
+    {"name": "grab_upper_zone","position":{"x":1050,"y":1200},"theta":"pi/6","actions":[
         {"fct":"grab","args":{"face":"2"},"handler":"robot"}
     ]},
 
@@ -77,40 +77,35 @@
         {"fct":"prepare_grab","args":{"face":"3"},"handler":"robot"},
         {"fct":"barrier","args":{"id":"31", "pos":"far"},"handler":"robot"}
     ]},
-    {"name": "grab_left_upper","position":{"x":750,"y":350},"theta":"pi/3","actions":[
+    {"name": "grab_left_upper","position":{"x":775,"y":350},"theta":"pi/3","actions":[
         {"fct":"grab","args":{"face":"3"},"handler":"robot"}
     ]},
 
-    {"name": "drop_middle","position":{"x":1000,"y":850},"theta":"0","actions":[
+    {"name": "drop_middle","position":{"x":1000,"y":950},"theta":"0","actions":[
         {"fct":"move","args":{"id":"2", "pos":"down"},"handler":"robot"},
         {"fct":"sleep","args":{"time":"1"}},
         {"fct":"move","args":{"id":"2", "pos":"open"},"handler":"robot"}
     ]},
-    {"name": "exit_middle","position":{"x":900,"y":950},"theta":"0","actions":[
+    {"name": "exit_middle","position":{"x":900,"y":1050},"theta":"0","actions":[
         {"fct":"move","args":{"id":"2", "pos":"up"},"handler":"robot"}
     ]},
 
-    {"name": "drop_stage_left","position":{"x":750,"y":1100},"theta":"-pi/3","actions":[
-        {"fct":"move","args":{"id":"2", "pos":"down"},"handler":"robot"},
-        {"fct":"sleep","args":{"time":"1"}},
-        {"fct":"move","args":{"id":"2", "pos":"open"},"handler":"robot"}
-    ]},
-    {"name": "exit_stage_left","position":{"x":850,"y":1000},"theta":"-pi/3","actions":[
-        {"fct":"move","args":{"id":"2", "pos":"up"},"handler":"robot"}
-    ]},
-
-    {"name": "wait_for_home","position":{"x":600,"y":450},"theta":"-5*pi/6"},
-
-    {"name": "return_home","position":{"x":200,"y":200},"theta":"-5*pi/6"},
-
-    {"name": "drop_home","position":{"x":200,"y":200},"theta":"-5*pi/6","actions":[
+    {"name": "drop_stage_left","position":{"x":800,"y":1100},"theta":"-pi/3","actions":[
         {"fct":"move","args":{"id":"3", "pos":"down"},"handler":"robot"},
         {"fct":"sleep","args":{"time":"1"}},
-        {"fct":"move","args":{"id":"3", "pos":"open"},"handler":"robot"},
-        {"fct":"sleep","args":{"time":"1"}},
-        {"fct":"move","args":{"id":"3", "pos":"up"},"handler":"robot"}
-
+        {"fct":"move","args":{"id":"3", "pos":"open"},"handler":"robot"}
     ]},
+    {"name": "exit_stage_left","position":{"x":850,"y":1000},"theta":"-pi/3","actions":[
+        {"fct":"move","args":{"id":"3", "pos":"up"},"handler":"robot"}
+    ]},
+
+    {"name": "wait_for_home","position":{"x":600,"y":450},"theta":"-5*pi/6","actions":[
+        {"fct":"lidar_disable","args":{},"handler":"robot"}
+    ]},
+
+    {"name": "return_home","position":{"x":150,"y":350},"theta":"-5*pi/6"},
+
+    {"name": "drop_home","position":{"x":150,"y":350},"theta":"-5*pi/6"},
 
 
 
@@ -136,40 +131,35 @@
         {"fct":"prepare_grab","args":{"face":"3"},"handler":"robot"},
         {"fct":"barrier","args":{"id":"31", "pos":"far"},"handler":"robot"}
     ]},
-    {"name": "grab_left_upper_b","position":{"x":750,"y":350},"theta":"-2*pi/3","actions":[
+    {"name": "grab_left_upper_b","position":{"x":775,"y":350},"theta":"-2*pi/3","actions":[
         {"fct":"grab","args":{"face":"3"},"handler":"robot"}
     ]},
 
-    {"name": "drop_middle_b","position":{"x":1000,"y":850},"theta":"-pi/2","actions":[
+    {"name": "drop_middle_b","position":{"x":1000,"y":950},"theta":"pi/3","actions":[
         {"fct":"move","args":{"id":"2", "pos":"down"},"handler":"robot"},
         {"fct":"sleep","args":{"time":"1"}},
         {"fct":"move","args":{"id":"2", "pos":"open"},"handler":"robot"}
     ]},
-    {"name": "exit_middle_b","position":{"x":900,"y":950},"theta":"-pi/2","actions":[
+    {"name": "exit_middle_b","position":{"x":900,"y":1050},"theta":"pi/3","actions":[
         {"fct":"move","args":{"id":"2", "pos":"up"},"handler":"robot"}
     ]},
 
-    {"name": "drop_stage_left_b","position":{"x":750,"y":1100},"theta":"2*pi/3","actions":[
-        {"fct":"move","args":{"id":"2", "pos":"down"},"handler":"robot"},
-        {"fct":"sleep","args":{"time":"1"}},
-        {"fct":"move","args":{"id":"2", "pos":"open"},"handler":"robot"}
-    ]},
-    {"name": "exit_stage_left_b","position":{"x":850,"y":1000},"theta":"2*pi/3","actions":[
-        {"fct":"move","args":{"id":"2", "pos":"up"},"handler":"robot"}
-    ]},
-
-    {"name": "wait_for_home_b","position":{"x":600,"y":450},"theta":"5*pi/6"},
-
-    {"name": "return_home_b","position":{"x":200,"y":200},"theta":"5*pi/6"},
-
-    {"name": "drop_home_b","position":{"x":200,"y":200},"theta":"5*pi/6","actions":[
+    {"name": "drop_stage_left_b","position":{"x":800,"y":1100},"theta":"0","actions":[
         {"fct":"move","args":{"id":"3", "pos":"down"},"handler":"robot"},
         {"fct":"sleep","args":{"time":"1"}},
-        {"fct":"move","args":{"id":"3", "pos":"open"},"handler":"robot"},
-        {"fct":"sleep","args":{"time":"1"}},
+        {"fct":"move","args":{"id":"3", "pos":"open"},"handler":"robot"}
+    ]},
+    {"name": "exit_stage_left_b","position":{"x":850,"y":1000},"theta":"0","actions":[
         {"fct":"move","args":{"id":"3", "pos":"up"},"handler":"robot"}
+    ]},
 
-    ]}
+    {"name": "wait_for_home_b","position":{"x":600,"y":450},"theta":"5*pi/6","actions":[
+        {"fct":"lidar_disable","args":{},"handler":"robot"}
+    ]},
+
+    {"name": "return_home_b","position":{"x":150,"y":350},"theta":"5*pi/6"},
+
+    {"name": "drop_home_b","position":{"x":150,"y":350},"theta":"5*pi/6"}
   ],
 
   "strategies": [
