@@ -134,7 +134,7 @@
       "theta": "pi",
       "actions": [
         {
-          "fct": "drop_crates",
+          "fct": "drop_all_crates",
           "handler": "robot",
           "args": {}
         }
@@ -234,7 +234,7 @@
         {
           "fct": "start_cursor",
           "handler": "robot",
-          "args": {"side": "front"}
+          "args": {}
         }
       ]
     },
@@ -246,7 +246,7 @@
         {
           "fct": "end_cursor",
           "handler": "robot",
-          "args": {"side": "front"}
+          "args": {}
         }
       ]
     },
@@ -322,8 +322,8 @@
         "place_area_2_top",
         "grab_area_2",
         "place_area_3",
-        "grab_area_1",
-        "place_area_1",
+        //"grab_area_1",
+        //"place_area_1",
         "goto_wait_pami",
         "go_to_end"
 		  ],

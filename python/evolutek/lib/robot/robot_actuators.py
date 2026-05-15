@@ -20,8 +20,8 @@ class ElevatorId(Enum):
 
 class ElevatorPosition(Enum):
     LOWEST = {
-        ElevatorId.FRONT: (-770,),
-        ElevatorId.BACK: (-770,)
+        ElevatorId.FRONT: (-760,),
+        ElevatorId.BACK: (-760,)
     }
     DROP = {
         ElevatorId.FRONT: (-740,),

@@ -41,7 +41,7 @@ def do_turbin_cursor(self):
 @if_enabled
 @async_task
 def start_cursor(self):
-    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
+    arm = CursorArmSide.LEFT if self.side else CursorArmSide.RIGHT
 
     self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
     sleep(0.5)
@@ -139,16 +139,20 @@ def drop_all_crates(self, side: str):
         lifting_arms = [LiftingArmId.FRONT_1, LiftingArmId.FRONT_2, LiftingArmId.FRONT_3, LiftingArmId.FRONT_4]
         lifting_arms_pumps = [2, 3, 4, 5]
         move_direction = 1
+        elevator = ElevatorId.FRONT
     elif side == "back":
         lifting_arms = [LiftingArmId.BACK_1, LiftingArmId.BACK_2, LiftingArmId.BACK_3, LiftingArmId.BACK_4]
         lifting_arms_pumps = [22, 23, 24, 25]
         move_direction = -1
+        elevator = ElevatorId.BACK
     else:
         raise RuntimeError("Invalid side: %s" % side)
 
     for arm in lifting_arms:
         self.move_lifting_arm(arm, LiftingArmPosition.DROP, async_task=False)
-    sleep(0.5)
+
+    self.move_elevator(elevator, ElevatorPosition.DROP, speed=0.5, async_task=False)
+    sleep(2.6)
 
     self.actuators.pumps_drop(ids = lifting_arms_pumps)
     sleep(0.2)
