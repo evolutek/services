@@ -37,10 +37,10 @@
         {"fct":"grab","args":{"face":"3"},"handler":"robot"}
     ]},
 
-    {"name": "align_cursor","position":{"x":1750,"y":1350},"theta":"-pi/2","actions":[
+    {"name": "align_cursor","position":{"x":1800,"y":1350},"theta":"-pi/2","actions":[
         {"fct":"cursor","args":{},"handler":"robot"}
     ]},
-    {"name": "go_cursor","position":{"x":1750,"y":800},"theta":"-pi/2","actions":[
+    {"name": "go_cursor","position":{"x":1800,"y":800},"theta":"-pi/2","actions":[
         {"fct":"cursor_stow","args":{},"handler":"robot"}
     ]},
 
