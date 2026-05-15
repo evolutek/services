@@ -92,88 +92,61 @@ class Actuators(Service):
             4: 3,
         }, address=0x71)
 
-        # self.color_sensors_2 = RGBSensors({
-        #     1: 1,
-        #     2: 2,
-        #     3: 3,
-        #     4: 4,
-        # }, address = 0x71)
+        self.color_sensors_2 = RGBSensors({
+            1: 0,
+            2: 1,
+            3: 2,
+            4: 3,
+        }, address = 0x72)
 
         # self.proximity_sensors = ProximitySensors(
         #     {
         #         0: [ # Bottom right sensor
         #             create_gpio(0, 'proximity_sensors1', dir=False, type=GpioType.MCP)
         #         ],
-        #         1: [ # Bottom middle sensor
-        #             create_gpio(1, 'proximity_sensors2', dir=False, type=GpioType.MCP)
-        #         ],
-        #         2: [ # Bottom left sensor
-        #             create_gpio(2, 'proximity_sensors3', dir=False, type=GpioType.MCP)
-        #         ],
-        #         3: [ # Clamp right sensor
-        #             create_gpio(3, 'proximity_sensors4', dir=False, type=GpioType.MCP)
-        #         ],
-        #         4: [ # Clamp middle sensor
-        #             create_gpio(4, 'pressure_sensor1', dir=False, type=GpioType.MCP)
-        #         ],
-        #         5: [ # Clamp middle sensor
-        #             create_gpio(5, 'pressure_sensor1.1', dir=False, type=GpioType.MCP)
-        #         ],
-        #         6: [ # Clamp middle sensor
-        #             create_gpio(6, 'pressure_sensor1.2', dir=False, type=GpioType.MCP)
-        #         ],
-        #         7: [ # Clamp middle sensor
-        #             create_gpio(7, 'pressure_sensor1.3', dir=False, type=GpioType.MCP)
-        #         ],
-
-        #         5: [ # Clamp left sensor
-        #             create_gpio(0 + 16, 'proximity_sensors5', dir=False, type=GpioType.MCP)
-        #         ],
-        #         6: [ # Clamp left sensor
-        #             create_gpio(1 + 16, 'proximity_sensors6', dir=False, type=GpioType.MCP)
-        #         ],
-        #         7: [ # Clamp left sensor
-        #             create_gpio(2 + 16, 'proximity_sensors7', dir=False, type=GpioType.MCP)
-        #         ],
-        #         8: [ # Clamp left sensor
-        #             create_gpio(3 + 16, 'proximity_sensors8', dir=False, type=GpioType.MCP)
-        #         ],
-        #         9: [ # Clamp left sensor
-        #             create_gpio(4 + 16, 'pressure_sensor2', dir=False, type=GpioType.MCP)
-        #         ]
         #     }
         # )
 
         # # TODO: Check if numbers here are correct
         self.axs = AX12Controller(
             [
-                1, # Bras tasseur droit
-                2, # Bras tasseur gauche
-                3, # Bras retourneur droit
-                4, # Bras retourneur gauche
-                5, # Bielle bras retourneurs
-                6, # Bras stoquage droite
-                7, # Bras stoquage droite milieu
-                8, # Bras stoquage gauche milieu
-                9, # Bras stoquage gauche
+                1, # Bras tasseur droit (avant)
+                2, # Bras tasseur gauche (avant)
+                3, # Bras retourneur droit (avant)
+                4, # Bras retourneur gauche (avant)
+                5, # Bielle bras retourneurs (avant)
+                6, # Bras stoquage droite (avant)
+                7, # Bras stoquage droite milieu (avant)
+                8, # Bras stoquage gauche milieu (avant)
+                9, # Bras stoquage gauche (avant)
+
+                21, # Bras tasseur droit (arrière)
+                22, # Bras tasseur gauche (arrière)
+                23, # Bras retourneur droit (arrière)
+                24, # Bras retourneur gauche (arrière)
+                25, # Bielle bras retourneurs (arrière)
+                26, # Bras stoquage droite (arrière)
+                27, # Bras stoquage droite milieu (arrière)
+                28, # Bras stoquage gauche milieu (arrière)
+                29, # Bras stoquage gauche (arrière)
             ]
         )
 
         self.i2c_servos_1 = I2CActsHandler({
-             0: [I2CActType.Servo, 180, 500, 2700], # EV4
-             1: [I2CActType.Servo, 180, 500, 2700], # PUMP4
-             2: [I2CActType.Servo, 180, 500, 2700], # EV3
-             3: [I2CActType.Servo, 180, 500, 2700], # PUMP3
-             4: [I2CActType.Servo, 180, 500, 2700], # Retourneur droit
-             5: [I2CActType.Servo, 180, 500, 2700], # Retourneur gauche
-             6: [I2CActType.Servo, 180, 500, 2700], # Bras cursor droite
-             7: [I2CActType.Servo, 180, 500, 2700], # Bras cursor gauche
-             8: [I2CActType.Servo, 180, 500, 2700], # PUMP2
-             9: [I2CActType.Servo, 180, 500, 2700], # EV2
-            10: [I2CActType.Servo, 180, 500, 2700], # PUMP1
-            11: [I2CActType.Servo, 180, 500, 2700], # EV1
-            12: [I2CActType.Servo, 180, 500, 2700], #
-            13: [I2CActType.Servo, 180, 500, 2700], #
+             0: [I2CActType.ESC, 180, 0, 19999], # EV4 arrière
+             1: [I2CActType.ESC, 180, 0, 19999], # PUMP4 arrière
+             2: [I2CActType.ESC, 180, 0, 19999], # EV3 arrière
+             3: [I2CActType.ESC, 180, 0, 19999], # PUMP3 arrière
+             4: [I2CActType.Servo, 180, 500, 2700], # Bras cursor droite
+             5: [I2CActType.Servo, 180, 500, 2700], # Bras cursor gauche
+             6: [I2CActType.Servo, 180, 500, 2700], # Retourneur droit arrière
+             7: [I2CActType.Servo, 180, 500, 2700], # Retourneur gauche arrière
+             8: [I2CActType.ESC, 180, 0, 19999], # PUMP2 avant
+             9: [I2CActType.ESC, 180, 0, 19999], # EV2 avant
+            10: [I2CActType.ESC, 180, 0, 19999], # PUMP1 avant
+            11: [I2CActType.ESC, 180, 0, 19999], # EV1 avant
+            12: [I2CActType.Servo, 180, 500, 2700], # Retourneur droit avant
+            13: [I2CActType.Servo, 180, 400, 2700], # Retourneur gauche avant
         }, frequency = 50, addr=0x40)
 
         self.i2c_mots = I2CMotorBoard({
@@ -182,14 +155,6 @@ class Actuators(Service):
         })
 
         self.pumps = PumpController({
-            # 0: [
-            #     create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
-            #     create_gpio(10, 'pump1_ev', dir=True, type=GpioType.MCP),
-            # ],
-            # 1: [
-            #     create_gpio(9, 'pump2', dir=True, type=GpioType.MCP),
-            #     create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
-            # ],
             0: [
                 PcaGpio(self.i2c_servos_1[10]), # Pump
                 PcaGpio(self.i2c_servos_1[11]), # EV
@@ -199,20 +164,45 @@ class Actuators(Service):
                 PcaGpio(self.i2c_servos_1[9]),
             ],
             2: [
-                create_gpio(8 + 16, 'pump3', dir=True, type=GpioType.MCP),
-                create_gpio(9 + 16, 'pump3_ev', dir=True, type=GpioType.MCP),
+                create_gpio(8, 'pump1', dir=True, type=GpioType.MCP),
+                create_gpio(9, 'pump1_ev', dir=True, type=GpioType.MCP),
             ],
             3: [
-                create_gpio(10 + 16, 'pump4', dir=True, type=GpioType.MCP),
-                create_gpio(11 + 16, 'pump4_ev', dir=True, type=GpioType.MCP),
+                create_gpio(10, 'pump2', dir=True, type=GpioType.MCP),
+                create_gpio(11, 'pump2_ev', dir=True, type=GpioType.MCP),
             ],
             4: [
-                create_gpio(12 + 16, 'pump5', dir=True, type=GpioType.MCP),
-                create_gpio(13 + 16, 'pump5_ev', dir=True, type=GpioType.MCP),
+                create_gpio(12, 'pump3', dir=True, type=GpioType.MCP),
+                create_gpio(13, 'pump3_ev', dir=True, type=GpioType.MCP),
             ],
             5: [
-                create_gpio(14 + 16, 'pump6', dir=True, type=GpioType.MCP),
-                create_gpio(15 + 16, 'pump6_ev', dir=True, type=GpioType.MCP),
+                create_gpio(14, 'pump4', dir=True, type=GpioType.MCP),
+                create_gpio(15, 'pump4_ev', dir=True, type=GpioType.MCP),
+            ],
+
+            20: [
+                PcaGpio(self.i2c_servos_1[3]),
+                PcaGpio(self.i2c_servos_1[2]),
+            ],
+            21: [
+                PcaGpio(self.i2c_servos_1[0]),
+                PcaGpio(self.i2c_servos_1[1]),
+            ],
+            22: [
+                create_gpio(8 + 16, 'pump21', dir=True, type=GpioType.MCP),
+                create_gpio(9 + 16, 'pump21_ev', dir=True, type=GpioType.MCP),
+            ],
+            23: [
+                create_gpio(10 + 16, 'pump22', dir=True, type=GpioType.MCP),
+                create_gpio(11 + 16, 'pump22_ev', dir=True, type=GpioType.MCP),
+            ],
+            24: [
+                create_gpio(12 + 16, 'pump23', dir=True, type=GpioType.MCP),
+                create_gpio(13 + 16, 'pump23_ev', dir=True, type=GpioType.MCP),
+            ],
+            25: [
+                create_gpio(14 + 16, 'pump24', dir=True, type=GpioType.MCP),
+                create_gpio(15 + 16, 'pump24_ev', dir=True, type=GpioType.MCP),
             ],
         })
 
@@ -222,7 +212,6 @@ class Actuators(Service):
             # self.recal_sensors,
             self.axs,
             self.i2c_servos_1,
-            # self.i2c_servos_2,
             self.pumps
         ]
 
@@ -292,9 +281,14 @@ class Actuators(Service):
     #################
     @Service.action
     def color_sensor_read(self, id: str | int) -> tuple[float, float, float]:
-        if self.color_sensors_1[int(id)] == None:
+        id = int(id)
+        color_sensors = self.color_sensors_1
+        if id >= 20:
+            id -= 20
+            color_sensors = self.color_sensors_2
+        if color_sensors[id] == None:
             return None
-        return self.color_sensors_1[int(id)].read()
+        return color_sensors[id].read()
 
     #####################
     # PROXIMITY SENSORS #

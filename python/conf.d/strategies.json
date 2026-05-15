@@ -20,6 +20,20 @@
       "score": 0
     },
     {
+      "name": "goto_wait_pami",
+      "position": {
+        "x": 860,
+        "y": 400
+      },
+      "actions": [
+        {
+          "fct": "wait_until_time",
+          "args": {"delay": 95}
+        }
+      ],
+      "score": 0
+    },
+    {
       "name": "homologation_push_1",
       "position": {
         "x": 500,
@@ -215,7 +229,7 @@
       "available": ["pal"]
     },
     {
-      "name": "Match 2",
+      "name": "Match no cursor",
       "starting_position": "THE_ONLY_ONE",
       "goals": [
         "go_to_initial",
@@ -224,6 +238,25 @@
         "before_grab_area_2",
         "grab_area_2",
         "place_area_2",
+        "go_to_end"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [],
+      "available": ["pal"]
+    },
+    {
+      "name": "Match PAMI",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "go_to_initial",
+        "grab_area_1",
+        "place_area_1",
+        "before_grab_area_2",
+        "grab_area_2",
+        "place_area_2",
+        "do_cursor",
+        "goto_after_cursor",
+        "goto_wait_pami",
         "go_to_end"
 		  ],
       "use_pathfinding": false,

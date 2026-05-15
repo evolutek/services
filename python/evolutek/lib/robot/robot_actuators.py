@@ -15,29 +15,33 @@ ELEVATOR_SPEED = 500
 
 # (Stepper ID)
 class ElevatorId(Enum):
-    FRONT = (2,)
-    #BACK = (None,)
+    FRONT = (0,)
+    BACK = (1,)
 
 class ElevatorPosition(Enum):
     LOWEST = {
-        ElevatorId.FRONT: (-920,),
-        #ElevatorId.BACK: (0,)
+        ElevatorId.FRONT: (-770,),
+        ElevatorId.BACK: (-770,)
+    }
+    DROP = {
+        ElevatorId.FRONT: (-740,),
+        ElevatorId.BACK: (-740,)
     }
     MIDDLE = {
         ElevatorId.FRONT: (-700,),
-        #ElevatorId.BACK: (-330,)
+        ElevatorId.BACK: (-700,)
     }
     REVERSE_DOWN = {
-        ElevatorId.FRONT: (-340,),
-        #ElevatorId.BACK: (-700,)
+        ElevatorId.FRONT: (-200,),
+        ElevatorId.BACK: (-200,)
     }
     REVERSE_UP = {
-        ElevatorId.FRONT: (-150,),
-        #ElevatorId.BACK: (-700,)
+        ElevatorId.FRONT: (-140,),
+        ElevatorId.BACK: (-140,)
     }
     HIGHEST = {
-        ElevatorId.FRONT: (-5,),
-        #ElevatorId.BACK: (-700,)
+        ElevatorId.FRONT: (-1,),
+        ElevatorId.BACK: (-1,)
     }
 
 @if_enabled
@@ -77,12 +81,17 @@ class LiftingArmId(Enum):
     FRONT_2 = (7, 2)
     FRONT_3 = (8, 3)
     FRONT_4 = (9, 4)
+    BACK_1 = (26, 21)
+    BACK_2 = (27, 22)
+    BACK_3 = (28, 23)
+    BACK_4 = (29, 24)
 
 class LiftingArmPosition(Enum):
     OPENED = 820
+    REVERSE = 720
     PRE_GRAB = 593
-    GRAB = 493 #512
     DROP = 512
+    GRAB = 493 #512
     CLOSED = 335
 
 @if_enabled
@@ -105,23 +114,33 @@ def move_lifting_arm(self, id: LiftingArmId, pos: LiftingArmPosition):
 class CompactingArmId(Enum):
     FRONT_RIGHT = 1
     FRONT_LEFT = 2
+    BACK_RIGHT = 21
+    BACK_LEFT = 22
 
 class CompactingArmPosition(Enum):
     OPENED = {
         CompactingArmId.FRONT_RIGHT: (155, 800),
-        CompactingArmId.FRONT_LEFT: (870, 800)
+        CompactingArmId.BACK_RIGHT: (155, 800),
+        CompactingArmId.FRONT_LEFT: (870, 800),
+        CompactingArmId.BACK_LEFT: (870, 800),
     }
     PRE_TASSED = {
         CompactingArmId.FRONT_RIGHT: (255, 800),
-        CompactingArmId.FRONT_LEFT: (770, 800)
+        CompactingArmId.BACK_RIGHT: (255, 800),
+        CompactingArmId.FRONT_LEFT: (770, 800),
+        CompactingArmId.BACK_LEFT: (770, 800),
     }
     TASSED = {
         CompactingArmId.FRONT_RIGHT: (305, 120),
-        CompactingArmId.FRONT_LEFT: (720, 120)
+        CompactingArmId.BACK_RIGHT: (305, 120),
+        CompactingArmId.FRONT_LEFT: (720, 120),
+        CompactingArmId.BACK_LEFT: (720, 120),
     }
     CLOSED = {
         CompactingArmId.FRONT_RIGHT: (600, 800),
-        CompactingArmId.FRONT_LEFT: (425, 800)
+        CompactingArmId.BACK_RIGHT: (600, 800),
+        CompactingArmId.FRONT_LEFT: (425, 800),
+        CompactingArmId.BACK_LEFT: (425, 800),
     }
 
 @if_enabled
@@ -144,6 +163,10 @@ def move_compacting_arm(self, id: CompactingArmId, pos: CompactingArmPosition):
 
 # ====== Reversing Arm High ======
 
+class ReversingArmHighId(Enum):
+    FRONT = 5
+    BACK = 25
+
 class ReversingArmHighPosition(Enum):
     TOP = 545
     CLOSED = 840
@@ -151,12 +174,15 @@ class ReversingArmHighPosition(Enum):
 
 @if_enabled
 @async_task
-def move_reversing_arm_high(self, pos: ReversingArmHighPosition):
+def move_reversing_arm_high(self, id: ReversingArmHighId, pos: ReversingArmHighPosition):
+    if isinstance(id, str):
+        id = ReversingArmHighId[id]
+
     if isinstance(pos, str):
         pos = ReversingArmHighPosition[pos]
 
     return RobotStatus.check(self.actuators.axs_moves(
-        [5],
+        [id.value],
         [pos.value]
     ))
 
@@ -166,27 +192,51 @@ def move_reversing_arm_high(self, pos: ReversingArmHighPosition):
 class ReversingArmId(Enum):
     FRONT_RIGHT = 3
     FRONT_LEFT = 4
+    BACK_RIGHT = 23
+    BACK_LEFT = 24
 
 class ReversingArmPosition(Enum):
     CRATE1 = {
+        ReversingArmId.FRONT_LEFT: None,
+        ReversingArmId.BACK_LEFT: None,
         ReversingArmId.FRONT_RIGHT: 720,
-        ReversingArmId.FRONT_LEFT: None
+        ReversingArmId.BACK_RIGHT: 720,
+    }
+    RIGHT_REVERSE = {
+        ReversingArmId.FRONT_LEFT: None,
+        ReversingArmId.BACK_LEFT: None,
+        ReversingArmId.FRONT_RIGHT: 770,
+        ReversingArmId.BACK_RIGHT: 770,
     }
     CRATE2 = {
+        ReversingArmId.FRONT_LEFT: 104,
+        ReversingArmId.BACK_LEFT: 104,
         ReversingArmId.FRONT_RIGHT: 820,
-        ReversingArmId.FRONT_LEFT: 104
+        ReversingArmId.BACK_RIGHT: 820,
     }
     CRATE3 = {
+        ReversingArmId.FRONT_LEFT: 204,
+        ReversingArmId.BACK_LEFT: 204,
         ReversingArmId.FRONT_RIGHT: 920,
-        ReversingArmId.FRONT_LEFT: 204
+        ReversingArmId.BACK_RIGHT: 920,
+    }
+    LEFT_REVERSE = {
+        ReversingArmId.FRONT_LEFT: 254,
+        ReversingArmId.BACK_LEFT: 254,
+        ReversingArmId.FRONT_RIGHT: None,
+        ReversingArmId.BACK_RIGHT: None,
     }
     CRATE4 = {
+        ReversingArmId.FRONT_LEFT: 304,
+        ReversingArmId.BACK_LEFT: 304,
         ReversingArmId.FRONT_RIGHT: None,
-        ReversingArmId.FRONT_LEFT: 304
+        ReversingArmId.BACK_RIGHT: None,
     }
     CLOSED = {
+        ReversingArmId.FRONT_LEFT: 512,
+        ReversingArmId.BACK_LEFT: 512,
         ReversingArmId.FRONT_RIGHT: 512,
-        ReversingArmId.FRONT_LEFT: 512
+        ReversingArmId.BACK_RIGHT: 512,
     }
 
 @if_enabled
@@ -211,16 +261,37 @@ def move_reversing_arm(self, id: ReversingArmId, pos: ReversingArmPosition):
 class ReversingHeadId(Enum):
     FRONT_RIGHT = 12
     FRONT_LEFT = 13
+    BACK_RIGHT = 7
+    BACK_LEFT = 6
 
 class ReversingHeadPosition(Enum):
-    NORMAL = {
-        ReversingHeadId.FRONT_RIGHT: 0,
-        ReversingHeadId.FRONT_LEFT: 180
-    }
     REVERSED = {
-        ReversingHeadId.FRONT_RIGHT: 180,
-        ReversingHeadId.FRONT_LEFT: 32
+        ReversingHeadId.FRONT_RIGHT: 0,
+        ReversingHeadId.FRONT_LEFT: 175,
+        ReversingHeadId.BACK_RIGHT: 0,
+        ReversingHeadId.BACK_LEFT: 175,
     }
+    VERTICAL = {
+        ReversingHeadId.FRONT_RIGHT: 70,
+        ReversingHeadId.FRONT_LEFT: 180,
+        ReversingHeadId.BACK_RIGHT: 70,
+        ReversingHeadId.BACK_LEFT: 180,
+    }
+    NORMAL = {
+        ReversingHeadId.FRONT_RIGHT: 180,
+        ReversingHeadId.FRONT_LEFT: 0,
+        ReversingHeadId.BACK_RIGHT: 180,
+        ReversingHeadId.BACK_LEFT: 0,
+    }
+
+    #NORMAL = {
+    #    ReversingHeadId.FRONT_RIGHT: 0,
+    #    ReversingHeadId.FRONT_LEFT: 180
+    #}
+    #REVERSED = {
+    #    ReversingHeadId.FRONT_RIGHT: 180,
+    #    ReversingHeadId.FRONT_LEFT: 32
+    #}
 
 @if_enabled
 @async_task
@@ -242,27 +313,27 @@ def move_reversing_head(self, id: ReversingHeadId, pos: ReversingHeadPosition):
 # ====== Cursor Arm Side ======
 
 class CursorArmSide(Enum):
-    RIGHT = 2
-    LEFT = 3
+    RIGHT = 5
+    LEFT = 4
 
 class CursorArmPosition(Enum):
     DEPLOYED = {
-        CursorArmSide.RIGHT: 60,
-        CursorArmSide.LEFT: 120
+        CursorArmSide.RIGHT: 87,
+        CursorArmSide.LEFT: 95
     }
     CLOSED = {
-        CursorArmSide.RIGHT: 4,
-        CursorArmSide.LEFT: 175
+        CursorArmSide.RIGHT: 146,
+        CursorArmSide.LEFT: 35
     }
 
 @if_enabled
 @async_task
 def move_cursor_arm(self, side: str, pos: CursorArmPosition):
     if isinstance(side, str):
-        side = ReversingHeadId[side]
+        side = CursorArmSide[side]
 
     if isinstance(pos, str):
-        pos = ReversingHeadPosition[pos]
+        pos = CursorArmPosition[pos]
 
     angle = pos.value[side]
 
@@ -275,13 +346,13 @@ def move_cursor_arm(self, side: str, pos: CursorArmPosition):
 
     return s
 
-@if_enabled
-@async_task
 def get_color(self, id: LiftingArmId) -> bool:
     if isinstance(id, str):
         id = LiftingArmId[id]
 
     color = self.actuators.color_sensor_read(id.value[1])
+    if color[2] == 0:
+        return self.side
     k = color[0] / color[2]
 
     return (k > 1.5) == self.side

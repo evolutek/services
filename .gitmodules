@@ -1,0 +1,3 @@
+[submodule "python/libs/tcs34725"]
+	path = python/libs/tcs34725
+	url = git@github.com:kolte200/Adafruit_CircuitPython_TCS34725.git

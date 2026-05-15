@@ -16,4 +16,8 @@ class PcaGpio(BaseGpio):
 
     # Write on the gpio
     def write(self, value):
-        self.ch.fraction = 1 if get_boolean(value) else 0
+        if get_boolean(value):
+            self.ch.channel.duty_cycle = 0xFFFF
+        else:
+            self.ch.channel.duty_cycle = 0
+        #self.ch.fraction = 1 if get_boolean(value) else 0

@@ -63,8 +63,8 @@ def initialize():
     global mcp_1, mcp_2
     try:
         i2c = busio.I2C(board.SCL, board.SDA)
-        mcp_1 = MCP23017(i2c, address=0x20)
-        mcp_2 = MCP23017(i2c, address=0x21)
+        mcp_1 = MCP23017(i2c, address=0x21)
+        mcp_2 = MCP23017(i2c, address=0x22)
         WAS_INITIALIZED = True
     except Exception as e:
         print('[GPIO] Failed to init mcp: %s' % str(e))

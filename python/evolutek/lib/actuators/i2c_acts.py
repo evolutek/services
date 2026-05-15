@@ -35,8 +35,8 @@ class I2CAct(Component):
         self.channel = PCA.channels[self.id]
 
         self.min_duty = int((self.min_pulse * self.channel.frequency) / 1000000 * 0xFFFF)
-        max_duty = (self.max_pulse * self.channel.frequency) / 1000000 * 0xFFFF
-        self.duty_range = int(max_duty - self.min_duty)
+        self.max_duty = (self.max_pulse * self.channel.frequency) / 1000000 * 0xFFFF
+        self.duty_range = int(self.max_duty - self.min_duty)
 
         if self.type == I2CActType.ESC:
 

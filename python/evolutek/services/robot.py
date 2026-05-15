@@ -62,10 +62,12 @@ class Robot(Service):
     get_color = Service.action(robot_actuators.get_color)
 
     # Imported from robot_actions
-    grab_crates = Service.action(robot_actions.grab_crates)
-    drop_crates = Service.action(robot_actions.drop_crates)
-    do_cursor = Service.action(robot_actions.do_cursor)
+    grab_all_crates = Service.action(robot_actions.grab_all_crates)
+    drop_all_crates = Service.action(robot_actions.drop_all_crates)
+    drop_good_crates = Service.action(robot_actions.drop_good_crates)
+    store_crates = Service.action(robot_actions.store_crates)
     reverse_and_drop_crates = Service.action(robot_actions.reverse_and_drop_crates)
+    do_cursor = Service.action(robot_actions.do_cursor)
     do_cursor_bis = Service.action(robot_actions.do_cursor_bis)
 
     def __init__(self):
@@ -228,15 +230,15 @@ class Robot(Service):
 
         self.actuators.pumps_drop(ids = [0, 1, 2, 3, 4, 5])
 
-        self.actuators.stepper_home(2, 200)
+        self.actuators.stepper_home(0, 200)
 
         self.move_cursor_arm(CursorArmSide.RIGHT, CursorArmPosition.CLOSED, async_task=False)
         self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
 
-        self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.OPENED, async_task=False)
-        self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.OPENED, async_task=False)
-        self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.OPENED, async_task=False)
-        self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.OPENED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.PRE_GRAB, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.PRE_GRAB, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.PRE_GRAB, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.PRE_GRAB, async_task=False)
 
         self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.CLOSED, async_task=False)
         self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.CLOSED, async_task=False)
