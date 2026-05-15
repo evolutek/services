@@ -73,15 +73,81 @@ class ButtonSystem(IFrame):
 	def close(self):
 		self.root.close()
 
+	def telemetry(self):
+		self.root.show_telemetry()
+
 	def create_buttons(self):
 		self.grid_columnconfigure(0, weight=1, uniform="c")
 		self.grid_columnconfigure(1, weight=1, uniform="c")
 		self.grid_columnconfigure(2, weight=1, uniform="c")
+		self.grid_columnconfigure(3, weight=1, uniform="c")
 		tk.Button(self, text="Reboot", command=self.reboot, font=FONT_MEDIUM).grid(row=0, column=0, sticky=tk.N)
 		tk.Button(self, text="Shutdown", command=self.shutdown, font=FONT_MEDIUM).grid(row=0, column=1, sticky=tk.N)
 		tk.Button(self, text="Close", command=self.close, font=FONT_MEDIUM).grid(row=0, column=2, sticky=tk.N)
+		tk.Button(self, text="Telemetry", command=self.telemetry, font=FONT_MEDIUM).grid(row=0, column=3, sticky=tk.N)
 	def init_interface(self):
 		self.create_buttons()
+
+
+class TelemetryInterface(IFrame):
+	def __init__(self, root, parent):
+		super().__init__(root, parent)
+		self.init_interface()
+
+	def back(self):
+		self.root.hide_telemetry()
+
+	def init_interface(self):
+		self.grid_columnconfigure(0, weight=1)
+		self.grid_rowconfigure(0, weight=0)
+		self.grid_rowconfigure(1, weight=1)
+
+		topbar = tk.Frame(self)
+		topbar.grid(row=0, column=0, sticky="ew", padx=4, pady=4)
+		tk.Button(topbar, text="< Back", command=self.back, font=FONT_MEDIUM).pack(side=tk.LEFT)
+		tk.Label(topbar, text="Telemetry", font=FONT_BIG).pack(side=tk.LEFT, padx=20)
+
+		self.values_label = tk.Label(
+			self,
+			text="-",
+			font=FONT_MEDIUM,
+			justify=tk.LEFT,
+			anchor="nw",
+		)
+		self.values_label.grid(row=1, column=0, sticky="nsew", padx=20, pady=10)
+
+	def update_interface(self):
+		# Cheap accessor: trajman caches the last telemetry frame in memory
+		try:
+			pos = self.root.cs.trajman[ROBOT].get_position()
+			x = pos.get('x')
+			y = pos.get('y')
+			theta = pos.get('theta')
+		except Exception as e:
+			x, y, theta = None, None, None
+			print("[TELEMETRY] get_position failed: %s" % e)
+
+		# get_speeds does a serial roundtrip to the asserv board; degrade gracefully
+		try:
+			speeds = self.root.cs.trajman[ROBOT].get_speeds()
+		except Exception as e:
+			speeds = None
+			print("[TELEMETRY] get_speeds failed: %s" % e)
+
+		lines = []
+		if x is not None:
+			lines.append("X      : %d mm" % int(x))
+			lines.append("Y      : %d mm" % int(y))
+			lines.append("Theta  : %.2f deg  (%.3f rad)" % (degrees(theta), theta))
+		else:
+			lines.append("Position : unavailable")
+
+		if speeds is not None:
+			lines.append("Speeds : %s" % speeds)
+		else:
+			lines.append("Speeds : unavailable")
+
+		self.values_label.configure(text="\n".join(lines))
 
 
 class StatusFrame(IFrame):
@@ -215,16 +281,27 @@ class AIInterface(Interface):
 
 		self.match_interface = MatchInterface(self, self.container)
 		self.home_interface = HomeInterface(self, self.container)
+		self.telemetry_interface = TelemetryInterface(self, self.container)
 
 		self.match_interface.grid(row=0, column=0, sticky="nsew")
 		self.home_interface.grid(row=0, column=0, sticky="nsew")
+		self.telemetry_interface.grid(row=0, column=0, sticky="nsew")
 		self.has_been_reset = False
+		self.in_telemetry = False
 
 	def set_frame(self, frame):
 		#if frame is self.current_frame:
 		#	return
 		#self.current_frame = frame
 		frame.tkraise()
+
+	def show_telemetry(self):
+		self.in_telemetry = True
+		self.set_frame(self.telemetry_interface)
+
+	def hide_telemetry(self):
+		self.in_telemetry = False
+		# Next update_interface tick will re-route to match or home as needed
 
 	def init_fonts(self):
 		global FONT_BIG, FONT_MEDIUM, FONT_SMALL
@@ -235,6 +312,11 @@ class AIInterface(Interface):
 	def update_interface(self):
 		self.match_status = self.cs.match.get_status()
 		self.window.configure(bd=5, highlightcolor=self.cs.match.get_color(), highlightthickness=5)
+		if self.in_telemetry:
+			# User explicitly opened the telemetry window; do not auto-switch
+			self.set_frame(self.telemetry_interface)
+			self.telemetry_interface.update_interface()
+			return
 		if self.match_status["status"] == "Started" or self.match_status["status"] == "Ended":
 			#print("[+] Match is running")
 			self.set_frame(self.match_interface)
