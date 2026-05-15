@@ -335,6 +335,50 @@ class AI(Service):
         return States.Making
 
 
+    def _run_action(self, action, current_goal, match_starting_time):
+        action_starting_time = time()
+        print('[AI] Making action at %fs' % round(action_starting_time - match_starting_time, 2))
+        print(action)
+
+        data = action.make()
+        status = RobotStatus.get_status(data)
+
+        score = None
+        if action.score > 0 and 'score' in data:
+            score = int(data['score'])
+            self.publish("score", value=score)
+
+            current_goal.score -= score
+
+            with self.lock:
+                self.score += score
+
+        print(status)
+
+        if status == RobotStatus.Aborted:
+            return States.Selecting
+
+        if status == RobotStatus.Timeout and action.avoid_strategy == AvoidStrategy.Timeout:
+            return None
+
+        if status == RobotStatus.NotReached and action.avoid_strategy == AvoidStrategy.Skip:
+            return None
+
+        if status != RobotStatus.Done and status != RobotStatus.Reached:
+            return States.Error
+
+        print('[AI] Finished action in %fs' % round(time() - action_starting_time, 2))
+
+        if action.score > 0 and score is None:
+            self.publish("score", value=action.score)
+            current_goal.score -= action.score
+
+            with self.lock:
+                self.score += action.score
+
+        return None
+
+
     """ MAKING """
     def making(self):
 
@@ -353,18 +397,35 @@ class AI(Service):
         print('[AI] Starting goal at %fs' % round(goal_starting_time - match_starting_time, 2))
         print(current_goal)
 
-        use_pathfinding = False
-        destination = current_goal.position
-        with self.lock:
-            use_pathfinding = self.use_pathfinding
+        in_transit_actions = [a for a in current_goal.actions if a.when == 'in_transit']
+        on_arrival_actions = [a for a in current_goal.actions if a.when == 'on_arrival']
 
-            if self.color != self.color1:
-                destination = Point(destination.x, 2000 - destination.y)
+        # in_transit actions run on the actuator slot in parallel with the navigation move.
+        in_transit_result = {'state': None}
+        in_transit_worker = None
+        if in_transit_actions:
+            def _run_in_transit():
+                for action in in_transit_actions:
+                    state = self._run_action(action, current_goal, match_starting_time)
+                    if state is not None:
+                        in_transit_result['state'] = state
+                        return
+            in_transit_worker = Thread(target=_run_in_transit, daemon=True)
+            in_transit_worker.start()
 
-        if Point(dict=self.trajman.get_position()).dist(destination) <= DELTA_POS:
-            print('[AI] Already on goal position')
+        def _do_navigation():
+            use_pathfinding = False
+            destination = current_goal.position
+            with self.lock:
+                use_pathfinding = self.use_pathfinding
 
-        else:
+                if self.color != self.color1:
+                    destination = Point(destination.x, 2000 - destination.y)
+
+            if Point(dict=self.trajman.get_position()).dist(destination) <= DELTA_POS:
+                print('[AI] Already on goal position')
+                return None
+
             if use_pathfinding:
 
                 print('[AI] Going with pathfinding')
@@ -456,58 +517,23 @@ class AI(Service):
 
             with self.lock:
                 print('[AI] Reach goal position in %fs' % round(time() - goal_starting_time, 2))
+            return None
 
-        # if not current_goal.theta is None:
+        nav_state = _do_navigation()
 
-        #     status = RobotStatus.get_status(self.goth(theta=current_goal.theta))
+        # Always wait for in_transit actions before bubbling any state up.
+        if in_transit_worker is not None:
+            in_transit_worker.join()
 
-        #     if status == RobotStatus.Aborted:
-        #         return States.Selecting
+        if nav_state is not None:
+            return nav_state
+        if in_transit_result['state'] is not None:
+            return in_transit_result['state']
 
-        #     if status != RobotStatus.Reached:
-        #         return States.Error
-
-        for action in current_goal.actions:
-
-            action_starting_time = time()
-            print('[AI] Making action at %fs' % round(action_starting_time - match_starting_time, 2))
-            print(action)
-
-            data = action.make()
-            status = RobotStatus.get_status(data)
-
-            score = None
-            if action.score > 0 and 'score' in data:
-                score = int(data['score'])
-                self.publish("score", value=score)
-
-                current_goal.score -= score
-
-                with self.lock:
-                    self.score += score
-
-            print(status)
-
-            if status == RobotStatus.Aborted:
-                return States.Selecting
-
-            if status == RobotStatus.Timeout and action.avoid_strategy == AvoidStrategy.Timeout:
-                continue
-
-            if status == RobotStatus.NotReached and action.avoid_strategy == AvoidStrategy.Skip:
-                continue
-
-            if status != RobotStatus.Done and status != RobotStatus.Reached:
-                return States.Error
-
-            print('[AI] Finished action in %fs' % round(time() - action_starting_time, 2))
-
-            if action.score > 0 and score is None:
-                self.publish("score", value=action.score)
-                current_goal.score -= action.score
-
-                with self.lock:
-                    self.score += action.score
+        for action in on_arrival_actions:
+            state = self._run_action(action, current_goal, match_starting_time)
+            if state is not None:
+                return state
 
         with self.lock:
             self.goals.finish_goal()

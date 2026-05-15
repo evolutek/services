@@ -22,7 +22,7 @@ class AvoidStrategy(Enum):
 # timeout: timeout to abort action after avoiding
 class Action:
 
-    def __init__(self, fct, args=None, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None):
+    def __init__(self, fct, args=None, avoid_strategy=AvoidStrategy.Wait, score=0, timeout=None, when='on_arrival'):
         self.fct = fct
         self.args = args
         if not args is None and 'theta' in args and isinstance(args['theta'], str):
@@ -32,6 +32,7 @@ class Action:
         self.avoid_strategy = avoid_strategy
         self.score = score
         self.timeout = timeout
+        self.when = when
 
     # Make action
     def make(self):
@@ -48,6 +49,7 @@ class Action:
         s += '\n    -> avoid_strategy: ' + self.avoid_strategy.value
         s += '\n    -> score: ' + str(self.score)
         s += '\n    -> timeout: ' + str(self.timeout)
+        s += '\n    -> when: ' + self.when
         return s
 
     # Static method
@@ -56,6 +58,11 @@ class Action:
     def parse(cls, action, ai):
 
         fct = None
+
+        when = action['when'] if 'when' in action else 'on_arrival'
+        if when not in ('in_transit', 'on_arrival'):
+            print('[GOALS] Invalid when value: %s' % when)
+            return None
 
         # Try get action from handler
         try:
@@ -66,8 +73,11 @@ class Action:
                 fct = getattr(getattr(ai, action['handler']), action['fct'])
 
                 if action['handler'] == 'robot':
-                    # Legacy `handler: robot` only ever wrapped trajman calls; actuator routing comes in step 5.
-                    fct = event_waiter(fct, ai.move_started, ai.move_stopped, callback=ai.check_abort)
+                    # in_transit actions are actuator commands by design (a move can't overlap itself).
+                    if when == 'in_transit':
+                        fct = event_waiter(fct, ai.actuator_started, ai.actuator_stopped, callback=ai.check_abort)
+                    else:
+                        fct = event_waiter(fct, ai.move_started, ai.move_stopped, callback=ai.check_abort)
 
 
         except Exception as e:
@@ -85,7 +95,7 @@ class Action:
             args['timeout'] = timeout
 
 
-        new = Action(fct, args=args, avoid_strategy=avoid_strategy, score=score, timeout=timeout)
+        new = Action(fct, args=args, avoid_strategy=avoid_strategy, score=score, timeout=timeout, when=when)
 
         return new
 
