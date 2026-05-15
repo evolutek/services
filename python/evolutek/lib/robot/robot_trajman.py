@@ -71,11 +71,19 @@ def set_theta(self, theta, mirror=True):
 def set_pos(self, x, y, theta=None, mirror=True):
 	mirror = get_boolean(mirror)
 
+<<<<<<< HEAD
 	self.set_x(x)
 	self.set_y(y, mirror)
 	if theta is not None:
 		self.set_theta(theta, mirror)
 		
+=======
+    self.set_x(x)
+    self.set_y(y, mirror)
+    if theta is not None:
+        self.set_theta(theta, mirror)
+
+>>>>>>> 37784b26 (chore: indentation)
 
 #########
 # MOVES #
@@ -119,6 +127,84 @@ def global_goto(self, x, y, theta, avoid=True, mirror=True):
 
 @if_enabled
 @async_task
+<<<<<<< HEAD
+=======
+def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, mirror=True):
+    try:
+        x = float(x)
+        y = float(y)
+        theta = float(theta)
+
+        mirror = get_boolean(mirror)
+        skip = get_boolean(skip)
+
+        if mirror:
+            _destination = self.mirror_pos(x, y)
+            x = _destination['x']
+            y = _destination['y']
+
+        destination = Point(x, y)
+        status = RobotStatus.NotReached
+
+        while status != RobotStatus.Reached:
+
+            print('[ROBOT] Moving')
+
+            print(avoid)
+            data = self.global_goto(x, y, theta, avoid=avoid, mirror=False, async_task=False)
+            status = RobotStatus.get_status(data)
+
+            if status == RobotStatus.HasAvoid:
+
+                if skip:
+                    print("Skipped")
+                    return RobotStatus.return_status(RobotStatus.NotReached)
+
+                side = get_boolean(data['avoid_side'])
+
+                # TODO : check if a robot is in front of our robot before move back
+                # _status = RobotStatus.get_status(self.move_back(side=(not side), async_task=False))
+
+                #if _status == RobotStatus.Aborted or _status == RobotStatus.Disabled:
+                #    return RobotStatus.return_status(_status)
+
+                pos = Point(dict=self.trajman.get_position())
+                dist = pos.dist(destination)
+
+                global timeout_event
+                timeout_event.clear()
+
+                watchdog = None
+                if timeout is not None:
+                    watchdog = Watchdog(float(timeout), timeout_handler)
+                    watchdog.reset()
+
+                while get_boolean(self.trajman.need_to_avoid(dist, side)):
+                    if self.check_abort() != RobotStatus.Ok:
+                        print("Abort")
+                        return RobotStatus.return_status(RobotStatus.Aborted)
+
+                    if timeout_event.is_set():
+                        print("Timeout")
+                        return RobotStatus.return_status(RobotStatus.Timeout)
+
+                    print('[ROBOT] Waiting')
+                    sleep(0.1)
+
+                if watchdog is not None:
+                    watchdog.stop()
+
+            elif status != RobotStatus.Reached:
+                print("Reached")
+                break
+
+        return RobotStatus.return_status(status)
+    except:
+      traceback.print_exc()
+
+@if_enabled
+@async_task
+>>>>>>> 37784b26 (chore: indentation)
 def forward(self, distance, avoid=True):
 	distance = float(distance)
 
@@ -286,6 +372,7 @@ def goto_avoid(self, x, y, avoid=True, timeout=None, skip=False, mirror=True):
 @if_enabled
 @async_task
 def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, mirror=True,
+<<<<<<< HEAD
 					   rot_start_pct=0, rot_end_pct=100, trsl_start_pct=0, trsl_end_pct=100,
 					   rot_direction=0):
 	"""
@@ -308,6 +395,30 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 	try:
 		x = float(x)
 		y = float(y)
+=======
+                       rot_start_pct=0, rot_end_pct=100, trsl_start_pct=0, trsl_end_pct=100,
+                       rot_direction=0):
+    """
+    Version de goto_avoid utilisant global_goto pour un contrôle plus précis
+    des rotations et translations pendant le déplacement.
+
+    Args:
+        x, y (float): Coordonnées absolues de destination
+        theta (float): Angle absolu de destination en radians
+        avoid (bool): Active l'évitement d'obstacles
+        timeout (float): Timeout en secondes pour l'attente d'évitement
+        skip (bool): Si True, abandonne le déplacement en cas d'obstacle
+        mirror (bool): Applique l'effet miroir selon le côté du robot
+        rot_start_pct (int): Pourcentage du mouvement où la rotation commence (0-100)
+        rot_end_pct (int): Pourcentage du mouvement où la rotation se termine (0-100)
+        trsl_start_pct (int): Pourcentage du mouvement où la translation commence (0-100)
+        trsl_end_pct (int): Pourcentage du mouvement où la translation se termine (0-100)
+        rot_direction (int): Direction de rotation (0=auto, 1=sens horaire, -1=sens anti-horaire)
+    """
+    try:
+        x = float(x)
+        y = float(y)
+>>>>>>> 37784b26 (chore: indentation)
 
 		mirror = get_boolean(mirror)
 		skip = get_boolean(skip)
@@ -330,9 +441,15 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 
 			if status == RobotStatus.HasAvoid:
 
+<<<<<<< HEAD
 				if skip:
 					print("Skipped")
 					return RobotStatus.return_status(RobotStatus.NotReached)
+=======
+                if skip:
+                    print("Skipped")
+                    return RobotStatus.return_status(RobotStatus.NotReached)
+>>>>>>> 37784b26 (chore: indentation)
 
 				side = get_boolean(data['avoid_side'])
 
@@ -353,6 +470,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 					watchdog = Watchdog(float(timeout), timeout_handler)
 					watchdog.reset()
 
+<<<<<<< HEAD
 				while get_boolean(self.trajman.need_to_avoid(dist, side)):
 					if self.check_abort() != RobotStatus.Ok:
 						print("Abort")
@@ -361,6 +479,16 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 					if timeout_event.is_set():
 						print("Timeout")
 						return RobotStatus.return_status(RobotStatus.Timeout)
+=======
+                while get_boolean(self.trajman.need_to_avoid(dist, side)):
+                    if self.check_abort() != RobotStatus.Ok:
+                        print("Abort")
+                        return RobotStatus.return_status(RobotStatus.Aborted)
+
+                    if timeout_event.is_set():
+                        print("Timeout")
+                        return RobotStatus.return_status(RobotStatus.Timeout)
+>>>>>>> 37784b26 (chore: indentation)
 
 					print('[ROBOT] Waiting')
 					sleep(0.1)
@@ -368,9 +496,15 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 				if watchdog is not None:
 					watchdog.stop()
 
+<<<<<<< HEAD
 			elif status != RobotStatus.Reached:
 				print(f"Not Reached (status {status})")
 				break
+=======
+            elif status != RobotStatus.Reached:
+                print("Reached")
+                break
+>>>>>>> 37784b26 (chore: indentation)
 
 		return RobotStatus.return_status(status)
 	except:
