@@ -100,7 +100,7 @@
     ]},
 
     {"name": "wait_for_home","position":{"x":600,"y":450},"theta":"-5*pi/6","actions":[
-        {"fct":"lidar_disable","args":{},"handler":"robot"}
+        {"fct":"lidar_disable","args":{}}
     ]},
 
     {"name": "return_home","position":{"x":150,"y":350},"theta":"-5*pi/6"},
@@ -154,7 +154,7 @@
     ]},
 
     {"name": "wait_for_home_b","position":{"x":600,"y":450},"theta":"5*pi/6","actions":[
-        {"fct":"lidar_disable","args":{},"handler":"robot"}
+        {"fct":"lidar_disable","args":{}}
     ]},
 
     {"name": "return_home_b","position":{"x":150,"y":350},"theta":"5*pi/6"},

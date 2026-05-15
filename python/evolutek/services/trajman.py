@@ -578,18 +578,25 @@ class TrajMan(Service):
     @Service.event('match_start')
     def lidar_enable(self):
         print("Lidar enable")
+        # Notify start so any event_waiter-wrapped caller passes the start watchdog
+        self.publish(ROBOT + '_started')
         tab = pack('B', 2)
         tab += pack('B', Commands.LIDAR_ENABLE.value)
         self.command(bytes(tab))
+        self.publish(ROBOT + '_stopped', **RobotStatus.return_status(RobotStatus.Done))
         return RobotStatus.return_status(RobotStatus.Ok)
 
     @Service.action
     @Service.event('match_end')
     def lidar_disable(self):
         print("Lidar disable")
+        # Notify start so any event_waiter-wrapped caller passes the start watchdog
+        self.publish(ROBOT + '_started')
         tab = pack('B', 2)
         tab += pack('B', Commands.LIDAR_DISABLE.value)
         self.command(bytes(tab))
+        # Fire-and-forget command: no firmware completion message, so close the cycle ourselves
+        self.publish(ROBOT + '_stopped', **RobotStatus.return_status(RobotStatus.Done))
         return RobotStatus.return_status(RobotStatus.Ok)
 
     #######

@@ -207,6 +207,13 @@ class AI(Service):
             print('[AI] Current strategy:')
             print(self.goals.current_strategy)
 
+    @Service.action
+    def lidar_disable(self):
+        status = []
+        status.append(self.trajman.lidar_disable(async_task=False))
+        return RobotStatus.return_status(RobotStatus.Ok)
+
+
     """ SETUP """
     def setup(self):
 
