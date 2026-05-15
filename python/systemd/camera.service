@@ -1,0 +1,15 @@
+[Unit]
+Description=Camera service (ArUco perception)
+PartOf=evolutek.target
+After=cellaserv.service config.service
+Wants=cellaserv.service config.service
+
+[Service]
+# Pin to cores 1,2,3 so the V4L2 reader + ArUco detect never share a core
+# with trajman (SCHED_RR @ ~50% mean, peaks near 90% — see baseline metrics).
+# Nice keeps the scheduler tolerant if a CPU-bound burst happens.
+ExecStart=/usr/bin/taskset -c 1,2,3 camera
+Nice=5
+
+[Install]
+WantedBy=multi-user.target
