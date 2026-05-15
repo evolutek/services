@@ -15,6 +15,10 @@ DELTA_POS = 5
 DELTA_ANGLE = 0.075
 HOMEMADE_RECAL = True
 SENSOR_DIST_TO_SIDE = 15
+# Firmware publishes Reached at the end of every sub-trajectory (incl. post-avoid
+# segments that may be tiny). Re-issue the goto if we are still farther than this.
+GOAL_REACH_DELTA = 50
+MAX_PREMATURE_REACHED = 10
 
 class RecalSensor(Enum):
 	No = "no"
@@ -319,6 +323,7 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 
 		destination = Point(x, y)
 		status = RobotStatus.NotReached
+		premature_reached = 0
 
 		while status != RobotStatus.Reached:
 
@@ -368,7 +373,18 @@ def global_goto_avoid(self, x, y, theta, avoid=True, timeout=None, skip=False, m
 				if watchdog is not None:
 					watchdog.stop()
 
-			elif status != RobotStatus.Reached:
+			elif status == RobotStatus.Reached:
+				pos = Point(dict=self.trajman.get_position())
+				if pos.dist(destination) > GOAL_REACH_DELTA:
+					premature_reached += 1
+					if premature_reached > MAX_PREMATURE_REACHED:
+						print(f"[ROBOT] Premature Reached limit, giving up at dist {pos.dist(destination):.1f}")
+						return RobotStatus.return_status(RobotStatus.NotReached)
+					print(f"[ROBOT] Premature Reached (dist {pos.dist(destination):.1f}), retrying")
+					status = RobotStatus.NotReached
+					sleep(0.1)
+
+			else:
 				print(f"Not Reached (status {status})")
 				break
 
