@@ -71,6 +71,7 @@ class Robot(Service):
     do_cursor_bis = Service.action(robot_actions.do_cursor_bis)
     start_cursor = Service.action(robot_actions.start_cursor)
     end_cursor = Service.action(robot_actions.end_cursor)
+    lift_crates = Service.action(robot_actions.lift_crates)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -229,6 +230,8 @@ class Robot(Service):
             return
 
         self.enable()
+
+        self.forward(150, avoid=False, async_task=False)
 
         self.actuators.pumps_drop(ids = [0, 1, 2, 3, 4, 5])
         self.actuators.pumps_drop(ids = [20, 21, 22, 23, 24, 25])

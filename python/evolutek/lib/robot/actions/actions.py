@@ -148,6 +148,28 @@ def drop_all_crates(self, side: str):
 
 @if_enabled
 @async_task
+def lift_crates(self, side: str):
+    if side == "front":
+        lifting_arms = [LiftingArmId.FRONT_1, LiftingArmId.FRONT_2, LiftingArmId.FRONT_3, LiftingArmId.FRONT_4]
+        elevator = ElevatorId.FRONT
+    elif side == "back":
+        lifting_arms = [LiftingArmId.BACK_1, LiftingArmId.BACK_2, LiftingArmId.BACK_3, LiftingArmId.BACK_4]
+        elevator = ElevatorId.BACK
+    else:
+        raise RuntimeError("Invalid side: %s" % side)
+
+    self.move_elevator(elevator, ElevatorPosition.MIDDLE, async_task=False)
+
+    for arm in lifting_arms:
+        self.move_lifting_arm(arm, LiftingArmPosition.OPENED, async_task=False)
+
+    sleep(1)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
+@if_enabled
+@async_task
 def store_crates(self, side: str):
     if side == "front":
         lifting_arms = [LiftingArmId.FRONT_1, LiftingArmId.FRONT_2, LiftingArmId.FRONT_3, LiftingArmId.FRONT_4]
@@ -404,7 +426,7 @@ def reverse_and_drop_crates(self, side: str):
     self.move_reversing_arm_high(reversing_arm_high, ReversingArmHighPosition.TOP, async_task=False)
     sleep(0.35)
 
-    for _ in range(2):
+    for _ in range(1):
         if all(colors): break
 
         _reverse_crates(self, side, colors)
@@ -423,7 +445,7 @@ def reverse_and_drop_crates(self, side: str):
     sleep(0.5)
 
     self.move_elevator(elevator, ElevatorPosition.DROP, speed=0.5, async_task=False)
-    sleep(2)
+    sleep(2.6)
 
     self.actuators.pumps_drop(ids = lifting_arms_pumps)
     sleep(0.2)

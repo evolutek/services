@@ -92,7 +92,7 @@ class LiftingArmId(Enum):
 
 class LiftingArmPosition(Enum):
     OPENED = 820
-    REVERSE = 720
+    REVERSE = 680
     PRE_GRAB = 593
     DROP = 512
     GRAB = 493 #512
