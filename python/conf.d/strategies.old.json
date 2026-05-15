@@ -1,584 +1,197 @@
+
 {
   "goals": [
     {
-      "name": "go_to_end_area",
+      "name": "go_to_initial",
       "position": {
-        "x": 440,
-        "y": 390
+        "x": 340,
+        "y": 400
       },
-      "theta": "pi",
       "actions": [],
-      "score": 10
+      "score": 0
     },
     {
-      "name": "homologation_goto_1",
+      "name": "go_to_end",
       "position": {
-        "x": 1700,
-        "y": 1225
+        "x": 270,
+        "y": 400
+      },
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "goto_wait_pami",
+      "position": {
+        "x": 860,
+        "y": 400
+      },
+      "actions": [
+        {
+          "fct": "wait_until_time",
+          "args": {"delay": 95}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "homologation_push_1",
+      "position": {
+        "x": 500,
+        "y": 200
       },
       "theta": "0",
       "actions": [],
       "score": 0
     },
     {
-      "name": "just_push_move_1",
+      "name": "homologation_push_2",
       "position": {
-        "x": 1500,
-        "y": 1050
+        "x": 950,
+        "y": 200
+      },
+      "theta": "0",
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "grab_area_1",
+      "position": {
+        "x": 800,
+        "y": 480
       },
       "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "grab_all_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "before_grab_area_2",
+      "position": {
+        "x": 1200,
+        "y": 400
+      },
       "actions": [],
       "score": 0
     },
     {
-      "name": "just_push_move_2",
+      "name": "grab_area_2",
       "position": {
-        "x": 1500,
-        "y": 840
+        "x": 1600,
+        "y": 480
       },
-      "theta": "0",
-      "actions": [],
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "grab_all_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
       "score": 0
     },
     {
-      "name": "just_push_move_3",
+      "name": "place_area_1",
       "position": {
-        "x": 1800,
-        "y": 840
-      },
-      "theta": "0",
-      "actions": [],
-      "score": 10
-    },
-    {
-      "name": "place_banner_1",
-      "position": {
-        "x": 1864,
-        "y": 1225
+        "x": 450,
+        "y": 400
       },
       "theta": "pi",
       "actions": [
         {
-          "fct": "place_banner",
+          "fct": "drop_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "place_area_2",
+      "position": {
+        "x": 1200,
+        "y": 610
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "reverse_and_drop_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ],
+      "score": 0
+    },
+    {
+      "name": "goto_do_cursor_1",
+      "position": {
+        "x": 1480,
+        "y": 465
+      },
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "goto_do_cursor_2",
+      "position": {
+        "x": 1750,
+        "y": 440
+      },
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "goto_do_cursor_2_bis",
+      "position": {
+        "x": 1750,
+        "y": 440
+      },
+      "theta": 1.3,
+      "actions": [],
+      "score": 0
+    },
+    {
+      "name": "do_cursor",
+      "position": {
+        "x": 1800,
+        "y": 170
+      },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "do_cursor",
           "handler": "robot",
           "args": {}
         }
       ],
-      "score": 20
-    },
-    {
-      "name": "go_back_after_place_banner_1",
-      "position": {
-        "x": 1768,
-        "y": 1225
-      },
-      "theta": "pi",
       "score": 0
     },
     {
-      "name": "grab_materials_1",
+      "name": "do_cursor_bis",
       "position": {
-        "x": 1470,
-        "y": 775
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "grab_materials_1b",
-      "position": {
-        "x": 1470,
-        "y": 2225
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "place_materials_1",
-      "position": {
-        "x": 1750,
-        "y": 760
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "place_materials_1b",
-      "position": {
-        "x": 1125,
-        "y": 2790
+        "x": 1800,
+        "y": 1750
       },
       "theta": "pi/2",
       "actions": [
         {
-          "fct": "place_materials",
+          "fct": "do_cursor",
           "handler": "robot",
-          "args": {"side": "front"}
+          "args": {}
         }
       ],
       "score": 0
     },
     {
-      "name": "go_to_materials_1_1",
+      "name": "goto_after_cursor",
       "position": {
-        "x": 1500,
-        "y": 500
+        "x": 1700,
+        "y": 400
       },
-      "theta": "0",
-      "actions": [],
-      "score": 10
-    },
-    {
-      "name": "go_to_materials_1b_1",
-      "position": {
-        "x": 1125,
-        "y": 2490
-      },
-      "theta": "pi/2",
-      "actions": [],
-      "score": 10
-    },
-
-    {
-      "name": "grab_materials_2",
-      "position": {
-        "x": 1330,
-        "y": 1100
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "front"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "grab_materials_2b",
-      "position": {
-        "x": 1330,
-        "y": 1900
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "front"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "place_materials_2",
-      "position": {
-        "x": 1790,
-        "y": 1225
-      },
-      "theta": "0",
-      "actions": [
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "front"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "place_materials_2b",
-      "position": {
-        "x": 1125,
-        "y": 2600
-      },
-      "theta": "-pi/2",
-      "actions": [
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "go_to_materials_2_1",
-      "position": {
-        "x": 1600,
-        "y": 1225
-      },
-      "theta": "0",
-      "actions": [],
-      "score": 0
-    },
-
-    {
-      "name": "grab_materials_3",
-      "position": {
-        "x": 1600,
-        "y": 375
-      },
-      "theta": "pi/2",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "place_materials_3",
-      "position": {
-        "x": 1560,
-        "y": 1225
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {"x": 1660, "y": 1225}
-        },
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-
-    {
-      "name": "grab_materials_4",
-      "position": {
-        "x": 550,
-        "y": 825
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "front"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "grab_materials_4b",
-      "position": {
-        "x": 560,
-        "y": 825
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "front"}
-        }
-      ],
-      "score": 0
-    },
-
-    {
-      "name": "go_to_materials_4_1",
-      "position": {
-        "x": 800,
-        "y": 825
-      },
-      "theta": "pi",
-      "actions": [],
-      "score": 0
-    },
-    {
-      "name": "place_materials_4",
-      "position": {
-        "x": 1430,
-        "y": 1225
-      },
-      "theta": "0",
-      "actions": [
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {"x": 1530, "y": 1225}
-        },
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "front"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "place_materials_4b",
-      "position": {
-        "x": 1590,
-        "y": 1225
-      },
-      "theta": "0",
-      "actions": [
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {"x": 1790, "y": 1225}
-        },
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "front"}
-        }
-      ],
-      "score": 0
-    },
-
-    {
-      "name": "grab_materials_5",
-      "position": {
-        "x": 675,
-        "y": 375
-      },
-      "theta": "pi/2",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "grab_materials_5b",
-      "position": {
-        "x": 675,
-        "y": 2600
-      },
-      "theta": "-pi/2",
-      "actions": [
-        {
-          "fct": "grab_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "go_to_after_grab_materials_5",
-      "position": {
-        "x": 675,
-        "y": 465
-      },
-      "theta": "pi/2",
-      "actions": [],
-      "score": 0
-    },
-    {
-      "name": "go_to_after_grab_materials_5b",
-      "position": {
-        "x": 675,
-        "y": 2535
-      },
-      "actions": [],
-      "score": 0
-    },
-
-    {
-      "name": "place_materials_5",
-      "position": {
-        "x": 1320,
-        "y": 1225
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {"x": 1420, "y": 1225}
-        },
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-    {
-      "name": "place_materials_5b",
-      "position": {
-        "x": 1510,
-        "y": 1225
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "place_materials",
-          "handler": "robot",
-          "args": {"side": "back"}
-        }
-      ],
-      "score": 0
-    },
-
-    {
-      "name": "wait_pami",
-      "position": {
-        "x": 880,
-        "y": 620
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "wait_until_time",
-          "args": {"delay": 93}
-        },
-        {
-          "fct": "move_plank_arm",
-          "handler": "robot",
-          "args": {"id": "FRONT", "position": "LIFT"}
-        },
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {"x": 620, "y": 300}
-        }
-      ],
-      "score": 10
-    },
-    {
-      "name": "wait_pami_bis",
-      "position": {
-        "x": 880,
-        "y": 620
-      },
-      "theta": "pi",
-      "actions": [
-        {
-          "fct": "wait_until_time",
-          "args": {"delay": 93}
-        },
-        {
-          "fct": "move_plank_arm",
-          "handler": "robot",
-          "args": {"id": "FRONT", "position": "LIFT"}
-        },
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {"x": 620, "y": 300}
-        },
-        {
-          "fct": "goto_theta",
-          "handler": "robot",
-          "args": {"theta": -3}
-        }
-      ],
-      "score": 10
-    },
-
-    {
-      "name": "go_to_end_area_2",
-      "position": {
-        "x": 620,
-        "y": 560
-      },
-      "actions": [
-        {
-          "fct": "move_plank_arm",
-          "handler": "robot",
-          "args": {"id": "FRONT", "position": "LIFT"}
-        }
-      ],
-      "score": 10
-    },
-
-    {
-      "name": "go_to_end_stacks",
-      "position": {
-        "x": 675,
-        "y": 1050
-      },
-      "actions": [],
-      "score": 0
-    },
-
-    {
-      "name": "end_to_start_intermediate_1",
-      "position": {
-        "x": 900,
-        "y": 600
-      },
-      "actions": [],
-      "score": 0
-    },
-    {
-      "name": "end_to_start_intermediate_2",
-      "position": {
-        "x": 1200,
-        "y": 600
-      },
-      "actions": [],
-      "score": 0
-    },
-
-    {
-      "name": "go_to_materials_4_1b",
-      "position": {
-        "x": 675,
-        "y": 825
-      },
-      "theta": "pi",
-      "actions": [],
-      "score": 0
-    },
-
-    {
-      "name": "go_to_grab_materials_5b_1",
-      "position": {
-        "x": 675,
-        "y": 2600
-      },
-      "theta": "-pi/2",
-      "actions": [],
-      "score": 0
-    },
-
-    {
-      "name": "go_to_grab_materials_4_b",
-      "position": {
-        "x": 675,
-        "y": 825
-      },
-      "theta": "pi",
       "actions": [],
       "score": 0
     }
@@ -589,156 +202,65 @@
       "name": "Homologation",
       "starting_position": "THE_ONLY_ONE",
       "goals": [
-        "place_banner_1",
-        "homologation_goto_1",
-        "go_to_end_area"
+        "homologation_push_1",
+        "homologation_push_2",
+        "go_to_end"
 		  ],
       "use_pathfinding": false,
-      "config_actions": [
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {
-            "x": "1800",
-            "y": "1310"
-          }
-        },
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {
-            "x": "1750",
-            "y": "1225"
-          }
-        },
-        {
-          "fct": "goth",
-          "handler": "robot",
-          "args": {
-            "theta": "0"
-          }
-        },
-        {
-          "fct": "prepare_banner",
-          "handler": "robot",
-          "args": {}
-        }
-      ],
+      "config_actions": [],
       "available": ["pal"]
     },
-
     {
-      "name": "All",
+      "name": "Match 1",
       "starting_position": "THE_ONLY_ONE",
       "goals": [
-        "place_banner_1",
-        "go_back_after_place_banner_1",
-        "grab_materials_2",
-        //"go_to_materials_1_1",
-        "grab_materials_1",
-        "place_materials_1",
-        "grab_materials_3",
-        "go_to_materials_2_1",
-        "place_materials_2",
-        "place_materials_3",
-        "grab_materials_5",
-        "go_to_after_grab_materials_5",
-        "grab_materials_4",
-        "go_to_materials_4_1",
-        "place_materials_4",
-        "place_materials_5",
-        "wait_pami"
+        "go_to_initial",
+        "grab_area_1",
+        "place_area_1",
+        "before_grab_area_2",
+        "grab_area_2",
+        "place_area_2",
+        "do_cursor",
+        "goto_after_cursor",
+        "go_to_end"
 		  ],
       "use_pathfinding": false,
-      "config_actions": [
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {
-            "x": "1800",
-            "y": "1310"
-          }
-        },
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {
-            "x": "1750",
-            "y": "1225"
-          }
-        },
-        {
-          "fct": "goth",
-          "args": {
-            "theta": "pi"
-          }
-        },
-        {
-          "fct": "prepare_banner",
-          "handler": "robot",
-          "args": {}
-        }
-      ],
+      "config_actions": [],
       "available": ["pal"]
     },
-    
     {
-      "name": "Alternative",
+      "name": "Match no cursor",
       "starting_position": "THE_ONLY_ONE",
       "goals": [
-        "place_banner_1",
-        "go_back_after_place_banner_1",
-        "grab_materials_2b",
-        "grab_materials_1b",
-        "go_to_materials_1b_1",
-        "place_materials_1b",
-        "place_materials_2b",
-        "go_to_grab_materials_5b_1",
-        "grab_materials_5b",
-        "go_to_after_grab_materials_5b",
-        //"go_to_end_stacks",
-        //"grab_materials_5",
-        //"go_to_after_grab_materials_5",
-        "go_to_grab_materials_4_b",
-        "grab_materials_4b",
-        "go_to_materials_4_1b",
-        "end_to_start_intermediate_1",
-        "end_to_start_intermediate_2",
-        "place_materials_4b",
-        "place_materials_5b",
-        "end_to_start_intermediate_2",
-        "wait_pami_bis"
+        "go_to_initial",
+        "grab_area_1",
+        "place_area_1",
+        "before_grab_area_2",
+        "grab_area_2",
+        "place_area_2",
+        "go_to_end"
 		  ],
       "use_pathfinding": false,
-      "config_actions": [
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {
-            "x": "1800",
-            "y": "1310"
-          }
-        },
-        {
-          "fct": "goto_avoid",
-          "handler": "robot",
-          "args": {
-            "x": "1750",
-            "y": "1225"
-          }
-        },
-        {
-          "fct": "goth",
-          "args": {
-            "theta": "pi"
-          }
-        },
-        {
-          "fct": "prepare_banner",
-          "handler": "robot",
-          "args": {}
-        }
-      ],
+      "config_actions": [],
+      "available": ["pal"]
+    },
+    {
+      "name": "Match PAMI",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "go_to_initial",
+        "grab_area_1",
+        "place_area_1",
+        "before_grab_area_2",
+        "grab_area_2",
+        "place_area_2",
+        "do_cursor",
+        "goto_after_cursor",
+        "goto_wait_pami",
+        "go_to_end"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [],
       "available": ["pal"]
     }
   ],
@@ -747,11 +269,11 @@
     {
       "name": "THE_ONLY_ONE",
       "position": {
-        "x": 1880,
-        "y": 1310
+        "x": 120,
+        "y": 400
       },
-      "theta": "pi",
-      "recal_side": "x",
+      "theta": "0",
+      "recal_side": "y",
       "recal_sensor": "no"
     }
   ]
