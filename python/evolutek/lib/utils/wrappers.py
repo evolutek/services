@@ -60,8 +60,11 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
 
         watchdog.reset()
 
+        expected_id = None
         while True:
             if start_event.is_set():
+                if isinstance(start_event.data, dict):
+                    expected_id = start_event.data.get('id')
                 watchdog.stop()
                 break
 
@@ -73,7 +76,11 @@ def event_waiter(method, start_event, stop_event, timeout_not_started=1, callbac
         status = None
         while True:
             if stop_event.is_set():
-                break
+                event_id = stop_event.data.get('id') if isinstance(stop_event.data, dict) else None
+                # Match by id when both sides expose one; otherwise accept (legacy publishers).
+                if expected_id is None or event_id is None or event_id == expected_id:
+                    break
+                stop_event.clear()
 
             if callback is not None:
                 status =  callback()

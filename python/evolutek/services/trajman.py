@@ -144,6 +144,7 @@ class TrajMan(Service):
 
         self.has_stopped = Event()
         self.has_detected_collision = Event()
+        self.move_id = 0
 
         # Used to generate debug
         self.debug_file = None
@@ -668,7 +669,8 @@ class TrajMan(Service):
 
                 elif tab[1] == Commands.MOVE_BEGIN.value:
                     self.log_serial("Robot started to move!")
-                    self.publish(ROBOT + '_started')
+                    self.move_id += 1
+                    self.publish(ROBOT + '_started', id=self.move_id)
                     self.has_stopped.clear()
                     self.has_detected_collision.clear()
                     self.has_avoid.clear()
@@ -690,7 +692,7 @@ class TrajMan(Service):
                         avoid_side = self.avoid_side
                         self.avoid_side = None
 
-                    self.publish(ROBOT + '_stopped', **RobotStatus.return_status(status, avoid_side=avoid_side))
+                    self.publish(ROBOT + '_stopped', id=self.move_id, **RobotStatus.return_status(status, avoid_side=avoid_side))
 
                 elif tab[1] == Commands.GET_SPEEDS.value:
                     a, b, tracc, trdec, trmax, rtacc, rtdec, rtmax = unpack('=bbffffff', bytes(tab))
