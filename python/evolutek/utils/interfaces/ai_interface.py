@@ -298,6 +298,18 @@ class AIInterface(Interface):
 	def show_telemetry(self):
 		self.in_telemetry = True
 		self.set_frame(self.telemetry_interface)
+		# Make sure the asserv is actively pushing TELEMETRY_MESSAGE frames.
+		# Without this, get_position() returns the cached robot_position which
+		# may be stale if set_telemetry was never armed (or was reset to 0).
+		try:
+			rate = float(self.cs.config.get(ROBOT, 'telemetry_refresh'))
+		except Exception as e:
+			print("[TELEMETRY] config read failed, defaulting to 25: %s" % e)
+			rate = 25.0
+		try:
+			self.cs.trajman[ROBOT].set_telemetry(rate)
+		except Exception as e:
+			print("[TELEMETRY] set_telemetry(%s) failed: %s" % (rate, e))
 
 	def hide_telemetry(self):
 		self.in_telemetry = False
