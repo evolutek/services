@@ -109,6 +109,11 @@
       "position": { "x": 1700, "y": 400 }
     },
 
+    {
+      "name": "before_do_cursor_turbin",
+      "position": { "x": 1520, "y": 1380 }
+    },
+
     /*
     {
       "name": "goto_do_cursor_1",
@@ -131,7 +136,7 @@
         {
           "fct": "drop_crates",
           "handler": "robot",
-          "args": {"side": "front"}
+          "args": {}
         }
       ]
     },
@@ -144,7 +149,7 @@
         {
           "fct": "reverse_and_drop_crates",
           "handler": "robot",
-          "args": {"side": "front"}
+          "args": {}
         }
       ]
     },
@@ -163,7 +168,7 @@
     },
 
     {
-      "name": "place_area_4",
+      "name": "place_area_4_side",
       "position": { "x": 1800, "y": 1180 },
       "theta": "-pi/2",
       "actions": [
@@ -176,10 +181,41 @@
     },
 
     {
-      "name": "place_area_2",
+      "name": "place_area_4_top",
+      "position": { "x": 1650, "y": 1500 },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "drop_good_crates",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ]
+    },
+
+    {
+      "name": "place_area_2_side",
       "position": { "x": 1750, "y": 500 },
       "theta": "-pi/2",
       "actions": [
+        {
+          "fct": "drop_all_crates",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ]
+    },
+
+    {
+      "name": "place_area_2_top",
+      "position": { "x": 1650, "y": 700 },
+      "theta": "pi",
+      "actions": [
+        {
+          "fct": "reverse_bad_crates",
+          "handler": "robot",
+          "args": {"side": "back"}
+        },
         {
           "fct": "drop_all_crates",
           "handler": "robot",
@@ -213,6 +249,19 @@
           "args": {"side": "front"}
         }
       ]
+    },
+
+    {
+      "name": "do_cursor_turbin",
+      "position": { "x": 1780, "y": 1420 },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "do_turbin_cursor",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ]
     }
 
     /*
@@ -240,10 +289,37 @@
         "grab_area_4_x_min",
         "place_area_5",
         "grab_area_3",
-        "place_area_4",
+        "place_area_4_side",
         "do_cursor_inside_start",
         "do_cursor_inside_end",
-        "place_area_2",
+        "place_area_2_side",
+        "grab_area_2",
+        "place_area_3",
+        "grab_area_1",
+        "place_area_1",
+        "goto_wait_pami",
+        "go_to_end"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [
+        {"fct": "goto", "args": {"x": 300, "y": 300}},
+        {"fct": "goth", "args": {"theta": "0.15"}}
+      ],
+      "available": ["pal"]
+    },
+
+    {
+      "name": "Turbine",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "go_to_initial",
+        "grab_area_4_x_min",
+        "place_area_5",
+        "do_cursor_turbin",
+        "before_do_cursor_turbin",
+        "grab_area_3",
+        "place_area_4_top",
+        "place_area_2_top",
         "grab_area_2",
         "place_area_3",
         "grab_area_1",

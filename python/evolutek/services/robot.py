@@ -231,6 +231,9 @@ class Robot(Service):
 
         self.enable()
 
+        self.actuators.set_turbine_power(9, 0)
+        self.actuators.set_turbine_power(8, 0)
+
         self.forward(150, avoid=False, async_task=False)
 
         self.actuators.pumps_drop(ids = [0, 1, 2, 3, 4, 5])

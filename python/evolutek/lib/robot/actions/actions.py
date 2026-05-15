@@ -24,10 +24,15 @@ def do_cursor(self):
 
 @if_enabled
 @async_task
-def end_cursor(self):
+def do_turbin_cursor(self):
     arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
 
+    self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
+    self.actuators.set_turbine_power(9 if self.side else 8, 0.1)
+    sleep(2)
+
     self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
+    self.actuators.set_turbine_power(9 if self.side else 8, 0)
     sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done)
@@ -39,6 +44,17 @@ def start_cursor(self):
     arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
 
     self.move_cursor_arm(arm, CursorArmPosition.DEPLOYED, async_task=False)
+    sleep(0.5)
+
+    return RobotStatus.return_status(RobotStatus.Done)
+
+
+@if_enabled
+@async_task
+def end_cursor(self):
+    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
+
+    self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
     sleep(0.5)
 
     return RobotStatus.return_status(RobotStatus.Done)

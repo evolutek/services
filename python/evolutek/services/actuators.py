@@ -149,6 +149,11 @@ class Actuators(Service):
             13: [I2CActType.Servo, 180, 400, 2700], # Retourneur gauche avant
         }, frequency = 50, addr=0x40)
 
+        self.i2c_servos_2 = I2CActsHandler({
+            9: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax}, # Right
+            8: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax}, # Left
+        }, frequency = 50, addr=0x41)
+
         self.i2c_mots = I2CMotorBoard({
             0: (I2CMotorBoardStepper, [0]),
             1: (I2CMotorBoardStepper, [1])
@@ -212,6 +217,7 @@ class Actuators(Service):
             # self.recal_sensors,
             self.axs,
             self.i2c_servos_1,
+            self.i2c_servos_2,
             self.pumps
         ]
 
@@ -459,6 +465,21 @@ class Actuators(Service):
                 return RobotStatus.return_status(RobotStatus.Failed)
 
         return RobotStatus.return_status(RobotStatus.Done)
+
+    #######
+    # ESC #
+    #######
+    @Service.action
+    def set_turbine_power(self, id, power):
+        id = int(id)
+
+        if self.i2c_servos_2[id] is None:
+            return RobotStatus.return_status(RobotStatus.Failed)
+
+        if self.i2c_servos_2[id].set_speed(float(power)):
+            return RobotStatus.return_status(RobotStatus.Done)
+
+        return RobotStatus.return_status(RobotStatus.Failed)
 
     ############
     # STEPPERS #
