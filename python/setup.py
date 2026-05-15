@@ -33,6 +33,7 @@ setup(
             'match = evolutek.services.match:main',
             'robot = evolutek.services.robot:main',
             'ai = evolutek.services.ai:main',
+            'camera = evolutek.services.camera:main',
             # Utils
             'reset = evolutek.utils.service_reset:main',
         ],
