@@ -130,11 +130,11 @@
 
     {
       "name": "place_area_1",
-      "position": { "x": 450, "y": 400 },
+      "position": { "x": 1200, "y": 350 },
       "theta": "pi",
       "actions": [
         {
-          "fct": "drop_all_crates",
+          "fct": "reverse_and_drop_crates",
           "handler": "robot",
           "args": {}
         }
@@ -195,7 +195,7 @@
 
     {
       "name": "place_area_2_side",
-      "position": { "x": 1750, "y": 500 },
+      "position": { "x": 1750, "y": 570 },
       "theta": "-pi/2",
       "actions": [
         {
@@ -339,7 +339,7 @@
   "starting_positions": [
     {
       "name": "THE_ONLY_ONE",
-      "position": { "x": 270, "y": 400 },
+      "position": { "x": 270, "y": 300 },
       "theta": "0",
       "recal_side": "y",
       "recal_sensor": "no"

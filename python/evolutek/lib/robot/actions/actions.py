@@ -52,7 +52,7 @@ def start_cursor(self):
 @if_enabled
 @async_task
 def end_cursor(self):
-    arm = CursorArmSide.RIGHT if self.side else CursorArmSide.LEFT
+    arm = CursorArmSide.LEFT if self.side else CursorArmSide.RIGHT
 
     self.move_cursor_arm(arm, CursorArmPosition.CLOSED, async_task=False)
     sleep(0.5)
@@ -121,6 +121,10 @@ def grab_all_crates(self, side: str):
     sleep(0.06)
 
     sleep(0.5) # Wait elevator
+
+    for i in range(len(lifting_arms)):
+        self.move_lifting_arm(lifting_arms[i], LiftingArmPosition.PRE_GRAB, async_task=False)
+    sleep(0.06)
 
     self.move_elevator(elevator, ElevatorPosition.MIDDLE, async_task=False)
     sleep(1)
@@ -369,7 +373,7 @@ def _reverse_crates(self, side: str, colors: list[bool]) -> None:
 
     # Reset lifting arm position
     for i in range(len(lifting_arms)):
-        self.move_lifting_arm(lifting_arms[i], LiftingArmPosition.PRE_GRAB, async_task=False)
+        self.move_lifting_arm(lifting_arms[i], LiftingArmPosition.DROP, async_task=False)
 
 
 @if_enabled
@@ -451,7 +455,7 @@ def reverse_and_drop_crates(self, side: str):
 
         _reverse_crates(self, side, colors)
 
-        self.forward(-170 * move_direction, avoid=True, async_task=False)
+        self.forward(-180 * move_direction, avoid=True, async_task=False)
 
     for i in range(2):
         self.move_reversing_head(reversing_heads[i], ReversingHeadPosition.NORMAL, async_task=False)
@@ -465,7 +469,7 @@ def reverse_and_drop_crates(self, side: str):
     sleep(0.5)
 
     self.move_elevator(elevator, ElevatorPosition.DROP, speed=0.5, async_task=False)
-    sleep(2.6)
+    sleep(1.2)
 
     self.actuators.pumps_drop(ids = lifting_arms_pumps)
     sleep(0.2)
@@ -474,6 +478,7 @@ def reverse_and_drop_crates(self, side: str):
         self.move_lifting_arm(arm, LiftingArmPosition.OPENED, async_task=False)
     sleep(0.5)
 
+    self.forward(30 * move_direction, avoid=True, async_task=False)
     self.forward(-160 * move_direction, avoid=True, async_task=False)
 
     return RobotStatus.return_status(RobotStatus.Done)

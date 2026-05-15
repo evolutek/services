@@ -11,7 +11,7 @@ from evolutek.lib.actuators.ax12 import AX12Controller
 
 # ====== Elevator ======
 
-ELEVATOR_SPEED = 500
+ELEVATOR_SPEED = 2000
 
 # (Stepper ID)
 class ElevatorId(Enum):
@@ -20,12 +20,12 @@ class ElevatorId(Enum):
 
 class ElevatorPosition(Enum):
     LOWEST = {
-        ElevatorId.FRONT: (-760,),
-        ElevatorId.BACK: (-760,)
-    }
-    DROP = {
         ElevatorId.FRONT: (-740,),
         ElevatorId.BACK: (-740,)
+    }
+    DROP = {
+        ElevatorId.FRONT: (-700,),
+        ElevatorId.BACK: (-700,)
     }
     MIDDLE = {
         ElevatorId.FRONT: (-500,),
