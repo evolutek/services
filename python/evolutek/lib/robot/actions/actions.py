@@ -211,7 +211,7 @@ def drop_good_crates(self, side: str):
     for arm in lifting_arms:
         colors.append(self.get_color(arm))
 
-    # Prepare to reverse
+    # Prepare to drop
     for i, color in enumerate(colors):
         if color:
             self.move_lifting_arm(lifting_arms[i], LiftingArmPosition.DROP, async_task=False)
@@ -219,7 +219,7 @@ def drop_good_crates(self, side: str):
             self.move_lifting_arm(lifting_arms[i], LiftingArmPosition.PRE_GRAB, async_task=False)
 
     self.move_elevator(elevator, ElevatorPosition.DROP, speed=0.5, async_task=False)
-    sleep(2)
+    sleep(2.6)
 
     # Drop good ones
     self.actuators.pumps_drop(ids = [lifting_arms_pumps[i] for i, color in enumerate(colors) if color])

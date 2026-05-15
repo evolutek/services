@@ -177,11 +177,11 @@
 
     {
       "name": "place_area_2",
-      "position": { "x": 1800, "y": 250 },
+      "position": { "x": 1750, "y": 500 },
       "theta": "-pi/2",
       "actions": [
         {
-          "fct": "reverse_and_drop_crates",
+          "fct": "drop_all_crates",
           "handler": "robot",
           "args": {"side": "back"}
         }
@@ -196,7 +196,7 @@
       "theta": "-pi/2",
       "actions": [
         {
-          "fct": "drop_good_crates",
+          "fct": "start_cursor",
           "handler": "robot",
           "args": {"side": "front"}
         }
@@ -205,10 +205,10 @@
 
     {
       "name": "do_cursor_inside_end",
-      "position": { "x": 1800, "y": 250 },
+      "position": { "x": 1800, "y": 750 },
       "actions": [
         {
-          "fct": "drop_good_crates",
+          "fct": "end_cursor",
           "handler": "robot",
           "args": {"side": "front"}
         }
