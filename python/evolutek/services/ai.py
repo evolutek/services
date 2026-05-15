@@ -211,7 +211,7 @@ class AI(Service):
     def lidar_disable(self):
         status = []
         status.append(self.trajman.lidar_disable(async_task=False))
-        return RobotStatus.return_status(RobotStatus.Ok)
+        return RobotStatus.return_status(RobotStatus.Done)
 
 
     """ SETUP """

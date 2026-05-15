@@ -584,7 +584,7 @@ class TrajMan(Service):
         tab += pack('B', Commands.LIDAR_ENABLE.value)
         self.command(bytes(tab))
         self.publish(ROBOT + '_stopped', **RobotStatus.return_status(RobotStatus.Done))
-        return RobotStatus.return_status(RobotStatus.Ok)
+        return RobotStatus.return_status(RobotStatus.Done)
 
     @Service.action
     @Service.event('match_end')
@@ -597,7 +597,7 @@ class TrajMan(Service):
         self.command(bytes(tab))
         # Fire-and-forget command: no firmware completion message, so close the cycle ourselves
         self.publish(ROBOT + '_stopped', **RobotStatus.return_status(RobotStatus.Done))
-        return RobotStatus.return_status(RobotStatus.Ok)
+        return RobotStatus.return_status(RobotStatus.Done)
 
     #######
     # Get #
