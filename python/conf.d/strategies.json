@@ -10,16 +10,17 @@
 
     {
       "name": "go_to_end",
-      "position": { "x": 270, "y": 400 }
+      "position": { "x": 270, "y": 260 }
     },
 
     {
       "name": "goto_wait_pami",
-      "position": { "x": 860, "y": 400 },
+      "position": { "x": 860, "y": 260 },
+      "theta": "pi",
       "actions": [
         {
           "fct": "wait_until_time",
-          "args": {"delay": 95}
+          "args": {"delay": 94}
         }
       ]
     },
@@ -55,12 +56,12 @@
     {
       "name": "grab_area_3",
       "position": { "x": 1520, "y": 1100 },
-      "theta": "0",
+      "theta": "pi",
       "actions": [
         {
           "fct": "grab_all_crates",
           "handler": "robot",
-          "args": {"side": "front"}
+          "args": {"side": "back"}
         }
       ]
     },
@@ -99,6 +100,25 @@
     },
 
     {
+      "name": "goto_after_cursor",
+      "position": { "x": 1700, "y": 400 }
+    },
+
+    /*
+    {
+      "name": "goto_do_cursor_1",
+      "position": { "x": 1480, "y": 465 }
+    },
+
+    {
+      "name": "goto_do_cursor_2",
+      "position": { "x": 1750, "y": 440 }
+    },
+    */
+
+    // ====== Drop areas ======
+
+    {
       "name": "place_area_1",
       "position": { "x": 450, "y": 400 },
       "theta": "pi",
@@ -111,10 +131,8 @@
       ]
     },
 
-    // ====== Drop areas ======
-
     {
-      "name": "place_area_2",
+      "name": "place_area_3",
       "position": { "x": 1200, "y": 610 },
       "theta": "pi/2",
       "actions": [
@@ -126,18 +144,73 @@
       ]
     },
 
+    {
+      "name": "place_area_5",
+      "position": { "x": 1200, "y": 1350 },
+      "theta": "pi/2",
+      "actions": [
+        {
+          "fct": "reverse_and_drop_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ]
+    },
+
+    {
+      "name": "place_area_4",
+      "position": { "x": 1800, "y": 1180 },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "drop_good_crates",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ]
+    },
+
+    {
+      "name": "place_area_2",
+      "position": { "x": 1800, "y": 250 },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "reverse_and_drop_crates",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ]
+    },
+
     // ====== Cursor ======
 
     {
-      "name": "goto_do_cursor_1",
-      "position": { "x": 1480, "y": 465 }
+      "name": "do_cursor_inside_start",
+      "position": { "x": 1800, "y": 1250 },
+      "theta": "-pi/2",
+      "actions": [
+        {
+          "fct": "drop_good_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ]
     },
 
     {
-      "name": "goto_do_cursor_2",
-      "position": { "x": 1750, "y": 440 }
-    },
+      "name": "do_cursor_inside_end",
+      "position": { "x": 1800, "y": 250 },
+      "actions": [
+        {
+          "fct": "drop_good_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
+        }
+      ]
+    }
 
+    /*
     {
       "name": "do_cursor",
       "position": { "x": 1800, "y": 170 },
@@ -150,11 +223,7 @@
         }
       ]
     },
-
-    {
-      "name": "goto_after_cursor",
-      "position": { "x": 1700, "y": 400 }
-    }
+    */
   ],
 
   "strategies": [
@@ -163,17 +232,25 @@
       "starting_position": "THE_ONLY_ONE",
       "goals": [
         "go_to_initial",
+        "grab_area_4",
+        "place_area_5",
+        "grab_area_3",
+        "place_area_4",
+        "do_cursor_inside_start",
+        "do_cursor_inside_end",
+        "place_area_2",
+        "grab_area_2",
+        "place_area_3",
         "grab_area_1",
         "place_area_1",
-        "before_grab_area_2",
-        "grab_area_2",
-        "place_area_2",
-        "do_cursor",
-        "goto_after_cursor",
+        "goto_wait_pami",
         "go_to_end"
 		  ],
       "use_pathfinding": false,
-      "config_actions": [],
+      "config_actions": [
+        {"fct": "goto", "args": {"x": 290, "y": 400}},
+        {"fct": "goth", "args": {"theta": "0.1"}}
+      ],
       "available": ["pal"]
     },
     {
@@ -189,7 +266,10 @@
         "go_to_end"
 		  ],
       "use_pathfinding": false,
-      "config_actions": [],
+      "config_actions": [
+        {"fct": "goto", "args": {"x": 290, "y": 400}},
+        {"fct": "goth", "args": {"theta": "0.1"}}
+      ],
       "available": ["pal"]
     },
     {
@@ -208,7 +288,10 @@
         "go_to_end"
 		  ],
       "use_pathfinding": false,
-      "config_actions": [],
+      "config_actions": [
+        {"fct": "goto", "args": {"x": 290, "y": 400}},
+        {"fct": "goth", "args": {"theta": "0.1"}}
+      ],
       "available": ["pal"]
     }
   ],
@@ -216,7 +299,7 @@
   "starting_positions": [
     {
       "name": "THE_ONLY_ONE",
-      "position": { "x": 120, "y": 400},
+      "position": { "x": 120, "y": 400 },
       "theta": "0",
       "recal_side": "y",
       "recal_sensor": "no"

@@ -69,6 +69,8 @@ class Robot(Service):
     reverse_and_drop_crates = Service.action(robot_actions.reverse_and_drop_crates)
     do_cursor = Service.action(robot_actions.do_cursor)
     do_cursor_bis = Service.action(robot_actions.do_cursor_bis)
+    start_cursor = Service.action(robot_actions.start_cursor)
+    end_cursor = Service.action(robot_actions.end_cursor)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -229,33 +231,70 @@ class Robot(Service):
         self.enable()
 
         self.actuators.pumps_drop(ids = [0, 1, 2, 3, 4, 5])
-
-        self.actuators.stepper_home(0, 200)
-
-        self.move_cursor_arm(CursorArmSide.RIGHT, CursorArmPosition.CLOSED, async_task=False)
-        self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
+        self.actuators.pumps_drop(ids = [20, 21, 22, 23, 24, 25])
 
         self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.PRE_GRAB, async_task=False)
         self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.PRE_GRAB, async_task=False)
         self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.PRE_GRAB, async_task=False)
         self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.PRE_GRAB, async_task=False)
+        sleep(0.1)
+        self.move_lifting_arm(LiftingArmId.BACK_1, LiftingArmPosition.PRE_GRAB, async_task=False)
+        self.move_lifting_arm(LiftingArmId.BACK_2, LiftingArmPosition.PRE_GRAB, async_task=False)
+        self.move_lifting_arm(LiftingArmId.BACK_3, LiftingArmPosition.PRE_GRAB, async_task=False)
+        self.move_lifting_arm(LiftingArmId.BACK_4, LiftingArmPosition.PRE_GRAB, async_task=False)
+
+        sleep(0.5)
+
+        self.actuators.stepper_home(0, 200)
+        self.actuators.stepper_home(1, 200)
+
+        self.move_cursor_arm(CursorArmSide.RIGHT, CursorArmPosition.CLOSED, async_task=False)
+        self.move_cursor_arm(CursorArmSide.LEFT, CursorArmPosition.CLOSED, async_task=False)
 
         self.move_compacting_arm(CompactingArmId.FRONT_RIGHT, CompactingArmPosition.CLOSED, async_task=False)
         self.move_compacting_arm(CompactingArmId.FRONT_LEFT, CompactingArmPosition.CLOSED, async_task=False)
 
-        self.move_reversing_arm_high(ReversingArmHighPosition.CLOSED, async_task=False)
+        self.move_compacting_arm(CompactingArmId.BACK_RIGHT, CompactingArmPosition.CLOSED, async_task=False)
+        self.move_compacting_arm(CompactingArmId.BACK_LEFT, CompactingArmPosition.CLOSED, async_task=False)
+
+        self.move_reversing_arm_high(ReversingArmHighId.FRONT, ReversingArmHighPosition.CLOSED, async_task=False)
+        self.move_reversing_arm_high(ReversingArmHighId.BACK, ReversingArmHighPosition.CLOSED, async_task=False)
+
         sleep(1)
 
         self.move_reversing_head(ReversingHeadId.FRONT_RIGHT, ReversingHeadPosition.NORMAL, async_task=False)
         self.move_reversing_head(ReversingHeadId.FRONT_LEFT, ReversingHeadPosition.NORMAL, async_task=False)
+
+        self.move_reversing_head(ReversingHeadId.BACK_RIGHT, ReversingHeadPosition.NORMAL, async_task=False)
+        self.move_reversing_head(ReversingHeadId.BACK_LEFT, ReversingHeadPosition.NORMAL, async_task=False)
+
         sleep(1)
 
         self.move_reversing_arm(ReversingArmId.FRONT_RIGHT, ReversingArmPosition.CLOSED, async_task=False)
         self.move_reversing_arm(ReversingArmId.FRONT_LEFT, ReversingArmPosition.CLOSED, async_task=False)
 
+        self.move_reversing_arm(ReversingArmId.BACK_RIGHT, ReversingArmPosition.CLOSED, async_task=False)
+        self.move_reversing_arm(ReversingArmId.BACK_LEFT, ReversingArmPosition.CLOSED, async_task=False)
+
         sleep(4)
-        self.move_elevator(ElevatorId.FRONT, ElevatorPosition.MIDDLE)
-        sleep(2)
+
+        self.move_elevator(ElevatorId.FRONT, ElevatorPosition.START)
+        sleep(0.1)
+        self.move_elevator(ElevatorId.BACK, ElevatorPosition.START)
+
+        sleep(0.5)
+
+        self.move_lifting_arm(LiftingArmId.FRONT_1, LiftingArmPosition.CLOSED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_2, LiftingArmPosition.CLOSED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_3, LiftingArmPosition.CLOSED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.FRONT_4, LiftingArmPosition.CLOSED, async_task=False)
+        sleep(0.1)
+        self.move_lifting_arm(LiftingArmId.BACK_1, LiftingArmPosition.CLOSED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.BACK_2, LiftingArmPosition.CLOSED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.BACK_3, LiftingArmPosition.CLOSED, async_task=False)
+        self.move_lifting_arm(LiftingArmId.BACK_4, LiftingArmPosition.CLOSED, async_task=False)
+
+        sleep(0.6)
 
     @Service.event('%s-bau' % ROBOT)
     def handle_bau(self, value, **kwargs):

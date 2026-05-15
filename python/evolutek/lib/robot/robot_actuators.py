@@ -28,8 +28,8 @@ class ElevatorPosition(Enum):
         ElevatorId.BACK: (-740,)
     }
     MIDDLE = {
-        ElevatorId.FRONT: (-700,),
-        ElevatorId.BACK: (-700,)
+        ElevatorId.FRONT: (-500,),
+        ElevatorId.BACK: (-500,)
     }
     REVERSE_DOWN = {
         ElevatorId.FRONT: (-200,),
@@ -39,14 +39,18 @@ class ElevatorPosition(Enum):
         ElevatorId.FRONT: (-140,),
         ElevatorId.BACK: (-140,)
     }
+    START = {
+        ElevatorId.FRONT: (-200,),
+        ElevatorId.BACK: (-200,)
+    }
     HIGHEST = {
-        ElevatorId.FRONT: (-1,),
-        ElevatorId.BACK: (-1,)
+        ElevatorId.FRONT: (-5,),
+        ElevatorId.BACK: (-5,)
     }
 
 @if_enabled
 @async_task
-def move_elevator(self, id: ElevatorId, pos: ElevatorPosition):
+def move_elevator(self, id: ElevatorId, pos: ElevatorPosition, speed: float = 1):
     if isinstance(id, str):
         id = ElevatorId[id]
 
@@ -62,7 +66,7 @@ def move_elevator(self, id: ElevatorId, pos: ElevatorPosition):
     status = RobotStatus.check(self.actuators.stepper_goto(
         id.value[0],
         angles[0],
-        ELEVATOR_SPEED
+        ELEVATOR_SPEED * speed
     ))
 
     if RobotStatus.get_status(status) != RobotStatus.Done:
