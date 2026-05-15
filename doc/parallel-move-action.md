@@ -99,20 +99,11 @@ Driver tagging:
 internally — no trajman primitive. They therefore belong on the actuator
 slot.
 
-### Event routing — pending (step 4)
+### Event routing — done (step 4, commit 663b82db)
 
-The legacy publishes a single event pair on every task boundary:
-
-```python
-self.publish('%s_robot_started' % ROBOT, id=task.id)
-...
-self.publish('%s_robot_stopped' % ROBOT, id=task.id, **r)
-```
-
-After step 4 each thread publishes on its own category-specific pair:
+`Robot.run_tasks(category)` publishes per-category events:
 
 ```python
-# in Robot.run_tasks(category):
 self.publish('%s_%s_started' % (ROBOT, category), id=task.id)
 ...
 self.publish('%s_%s_stopped' % (ROBOT, category), id=task.id, **r)
@@ -122,43 +113,70 @@ Concretely:
 - `%s_move_started` / `%s_move_stopped` for trajman flows
 - `%s_actuator_started` / `%s_actuator_stopped` for actuator flows
 
-`event_waiter` must accept the event pair as a parameter so two consumers
-can wait independently without race. The single-pair version was implicitly
-tied to "one task at a time" and would race if both pairs fired close
-together on the same shared events.
+`event_waiter` already took the event pair as a parameter, no change there.
+What changed is the **callers**:
+- `services/ai.py` — the four cellaserv events are declared at class level
+  (`move_started`, `move_stopped`, `actuator_started`, `actuator_stopped`).
+  The five `event_waiter` wrappers around `robot.goth` / `robot.goto_avoid`
+  / `robot.global_goto_avoid` / `robot.goto_with_path` / `robot.recalibration`
+  are wired to the move pair.
+- `lib/ai/goals.py` — `Action.parse` routes `handler: robot` actions to the
+  actuator pair when `when == 'in_transit'`, to the move pair otherwise
+  (legacy parity).
 
-Wiring impact:
-- `services/ai.py:53-57` — the five `event_waiter(...)` wrappers around
-  `robot.goth` / `robot.goto_avoid` / `robot.global_goto_avoid` /
-  `robot.goto_with_path` / `robot.recalibration` switch to the move event
-  pair.
-- `lib/ai/goals.py:69` — when `Action.parse` wraps a `handler == 'robot'`
-  call in `event_waiter`, it picks the right pair based on which sub-handler
-  (trajman vs actuator). Initial cut: keep `handler == 'robot'` semantics
-  routed to **move** events (legacy default — these are the actions that
-  used to invoke goto / forward / recal under cover of `handler: robot`),
-  and add a dedicated `'actuator'` handler path that wires the actuator
-  event pair. This keeps the existing strategies.json files working
-  without modification.
+### Parallel making() — done (step 5, commit 6d68125b)
 
-### Parallel making() — pending (step 5)
+`Action` carries a `when` field (`'in_transit' | 'on_arrival'`, default
+`'on_arrival'`). `making()` pre-splits the goal's actions, starts a worker
+thread that runs `in_transit` actions sequentially on the actuator slot,
+runs navigation in a nested closure on the move slot, joins the worker,
+then runs `on_arrival` actions:
 
-The current `making()` is structurally `goto → for action in actions`. After
-step 5, `Action` gains an optional `when` field:
+```
+                ┌─────────────┐
+                │ split when  │
+                └──────┬──────┘
+                       │
+            ┌──────────┴───────────┐
+            │                      │
+            ▼                      ▼
+     ┌─────────────┐         ┌─────────────────┐
+     │  move slot  │         │   actuator slot │
+     │  navigation │         │  in_transit acts│
+     └──────┬──────┘         └────────┬────────┘
+            │                         │
+            └────────── join ─────────┘
+                       │
+                       ▼
+                ┌─────────────┐
+                │ on_arrival  │
+                │  actions    │
+                └─────────────┘
+```
 
-| `when` value      | Behavior                                  |
-|-------------------|-------------------------------------------|
-| `'on_arrival'`    | run after the goto completes (legacy)     |
-| `'in_transit'`    | run **while** the goto is in flight       |
+The per-action handling was extracted into `AI._run_action(...)` so the
+in_transit worker and the on_arrival loop share the same code path: status
+filtering, scoring, abort/timeout/skip strategies.
 
-Default is `'on_arrival'` so existing `strategies.json` files behave
-identically. The `making()` loop launches the move and all `in_transit`
-actions concurrently, joins on both event pairs, then loops over
-`on_arrival` actions.
+State precedence on early return: nav state wins, then in_transit state.
+Rationale: a failed nav usually means the match is being aborted, in which
+case the in_transit failure is downstream of the same cause.
 
-### Strategies config — pending (step 6)
+### Strategies config — done (step 6)
 
-A single new optional field per action:
+An action node in `strategies.json` now accepts:
+
+| Field             | Type     | Default        | Meaning                                                         |
+|-------------------|----------|----------------|-----------------------------------------------------------------|
+| `handler`         | string?  | (none)         | `'robot'` / `'actuators'` / ... — cellaserv service to call     |
+| `fct`             | string   | (required)     | RPC method name on the handler                                  |
+| `args`            | object?  | (none)         | kwargs passed to the call                                       |
+| `avoid_strategy`  | string?  | `'wait'`       | `'wait'` / `'timeout'` / `'skip'`                                |
+| `score`           | int?     | 0              | points credited on `Done` / `Reached`                            |
+| `timeout`         | float?   | (none)         | seconds, used by avoid_strategy and pathfinding fallback         |
+| `when`            | string?  | `'on_arrival'` | `'in_transit'` runs concurrently with the goto; `'on_arrival'` after |
+
+Example: raise an arm while moving, then grab on arrival.
 
 ```json
 {
@@ -172,7 +190,20 @@ A single new optional field per action:
 }
 ```
 
-Backwards-compatible: absent `when` ⇒ `'on_arrival'`.
+Routing inference for `handler: robot`:
+- `when: in_transit` → wait on `actuator_started` / `actuator_stopped`
+- `when: on_arrival` (or unset) → wait on `move_started` / `move_stopped`
+
+Legacy strategies (no `when` field) keep the move-event semantics, so they
+are 1:1 compatible.
+
+Constraints on `in_transit` actions:
+- They must target the actuator slot (a move can't overlap another move).
+  In practice this means `handler: robot` with an actuator `fct` like
+  `move_arm`, `grab`, `move_servo`, ... or `handler: actuators` directly.
+- They run **sequentially among themselves** on the single actuator slot.
+  N parallel actuator actions per goal is not supported — list them in
+  order, the worker chains them.
 
 ## What is *not* changed by this branch
 
@@ -199,3 +230,6 @@ Backwards-compatible: absent `when` ⇒ `'on_arrival'`.
 | SHA       | Subject                                                |
 |-----------|--------------------------------------------------------|
 | 2289e0e1  | robot: split task slot by category (move/actuator)     |
+| 1d77a983  | doc: parallel move+action architecture note            |
+| 663b82db  | robot, ai: split cellaserv events per category         |
+| 6d68125b  | ai, goals: parallel move + in_transit actions in making() |
