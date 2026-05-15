@@ -220,7 +220,7 @@ class TrajMan(Service):
 
     def set_offset(x=0, y=0, theta=0):
         self.offset_x = x
-        self.offset_y = y  
+        self.offset_y = y
         self.offset_theta = theta
 
     """ AVOID """
@@ -276,7 +276,7 @@ class TrajMan(Service):
 
             if not self.is_avoid_enabled.is_set():
                 continue
-                
+
             stop_distance = 0.0
             detection_dist = 0.0
 
@@ -406,13 +406,13 @@ class TrajMan(Service):
 
     @Service.action
     @if_enabled
-    def global_goto(self, x, y, theta, 
+    def global_goto(self, x, y, theta,
                             rot_start_pct=0, rot_end_pct=100,
                             trsl_start_pct=0, trsl_end_pct=100,
                             rot_direction=0, avoid=True):
         """
         Mouvement combiné avec contrôle temporel des rotations et translations
-        
+
         Args:
             x, y (float): Coordonnées absolues de destination
             theta (float): Angle absolu de destination en radians
@@ -427,7 +427,7 @@ class TrajMan(Service):
         x = float(x)
         y = float(y)
         theta = float(theta)
-        
+
         x -= self.offset_x
         y -= self.offset_y
         theta -= self.offset_theta
@@ -436,17 +436,17 @@ class TrajMan(Service):
         print(x, y, theta, rot_start_pct, rot_end_pct,
                             trsl_start_pct, trsl_end_pct,
                             rot_direction, avoid)
-        
+
         # Validation des pourcentages
         rot_start_pct = max(0, min(100, int(rot_start_pct)))
         rot_end_pct = max(rot_start_pct, min(100, int(rot_end_pct)))
         trsl_start_pct = max(0, min(100, int(trsl_start_pct)))
         trsl_end_pct = max(trsl_start_pct, min(100, int(trsl_end_pct)))
-        
+
         # Préparation de la commande
         tab = pack('B', 2 + calcsize('fffffffbb'))
         tab += pack('B', Commands.GLOBAL_GOTO.value)
-        tab += pack('fffffff', 
+        tab += pack('fffffff',
                     x, y, theta,
                     float(rot_start_pct)/100, float(rot_end_pct)/100,
                     float(trsl_start_pct)/100, float(trsl_end_pct)/100)
@@ -461,7 +461,7 @@ class TrajMan(Service):
 
         # Envoi de la commande
         self.command(bytes(tab))
-    
+
     @Service.action
     def cal_otos(self):
         print('[TRAJMAN] calibrate OTOS')
@@ -581,6 +581,7 @@ class TrajMan(Service):
         tab = pack('B', 2)
         tab += pack('B', Commands.LIDAR_ENABLE.value)
         self.command(bytes(tab))
+        return RobotStatus.return_status(RobotStatus.Ok)
 
     @Service.action
     @Service.event('match_end')
@@ -589,6 +590,7 @@ class TrajMan(Service):
         tab = pack('B', 2)
         tab += pack('B', Commands.LIDAR_DISABLE.value)
         self.command(bytes(tab))
+        return RobotStatus.return_status(RobotStatus.Ok)
 
     #######
     # Get #
@@ -794,7 +796,7 @@ class TrajMan(Service):
                         self.robot_position = Point(x=xpos, y=ypos)
                         self.robot_orientation = theta
                         self.robot_speed = speed
-        
+
                     #self.log_serial("Telemetry: xpos = %i, ypos = %i, theta = %.2f, speed = %i" % (xpos, ypos, theta, speed))
 
                     #telemetry = { 'x': round(xpos), 'y' : round(ypos), 'theta' : round(theta, 4), 'speed' : round(speed, 2)}

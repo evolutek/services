@@ -54,6 +54,14 @@ def barrier(self, id, pos):
     status.append(self.move(new_id, pos, async_task=False))
     return RobotStatus.check(*status)
 
+@if_enabled
+@async_task
+def lidar_disable(self):
+    face = int(face)
+    status = []
+    status.append(self.trajman.lidar_disable(async_task=False))
+    return RobotStatus.check(*status)
+
 
 @if_enabled
 @async_task
@@ -161,7 +169,7 @@ def grab_stack(self, zone: Zone):
 
     if(isinstance(zone, str)):
         zone = Zone[zone]
-    
+
     if(zone == Zone.AB):
         status.append(RobotStatus.check(self.grab(MagnetGroups.elevator_AB, async_task=False)))
         status.append(RobotStatus.check(self.grab(MagnetGroups.outer_AB, async_task=False)))
@@ -175,7 +183,7 @@ def grab_stack(self, zone: Zone):
         status.append(RobotStatus.check(self.grab(MagnetGroups.elevator_CA, async_task=False)))
         status.append(RobotStatus.check(self.grab(MagnetGroups.outer_CA, async_task=False)))
         status.append(RobotStatus.check(self.tip(2, TipPositions.grab, async_task=False)))
-    
+
     return RobotStatus.check(*status)
 
 @if_enabled
@@ -185,7 +193,7 @@ def drop_stack(self, zone: Zone):
 
     if(isinstance(zone, str)):
         zone = Zone[zone]
-    
+
     if(zone == Zone.AB):
         status.append(RobotStatus.check(self.drop(MagnetGroups.elevator_AB, async_task=False)))
         status.append(RobotStatus.check(self.drop(MagnetGroups.outer_AB, async_task=False)))
@@ -199,7 +207,7 @@ def drop_stack(self, zone: Zone):
         status.append(RobotStatus.check(self.drop(MagnetGroups.elevator_CA, async_task=False)))
         status.append(RobotStatus.check(self.drop(MagnetGroups.outer_CA, async_task=False)))
         status.append(RobotStatus.check(self.tip(2, TipPositions.stow, async_task=False)))
-    
+
     return RobotStatus.check(*status)
 
 
@@ -212,7 +220,7 @@ def drop_stack(self, zone: Zone):
 def build(self, zone: Zone):
     if(isinstance(zone, str)):
         zone = Zone[zone]
-    
+
     if(zone == Zone.AB):
         if RobotStatus.check(self.arm_position(ArmToAx.A, ArmPosition.left)) != RobotStatus.Done:
             return RobotStatus.Failed
@@ -248,7 +256,7 @@ def build(self, zone: Zone):
             return RobotStatus.Failed
         if(RobotStatus.check(self.drop(MagnetGroups.outer_AB)) != RobotStatus.Done):
             return RobotStatus.Failed
-            
+
     elif(zone == Zone.BC):
         if RobotStatus.check(self.arm_position(ArmToAx.C, ArmPosition.right)) != RobotStatus.Done:
             return RobotStatus.Failed
