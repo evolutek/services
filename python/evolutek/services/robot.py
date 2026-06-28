@@ -66,12 +66,18 @@ class Robot(Service):
     drop_all_crates = Service.action(robot_actions.drop_all_crates)
     drop_good_crates = Service.action(robot_actions.drop_good_crates)
     store_crates = Service.action(robot_actions.store_crates)
-    reverse_and_drop_crates = Service.action(robot_actions.reverse_and_drop_crates)
+    prepare_reverse_and_drop_crates = Service.action(robot_actions.prepare_reverse_and_drop_crates)
+    prepare_reverse_and_drop_crates_then_wait = Service.action(robot_actions.prepare_reverse_and_drop_crates_then_wait)
+    do_reverse_and_drop_crates = Service.action(robot_actions.do_reverse_and_drop_crates)
+    #reverse_and_drop_crates = Service.action(robot_actions.reverse_and_drop_crates)
     do_cursor = Service.action(robot_actions.do_cursor)
     do_cursor_bis = Service.action(robot_actions.do_cursor_bis)
+    do_turbin_cursor = Service.action(robot_actions.do_turbin_cursor)
     start_cursor = Service.action(robot_actions.start_cursor)
     end_cursor = Service.action(robot_actions.end_cursor)
     lift_crates = Service.action(robot_actions.lift_crates)
+    grab_grenier = Service.action(robot_actions.grab_grenier)
+    drop_grenier = Service.action(robot_actions.drop_grenier)
 
     def __init__(self):
         super().__init__(ROBOT)
@@ -268,11 +274,11 @@ class Robot(Service):
 
         sleep(1)
 
-        self.move_reversing_head(ReversingHeadId.FRONT_RIGHT, ReversingHeadPosition.NORMAL, async_task=False)
-        self.move_reversing_head(ReversingHeadId.FRONT_LEFT, ReversingHeadPosition.NORMAL, async_task=False)
+        self.move_reversing_head(ReversingHeadId.FRONT_RIGHT, ReversingHeadPosition.REVERSED, async_task=False)
+        self.move_reversing_head(ReversingHeadId.FRONT_LEFT, ReversingHeadPosition.REVERSED, async_task=False)
 
-        self.move_reversing_head(ReversingHeadId.BACK_RIGHT, ReversingHeadPosition.NORMAL, async_task=False)
-        self.move_reversing_head(ReversingHeadId.BACK_LEFT, ReversingHeadPosition.NORMAL, async_task=False)
+        self.move_reversing_head(ReversingHeadId.BACK_RIGHT, ReversingHeadPosition.REVERSED, async_task=False)
+        self.move_reversing_head(ReversingHeadId.BACK_LEFT, ReversingHeadPosition.REVERSED, async_task=False)
 
         sleep(1)
 
@@ -285,7 +291,7 @@ class Robot(Service):
         sleep(4)
 
         self.move_elevator(ElevatorId.FRONT, ElevatorPosition.START)
-        sleep(0.1)
+        sleep(0.2)
         self.move_elevator(ElevatorId.BACK, ElevatorPosition.START)
 
         sleep(0.5)

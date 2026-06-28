@@ -150,8 +150,16 @@ class Actuators(Service):
         }, frequency = 50, addr=0x40)
 
         self.i2c_servos_2 = I2CActsHandler({
-            9: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax}, # Right
-            8: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax}, # Left
+            9: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Right
+            8: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #1: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #2: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #3: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #4: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #5: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #6: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #7: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
+            #9: {"type": I2CActType.ESC, "max_range": 0.5, "esc_variation": ESCVariation.Emax, "min_pulse": 500, "max_pulse": 2000}, # Left
         }, frequency = 50, addr=0x41)
 
         self.i2c_mots = I2CMotorBoard({
@@ -223,6 +231,8 @@ class Actuators(Service):
 
         self.free()
 
+        self.i2c_servos_2.init_escs()
+
         self.is_initialized = True
         for actuator in self.all_actuators:
             if not actuator.is_initialized():
@@ -281,6 +291,7 @@ class Actuators(Service):
 
         if self.bau.read():
             self.disabled.clear()
+            self.i2c_servos_2.init_escs()
 
     #################
     # COLOR SENSORS #

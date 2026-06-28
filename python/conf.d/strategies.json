@@ -10,12 +10,65 @@
 
     {
       "name": "go_to_end",
-      "position": { "x": 270, "y": 260 }
+      "position": { "x": 520, "y": 260 }
+    },
+
+    {
+      "name": "go_to_end_2",
+      "position": { "x": 200, "y": 385 }
+    },
+
+    {
+      "name": "grab_grenier",
+      "position": { "x": 680, "y": 800 },
+      "theta": "0",
+      "actions": [
+        {
+          "fct": "grab_grenier",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ]
+    },
+
+    {
+      "name": "drop_grenier",
+      "position": { "x": 680, "y": 800 },
+      "theta": "-1.38",
+      "actions": [
+        {
+          "fct": "drop_grenier",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }
+      ]
+    },
+
+    {
+      "name": "after_drop_grenier",
+      "position": { "x": 620, "y": 1050 },
+      "actions": [
+        {
+          "fct": "wait_until_time",
+          "args": {"delay": 96}
+        }
+      ]
+    },
+
+    {
+      "name": "after_drop_grenier_2",
+      "position": { "x": 680, "y": 420 }
+    },
+
+    {
+      "name": "go_to_end_3",
+      "position": { "x": 250, "y": 420 }
     },
 
     {
       "name": "goto_wait_pami",
-      "position": { "x": 860, "y": 260 },
+      //"position": { "x": 860, "y": 260 },
+      "position": { "x": 800, "y": 440 },
       "theta": "pi",
       "actions": [
         {
@@ -130,26 +183,36 @@
 
     {
       "name": "place_area_1",
-      "position": { "x": 1200, "y": 350 },
-      "theta": "pi",
+      "position": { "x": 1200, "y": 300 },
+      "theta": "-pi/2",
       "actions": [
         {
-          "fct": "reverse_and_drop_crates",
+          "fct": "prepare_reverse_and_drop_crates_then_wait",
           "handler": "robot",
-          "args": {}
+          "args": {"side": "front"}
+        },
+        {
+          "fct": "do_reverse_and_drop_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
         }
       ]
     },
 
     {
       "name": "place_area_3",
-      "position": { "x": 1200, "y": 610 },
-      "theta": "pi/2",
+      "position": { "x": 1000, "y": 800 },
+      "theta": "0",
       "actions": [
         {
-          "fct": "reverse_and_drop_crates",
+          "fct": "prepare_reverse_and_drop_crates_then_wait",
           "handler": "robot",
-          "args": {}
+          "args": {"side": "front"}
+        },
+        {
+          "fct": "do_reverse_and_drop_crates",
+          "handler": "robot",
+          "args": {"side": "front"}
         }
       ]
     },
@@ -160,7 +223,12 @@
       "theta": "pi/2",
       "actions": [
         {
-          "fct": "reverse_and_drop_crates",
+          "fct": "prepare_reverse_and_drop_crates_then_wait",
+          "handler": "robot",
+          "args": {"side": "front"}
+        },
+        {
+          "fct": "do_reverse_and_drop_crates",
           "handler": "robot",
           "args": {"side": "front"}
         }
@@ -172,6 +240,11 @@
       "position": { "x": 1800, "y": 1180 },
       "theta": "-pi/2",
       "actions": [
+        {
+          "fct": "prepare_reverse_and_drop_crates_then_wait",
+          "handler": "robot",
+          "args": {"side": "back"}
+        },
         {
           "fct": "drop_good_crates",
           "handler": "robot",
@@ -211,13 +284,23 @@
       "position": { "x": 1650, "y": 700 },
       "theta": "pi",
       "actions": [
-        {
+        /*{
           "fct": "reverse_bad_crates",
           "handler": "robot",
           "args": {"side": "back"}
         },
         {
           "fct": "drop_all_crates",
+          "handler": "robot",
+          "args": {"side": "back"}
+        }*/
+        {
+          "fct": "prepare_reverse_and_drop_crates_then_wait",
+          "handler": "robot",
+          "args": {"side": "back"}
+        },
+        {
+          "fct": "do_reverse_and_drop_crates",
           "handler": "robot",
           "args": {"side": "back"}
         }
@@ -253,15 +336,21 @@
 
     {
       "name": "do_cursor_turbin",
-      "position": { "x": 1780, "y": 1420 },
+      "position": { "x": 1790, "y": 1420 },
       "theta": "-pi/2",
       "actions": [
         {
           "fct": "do_turbin_cursor",
-          "handler": "robot",
-          "args": {"side": "front"}
+          "handler": "robot"
         }
       ]
+    },
+
+    {
+      "name": "before_do_cursor_turbin_2",
+      "position": { "x": 1740, "y": 1620 },
+      //"theta": "-pi/2",
+      "actions": []
     }
 
     /*
@@ -315,6 +404,7 @@
         "go_to_initial",
         "grab_area_4_x_min",
         "place_area_5",
+        "before_do_cursor_turbin",
         "do_cursor_turbin",
         "before_do_cursor_turbin",
         "grab_area_3",
@@ -324,8 +414,41 @@
         "place_area_3",
         //"grab_area_1",
         //"place_area_1",
-        "goto_wait_pami",
-        "go_to_end"
+        //"goto_wait_pami",
+        "go_to_end",
+        "go_to_end_2"
+		  ],
+      "use_pathfinding": false,
+      "config_actions": [
+        {"fct": "goto", "args": {"x": 300, "y": 300}},
+        {"fct": "goth", "args": {"theta": "0.15"}}
+      ],
+      "available": ["pal"]
+    },
+
+    {
+      "name": "Turbine 2",
+      "starting_position": "THE_ONLY_ONE",
+      "goals": [
+        "go_to_initial",
+        //"grab_area_4_x_min",
+        //"place_area_5",
+        "grab_area_3",
+        "before_do_cursor_turbin_2",
+        "do_cursor_turbin",
+        //"before_do_cursor_turbin",
+        "place_area_4_top",
+        "place_area_2_top",
+        "grab_area_2",
+        "place_area_1",
+        "grab_area_1",
+        "place_area_3",
+        "grab_grenier",
+        "drop_grenier",
+        "after_drop_grenier",
+        "after_drop_grenier_2",
+        //"goto_wait_pami",
+        "go_to_end_3"
 		  ],
       "use_pathfinding": false,
       "config_actions": [
@@ -339,7 +462,7 @@
   "starting_positions": [
     {
       "name": "THE_ONLY_ONE",
-      "position": { "x": 270, "y": 300 },
+      "position": { "x": 120, "y": 300 },
       "theta": "0",
       "recal_side": "y",
       "recal_sensor": "no"

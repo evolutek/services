@@ -247,13 +247,12 @@ class AI(Service):
 
         self.trajman.enable()
         self.actuators.enable()
-        self.robot.reset()
 
         starting_position = None
         with self.lock:
             starting_position = self.goals.current_strategy.starting_position
 
-        print('[AI] Setting robot position')
+        print('[AI] Setting robot position') # (before robot reset)
         self.trajman.free()
         self.robot.set_pos(
                 x=starting_position.position.x,
@@ -261,6 +260,17 @@ class AI(Service):
                 theta=starting_position.theta,
             )
         self.trajman.unfree()
+
+        self.robot.reset()
+
+        # print('[AI] Setting robot position')
+        # self.trajman.free()
+        # self.robot.set_pos(
+        #         x=starting_position.position.x,
+        #         y=starting_position.position.y,
+        #         theta=starting_position.theta,
+        #     )
+        # self.trajman.unfree()
 
         if self.recalibrate_itself.is_set():
             print('[AI] Recalibrating robot')
@@ -296,6 +306,15 @@ class AI(Service):
             status, _ = self.make_action(action)
             if status != RobotStatus.Done and status != RobotStatus.Reached:
                 return States.Error
+
+        # print("[AI] (re)setting robot position")
+        # self.trajman.free()
+        # self.robot.set_pos(
+        #         x=starting_position.position.x,
+        #         y=starting_position.position.y,
+        #         theta=starting_position.theta,
+        #     )
+        # self.trajman.unfree()
 
         self.reset_event.clear()
         self.actuators.rgb_led_strip_set_mode(LightningMode.Loading.value)
@@ -558,7 +577,7 @@ class AI(Service):
 
         self.robot.disable()
         self.actuators.disable()
-        self.trajman.disable()
+        self.trajman.stop_and_disable()
 
         self.actuators.rgb_led_strip_set_mode(LightningMode.Disabled.value)
         self.reset_event.wait()

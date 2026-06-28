@@ -181,8 +181,10 @@ class TrajMan(Service):
         self.trsl_max_speed = self.trslmax()
         self.set_trsl_max_speed(self.trsl_max_speed)
 
-        self.set_rot_acc(self.rotacc())
-        self.set_rot_dec(self.rotdec())
+        self.rot_acc = self.rotacc()
+        self.set_rot_acc(self.rot_acc)
+        self.rot_dec = self.rotdec()
+        self.set_rot_dec(self.rot_dec)
         self.set_rot_max_speed(self.rotmax())
 
         self.set_delta_max_rot(self.deltarot())
@@ -584,6 +586,11 @@ class TrajMan(Service):
         tab += pack('B', Commands.STOP_ASAP.value)
         tab += pack('ff', float(trsldec), float(rotdec))
         self.command(bytes(tab))
+
+    @Service.action
+    def stop_and_disable(self):
+        self.stop_robot()
+        self.disabled.set()
 
     #######
     # Get #

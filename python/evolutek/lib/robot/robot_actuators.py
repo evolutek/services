@@ -20,8 +20,8 @@ class ElevatorId(Enum):
 
 class ElevatorPosition(Enum):
     LOWEST = {
-        ElevatorId.FRONT: (-740,),
-        ElevatorId.BACK: (-740,)
+        ElevatorId.FRONT: (-766,),
+        ElevatorId.BACK: (-766,)
     }
     DROP = {
         ElevatorId.FRONT: (-700,),
@@ -30,6 +30,14 @@ class ElevatorPosition(Enum):
     MIDDLE = {
         ElevatorId.FRONT: (-500,),
         ElevatorId.BACK: (-500,)
+    }
+    GRENIER_UP = {
+        ElevatorId.FRONT: (-450,),
+        ElevatorId.BACK: (-450,)
+    }
+    GRENIER_DOWN = {
+        ElevatorId.FRONT: (-490,),
+        ElevatorId.BACK: (-490,)
     }
     REVERSE_DOWN = {
         ElevatorId.FRONT: (-200,),
@@ -95,7 +103,7 @@ class LiftingArmPosition(Enum):
     REVERSE = 680
     PRE_GRAB = 593
     DROP = 512
-    GRAB = 493 #512
+    GRAB = 500 #512
     CLOSED = 335
 
 @if_enabled
